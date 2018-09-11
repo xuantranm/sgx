@@ -150,11 +150,13 @@ Docs
 temp
 backup
 # packages/
-erp/obj/
-erp/bin/
+
 *.lock
 *.ide
 *.ide-shm
 *.ide-wal
 *.cache
 *.config
+.vs/tribatvn/
+erp/bin/
+erp/obj/
