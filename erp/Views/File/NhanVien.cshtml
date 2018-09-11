@@ -1,0 +1,42 @@
+﻿
+@{
+    ViewData["Title"] = "Tải lên nhân viên";
+    Layout = "~/Views/Shared/_LayoutSocialFb.cshtml";
+}
+<style>
+    #myProgress {
+        width: 100%;
+        background-color: grey;
+    }
+
+    #myBar {
+        width: 1%;
+        height: 30px;
+        background-color: green;
+    }
+</style>
+
+<h2>@ViewData["Title"]</h2>
+<form method="post" action="/tai-lieu/nhan-vien/update/" enctype="multipart/form-data">
+    <div class="row">
+        <div class="col-md-4">
+            <input type="file" id="fUpload" name="files" class="form-control" />
+        </div>
+        <div class="col-md-8">
+            <input type="button" id="btnUpload" class="hidden" value="Tải lên" />
+        </div>
+    </div>
+    <br />
+    <div class="progress">
+        <div class="progress-bar progress-bar-striped progress-bar-animated" style="width:0%"></div>
+    </div>
+    <div id="dvData"></div>
+</form>
+
+@section scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+        <script src="~/lib/jq-ajax-progress-master/jq-ajax-progress.min.js"></script >
+        <script src="~/js/file-employee.js?@DateTime.Now.Ticks"></script>
+    }
+}

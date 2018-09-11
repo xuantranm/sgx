@@ -1,0 +1,37 @@
+﻿.toplink .hotline {
+    background: url("/images/phone.png") 0 0 no-repeat;
+    padding-left: 25px;
+    text-transform: uppercase;
+    margin-right: 15px;
+}
+.navbar-light .navbar-nav .nav-link {
+    color: #000000;
+}
+    .navbar-light .navbar-nav .nav-link:hover, .navbar-light .navbar-nav .nav-link:focus {
+        color: #00a859;
+    }
+
+.section-intro h4, .section-intro .h4 {
+    line-height: 1.875rem;
+    margin-bottom: 2rem;
+}
+.menu-mobile .text {
+    text-transform: uppercase;
+    display: inline-block;
+}
+.display-none{
+    display:none;
+}
+.bg-dark .breadcrumb-item a, .text-light .breadcrumb-item a, .text-white .breadcrumb-item a {
+    margin-bottom: 0;
+}
+.js-auto-size{
+    min-height:60px !important;
+}
+.img-product-detail {
+    max-height: 333px;
+    max-width: 500px;
+}
+.card-img-top-custom{
+    max-height:233px;
+}

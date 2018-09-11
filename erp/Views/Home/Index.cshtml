@@ -1,0 +1,399 @@
+﻿@using Common.Utilities;
+@using ViewModels;
+@model HomeErpViewModel;
+
+@{
+    Layout = "~/Views/Shared/_LayoutSocialFb.cshtml";
+}
+
+@{
+    if (Model.NotificationCompanies != null && Model.NotificationCompanies.Count > 0)
+    {
+        <section class="bg-white" style="padding: 1rem 0">
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <a href="javascript:;" data-target="#alert-company" data-toggle="collapse">
+                            <h5>
+                                <i class="icon-bell mr-1"></i>Thông báo <span class="badge badge-danger">@Model.NotificationCompanies.Count</span>
+                                <i class="icon-popup"></i>
+                            </h5>
+                        </a>
+                    </div>
+                    <div class="col-12 collapse" id="alert-company">
+                        <div class="row">
+                            @foreach (var notification in Model.NotificationCompanies)
+                            {
+                                <div class="col-12" style="padding:5px 0">
+                                    <div class="alert alert-info text-small mb-0" role="alert">
+                                        <i class="icon-shield"></i>
+                                        <span>
+                                            @notification.Title
+                                        </span>
+                                        <a href="@notification.Link">Chi tiết ›</a>
+                                    </div>
+                                </div>
+                            }
+                            <div class="col-12">
+                                <a href="/nt/thong-bao">Xem thêm ›</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    }
+}
+
+@{
+    if (Model.NotificationExpires != null && Model.NotificationExpires.Count > 0)
+    {
+        <section class="bg-white" style="padding: 1rem 0">
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <a href="javascript:;" data-target="#alert-expired" data-toggle="collapse">
+                            <h5><i class="icon-clock mr-1"></i>Thông báo đến hạn <span class="badge badge-danger">@Model.NotificationExpires.Count</span><i class="icon-popup"></i></h5>
+                        </a>
+                    </div>
+                    <div class="col-12 collapse" id="alert-expired">
+                        <div class="row">
+                            @foreach (var notification in Model.NotificationExpires)
+                            {
+                                <div class="col-12" style="padding:5px 0">
+                                    <div class="alert alert-info text-small mb-0" role="alert">
+                                        <i class="icon-shield"></i>
+                                        <span>
+                                            @notification.Title
+                                        </span>
+                                        <a href="@notification.Link">Chi tiết ›</a>
+                                    </div>
+                                </div>
+                            }
+                            <div class="col-12">
+                                <a href="/nt/thong-bao">Xem thêm ›</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    }
+}
+
+@{
+    if (Model.NotificationHRs != null && Model.NotificationHRs.Count > 0)
+    {
+        <section class="bg-white" style="padding: 1rem 0">
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <a href="javascript:;" data-target="#alert-nhan-su" data-toggle="collapse">
+                            <h5><i class="icon-users mr-1"></i>Thông báo nhân sự <span class="badge badge-danger">@Model.NotificationHRs.Count</span><i class="icon-popup"></i></h5>
+                        </a>
+                    </div>
+                    <div class="col-12 collapse" id="alert-nhan-su">
+                        <div class="row">
+                            @foreach (var notification in Model.NotificationHRs)
+                            {
+                                <div class="col-12" style="padding:5px 0">
+                                    <div class="alert alert-info text-small mb-0" role="alert">
+                                        <i class="icon-shield"></i>
+                                        <span>
+                                            @notification.Title @notification.Content 
+                                        </span>
+                                        <span>vào @notification.CreatedOn</span>
+                                        <span>bởi @notification.CreatedBy</span>
+                                        <a href="@notification.Link">Chi tiết ›</a>
+                                    </div>
+                                </div>
+                            }
+                            @*<div class="col-12">
+                                <a href="/nt/thong-bao">Xem thêm ›</a>
+                            </div>*@
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    }
+}
+
+
+@{
+    if (Model.NotificationTaskBhxhs != null && Model.NotificationTaskBhxhs.Count > 0)
+    {
+        <section class="bg-white" style="padding: 1rem 0">
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <a href="javascript:;" data-target="#alert-bhxh" data-toggle="collapse">
+                            <h5><i class="icon-sound mr-1"></i>Thông báo BHXH <span class="badge badge-danger">@Model.NotificationTaskBhxhs.Count</span><i class="icon-popup"></i></h5>
+                        </a>
+                    </div>
+                    <div class="col-12 collapse" id="alert-bhxh">
+                        <div class="row">
+                            @foreach (var notification in Model.NotificationTaskBhxhs)
+                            {
+                                <div class="col-12" style="padding:5px 0">
+                                    <div class="alert alert-info text-small mb-0" role="alert">
+                                        <i class="icon-shield"></i>
+                                        <span>
+                                            @notification.Title
+                                        </span>
+                                        <a href="@notification.Link">Chi tiết ›</a>
+                                    </div>
+                                </div>
+                            }
+                            <div class="col-12">
+                                <a href="/nt/thong-bao">Xem thêm ›</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    }
+}
+
+<section class="bg-white" style="padding: 1rem 0">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <a href="javascript:;" data-target="#alert-birthday" data-toggle="collapse">
+                    <h5><i class="icon-cake mr-1"></i>Sinh nhật <span class="badge badge-danger">@Model.Birthdays.Count()</span><i class="icon-popup"></i></h5>
+                    <span class="small">Mốc thời gian từ @DateTime.Now.ToString("dd/MM/yyyy") đến @DateTime.Now.AddDays(Convert.ToInt32(ViewData["birthdayNoticeBefore"])).ToString("dd/MM/yyyy"). Thay đổi trong cài đặt.</span>
+                </a>
+            </div>
+            <div class="col-12 collapse" id="alert-birthday">
+                <div class="row">
+                    @foreach (var birthday in Model.Birthdays)
+                    {
+                        <div class="col-12 col-md-6">
+                            <a href="/hr/nhan-su/thong-tin/@birthday.Id" alt="@birthday.FullName">
+                                <div class="card">
+                                    @if (birthday.Avatar != null)
+                                    {
+                                        <img class="card-img-top" src="@birthday.Avatar.Path@birthday.Avatar.FileName" alt="@birthday.FullName" style="width: 100%; height:180px;object-fit: contain;" />
+                                    }
+                                    else
+                                    {
+                                        <img class="" src="holder.js/100px180" alt="@birthday.FullName" />
+                                    }
+                                    <div class="card-body">
+                                        <h4 class="card-title">@birthday.FullName</h4>
+                                        <p class="card-text">
+                                            <span class="badge badge-primary">@birthday.Code</span>
+                                            <span class="badge badge-danger">@birthday.Title</span>
+                                        </p>
+                                        <i class="icon-cake mr-1"></i>
+
+                                        <span>@birthday.Birthday.ToString("dd/MM/yyyy")</span>
+                                        <span class="badge badge-indicator badge-success">&nbsp;</span>
+                                        <br />
+                                        <span class="small">Tuần @birthday.WeekBirthdayNumber @birthday.BirthdayOfWeek (@birthday.AgeBirthday tuổi)</span>
+                                    </div>
+                                </div>
+                            </a>
+
+                        </div>
+                    }
+                    <div class="col-12">
+                        <a href="/nhan-su/thong-tin">Xem thêm ›</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="bg-white">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <h5>Hoạt động</h5>
+                <span class="badge badge-light">Định dạng mẫu</span>
+                <span class="text-small">Dữ liệu giả, đang cập nhật dữ liệu hoạt động của người dùng</span>
+            </div>
+            <div class="col-12">
+                <!--end of col-->
+                <div class="card">
+                    <div class="card-header card-header-borderless d-flex justify-content-between">
+                        <small class="text-muted"><i class="icon-add-to-list mr-1"></i> Added a new item</small>
+                        <small class="text-muted">A few moments ago</small>
+                    </div>
+                    <div class="card-body">
+                        <div class="media">
+                            <img alt="Image" src="~/assets/wingman/img/graphic-product-kin-thumb.jpg" class="avatar avatar-square" />
+                            <div class="media-body">
+                                <span class="h5 mb-0">Kin</span>
+                                <span>The digital fashion assistant</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer d-flex justify-content-between">
+                        <div>
+                            <button class="btn btn-sm btn-outline-secondary">Comment</button>
+                            <button class="btn btn-sm btn-outline-primary">
+                                <i class="icon-thumbs-up"></i>
+                            </button>
+                        </div>
+                        <div class="text-small">
+                            <ul class="list-inline">
+                                <li class="list-inline-item"><i class="icon-thumbs-up"></i> 12</li>
+                                <li class="list-inline-item"><i class="icon-share-alternative"></i> 8</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <!--end of card-->
+                <div class="card">
+                    <div class="card-header card-header-borderless d-flex justify-content-between">
+                        <small class="text-muted"><i class="icon-add-to-list mr-1"></i> Added a new item</small>
+                        <small class="text-muted">3 days ago</small>
+                    </div>
+                    <div class="card-body">
+                        <div class="media">
+                            <img alt="Image" src="~/assets/wingman/img/graphic-product-pipeline-thumb.jpg" class="avatar avatar-square" />
+                            <div class="media-body">
+                                <span class="h5 mb-0">pipeline.js</span>
+                                <span>Snappy UI interaction library with flexible API</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer d-flex justify-content-between">
+                        <div>
+                            <button class="btn btn-sm btn-outline-secondary">Comment</button>
+                            <button class="btn btn-sm btn-outline-primary">
+                                <i class="icon-thumbs-up"></i>
+                            </button>
+                        </div>
+                        <div class="text-small">
+                            <ul class="list-inline">
+                                <li class="list-inline-item"><i class="icon-thumbs-up"></i> 21</li>
+                                <li class="list-inline-item"><i class="icon-share-alternative"></i> 4</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <!--end of card-->
+                <div class="card">
+                    <div class="card-header card-header-borderless d-flex justify-content-between">
+                        <small class="text-muted">
+                            <i class="icon-message mr-1"></i> Commented on <a href="#">Modd - Guron</a>
+                        </small>
+                        <small class="text-muted">5 days ago</small>
+                    </div>
+                    <div class="card-body">
+                        <p>
+                            Lovely review, couldn’t have said it better myself, though I’m about to. You see here’s the thing about that&hellip; <a href="#">Read more</a>
+                        </p>
+                    </div>
+                    <div class="card-footer d-flex justify-content-between">
+                        <div>
+                            <button class="btn btn-sm btn-outline-secondary">Comment</button>
+                            <button class="btn btn-sm btn-outline-primary">
+                                <i class="icon-thumbs-up"></i>
+                            </button>
+                        </div>
+                        <div class="text-small">
+                            <ul class="list-inline">
+                                <li class="list-inline-item"><i class="icon-thumbs-up"></i> 1</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <!--end of card-->
+                <div class="card">
+                    <div class="card-header card-header-borderless d-flex justify-content-between">
+                        <small class="text-muted">
+                            <i class="icon-add-user mr-1"></i> Joined the group <a href="#">Bench</a>
+                        </small>
+                        <small class="text-muted">5 days ago</small>
+                    </div>
+                    <div class="card-body">
+                        <div class="media">
+                            <a href="#" class="mr-4">
+                                <img alt="Image" src="~/assets/wingman/img/graphic-product-bench-thumb.jpg" class="avatar-square avatar avatar-lg" />
+                            </a>
+                            <div class="media-body">
+                                <div class="d-flex justify-content-between mb-3">
+                                    <div>
+                                        <a href="#" class="mb-1">
+                                            <h4>Bench</h4>
+                                        </a>
+                                        <span>A creative coworking space</span>
+                                    </div>
+                                </div>
+                                <a class="badge badge-secondary badge-pill mb-2" href="#">Brooklyn, NY</a>
+                                <div class="text-small">
+                                    <ul class="list-inline">
+                                        <li class="list-inline-item"><i class="icon-user"></i> 48</li>
+                                        <li class="list-inline-item"><i class="icon-calendar"></i> 9</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer d-flex justify-content-between">
+                        <div>
+                            <button class="btn btn-sm btn-outline-secondary">Comment</button>
+                            <button class="btn btn-sm btn-outline-primary">
+                                <i class="icon-thumbs-up"></i>
+                            </button>
+                        </div>
+                        <div class="text-small">
+                            <ul class="list-inline">
+                                <li class="list-inline-item"><i class="icon-thumbs-up"></i> 1</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <!--end of card-->
+                <div class="card">
+                    <div class="card-header card-header-borderless d-flex justify-content-between">
+                        <small class="text-muted"><i class="icon-share-alternative"></i> Shared <a href="#">Ben Dillon's</a> video</small>
+                        <small class="text-muted">A week ago</small>
+                    </div>
+                    <div class="card-body">
+                        <div class="media">
+                            <div class="video-cover rounded w-50">
+                                <img alt="Image" src="~/assets/wingman/img/photo-woman-sand.jpg" class="bg-image" />
+                                <div class="video-play-icon">
+                                    <i class="icon-controller-play"></i>
+                                </div>
+                                <div class="embed-responsive embed-responsive-16by9">
+                                    <iframe class="embed-responsive-item" data-src="https://www.youtube.com/embed/oYqvpjKJZkU?autoplay=1&amp;mute=1&amp;showinfo=0&amp;rel=0" allowfullscreen></iframe>
+                                </div>
+                            </div>
+                            <!--end of video cover-->
+                            <div class="media-body">
+                                <span class="h5 mb-2">Sportiv Brand Presentation</span>
+                                <span>Here’s a brief description or comment of the video that has been shared</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer d-flex justify-content-between">
+                        <div>
+                            <button class="btn btn-sm btn-outline-secondary">Comment</button>
+                            <button class="btn btn-sm btn-outline-primary">
+                                <i class="icon-thumbs-up"></i>
+                            </button>
+                        </div>
+                        <div class="text-small">
+                            <ul class="list-inline">
+                                <li class="list-inline-item"><i class="icon-thumbs-up"></i> 6</li>
+                                <li class="list-inline-item"><i class="icon-share-alternative"></i> 2</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <!--end of card-->
+
+                <div class="text-center mt-5">
+                    <button class="btn btn-outline-secondary">Tải thêm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

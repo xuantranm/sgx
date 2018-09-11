@@ -1,0 +1,2 @@
+﻿-- .net 3.5 support max mongo 1.11
+Install-Package mongocsharpdriver -Version 1.11.0

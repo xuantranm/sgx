@@ -1,0 +1,14 @@
+C:\Projects\Tribat\sourcecode\schedulecore\bin\Release\netcoreapp2.1\schedulecore.deps.json
+C:\Projects\Tribat\sourcecode\schedulecore\bin\Release\netcoreapp2.1\schedulecore.runtimeconfig.json
+C:\Projects\Tribat\sourcecode\schedulecore\bin\Release\netcoreapp2.1\schedulecore.runtimeconfig.dev.json
+C:\Projects\Tribat\sourcecode\schedulecore\bin\Release\netcoreapp2.1\schedulecore.dll
+C:\Projects\Tribat\sourcecode\schedulecore\bin\Release\netcoreapp2.1\schedulecore.pdb
+C:\Projects\Tribat\sourcecode\schedulecore\bin\Release\netcoreapp2.1\xcore.dll
+C:\Projects\Tribat\sourcecode\schedulecore\bin\Release\netcoreapp2.1\xcore.pdb
+C:\Projects\Tribat\sourcecode\schedulecore\obj\Release\netcoreapp2.1\schedulecore.csprojAssemblyReference.cache
+C:\Projects\Tribat\sourcecode\schedulecore\obj\Release\netcoreapp2.1\schedulecore.csproj.CoreCompileInputs.cache
+C:\Projects\Tribat\sourcecode\schedulecore\obj\Release\netcoreapp2.1\schedulecore.AssemblyInfoInputs.cache
+C:\Projects\Tribat\sourcecode\schedulecore\obj\Release\netcoreapp2.1\schedulecore.AssemblyInfo.cs
+C:\Projects\Tribat\sourcecode\schedulecore\obj\Release\netcoreapp2.1\schedulecore.csproj.CopyComplete
+C:\Projects\Tribat\sourcecode\schedulecore\obj\Release\netcoreapp2.1\schedulecore.dll
+C:\Projects\Tribat\sourcecode\schedulecore\obj\Release\netcoreapp2.1\schedulecore.pdb

@@ -1,0 +1,136 @@
+﻿@using Microsoft.AspNetCore.Http;
+@{
+    var cookieTheme = "dark";
+    if (!string.IsNullOrEmpty(Context.Request.Cookies["theme"]))
+    {
+        cookieTheme = Context.Request.Cookies["theme"];
+    }
+    ViewData["Theme"] = cookieTheme;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Tribat</title>
+    
+    <environment include="Development">
+        @*<link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />*@
+        @*<link rel="stylesheet" href="~/css/site.css" />*@
+    </environment>
+    <environment exclude="Development">
+        @*<link rel="stylesheet" href="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.7/css/bootstrap.min.css"
+              asp-fallback-href="~/lib/bootstrap/dist/css/bootstrap.min.css"
+              asp-fallback-test-class="sr-only" asp-fallback-test-property="position" asp-fallback-test-value="absolute" />
+        <link rel="stylesheet" href="~/css/site.min.css" asp-append-version="true" />*@
+    </environment>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,400italic" rel="stylesheet">
+    @if (ViewData["Theme"].ToString() == "light")
+    {
+        <link href="~/lib/dashboard/css/toolkit-light.css" rel="stylesheet">}
+    else
+    {
+        <link href="~/lib/dashboard/css/toolkit-inverse.css" rel="stylesheet">
+    }
+    <link href="~/lib/dashboard/css/docs.css" rel="stylesheet">
+    <link href="~/lib/dashboard/css/application.css" rel="stylesheet">
+    <style>
+        /* note: this is a hack for ios iframe for bootstrap themes shopify page */
+        /* this chunk of css is not part of the toolkit :) */
+        body {
+            width: 1px;
+            min-width: 100%;
+            *width: 100%;
+        }
+    </style>
+</head>
+<body class="asx">
+    <nav class="ci ma yw mh pw app-navbar">
+        <a class="lv" href="../index.html">
+            <span class="bv bch asy"></span>
+            Dashboard
+        </a>
+
+        <button class="ly bmq rk"
+                type="button"
+                data-toggle="collapse"
+                data-target="#navbarResponsive"
+                aria-controls="navbarResponsive"
+                aria-expanded="false"
+                aria-label="Toggle navigation">
+            <span class="lz"></span>
+        </button>
+
+        <div class="collapse lx" id="navbarResponsive">
+            <ul class="nav navbar-nav act">
+                <li class="lp">
+                    <a class="ln" href="../order-history/index.html">Order History</a>
+                </li>
+                <li class="lp">
+                    <a class="ln" href="../fluid/index.html">Fluid layout</a>
+                </li>
+                <li class="lp">
+                    <a class="ln" href="../icon-nav/index.html">Icon nav</a>
+                </li>
+                <li class="lp active">
+                    <a class="ln" href="../docs/index.html">Docs</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="bt" id="content">
+        <div class="bw">
+            <h1>Documentation</h1>
+            <p>Find out what's included in your Bootstrap theme and how to compile source files. Includes live examples and code snippets for every new component.</p>
+        </div>
+    </div>
+
+    <div class="bw docs-content">
+        @RenderBody()
+        </div>
+
+        <environment include="Development">
+            <script src="~/lib/jquery/dist/jquery.js"></script>
+            <script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>
+            <script src="~/lib/js-cookie/js-cookie.js"></script>
+            <script src="~/lib/dashboard/js/popper.min.js"></script>
+            <script src="~/lib/dashboard/js/chart.js"></script>
+            <script src="~/lib/dashboard/js/tablesorter.min.js"></script>
+            <script src="~/lib/dashboard/js/toolkit.js"></script>
+            <script src="~/lib/dashboard/js/application.js"></script>
+            <script src="~/lib/dashboard/js/active-menu.js"></script>
+            <script src="~/js/site.js" asp-append-version="true"></script>
+        </environment>
+        <environment exclude="Development">
+            <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-2.2.0.min.js"
+                    asp-fallback-src="~/lib/jquery/dist/jquery.min.js"
+                    asp-fallback-test="window.jQuery"
+                    crossorigin="anonymous"
+                    integrity="sha384-K+ctZQ+LL8q6tP7I94W+qzQsfRV2a+AfHIi9k8z8l9ggpc8X+Ytst4yBo/hH+8Fk">
+            </script>
+            <script src="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.7/bootstrap.min.js"
+                    asp-fallback-src="~/lib/bootstrap/dist/js/bootstrap.min.js"
+                    asp-fallback-test="window.jQuery && window.jQuery.fn && window.jQuery.fn.modal"
+                    crossorigin="anonymous"
+                    integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa">
+            </script>
+            <script src="~/lib/js-cookie/js-cookie.js"></script>
+            <script src="~/lib/dashboard/js/popper.min.js"></script>
+            <script src="~/lib/dashboard/js/chart.js"></script>
+            <script src="~/lib/dashboard/js/tablesorter.min.js"></script>
+            <script src="~/lib/dashboard/js/toolkit.js"></script>
+            <script src="~/lib/dashboard/js/application.js"></script>
+            <script src="~/lib/dashboard/js/active-menu.js"></script>
+            <script src="~/js/site.min.js" asp-append-version="true"></script>
+        </environment>
+
+        <script>
+            // execute/clear BS loaders for docs
+            $(function () { while (window.BS && window.BS.loader && window.BS.loader.length) { (window.BS.loader.pop())() } })
+        </script>
+
+        @RenderSection("Scripts", required: false)
+</body>
+</html>

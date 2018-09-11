@@ -1,0 +1,90 @@
+﻿@using System.Collections.Generic
+@using System.Linq
+@using Microsoft.AspNetCore.Http
+@using Microsoft.AspNetCore.Http.Authentication
+@using Common.Utilities;
+@model LoginViewModel
+
+@{
+    Layout = "~/Views/Shared/_LayoutSocial.cshtml";
+}
+
+<div class="nav-container">
+</div>
+<div class="main-container">
+    <section class="space-sm">
+        <div class="container align-self-start">
+            <div class="row mb-2">
+                <div class="col text-center">
+                    <a href="/">
+                        <img alt="SaiGonXanh" src="~/images/saigonxanh.png" />
+                    </a>
+                </div>
+                <!--end of col-->
+            </div>
+            <!--end of row-->
+            <div class="row justify-content-center">
+                <div class="col-12 col-md-8 col-lg-7">
+                    <div class="card card-lg text-center">
+                        <div class="card-body">
+                            <div class="mb-5">
+                                <h1 class="h2 mb-2">Xin chào!</h1>
+                                <span>Đăng nhập tài khoản để tiếp tục</span>
+                            </div>
+                            <div class="row no-gutters justify-content-center">
+                                <form class="text-left col-lg-8 data-form" asp-action="Login" asp-route-returnurl="@ViewData["ReturnUrl"]" method="post">
+                                    <div class="form-group">
+                                        <label asp-for="UserName"></label>
+                                        <input asp-for="UserName" class="form-control form-control-lg" />
+                                    </div>
+                                    <div class="form-group">
+                                        <label asp-for="Password"></label>
+                                        <input asp-for="Password" class="form-control form-control-lg" />
+                                        <small>
+                                            <a asp-action="ForgotPassword">Quên mật khẩu?</a>
+                                        </small>
+                                    </div>
+                                    <div>
+                                        <div class="custom-control custom-checkbox align-items-center">
+                                            <input type="checkbox" class="custom-control-input" value="true" name="RememberMe" checked id="check-remember">
+                                            <label class="custom-control-label text-small" for="check-remember">Nhớ tài khoản</label>
+                                        </div>
+                                    </div>
+                                    <div class="text-center mt-3">
+                                        <input type="submit" class="btn btn-lg btn-primary" value="Đăng nhập" />
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-12">
+                                            @Html.ValidationSummary(true)
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <span class="text-small d-none">
+                            <a asp-action="Register" asp-route-returnurl="@ViewData["ReturnUrl"]">Đăng ký tài khoản mới?</a>
+                        </span>
+                        <span class="text-small">
+                            <a href="/tk/quen-mat-khau/" alt="Quên mật khẩu">Quên mật khẩu?</a>
+                        </span>
+                    </div>
+                    <div class="text-center">
+                        <span class="text-small">
+                            <a href="/@Constants.LinkDocument.Main/@Constants.LinkDocument.GettingStarted" alt="Hướng dẫn sử dụng" target="_blank">Hướng dẫn sử dụng</a>
+                        </span>
+                    </div>
+                </div>
+                <!--end of col-->
+            </div>
+            <!--end of row-->
+        </div>
+        <!--end of container-->
+    </section>
+    <!--end of section-->
+</div>
+
+@section scripts {
+    <script type="text/javascript" src="~/js/login.js?@DateTime.Now.Ticks"></script>
+}

@@ -1,0 +1,115 @@
+﻿@using System.Globalization;
+@using Common.Utilities;
+@using ViewModels
+@model TimeKeeperViewModel
+
+@{
+    Layout = "~/Views/Shared/_LayoutData.cshtml";
+}
+
+<form method="get" action="/@Constants.LinkFactory.Main/@Constants.LinkFactory.TonSx">
+    <div class="row mb-3">
+        <div class="col-md-4 col-sm-6 col-12">
+            <div class="form-group">
+                <label class="control-label">Tên</label>
+                <input asp-for="employee" class="form-control form-control-lg autocomplete" />
+            </div>
+        </div>
+        <div class="col-md-4 col-sm-6 col-12">
+            <div class="form-group">
+                <label class="control-label">Mã nhân viên</label>
+                <input asp-for="code" class="form-control form-control-lg aaa" data-type="code" />
+            </div>
+        </div>
+        <div class="col-md-4 col-sm-6 col-12">
+            <div class="form-group">
+                <label class="control-label">Mã chấm công</label>
+                <input asp-for="finger" class="form-control form-control-lg aaa" data-type="code" />
+            </div>
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col-md-2">
+            <label class="control-label">Nơi làm việc</label>
+            <select asp-for="nl" class="form-control">
+                <option value="">Tất cả</option>
+                <option value="VP">Văn phòng (Phú Nhuận)</option>
+                <option value="NM">Nhà máy (Đa Phước)</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="control-label">Dòng</label>
+            <select asp-for="times" class="form-control">
+                <option value="50">50</option>
+                <option value="100">100</option>
+                <option value="500">500</option>
+                <option value="1000">1000</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="control-label"><small>Bấm nút hoặc Enter</small></label>
+            <button class="btn btn-primary btn-lg btn-block btn-search" type="submit"><i class="icon-magnifying-glass"></i> Tìm kiếm</button>
+        </div>
+    </div>
+</form>
+
+<div class="table-responsive">
+    <table class="table table-sm table-bordered table-striped table-hover">
+        <thead>
+            <tr>
+                <th></th>
+                <th>
+                    Tháng
+                </th>
+                <th>
+                    Ngày
+                </th>
+                <th>
+                    Tên NVL/BTP/TP
+                </th>
+                <th>
+                    ĐVT
+                </th>
+                <th>
+                    LOT
+                </th>
+                <th>
+                    Tồn đầu ngày
+                </th>
+                <th>
+                    Nhập từ sản xuất
+                </th>
+                <th>
+                    Nhập từ kho
+                </th>
+                <th>
+                    Xuất cho kho
+                </th>
+                <th>
+                    Xuất cho sản xuất
+                </th>
+                <th>
+                    Xuất hao hụt
+                </th>
+                <th>
+                    Tồn cuối ngày
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.EmployeeWorkTimeLogs)
+            {
+            }
+        </tbody>
+    </table>
+</div>
+
+
+@section scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+        <script type="text/javascript" src="~/js/timekeeper.js?@DateTime.Now.Ticks"></script>
+    }
+}
+
+

@@ -1,0 +1,283 @@
+﻿@model ViewModels.RoleUserDataViewModel
+
+@{
+    Layout = "~/Views/Shared/_LayoutSocialFb.cshtml";
+}
+
+<div class="main-container">
+    <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="/">Trang chủ</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="/r-u/phan-quyen">Phân quyền</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">Tạo quyền cho người dùng</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="bg-white space-sm pb-4">
+        <div class="container">
+            <div class="row justify-content-between align-items-center">
+                <div class="col-auto">
+                    <h1 class="h2">Tạo quyền cho người dùng</h1>
+                </div>
+            </div>
+            <!--end of row-->
+        </div>
+        <!--end of container-->
+    </section>
+
+    <!-- CREATE FORM -->
+    <section class="flush-with-above height-80 d-block">
+        <form class="data-form" asp-action="Create" enctype="multipart/form-data">
+            <div class="container">
+                <div class="row">
+                    <div class="col-6">
+                        <div class="form-group">
+                            <i class="icon icon-select-arrows"></i>
+                            <label class="control-label">Bộ phận</label>
+                            <select id="part" class="form-control form-control-lg">
+                                <option value="">Tất cả</option>
+                                @{
+                                    foreach (var item in ViewBag.Parts)
+                                    {
+                                        <option value="@item.Name">@item.Name</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-group">
+                            <i class="icon icon-select-arrows"></i>
+                            <label class="control-label">Phòng/ban</label>
+                            <select id="department" class="form-control form-control-lg">
+                                <option value="">Tất cả</option>
+                                @{
+                                    foreach (var item in ViewBag.Departments)
+                                    {
+                                        <option value="@item.Name">@item.Name</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="form-group">
+                            <i class="icon icon-select-arrows"></i>
+                            <label class="control-label">Công việc</label>
+                            <select id="title" class="form-control form-control-lg">
+                                <option value="">Tất cả</option>
+                                @{
+                                    foreach (var item in ViewBag.Titles)
+                                    {
+                                        <option value="@item.Name">@item.Name</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <!-- List User -->
+                    <div class="col-12">
+                        <div class="form-group">
+                            <i class="icon icon-user"></i>
+                            <label class="control-label">Người dùng</label>
+                            <select asp-for="RoleUser.User" id="user" class="form-control form-control-lg">
+                                <option value="" selected>Tất cả</option>
+                                @{
+                                    foreach (var item in Model.Employees)
+                                    {
+                                        <option value="@item.Id">@item.FullName</option>
+                                    }
+                                }
+                            </select>
+                            <input type="hidden" asp-for="RoleUser.FullName"/>
+
+                            <script id="employeesTmpl" type="text/x-jsrender">
+                                <select name="RoleUser.User" id="user" class="form-control form-control-lg">
+                                    <option value="{{:id}}">{{:fullName}}</option>
+                                </select>
+                            </script>
+                        </div>
+                    </div>
+                    <!-- List Right -->
+                    <div class="col-12 nodeRoleUser node">
+                        <div class="row bd-example">
+                            <div class="col-6">
+                                <div class="form-group">
+                                    <i class="icon icon-right"></i>
+                                    <label class="control-label">Quyền</label>
+                                    <select asp-for="RoleUsers[0].Role" class="form-control form-control-lg select-role">
+                                        @{
+                                            foreach (var item in Model.Roles)
+                                            {
+                                                <option value="@item.Alias">@item.Object</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-group">
+                                    <i class="icon icon-right"></i>
+                                    <label class="control-label">Phạm vi</label>
+                                    <select asp-for="RoleUsers[0].Action" class="form-control form-control-lg">
+                                        <option value="0">Không</option>
+                                        <option value="1">Đọc</option>
+                                        <option value="2">Thêm mới</option>
+                                        <option value="3">Chỉnh sửa</option>
+                                        <option value="4">Ẩn</option>
+                                        <option value="5">Xóa</option>
+                                        <option value="6">Lịch sử</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="col-6">
+                                <div class="form-group">
+                                    <i class="icon icon-right"></i>
+                                    <label class="control-label">Bắt đầu</label>
+                                    <input class="form-control form-control-lg datepicker datepicker-lg" value="@DateTime.Now.ToString("dd/MM/yyyy")" />
+                                    <input type="hidden" asp-for="RoleUsers[0].Start" class="hidedatepicker" />
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-group">
+                                    <i class="icon icon-right"></i>
+                                    <label class="control-label">Kết thúc</label>
+                                    <input class="form-control form-control-lg datepicker datepicker-lg" />
+                                    <input type="hidden" asp-for="RoleUsers[0].Expired" class="hidedatepicker" />
+                                </div>
+                            </div>
+                            <input type="hidden" class="codeRoleUser" value="0" />
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="form-group">
+                            <button class="btn btn-secondary btn-sm addRoleUser" type="button"><i class="icon icon-add-to-list"></i> Thêm quyền</button>
+                        </div>
+                    </div>
+
+                    <script id="tmplRoleUser" type="text/x-jsrender">
+                        <div class="col-12 nodeRoleUser node">
+                            <div class="row bd-example">
+                                <div class="col-6">
+                                    <div class="form-group">
+                                        <i class="icon icon-right"></i>
+                                        <label class="control-label">Quyền</label>
+                                        <select name="RoleUsers[{{:code}}].Role" class="form-control form-control-lg select-role">
+                                            @{
+                                                foreach (var item in Model.Roles)
+                                                {
+                                                    <option value="@item.Alias">@item.Object</option>
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="form-group">
+                                        <i class="icon icon-right"></i>
+                                        <label class="control-label">Phạm vi</label>
+                                        <select name="RoleUsers[{{:code}}].Action" class="form-control form-control-lg">
+                                            <option value="0">Không</option>
+                                            <option value="1">Đọc</option>
+                                            <option value="2">Thêm mới</option>
+                                            <option value="3">Chỉnh sửa</option>
+                                            <option value="4">Ẩn</option>
+                                            <option value="5">Xóa</option>
+                                            <option value="6">Lịch sử</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-6">
+                                    <div class="form-group">
+                                        <i class="icon icon-right"></i>
+                                        <label class="control-label">Bắt đầu</label>
+                                        <input class="form-control form-control-lg datepicker datepicker-lg" value="@DateTime.Now.ToString("dd/MM/yyyy")" />
+                                        <input type="hidden" name="RoleUsers[{{:code}}].Start" class="hidedatepicker" />
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="form-group">
+                                        <i class="icon icon-right"></i>
+                                        <label class="control-label">Kết thúc</label>
+                                        <input class="form-control form-control-lg datepicker datepicker-lg" />
+                                        <input type="hidden" name="RoleUsers[{{:code}}].Expired" class="hidedatepicker" />
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <button type="button" class="btn btn-danger btn-sm remove-item"><i class="note-icon-col-remove"></i>Xóa</button>
+                                </div>
+                            </div>
+                            <input type="hidden" class="codeRoleUser" value="{{:code}}" />
+                        </div>
+                    </script>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-12 col-md-8">
+                    <div class="form-group">
+                        <button class="btn btn-success btn-lg btn-block btn-submit" type="submit"><i class="icon icon-save"></i> Lưu</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </section>
+    <!-- END CREATE FORM -->
+</div>
+
+<div>
+    <a href="/r-u/phan-quyen/"><i class="icon icon-back"></i>Trở về</a>
+</div>
+
+<div class="modal fade" id="resultModal" tabindex="-1" role="dialog" aria-labelledby="resultModal" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content" id="modalnotice">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-footer">
+                <a href="/r-u/phan-quyen/xem-quyen/" class="btn btn-danger">Thêm thông tin</a>
+                <a href="/r-u/phan-quyen/tao-moi/" class="btn btn-primary">Thêm mới</a>
+                <a href="/r-u/phan-quyen/" class="btn btn-info">Danh sách</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script id="tmplModalNotice" type="text/x-jsrender">
+    <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">{{:message}}</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="modal-footer">
+        <a href="/r-u/item/{{:id}}" class="btn btn-danger">Xem thông tin</a>
+        <a href="/r-u/phan-quyen/tao-moi/" class="btn btn-primary">Thêm mới</a>
+        <a href="/r-u/phan-quyen/" class="btn btn-info">Danh sách</a>
+    </div>
+</script>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script src="~/js/role-user-data.js"></script>
+}

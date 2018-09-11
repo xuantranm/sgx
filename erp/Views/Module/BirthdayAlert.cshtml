@@ -1,0 +1,332 @@
+﻿@model IEnumerable<Models.Employee>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Id)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.UserName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Password)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Code)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.CodeOld)
+            </th>
+            @*<th>
+                @Html.DisplayNameFor(model => model.CodeFingerprint)
+            </th>*@
+            <th>
+                @Html.DisplayNameFor(model => model.FullName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FirstName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.LastName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Birthday)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Bornplace)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Gender)
+            </th>
+            @*<th>
+                @Html.DisplayNameFor(model => model.Workplace)
+            </th>*@
+            <th>
+                @Html.DisplayNameFor(model => model.Joinday)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Contractday)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Leaveday)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.AddressResident)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.AddressTemporary)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Part)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Department)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Tel)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Email)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ConfirmEmail)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.LeaveDayAvailable)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Title)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Function)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Status)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.IsOnline)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.IdentityCard)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.IdentityCardDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.IdentityCardPlace)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.StatusMarital)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Nation)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Religion)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.BhxhEnable)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.BhxhStart)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.BhxhYear)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.BhxhBookNo)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.BhxhCode)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.BhxhStatus)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.BhxhHospital)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Intro)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Language)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Enable)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.CreatedOn)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.UpdatedOn)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.CheckedOn)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ApprovedOn)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.CreatedBy)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.UpdatedBy)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.CheckedBy)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ApprovedBy)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Id)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.UserName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Password)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Code)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CodeOld)
+            </td>
+            @*<td>
+                @Html.DisplayFor(modelItem => item.CodeFingerprint)
+            </td>*@
+            <td>
+                @Html.DisplayFor(modelItem => item.FullName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FirstName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.LastName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Birthday)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Bornplace)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Gender)
+            </td>
+            @*<td>
+                @Html.DisplayFor(modelItem => item.Workplace)
+            </td>*@
+            <td>
+                @Html.DisplayFor(modelItem => item.Joinday)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Contractday)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Leaveday)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.AddressResident)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.AddressTemporary)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Part)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Department)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Tel)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Email)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ConfirmEmail)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.LeaveDayAvailable)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Title)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Function)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Status)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IsOnline)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IdentityCard)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IdentityCardDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IdentityCardPlace)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.StatusMarital)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Nation)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Religion)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.BhxhEnable)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.BhxhStart)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.BhxhYear)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.BhxhBookNo)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.BhxhCode)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.BhxhStatus)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.BhxhHospital)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Intro)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Language)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Enable)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CreatedOn)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.UpdatedOn)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CheckedOn)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ApprovedOn)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CreatedBy)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.UpdatedBy)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CheckedBy)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ApprovedBy)
+            </td>
+            <td>
+                @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
+                @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
+                @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

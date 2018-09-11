@@ -1,0 +1,94 @@
+﻿@model IEnumerable<Models.Employee>
+
+@{
+    ViewData["Title"] = "ChildrenReport";
+    Layout = "~/Views/Shared/_LayoutData.cshtml";
+}
+
+<div class="row">
+    <div class="col-md-8" style="padding-top:10px;">
+        <button asp-page-handler="ExportChildrenReport">Export</button>
+    </div>
+</div>
+
+<p>Tổng số <span class="badge badge-info">@Model.Count()</span></p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                STT
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FullName)
+            </th>
+            <th>
+                Chức vụ
+            </th>
+            <th>
+                Điện thoại
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Email)
+            </th>
+            <th>Con</th>
+            <th>Số</th>
+        </tr>
+    </thead>
+    <tbody>
+        @{
+            int No = 1;
+            foreach (var item in Model)
+            {
+                <tr>
+                    <td>@No</td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.FullName)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Title)
+                    </td>
+                    <td>
+                        @{
+                            if (item.Mobiles != null && item.Mobiles.Count > 0)
+                            {
+                                foreach (var mobile in item.Mobiles)
+                                {
+                                    if (!string.IsNullOrEmpty(mobile.Number))
+                                    {
+                                        <p><a href="tel:@mobile.Number">@mobile.Number</a></p>
+                                    }
+                                }
+                            }
+                        }
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Email)
+                    </td>
+                    <td>
+                        @{
+                            int numChild = 0;
+                            foreach (var children in item.EmployeeFamilys)
+                            {
+                                if (children.Relation == 3)
+                                {
+                                    var birthday = string.Empty;
+                                    if (children.Birthday.HasValue)
+                                    {
+                                        birthday = " - " + children.Birthday.Value.ToString("dd/MM/yyyy");
+                                    }
+                                    <p>@children.FullName @birthday</p>
+                                    ++numChild;
+                                }
+                            }
+                        }
+                    </td>
+                    <td>
+                        @numChild
+                    </td>
+                </tr>
+                ++No;
+            }
+        }
+
+    </tbody>
+</table>

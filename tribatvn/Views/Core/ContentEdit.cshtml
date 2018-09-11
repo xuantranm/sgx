@@ -1,0 +1,270 @@
+﻿@using Common.Utilities;
+@using ViewModels;
+@model ContentDataViewModel;
+
+@{
+    ViewData["Title"] = "Update content";
+    Layout = "~/Views/Shared/_Core.cshtml";
+    var googleApi1 = ViewBag.GoogleApi1;
+    var googleApi2 = ViewBag.GoogleApi2;
+}
+<style>
+    .thumb {
+        height: 75px;
+        border: 1px solid #000;
+        margin: 10px 5px 0 0;
+    }
+</style>
+
+<link href="~/lib/summernote-0.8.9-dist/dist/summernote.css" rel="stylesheet" />
+<script src="~/lib/summernote-0.8.9-dist/dist/summernote.js"></script>
+
+<div class="main-container">
+    <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="/core">Home</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="/core/content">Content</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">Update</li>
+                    </ol>
+                </div>
+                <!--end of col-->
+            </div>
+            <!--end of row-->
+        </div>
+        <!--end of container-->
+    </nav>
+    <section>
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col">
+                    <h1 class="h2 mb-2">@ViewData["Title"]</h1>
+                    <span>Description....</span>
+                </div>
+                <!--end of col-->
+            </div>
+            <!--end of row-->
+        </div>
+        <!--end of container-->
+    </section>
+    <!--end of section-->
+    <section class="flush-with-above">
+        <div class="container">
+            <form asp-action="ContentEdit" enctype="multipart/form-data">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <input asp-for="Entities[0].Id" class="d-none" />
+                <input asp-for="Entities[0].Code" class="form-control d-none" />
+                <input asp-for="Entities[0].Language" class="form-control display-none" value="@Constants.Languages.Vietnamese" />
+                <div class="form-group">
+                    <label asp-for="Entities[0].Title" class="control-label"></label>
+                    <input asp-for="Entities[0].Title" class="form-control" />
+                    <span asp-validation-for="Entities[0].Title" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Entities[0].Description" class="control-label"></label>
+                    <textarea asp-for="Entities[0].Description" class="form-control js-auto-size vi-input" data-element="description"></textarea>
+                    <span asp-validation-for="Entities[0].Description" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Entities[0].Body" class="control-label"></label>
+                    <textarea asp-for="Entities[0].Body" class="content-text vi-input" data-element="content"></textarea>
+                    <span asp-validation-for="Entities[0].Body" class="text-danger"></span>
+                </div>
+
+                <div class="images form-group">
+                    <input type="file" id="files" name="files[]" multiple />
+                    <output id="list"></output>
+                    <div class="imagesList">
+                        @{
+                            if (Model.Entities[0].Images != null && Model.Entities[0].Images.Count > 0)
+                            {
+                                foreach (var image in Model.Entities[0].Images)
+                                {
+                                    <img class="thumb" src="~/@image.Path@image.FileName" title="@image.Title" data-action="zoom" />
+                                }
+                            }
+                        }
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header bg-secondary d-flex justify-content-between">
+                        <button class="btn btn-secondary" type="button" data-target="#seo-area" data-toggle="collapse" aria-expanded="false" aria-controls="comment-reply">Make SEO</button>
+                    </div>
+                    <div class="collapse" id="seo-area">
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label asp-for="Entities[0].KeyWords" class="control-label"></label>
+                                <input asp-for="Entities[0].KeyWords" class="form-control" />
+                                <span asp-validation-for="Entities[0].KeyWords" class="text-danger"></span>
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="Entities[0].MetaOwner" class="control-label"></label>
+                                <input asp-for="Entities[0].MetaOwner" class="form-control" />
+                                <span asp-validation-for="Entities[0].MetaOwner" class="text-danger"></span>
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="Entities[0].Canonical" class="control-label"></label>
+                                <input asp-for="Entities[0].Canonical" class="form-control" />
+                                <span asp-validation-for="Entities[0].Canonical" class="text-danger"></span>
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="Entities[0].OgUrl" class="control-label"></label>
+                                <input asp-for="Entities[0].OgUrl" class="form-control" />
+                                <span asp-validation-for="Entities[0].OgUrl" class="text-danger"></span>
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="Entities[0].OgTitle" class="control-label"></label>
+                                <input asp-for="Entities[0].OgTitle" class="form-control" />
+                                <span asp-validation-for="Entities[0].OgTitle" class="text-danger"></span>
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="Entities[0].OgDescription" class="control-label"></label>
+                                <input asp-for="Entities[0].OgDescription" class="form-control" />
+                                <span asp-validation-for="Entities[0].OgDescription" class="text-danger"></span>
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="Entities[0].SeoFooter" class="control-label"></label>
+                                <input asp-for="Entities[0].SeoFooter" class="form-control" />
+                                <span asp-validation-for="Entities[0].SeoFooter" class="text-danger"></span>
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="Entities[0].RelationshipCategory" class="control-label"></label>
+                                <input asp-for="Entities[0].RelationshipCategory" class="form-control" />
+                                <span asp-validation-for="Entities[0].RelationshipCategory" class="text-danger"></span>
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="Entities[0].RelationshipItem" class="control-label"></label>
+                                <input asp-for="Entities[0].RelationshipItem" class="form-control" />
+                                <span asp-validation-for="Entities[0].RelationshipItem" class="text-danger"></span>
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="Entities[0].Language" class="control-label"></label>
+                                <input asp-for="Entities[0].Language" class="form-control" />
+                                <span asp-validation-for="Entities[0].Language" class="text-danger"></span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <a href="#seo-area" class="text-small text-muted" data-toggle="collapse" aria-expanded="true" aria-controls="comment-reply">Cancel</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header bg-secondary d-flex justify-content-between">
+                        <button class="btn btn-secondary" type="button" data-target="#language-area" data-toggle="collapse" aria-expanded="false" aria-controls="comment-reply">Languages</button>
+                    </div>
+                    <div class="collapse" id="language-area">
+                        <div class="card-body">
+                            @{ var i = 1;
+                                foreach (var language in ViewBag.Languages)
+                                {
+                                    <div class="@language.Name">
+                                        <input asp-for="Entities[i].Id" class="d-none" />
+                                        <input asp-for="Entities[i].Language" class="form-control display-none" value="@language.Name" />
+                                        <h1><span class="badge badge-primary">@language.Name</span></h1>
+                                        <div class="form-group">
+                                            <label asp-for="Entities[i].Title" class="control-label"></label>
+                                            <input asp-for="Entities[i].Title" class="form-control @language.Code-name" />
+                                            <span asp-validation-for="Entities[i].Title" class="text-danger"></span>
+                                        </div>
+                                        <div class="form-group">
+                                            <label asp-for="Entities[i].Description" class="control-label"></label>
+                                            <textarea asp-for="Entities[i].Description" rows="2" class="form-control js-auto-size @language.Code-description"></textarea>
+                                            <span asp-validation-for="Entities[i].Description" class="text-danger"></span>
+                                        </div>
+                                        <div class="form-group">
+                                            <label asp-for="Entities[i].Body" class="control-label"></label>
+                                            <textarea asp-for="Entities[i].Body" class="content-text @language.Code-content"></textarea>
+                                            <span asp-validation-for="Entities[i].Body" class="text-danger"></span>
+                                        </div>
+                                        <div class="card">
+                                            <div class="card-header bg-secondary d-flex justify-content-between">
+                                                <button class="btn btn-secondary" type="button" data-target="#seo-area-@i" data-toggle="collapse" aria-expanded="false" aria-controls="comment-reply">Make SEO</button>
+                                            </div>
+                                            <div class="collapse" id="seo-area-@i">
+                                                <div class="card-body">
+                                                    <div class="form-group">
+                                                        <label asp-for="Entities[i].KeyWords" class="control-label"></label>
+                                                        <input asp-for="Entities[i].KeyWords" class="form-control" />
+                                                        <span asp-validation-for="Entities[i].KeyWords" class="text-danger"></span>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label asp-for="Entities[i].MetaOwner" class="control-label"></label>
+                                                        <input asp-for="Entities[i].MetaOwner" class="form-control" />
+                                                        <span asp-validation-for="Entities[i].MetaOwner" class="text-danger"></span>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label asp-for="Entities[i].Canonical" class="control-label"></label>
+                                                        <input asp-for="Entities[i].Canonical" class="form-control" />
+                                                        <span asp-validation-for="Entities[i].Canonical" class="text-danger"></span>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label asp-for="Entities[i].OgUrl" class="control-label"></label>
+                                                        <input asp-for="Entities[i].OgUrl" class="form-control" />
+                                                        <span asp-validation-for="Entities[i].OgUrl" class="text-danger"></span>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label asp-for="Entities[i].OgTitle" class="control-label"></label>
+                                                        <input asp-for="Entities[i].OgTitle" class="form-control" />
+                                                        <span asp-validation-for="Entities[i].OgTitle" class="text-danger"></span>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label asp-for="Entities[i].OgDescription" class="control-label"></label>
+                                                        <input asp-for="Entities[i].OgDescription" class="form-control" />
+                                                        <span asp-validation-for="Entities[i].OgDescription" class="text-danger"></span>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label asp-for="Entities[i].SeoFooter" class="control-label"></label>
+                                                        <input asp-for="Entities[i].SeoFooter" class="form-control" />
+                                                        <span asp-validation-for="Entities[i].SeoFooter" class="text-danger"></span>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label asp-for="Entities[i].RelationshipCategory" class="control-label"></label>
+                                                        <input asp-for="Entities[i].RelationshipCategory" class="form-control" />
+                                                        <span asp-validation-for="Entities[i].RelationshipCategory" class="text-danger"></span>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label asp-for="Entities[i].RelationshipItem" class="control-label"></label>
+                                                        <input asp-for="Entities[i].RelationshipItem" class="form-control" />
+                                                        <span asp-validation-for="Entities[i].RelationshipItem" class="text-danger"></span>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label asp-for="Entities[i].Language" class="control-label"></label>
+                                                        <input asp-for="Entities[i].Language" class="form-control" />
+                                                        <span asp-validation-for="Entities[i].Language" class="text-danger"></span>
+                                                    </div>
+                                                    <div class="d-flex align-items-center">
+                                                        <a href="#seo-area-@i" class="text-small text-muted" data-toggle="collapse" aria-expanded="true" aria-controls="comment-reply">Cancel</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            <div class="d-flex align-items-center">
+                                <a href="#language-area" class="text-small text-muted" data-toggle="collapse" aria-expanded="true" aria-controls="comment-reply">Cancel</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <input type="submit" value="Update" class="btn btn-success mr-3" />
+                </div>
+            </form>
+
+            <div>
+                <a asp-action="Content">Back to List</a>
+            </div>
+        </div>
+    </section>
+</div>
+<script src="~/js/content-edit.js"></script>

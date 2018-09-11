@@ -1,0 +1,218 @@
+﻿@using Helpers;
+@{
+    var language = ViewData["Language"].ToString();
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+
+    <link href="~/lib/jquery-ui/jquery-ui.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+    <environment include="Development">
+    </environment>
+    <environment exclude="Development">
+    </environment>
+    @*<link rel="stylesheet" href="~/lib/font-awesome/css/font-awesome.min.css">*@
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,400italic" rel="stylesheet">
+    @if (ViewData["Theme"].ToString() == "light")
+    {
+        <link href="~/lib/dashboard/css/toolkit-light.css" rel="stylesheet">}
+    else
+    {
+        <link href="~/lib/dashboard/css/toolkit-inverse.css" rel="stylesheet">
+    }
+    <link href="~/lib/dashboard/css/application.css" rel="stylesheet">
+    <style>
+        /* note: this is a hack for ios iframe for bootstrap themes shopify page */
+        /* this chunk of css is not part of the toolkit :) */
+        body {
+            width: 1px;
+            min-width: 100%;
+            *width: 100%;
+        }
+    </style>
+    <link href="~/css/site.css" rel="stylesheet">
+    <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-2.2.0.min.js"
+            asp-fallback-src="~/lib/jquery/dist/jquery.min.js"
+            asp-fallback-test="window.jQuery"
+            crossorigin="anonymous"
+            integrity="sha384-K+ctZQ+LL8q6tP7I94W+qzQsfRV2a+AfHIi9k8z8l9ggpc8X+Ytst4yBo/hH+8Fk">
+    </script>
+    <script src="~/lib/jquery.unobtrusive-ajax.min.js"></script>
+    <script src="~/lib/jquery-ui/jquery-ui.js"></script>
+    @*<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>*@
+</head>
+<body>
+    <input type="hidden" id="hidRole" value="" />
+    <div id="wait" style="display:none;width:69px;height:89px;border:0;position:absolute;top:50%;left:50%;padding:2px;"><img src='~/images/demo_wait.gif' width="64" height="64" /><br>Loading..</div>
+    <div class="bw">
+        <div class="dh">
+            <div class="en ble">
+                <nav class="bll">
+                    <div class="blf">
+                        <button class="bkb bkd blg" type="button" data-toggle="collapse" data-target="#nav-toggleable-md">
+                            <span class="yz">Toggle nav</span>
+                        </button>
+                        <a class="blh bmh" href="/">
+                            <span class="bv bch bli"></span>
+                        </a>
+                    </div>
+
+                    <div class="collapse bki" id="nav-toggleable-md">
+                        @*<form class="blj">
+                                <input class="form-control" type="text" placeholder="Search...">
+                                <button type="submit" class="ku">
+                                    <span class="bv bdb"></span>
+                                </button>
+                            </form>*@
+                        <ul class="nav lq nav-stacked st">
+                            <li class="asv">Bảng điều khiển</li>
+                            <li class="lp">
+                                <a class="ln active" asp-area="" asp-controller="Home" asp-action="Index">Tổng quan</a>
+                            </li>
+                            <li class="asv">Sys</li>
+                            <li class="lp"><a class="ln " href="/trang-chu-mau-1">Web layout 1</a></li>
+                            <li class="lp"><a class="ln " href="/trang-chu-mau-2">Web layout 2</a></li>
+                            <li class="lp"><a class="ln " href="/trang-chu-mau-3">Web layout 3</a></li>
+
+                            <li class="lp"><a class="ln " href="/tai-lieu/">Tài liệu</a></li>
+                            <li class="asv">HCNS</li>
+                            <li class="lp"><a class="ln " href="/nhan-su/">Nhân Sự</a></li>
+                            <li class="lp"><a class="ln " href="/cong/">Chấm Công</a></li>
+                            <li class="lp"><a class="ln " href="/nghi-phep/">Nghĩ Phép</a></li>
+                            <li class="lp"><a class="ln " href="/luong/">Bảng Lương</a></li>
+                            <li class="lp"><a class="ln " href="/tuyen-dung/">Tuyển Dụng</a></li>
+                            <li class="lp"><a class="ln " href="/dao-tao/">Đào Tạo</a></li>
+                            <li class="lp"><a class="ln " href="/thong-ke-hcns/">Thống Kê HCNS</a></li>
+
+                            <li class="asv">Nhà máy</li>
+                            <li class="lp"><a class="ln " href="/nha-may/">Quản lý hàng</a></li>
+                            <li class="lp"><a class="ln " href="/yeu-cau/">Yêu Cầu Hàng</a></li>
+                            <li class="lp"><a class="ln " href="/nhap-hang/">Nhập Hàng</a></li>
+                            <li class="lp"><a class="ln " href="/xuat-hang/">Xuất Hàng</a></li>
+
+                            <li class="asv">Kho</li>
+                            <li class="lp"><a class="ln " href="/kho-hang/">Quản Lý Hàng</a></li>
+                            <li class="lp"><a class="ln " href="/yeu-cau/">Yêu Cầu Hàng</a></li>
+                            <li class="lp"><a class="ln " href="/nhap-hang/">Nhập Hàng</a></li>
+                            <li class="lp"><a class="ln " href="/xuat-hang/">Xuất Hàng</a></li>
+
+                            <li class="asv">Logistics</li>
+                            <li class="lp"><a class="ln " href="/xe/">Xe</a></li>
+                            <li class="lp"><a class="ln " href="/xe/">Xếp Xe</a></li>
+                            <li class="lp"><a class="ln " href="/thong-ke/">Thống Kê</a></li>
+
+                            <li class="asv">Kinh doanh</li>
+                            <li class="lp"><a class="ln " href="/don-hang/">Đơn Hàng</a></li>
+                            <li class="lp"><a class="ln " href="/khach-hang/">Khách Hàng</a></li>
+                            <li class="lp"><a class="ln " href="/thong-ke/">Thống Kê</a></li>
+
+                            <li class="asv">Vật tư</li>
+                            <li class="lp"><a class="ln " href="/dat-hang/">Đặt Hàng</a></li>
+                            <li class="lp"><a class="ln " href="/gia-cung-cap/">Giá Cung Cấp</a></li>
+                            <li class="lp"><a class="ln " href="/nha-cung-cap/">Nhà Cung Cấp</a></li>
+                            <li class="lp"><a class="ln " href="/thong-ke-vat-tu/">Thống Kê VT</a></li>
+
+                            <li class="asv">Báo cáo</li>
+                            <li class="asv">More</li>
+                            <li class="lp">
+                                <a class="ln " asp-area="" asp-controller="Sample" asp-action="Toolkit">Tài liệu</a>
+                            </li>
+                            <li class="lp">
+                                <a id="change-themes" class="ln " href="javascript:;">Giao diện sáng</a>
+                            </li>
+                            <li class="lp"><a class="ln " href="/hoat-dong/">Hoạt động</a></li>
+                            <li class="lp"><a class="ln " href="/cai-dat/">Cài đặt</a></li>
+                            <li class="lp"><a class="ln " href="/cap-nhat/">Cập nhật dữ liệu</a></li>
+                            <li class="lp"><a class="ln " href="/thong-tin/">Thông tin</a></li>
+                            <li class="lp"><a class="ln " href="/lien-he/">Liên hệ</a></li>
+                            <li class="lp">
+                                @*@using (Html.BeginForm("SetCulture", "X"))
+                                            {
+                                                foreach (var language in languages)
+                                                {
+                                                            <div class="col-lg-2 col-md-3 col-sm-4 col-xs-6">
+                                                                <input type="submit" class="btn btn-link btn-language" name="culture" id="@language.Code" value="@language.Name" title="@language.Name" />
+                                                            </div>
+                                    }
+                                    }*@
+                            </li>
+
+
+                            <li class="lp"><a class="ln " href="/api/system/init" hide>Reset data</a></li>
+                            @await Html.PartialAsync("_LoginPartial")
+                        </ul>
+
+                        <hr class="bmi aah">
+                    </div>
+                </nav>
+            </div>
+            <div class="et bmj">
+                @RenderBody()
+            </div>
+        </div>
+    </div>
+
+    <input type="hidden" id="hidCacheFlag" value="@ViewData["CacheFlag"]" />
+
+    <div id="docsModal" class="cb fade" tabindex="-1" role="dialog" aria-labelledby="bmp">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="ol">
+                    <h4 class="modal-title" id="myModalLabel">Example modal</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <p>You're looking at an example modal in the dashboard theme.</p>
+                </div>
+                <div class="om">
+                    <button type="button" class="ce kh" data-dismiss="modal">Cool, got it!</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
+    <script src="~/lib/autosize/jquery.textarea_autosize.js"></script>
+
+    @*<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>*@
+    <environment include="Development">
+        @*<script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>*@
+        <script src="~/lib/js-cookie/js-cookie.js"></script>
+        <script src="~/lib/js-render/jsrender.min.js"></script>
+        @*<script src="~/lib/dashboard/js/popper.min.js"></script>*@
+        <script src="~/lib/dashboard/js/chart.js"></script>
+        <script src="~/lib/dashboard/js/tablesorter.min.js"></script>
+        <script src="~/lib/dashboard/js/toolkit.js"></script>
+        <script src="~/lib/dashboard/js/application.js"></script>
+        <script src="~/lib/dashboard/js/active-menu.js"></script>
+        <script src="~/js/site.js" asp-append-version="true"></script>
+    </environment>
+    <environment exclude="Development">
+        @*<script src="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.7/bootstrap.min.js"
+                    asp-fallback-src="~/lib/bootstrap/dist/js/bootstrap.min.js"
+                    asp-fallback-test="window.jQuery && window.jQuery.fn && window.jQuery.fn.modal"
+                    crossorigin="anonymous"
+                    integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa">
+            </script>*@
+        <script src="~/lib/js-cookie/js-cookie.js"></script>
+        @*<script src="~/lib/dashboard/js/popper.min.js"></script>*@
+        <script src="~/lib/dashboard/js/chart.js"></script>
+        <script src="~/lib/dashboard/js/tablesorter.min.js"></script>
+        <script src="~/lib/dashboard/js/toolkit.js"></script>
+        <script src="~/lib/dashboard/js/application.js"></script>
+        <script src="~/lib/dashboard/js/active-menu.js"></script>
+        <script src="~/js/site.min.js" asp-append-version="true"></script>
+    </environment>
+
+    <script>
+        // execute/clear BS loaders for docs
+        $(function () { while (window.BS && window.BS.loader && window.BS.loader.length) { (window.BS.loader.pop())() } })
+    </script>
+
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

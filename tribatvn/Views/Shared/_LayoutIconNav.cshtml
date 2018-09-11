@@ -1,0 +1,148 @@
+﻿@using Microsoft.AspNetCore.Http;
+@{
+    var cookieTheme = "dark";
+    if (!string.IsNullOrEmpty(Context.Request.Cookies["theme"]))
+    {
+        cookieTheme = Context.Request.Cookies["theme"];
+    }
+    ViewData["Theme"] = cookieTheme;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Tribat</title>
+    
+    <environment include="Development">
+        @*<link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />*@
+        @*<link rel="stylesheet" href="~/css/site.css" />*@
+    </environment>
+    <environment exclude="Development">
+        @*<link rel="stylesheet" href="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.7/css/bootstrap.min.css"
+              asp-fallback-href="~/lib/bootstrap/dist/css/bootstrap.min.css"
+              asp-fallback-test-class="sr-only" asp-fallback-test-property="position" asp-fallback-test-value="absolute" />
+        <link rel="stylesheet" href="~/css/site.min.css" asp-append-version="true" />*@
+    </environment>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,400italic" rel="stylesheet">
+    @if (ViewData["Theme"].ToString() == "light")
+    {
+        <link href="~/lib/dashboard/css/toolkit-light.css" rel="stylesheet">}
+    else
+    {
+        <link href="~/lib/dashboard/css/toolkit-inverse.css" rel="stylesheet">
+    }
+
+    <link href="~/lib/dashboard/css/application.css" rel="stylesheet">
+    <style>
+        /* note: this is a hack for ios iframe for bootstrap themes shopify page */
+        /* this chunk of css is not part of the toolkit :) */
+        body {
+            width: 1px;
+            min-width: 100%;
+            *width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="blm">
+        <nav class="ch">
+            <a class="bln" href="/">
+                <span class="bv bch blo"></span>
+            </a>
+            <div class="blr">
+                <ul class="nav lq blp uz">
+                    <li class="lp">
+                        <a class="ln" href="/" title="Overview" data-toggle="tooltip" data-placement="right" data-container="body">
+                            <span class="bv bbk"></span>
+                            <small class="blq rk">Overview</small>
+                        </a>
+                    </li>
+                    <li class="lp">
+                        <a class="ln" href="../order-history/index.html" title="Order history" data-toggle="tooltip" data-placement="right" data-container="body">
+                            <span class="bv bhs"></span>
+                            <small class="blq rk">History</small>
+                        </a>
+                    </li>
+                    <li class="lp">
+                        <a class="ln" href="/Sample/Fluid" title="Fluid layout" data-toggle="tooltip" data-placement="right" data-container="body">
+                            <span class="bv bav"></span>
+                            <small class="blq rk">Fluid layout</small>
+                        </a>
+                    </li>
+                    <li class="lp">
+                        <a class="ln active" href="/Sample/Icon" title="Icon-nav" data-toggle="tooltip" data-placement="right" data-container="body">
+                            <span class="bv aur"></span>
+                            <small class="blq rk">Icon nav</small>
+                        </a>
+                    </li>
+                    <li class="lp">
+                        <a class="ln" href="/Sample/Toolkit" title="Docs" data-toggle="tooltip" data-placement="right" data-container="body">
+                            <span class="bv bcs"></span>
+                            <small class="blq rk">Docs</small>
+                        </a>
+                    </li>
+                    <li class="lp">
+                        <a class="ln" href="../index-light/index.html" title="Light UI" data-toggle="tooltip" data-placement="right" data-container="body">
+                            <span class="bv azy"></span>
+                            <small class="blq rk">Light UI</small>
+                        </a>
+                    </li>
+                    <li class="lp">
+                        <a class="ln" href="#" title="Signed in as mdo" data-toggle="tooltip" data-placement="right" data-container="body">
+                            <img src="../assets/img/avatar-mdo.png" alt="" class="qr">
+                            <small class="blq rk">MDO</small>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <div class="bw">
+            @RenderBody()
+        </div>
+        </div>
+
+    <environment include="Development">
+        <script src="~/lib/jquery/dist/jquery.js"></script>
+        <script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>
+        <script src="~/lib/js-cookie/js-cookie.js"></script>
+        <script src="~/lib/dashboard/js/popper.min.js"></script>
+        <script src="~/lib/dashboard/js/chart.js"></script>
+        <script src="~/lib/dashboard/js/tablesorter.min.js"></script>
+        <script src="~/lib/dashboard/js/toolkit.js"></script>
+        <script src="~/lib/dashboard/js/application.js"></script>
+        <script src="~/lib/dashboard/js/active-menu.js"></script>
+        <script src="~/js/site.js" asp-append-version="true"></script>
+    </environment>
+    <environment exclude="Development">
+        <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-2.2.0.min.js"
+                asp-fallback-src="~/lib/jquery/dist/jquery.min.js"
+                asp-fallback-test="window.jQuery"
+                crossorigin="anonymous"
+                integrity="sha384-K+ctZQ+LL8q6tP7I94W+qzQsfRV2a+AfHIi9k8z8l9ggpc8X+Ytst4yBo/hH+8Fk">
+        </script>
+        <script src="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.7/bootstrap.min.js"
+                asp-fallback-src="~/lib/bootstrap/dist/js/bootstrap.min.js"
+                asp-fallback-test="window.jQuery && window.jQuery.fn && window.jQuery.fn.modal"
+                crossorigin="anonymous"
+                integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa">
+        </script>
+        <script src="~/lib/js-cookie/js-cookie.js"></script>
+        <script src="~/lib/dashboard/js/popper.min.js"></script>
+        <script src="~/lib/dashboard/js/chart.js"></script>
+        <script src="~/lib/dashboard/js/tablesorter.min.js"></script>
+        <script src="~/lib/dashboard/js/toolkit.js"></script>
+        <script src="~/lib/dashboard/js/application.js"></script>
+        <script src="~/lib/dashboard/js/active-menu.js"></script>
+        <script src="~/js/site.min.js" asp-append-version="true"></script>
+    </environment>
+    
+    <script>
+        // execute/clear BS loaders for docs
+        $(function () { while (window.BS && window.BS.loader && window.BS.loader.length) { (window.BS.loader.pop())() } })
+    </script>
+
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

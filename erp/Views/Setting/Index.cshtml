@@ -1,0 +1,301 @@
+﻿@using System.Globalization;
+@using Common.Utilities;
+@using ViewModels
+@model SettingViewModel
+
+@{
+    Layout = "~/Views/Shared/_LayoutSocialFb.cshtml";
+}
+
+@Html.ValidationSummary()
+
+<div class="card">
+    <div class="card-header">
+        <a data-target="#new-setting" data-toggle="collapse" aria-expanded="false" aria-controls="new-setting" style="cursor:pointer">
+            <i class="icon-add-to-list mr-1"></i> Create new setting
+        </a>
+    </div>
+    <div class="collapse" id="new-setting">
+        <div class="card-body">
+            <form method="post" action="/st/cai-dat/tao-moi" class="data-form" enctype="multipart/form-data">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <div class="form-group">
+                    <label asp-for="Setting.Type" class="control-label"></label>
+                    <select asp-for="Setting.Type" class="form-control">
+                        <option value="hcns">Hành chính nhân sự</option>
+                        <option value="factory">Nhà máy</option>
+                        <option value="system">System</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Setting.Key" class="control-label"></label>
+                    <input asp-for="Setting.Key" class="form-control" />
+                    <span asp-validation-for="Setting.Key" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Setting.Value" class="control-label"></label>
+                    <input asp-for="Setting.Value" class="form-control" />
+                    <span asp-validation-for="Setting.Value" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Setting.Title" class="control-label"></label>
+                    <input asp-for="Setting.Title" class="form-control" />
+                    <span asp-validation-for="Setting.Title" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Setting.Content" class="control-label"></label>
+                    <textarea asp-for="Setting.Content" class="form-control"></textarea>
+                    <span asp-validation-for="Setting.Content" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Setting.NoDelete" class="control-label"></label>
+                    <select asp-for="Setting.NoDelete" class="form-control">
+                        <option value="false">Xóa được</option>
+                        <option value="true">Không xóa được</option>
+                    </select>
+                </div>
+                <div class="d-flex align-items-center">
+                    <div class="mr-2">
+                        <a href="#new-setting" class="btn btn-outline-primaryd" data-toggle="collapse" aria-expanded="true" aria-controls="new-setting">Hủy</a>
+                        <button type="submit" class="btn btn-outline-primary"><i class="icon-save"></i>&nbsp;Tạo</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="card card-sm">
+    <div class="card-header bg-secondary d-flex justify-content-between align-items-center">
+        <div>
+            <h6>Settings</h6>
+        </div>
+        <form class="d-flex align-items-center">
+            <span class="mr-2 text-muted text-small text-nowrap">Sắp xếp:</span>
+            <select class="custom-select">
+                <option value="old-new" selected>Mới nhất</option>
+                <option value="status">Trạng thái</option>
+            </select>
+        </form>
+    </div>
+
+</div>
+
+@if (Model.Settings.Count > 0)
+{
+<div class="row">
+    <div class="col">
+        <table class="table table-responsive table-borderless table-hover align-items-center un-display-block">
+            <thead>
+                <tr>
+                    <th scope="col"></th>
+                    <th scope="col">Key</th>
+                    <th scope="col">Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var entity in Model.Settings)
+                {
+                    <tr class="bg-white">
+                        <td>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-outline-primary dropdown-toggle dropdown-toggle-no-arrow" type="button" id="dropdownMenuButton-1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <i class="icon-dots-three-horizontal"></i>
+                                </button>
+                                <div class="dropdown-menu dropdown-menu-sm" aria-labelledby="dropdownMenuButton">
+                                    <a class="dropdown-item edit-item" href="javascript:;" data-toggle="modal" data-target="#editItemModal" data-id="@entity.Id">Chỉnh sửa</a>
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item disable-item" href="javascript:;" data-toggle="modal" data-target="#disableItemModal" data-id="@entity.Id">Vô hiệu</a>
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item delete-item" href="javascript:;" data-toggle="modal" data-target="#deleteItemModal" data-id="@entity.Id">Xóa</a>
+                                </div>
+                            </div>
+                        </td>
+                        <td>@entity.Key</td>
+                        <td>@entity.Value</td>
+
+                    </tr>
+                    <tr class="table-divider"></tr>
+                }
+                <tr><td colspan="3"><h6>Disable list</h6></td></tr>
+                @foreach (var disable in Model.SettingsDisable)
+                {
+                    <tr class="bg-white">
+                        <td>
+                            <a class="dropdown-item active-item badge badge-success" href="javascript:;" data-toggle="modal" data-target="#activeItemModal" data-id="@disable.Id">Active</a>
+                        </td>
+                        <td>@disable.Key</td>
+                        <td>@disable.Value</td>
+                    </tr>
+                    <tr class="table-divider"></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <script id="tmplDataItem" type="text/x-jsrender">
+        <input type="hidden" name="Setting.Id" value="{{:id}}" class="form-control" />
+        <input type="hidden" name="Setting.Timestamp" value="{{:timestamp}}" class="form-control" />
+        <div class="form-group">
+            <label class="control-label">Loại</label>
+            <select name="Setting.Type" value="{{:type}}" class="form-control">
+                <option value="hcns">Hành chính nhân sự</option>
+                <option value="factory">Nhà máy</option>
+                <option value="system">System</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="control-label">Khóa chính</label>
+            <input name="Setting.Key" value="{{:key}}" class="form-control" readonly />
+        </div>
+        <div class="form-group">
+            <label class="control-label">Giá trị</label>
+            <input name="Setting.Value" value="{{:value}}" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label class="control-label">Tiêu đề</label>
+            <input name="Setting.Title" value="{{:title}}" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label class="control-label">Mô tả</label>
+            <textarea name="Setting.Content" value="{{:content}}" class="form-control"></textarea>
+        </div>
+        <div class="form-group">
+            <label class="control-label">Dữ liệu</label>
+            <select name="Setting.NoDelete" value="{{:noDelete}}" class="form-control">
+                <option value="false">Xóa được</option>
+                <option value="true">Không xóa được</option>
+            </select>
+        </div>
+    </script>
+
+    <script id="tmplDataItemPlainText" type="text/x-jsrender">
+        <input type="hidden" name="Setting.Id" value="{{:id}}" class="form-control" />
+        <input type="hidden" name="Setting.Timestamp" value="{{:timestamp}}" class="form-control" />
+        <div class="form-group">
+            <label class="control-label">Loại</label>
+            <select name="Setting.Type" value="{{:type}}" class="form-control-plaintext">
+
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="control-label">Khóa chính</label>
+            <input name="Setting.Key" value="{{:key}}" class="form-control-plaintext" readonly />
+        </div>
+        <div class="form-group">
+            <label class="control-label">Giá trị</label>
+            <input name="Setting.Value" value="{{:value}}" class="form-control-plaintext" />
+        </div>
+        <div class="form-group">
+            <label class="control-label">Tiêu đề</label>
+            <input name="Setting.Title" value="{{:title}}" class="form-control-plaintext" />
+        </div>
+        <div class="form-group">
+            <label class="control-label">Mô tả</label>
+            <textarea name="Setting.Content" value="{{:content}}" class="form-control-plaintext"></textarea>
+        </div>
+    </script>
+
+    <div class="modal fade" id="editItemModal" tabindex="-1" role="dialog" aria-labelledby="editItemModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editItemModalLabel">Chỉnh sửa</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form class="data-form" method="post" action="/st/cai-dat/chinh-sua/" enctype="multipart/form-data">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <span class="result"></span>
+                    <div class="modal-body data-item-edit">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy & Đóng</button>
+                        <button type="submit" class="btn btn-primary"><i class="icon-save"></i>&nbsp;Lưu</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="disableItemModal" tabindex="-1" role="dialog" aria-labelledby="disableItemModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="disableItemModalLabel">Bạn chắc không sử dụng cài đặt này?</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Đóng">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form class="data-form" method="post" action="/st/cai-dat/disable/" enctype="multipart/form-data">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div class="modal-body data-item-disable">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy & Đóng</button>
+                        <button type="submit" class="btn btn-primary"><i class="icon-save"></i>&nbsp;Không sử dụng</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="activeItemModal" tabindex="-1" role="dialog" aria-labelledby="activeItemModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="activeItemModalLabel">Bạn chắc khôi phục cài đặt này?</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Đóng">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form class="data-form" method="post" action="/st/cai-dat/active/" enctype="multipart/form-data">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div class="modal-body data-item-active">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy & Đóng</button>
+                        <button type="submit" class="btn btn-primary"><i class="icon-save"></i>&nbsp;Khôi phục</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="deleteItemModal" tabindex="-1" role="dialog" aria-labelledby="deleteItemModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteItemModalLabel">Bạn chắc xóa cài đặt này?</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Đóng">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form class="data-form" method="post" action="/st/cai-dat/xoa/" enctype="multipart/form-data">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div class="modal-body data-item-delete">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy & Đóng</button>
+                        <button type="submit" class="btn btn-primary"><i class="icon-save"></i>&nbsp;Xóa</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!--end of col-->
+</div>
+    <!--end of row-->
+}
+else
+{
+    <div class="alert alert-light" role="alert">
+        No data.
+    </div>
+}
+
+@section scripts {
+    <script type="text/javascript" src="~/js/setting.js"></script>
+}
+

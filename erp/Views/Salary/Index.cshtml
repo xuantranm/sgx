@@ -1,0 +1,605 @@
+﻿@using Common.Utilities;
+@using System.Globalization;
+@model ViewModels.SalaryViewModel
+
+@{
+    Layout = "~/Views/Shared/_LayoutSocialFb.cshtml";
+    var dayWorking = 0;
+    var dayHoliday = 0;
+    var bonusHourNormalDay = 0;
+    var workingSunday = 0;
+    var leaveHaveSalary = 0;
+    var holidayHaveSalary = 0;
+    var farWorking = 0;
+    var otherSalary = 0;
+
+}
+
+<div class="main-container">
+    <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="/">Trang chủ</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">Lương @Model.Employee.FullName</li>
+                    </ol>
+                </div>
+                <!--end of col-->
+            </div>
+            <!--end of row-->
+        </div>
+        <!--end of container-->
+    </nav>
+
+    <section class="bg-white space-sm pb-4">
+        <div class="container">
+            <div class="row justify-content-between align-items-center">
+                <div class="col-auto">
+                    <h1 class="h2">Thông tin</h1>
+                </div>
+                <div class="col-auto text-right">
+                    <a href="#" class="btn btn-success"><i class="icon icon-edit"></i>Điều chỉnh lương</a>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="flush-with-above space-0">
+        <div class="bg-white">
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <ul class="nav nav-tabs" id="myTab" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="general-tab" data-toggle="tab" href="#general" role="tab" aria-controls="general" aria-selected="true">Thông tin</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="salary-tab" data-toggle="tab" href="#salary" role="tab" aria-controls="salary" aria-selected="false">Lương & Thanh toán</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MAIN -->
+    <section class="flush-with-above height-80 d-block">
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="general" role="tabpanel" aria-labelledby="general-tab">
+                <input asp-for="Employee.Id" type="hidden" />
+                <input asp-for="Employee.Code" type="hidden" />
+                <div class="container">
+                    <div class="row mb-4">
+                        <div class="col">
+                            <h5><i class="icon icon-info"></i>THẺ LƯƠNG THÁNG @DateTime.Now.Month/@DateTime.Now.Year</h5>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="form-group">
+                                <i class="icon icon-text"></i>
+                                <label class="control-label">Họ tên:</label>
+                                <span>@Model.Employee.FullName</span>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-group">
+                                <i class="icon icon-text"></i>
+                                <label class="control-label">Bậc lương:</label>
+                                <span>@Model.Employee.LevelSalary</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <table class="table align-items-center">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">TT</th>
+                                        <th scope="col">Nội dung lương</th>
+                                        <th></th>
+                                        <th scope="col">ĐVT</th>
+                                        <th scope="col">SL</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <b>I</b>
+                                        </td>
+                                        <td>
+                                            Thu nhập
+                                        </td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td>
+                                            @string.Format("{0:n0}", Model.Employee.Salary)
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td>
+                                            1
+                                        </td>
+                                        <td>
+                                            Số công ngày thường
+                                        </td>
+                                        <td></td>
+                                        <td>ngày</td>
+                                        <td>
+                                            @dayWorking
+                                        </td>
+                                        <td>
+                                            @string.Format("{0:n0}", Model.Employee.Salary)
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            2
+                                        </td>
+                                        <td>
+                                            Làm việc ngày Lễ Tết
+                                        </td>
+                                        <td></td>
+                                        <td>ngày</td>
+                                        <td>
+                                            @dayHoliday
+                                        </td>
+                                        <td>
+                                            @string.Format("{0:n0}", dayHoliday)
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            3
+                                        </td>
+                                        <td>
+                                            Tăng ca ngày thường
+                                        </td>
+                                        <td></td>
+                                        <td>giờ</td>
+                                        <td>
+                                            @bonusHourNormalDay
+                                        </td>
+                                        <td>
+                                            @string.Format("{0:n0}", bonusHourNormalDay)
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            4
+                                        </td>
+                                        <td>
+                                            Làm việc ngày CN
+                                        </td>
+                                        <td></td>
+                                        <td>giờ</td>
+                                        <td>
+                                            @workingSunday
+                                        </td>
+                                        <td>
+                                            @string.Format("{0:n0}", workingSunday)
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            5
+                                        </td>
+                                        <td>
+                                            Ngày phép hưởng lương
+                                        </td>
+                                        <td></td>
+                                        <td>giờ</td>
+                                        <td>
+                                            @leaveHaveSalary
+                                        </td>
+                                        <td>
+                                            @string.Format("{0:n0}", leaveHaveSalary)
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            6
+                                        </td>
+                                        <td>
+                                            Ngày Lễ, Tết hưởng lương
+                                        </td>
+                                        <td></td>
+                                        <td>ngày</td>
+                                        <td>
+                                            @leaveHaveSalary
+                                        </td>
+                                        <td>
+                                            @string.Format("{0:n0}", leaveHaveSalary)
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            7
+                                        </td>
+                                        <td>
+                                            Trợ cấp công tác xa
+                                        </td>
+                                        <td></td>
+                                        <td></td>
+                                        <td>
+                                            @leaveHaveSalary
+                                        </td>
+                                        <td>
+                                            @string.Format("{0:n0}", leaveHaveSalary)
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            8
+                                        </td>
+                                        <td>
+                                            Lương khác
+                                        </td>
+                                        <td></td>
+                                        <td></td>
+                                        <td>
+                                            @leaveHaveSalary
+                                        </td>
+                                        <td>
+                                            @string.Format("{0:n0}", leaveHaveSalary)
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <b>II</b>
+                                        </td>
+                                        <td>
+                                            Thu nhập khác
+                                        </td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td>
+                                            @string.Format("{0:n0}", Model.Employee.Salary)
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td>
+                                            1
+                                        </td>
+                                        <td>
+                                            Lương theo hiệu quả
+                                        </td>
+                                        <td></td>
+                                        <td></td>
+                                        <td>
+                                            @dayWorking
+                                        </td>
+                                        <td>
+                                            @string.Format("{0:n0}", Model.Employee.Salary)
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            2
+                                        </td>
+                                        <td>
+                                            Thi đua
+                                        </td>
+                                        <td></td>
+                                        <td></td>
+                                        <td>
+                                            @dayWorking
+                                        </td>
+                                        <td>
+                                            @string.Format("{0:n0}", Model.Employee.Salary)
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            3
+                                        </td>
+                                        <td>
+                                            Thưởng Lễ,Tết
+                                        </td>
+                                        <td></td>
+                                        <td></td>
+                                        <td>
+                                            @dayWorking
+                                        </td>
+                                        <td>
+                                            @string.Format("{0:n0}", Model.Employee.Salary)
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            4
+                                        </td>
+                                        <td>
+                                            Hổ trợ ngoài
+                                        </td>
+                                        <td></td>
+                                        <td></td>
+                                        <td>
+                                            @dayWorking
+                                        </td>
+                                        <td>
+                                            @string.Format("{0:n0}", Model.Employee.Salary)
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td>
+                                            <b>Tổng thu nhập</b>
+                                        </td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td>
+                                            @string.Format("{0:n0}", Model.Employee.Salary)
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <b>III</b>
+                                        </td>
+                                        <td>
+                                            Các khoảng giảm trừ
+                                        </td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td>
+                                            @string.Format("{0:n0}", Model.Employee.Salary)
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            1
+                                        </td>
+                                        <td>
+                                            Bảo hiểm xã hội phải nộp
+                                        </td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            2
+                                        </td>
+                                        <td>
+                                            Tạm ứng
+                                        </td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            
+                                        </td>
+                                        <td>
+                                            Thuế TNCN
+                                        </td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <b>IV</b>
+                                        </td>
+                                        <td>
+                                            Thực lãnh
+                                        </td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td>
+                                            @string.Format("{0:n0}", Model.Employee.Salary)
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="6">
+                                            <small>
+                                                <i class="icon-info"></i>
+                                                Dữ liệu chưa cập nhật. Liên hệ quản lý hoặc trực tiếp phòng Hành chính nhân sự.
+                                                Xin lỗi về sự bất tiện này.
+                                            </small>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!--end of tab pane-->
+
+            <div class="tab-pane fade" id="salary" role="tabpanel" arialabelledby="salary-tab">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-sm-6 col-12">
+                            <div class="form-group">
+                                <i class="icon icon-target"></i>
+                                <label class="control-label">Bậc lương</label><span class="badge badge-light">@Model.Employee.LevelSalary</span>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <form>
+                                <table class="table align-items-center">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">STT</th>
+                                            <th scope="col">Nội dung lương</th>
+                                            <th scope="col">Mức</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @{
+                                            if (Model.Employee.Salaries != null)
+                                            {
+                                                var i = 1;
+                                                foreach (var salary in Model.Employee.Salaries)
+                                                {
+                                                    if (!string.IsNullOrEmpty(salary.Title))
+                                                    {
+                                                        <tr>
+                                                            <td>
+                                                                @i
+                                                            </td>
+                                                            <td>
+                                                                @salary.Title
+                                                            </td>
+                                                            <td>
+                                                                @string.Format("{0:n0}", salary.Money)
+                                                            </td>
+                                                        </tr>
+                                                        i++;
+                                                    }
+                                                    else
+                                                    {
+                                                        <tr>
+                                                            <td colspan="3">
+                                                                <small>
+                                                                    <i class="icon-info"></i>
+                                                                    Dữ liệu chưa cập nhật. Liên hệ quản lý hoặc trực tiếp phòng Hành chính nhân sự.
+                                                                    Xin lỗi về sự bất tiện này.
+                                                                </small>
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <tr>
+                                                    <td colspan="3">
+                                                        <small>
+                                                            <i class="icon-info"></i>
+                                                            Dữ liệu chưa cập nhật. Liên hệ quản lý hoặc trực tiếp phòng Hành chính nhân sự.
+                                                            Xin lỗi về sự bất tiện này.
+                                                        </small>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                    </tbody>
+                                </table>
+                            </form>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-group">
+                                <i class="icon icon-target"></i>
+                                <label class="control-label">Ước tính lương tháng</label>
+                                <span class="badge badge-info">@string.Format("{0:n0}", Model.Employee.Salary)</span>
+                                <small>Thông tin này có giá trị tham khảo, tùy qui định của công ty.</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!--BANKS-->
+                    <hr />
+                    <div class="row mb-4">
+                        <div class="col">
+                            <h5>Thông tin nhận lương</h5>
+                        </div>
+                        <!--end of col-->
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-6 col-12">
+                            <div class="form-group">
+                                <i class="icon icon-hand"></i>
+                                <label class="control-label">Hình thức nhận lương</label>
+                                <input value="@Constants.SalaryPaymentMethod(Model.Employee.SalaryPayMethod)" type="text" readonly class="form-control-plaintext" />
+                            </div>
+                        </div>
+                        <!--end of col-->
+                    </div>
+                    @if (Model.Employee.SalaryPayMethod == 1)
+                    {
+                        <div class="row bank-method">
+                            <div class="col-sm-6 col-12">
+                                <div class="form-group">
+                                    <i class="icon icon-hand"></i>
+                                    <label class="control-label">Tài khoản</label>
+                                    <input asp-for="Employee.EmployeeBank.BankAccount" type="text" readonly class="form-control-plaintext" />
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-12">
+                                <div class="form-group">
+                                    <i class="icon icon-hand"></i>
+                                    <label class="control-label">Họ tên</label>
+                                    <input asp-for="Employee.EmployeeBank.BankHolder" type="text" readonly class="form-control-plaintext" />
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-12">
+                                <div class="form-group">
+                                    <label class="control-label">Ngân hàng</label>
+                                    <input asp-for="Employee.EmployeeBank.BankName" type="text" readonly class="form-control-plaintext" />
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-12">
+                                <div class="form-group">
+                                    <label class="control-label">Chi nhánh</label>
+                                    <input asp-for="Employee.EmployeeBank.BankLocation" type="text" readonly class="form-control-plaintext" />
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+                <!--end of container-->
+            </div>
+            <!--end of tab pane-->
+        </div>
+    </section>
+    <!--end of section-->
+</div>
+
+<div>
+    <a asp-action="Index"><i class="icon icon-back"></i>Trở về</a>
+</div>
+
+<div class="modal fade" id="resultModal" tabindex="-1" role="dialog" aria-labelledby="resultModal" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Tạo nhân viên thành công.</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="recipient-name" class="col-form-label">Recipient:</label>
+                    <input type="text" class="form-control-plaintext" id="recipient-name">
+                </div>
+                <div class="form-group">
+                    <label for="message-text" class="col-form-label">Message:</label>
+                    <textarea class="form-control" id="message-text"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a href="/hr/nhan-su/thong-tin/" class="btn btn-danger" data-dismiss="modal">Thêm thông tin</a>
+                <a href="/hr/nhan-su/tao-moi" class="btn btn-primary">Thêm mới</a>
+                <a href="/hr/nhan-su" class="btn btn-info">Danh sách</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+        <script src="~/js/employee-data.js"></script>
+    }
+}
+

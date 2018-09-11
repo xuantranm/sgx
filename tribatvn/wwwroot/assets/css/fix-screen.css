@@ -1,0 +1,32 @@
+﻿@media(max-width:767px) {
+    .carousel img {
+        max-height: 240px;
+        min-height: 240px;
+    }
+}
+
+@media(min-width:768px) {
+    .jumbotron {
+        padding-top: 190px;
+        padding-bottom: 190px;
+    }
+}
+
+@media(min-width:992px) {
+    .register-content {
+        padding-top: 60px;
+    }
+
+    .register-home-text {
+        padding-right: 50px;
+    }
+    .introduce-home {
+        padding-top: 20px;
+    }
+    .body-content-jobs {
+        padding-top: 20px;
+    }
+}
+
+@media(min-width:1200px) {
+}

@@ -1,0 +1,176 @@
+﻿@using Helpers;
+@using ViewModels;
+@model MenuViewModel;
+@{
+    var language = ViewData["Language"].ToString();
+    var about = Model.MenusContent.Where(m => m.Code.Equals("about")).First();
+    var news = Model.MenusContent.Where(m => m.Code.Equals("news")).First();
+    var contact = Model.MenusContent.Where(m => m.Code.Equals("contact")).First();
+}
+
+    <footer id="footer" class="dark">
+        <div class="container">
+            <div class="footer-widgets-wrap clearfix">
+                <div class="col_two_third">
+                    <div class="col_one_third">
+                        <div class="widget clearfix">
+                            @*<img src="images/footer-widget-logo.png" alt="" class="footer-logo">*@
+                            <img alt="Tribat" src="~/images/saigonxanhtrans.png" class="footer-logo" />
+                            <p>&copy; @DateTime.Now.Year <strong>Tribat</strong>, <strong>Sài Gòn Xanh</strong> &amp; <strong>Green Sai Gon</strong>.</p>
+                            @*<p>We believe in <strong>Simple</strong>, <strong>Creative</strong> &amp; <strong>Flexible</strong> Design Standards.</p>*@
+                            <div style="background: url('/assets/canvas/images/world-map.png') no-repeat center center; background-size: 100%;">
+                                <address>
+                                    <strong>@Html.Raw(TextHelper.GetText(521, language)):</strong><br>
+                                    @Html.Raw(TextHelper.GetText(522, language))<br>
+                                </address>
+                                <abbr title="@Html.Raw(TextHelper.GetText(523, language))">
+                                    <strong>@Html.Raw(TextHelper.GetText(523, language)):</strong>
+                                </abbr> <a href="tel:02839971869" class="hotline">(028)-39971869</a> − <a href="tel:02838442457" class="hotline">(028)-38442457</a><br>
+                                <abbr title="Fax"><strong>Fax:</strong></abbr> 08-39971869<br>
+                                <abbr title="Tax"><strong>MST:</strong></abbr> 0302519810
+                                @*<span class="__cf_email__" data-cfemail="d3babdb5bc93b0b2bda5b2a0fdb0bcbe">[email&#160;protected]</span>*@
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col_one_third">
+                        <div class="widget widget_links clearfix">
+                            <h4>@Html.Raw(TextHelper.GetText(524, language))</h4>
+                            <ul>
+                                <li>
+                                    <a href="/">@Html.Raw(TextHelper.GetText(525, language))</a>
+                                </li>
+                                <li>
+                                    <a href="/c/@contact.Url">@contact.Title</a>
+                                </li>
+                                <li>
+                                    <a href="/faq">FAQ</a>
+                                </li>
+                                <li>
+                                    <a href="/n/@news.Url">@news.Title</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col_one_third col_last">
+                        <div class="widget clearfix">
+                            <h4>Recent Posts</h4>
+                            <div id="post-list-footer">
+                                <!--3 recent posts-->
+                                <div class="spost clearfix">
+                                    <div class="entry-c">
+                                        <div class="entry-title">
+                                            <h4><a href="#">Lorem ipsum dolor sit amet, consectetur</a></h4>
+                                        </div>
+                                        <ul class="entry-meta">
+                                            <li>10th July 2014</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col_one_third col_last">
+                    <div class="widget clearfix" style="margin-bottom: -20px;">
+                        <div class="row">
+                            <div class="col-lg-6 bottommargin-sm">
+                                <div class="counter counter-small"><span data-from="50" data-to="15065421" data-refresh-interval="80" data-speed="3000" data-comma="true"></span></div>
+                                <h5 class="nobottommargin">Total Visitors</h5>
+                            </div>
+                            <div class="col-lg-6 bottommargin-sm">
+                                <div class="counter counter-small"><span data-from="100" data-to="18465" data-refresh-interval="50" data-speed="2000" data-comma="true"></span></div>
+                                <h5 class="nobottommargin">Clients</h5>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="widget subscribe-widget clearfix">
+                        <h5><strong>Subscribe</strong> to Our Newsletter to get Important News, Amazing Offers &amp; Inside Scoops:</h5>
+                        <div class="widget-subscribe-form-result"></div>
+                        <form id="widget-subscribe-form" action="include/subscribe.php" role="form" method="post" class="nobottommargin">
+                            <div class="input-group divcenter">
+                                <div class="input-group-prepend">
+                                    <div class="input-group-text"><i class="icon-email2"></i></div>
+                                </div>
+                                <input type="email" id="widget-subscribe-form-email" name="widget-subscribe-form-email" class="form-control required email" placeholder="Enter your Email">
+                                <div class="input-group-append">
+                                    <button class="btn btn-success" type="submit">Subscribe</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="widget clearfix" style="margin-bottom: -20px;">
+                        <div class="row">
+                            <div class="col-lg-6 clearfix bottommargin-sm">
+                                <a href="#" class="social-icon si-dark si-colored si-facebook nobottommargin" style="margin-right: 10px;">
+                                    <i class="icon-facebook"></i>
+                                    <i class="icon-facebook"></i>
+                                </a>
+                                <a href="#"><small style="display: block; margin-top: 3px;"><strong>Like us</strong><br>on Facebook</small></a>
+                            </div>
+                            <div class="col-lg-6 clearfix">
+                                <a href="#" class="social-icon si-dark si-colored si-rss nobottommargin" style="margin-right: 10px;">
+                                    <i class="icon-rss"></i>
+                                    <i class="icon-rss"></i>
+                                </a>
+                                <a href="#"><small style="display: block; margin-top: 3px;"><strong>Subscribe</strong><br>to RSS Feeds</small></a>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="copyrights">
+            <div class="container clearfix">
+                <div class="col_half">
+                    Copyrights &copy; @DateTime.Now.Year All Rights Reserved by Tribat Ltd.<br>
+                    <div class="copyright-links"><a href="#">Terms of Use</a> / <a href="#">Privacy Policy</a></div>
+                </div>
+                <div class="col_half col_last tright">
+                    <div class="fright clearfix">
+                        <a href="#" class="social-icon si-small si-borderless si-facebook">
+                            <i class="icon-facebook"></i>
+                            <i class="icon-facebook"></i>
+                        </a>
+                        <a href="#" class="social-icon si-small si-borderless si-twitter">
+                            <i class="icon-twitter"></i>
+                            <i class="icon-twitter"></i>
+                        </a>
+                        <a href="#" class="social-icon si-small si-borderless si-gplus">
+                            <i class="icon-gplus"></i>
+                            <i class="icon-gplus"></i>
+                        </a>
+                        <a href="#" class="social-icon si-small si-borderless si-pinterest">
+                            <i class="icon-pinterest"></i>
+                            <i class="icon-pinterest"></i>
+                        </a>
+                        <a href="#" class="social-icon si-small si-borderless si-vimeo">
+                            <i class="icon-vimeo"></i>
+                            <i class="icon-vimeo"></i>
+                        </a>
+                        <a href="#" class="social-icon si-small si-borderless si-github">
+                            <i class="icon-github"></i>
+                            <i class="icon-github"></i>
+                        </a>
+                        <a href="#" class="social-icon si-small si-borderless si-yahoo">
+                            <i class="icon-yahoo"></i>
+                            <i class="icon-yahoo"></i>
+                        </a>
+                        <a href="#" class="social-icon si-small si-borderless si-linkedin">
+                            <i class="icon-linkedin"></i>
+                            <i class="icon-linkedin"></i>
+                        </a>
+                    </div>
+                    <div class="clear"></div>
+                    <i class="icon-envelope2"></i>
+                    <span class="__cf_email__" data-cfemail="0f666169604f6c6e61796e7c216c6062">[email&#160;protected]</span>
+                    <span class="middot">&middot;</span> 
+                    <i class="icon-headphones"></i>  (028)-39971869 − (028)-38442457 
+                    <span class="middot">&middot;</span>
+                    <i class="icon-skype2"></i> TribatOnSkype
+                </div>
+            </div>
+        </div>
+    </footer>

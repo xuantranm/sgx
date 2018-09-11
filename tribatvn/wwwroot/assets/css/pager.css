@@ -1,0 +1,20 @@
+﻿/* Paging Custom */
+.pagination {
+    margin: 5px 0;
+}
+    .pagination .current {
+        background-color: #FFFF66;
+        border-radius: 5px;
+        color: blue;
+    }
+    .pagination a {
+        background-color: #FFFFFF;
+        border: 1px solid #86B5EE;
+        border-radius: 5px;
+        padding: 3px 7px 4px;
+        color: #61ACEA;
+        text-decoration: none;
+    }
+        .pagination a:hover {
+            background-color: #FBEFBD;
+        }

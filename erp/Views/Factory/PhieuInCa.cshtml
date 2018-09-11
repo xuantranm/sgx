@@ -1,0 +1,253 @@
+﻿@using Common.Utilities;
+@using ViewModels;
+@model PhieuInCaViewModel
+@{
+    ViewData["Title"] = "Phiếu in ca";
+    Layout = "~/Views/Shared/_LayoutData.cshtml";
+}
+
+<form method="get" action="/@Constants.LinkFactory.Main/@Constants.LinkFactory.PhieuInCa" id="form-main">
+    <div class="form-row mb-3">
+        <div class="col-md-2">
+            <label class="control-label">Phiếu in ca</label>
+            <input asp-for="phieuinca" class="form-control form-control-lg" />
+        </div>
+        <div class="col-md-3 date-area">
+            <label class="control-label">Ngày</label>
+            @{
+                if (Model.ngay.HasValue)
+                {
+                    <input class="form-control form-control-lg datepicker datepicker-lg" value="@Model.ngay.Value.ToString("dd/MM/yyyy")" />
+                }
+                else
+                {
+                    <input class="form-control form-control-lg datepicker datepicker-lg" />
+                }
+            }
+            <input type="hidden" asp-for="ngay" class="hidedatepicker" />
+        </div>
+        <div class="col-md-4">
+            <label class="control-label">Số xe/ Tên xe</label>
+            <select asp-for="xe" class="form-control form-control-lg js-select2-basic-single">
+                <option value="">Chọn</option>
+                @{
+                    foreach (var item in Model.Vehicles)
+                    {
+                        <option value="@item.Alias">@item.Name</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="control-label"><small>Bấm nút hoặc Enter</small></label>
+            <button class="btn btn-lg btn-info form-control" type="submit"><i class="icon-magnifying-glass"></i> Tìm kiếm</button>
+        </div>
+    </div>
+</form>
+
+<div class="form-row mb-3">
+    <div class="col-12">
+        <input name="b_print" type="button" class="btn btn-lg btn-success btn-block" onClick="PrintElem('div_print');" value=" In ">
+    </div>
+</div>
+
+<div id="div_print" style="width: 210mm; height: 147mm;font-size:12px;">
+    <style>
+        table {
+            /*border-collapse: collapse;*/
+            width: 100%;
+        }
+
+        th {
+            /*height: 50px;*/
+            text-align: center;
+        }
+
+        table, th, td {
+            /*border: 1px solid black;
+            background-color: white;*/
+        }
+
+        td {
+            vertical-align: bottom;
+        }
+
+        td {
+            /*padding: 5px;*/
+        }
+
+        .th td {
+            /*height: 40px;*/
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
+
+    <div>
+        <table>
+            <tr>
+                <td style="width: 150px; text-align: center; vertical-align: top;">
+                    @*<img src="@Constants.System.domain/images/logo.png" />*@
+                    <img src="~/images/logo.png" style="width: 150px" />
+                </td>
+                <td style="text-align:center; font-size:14px;font-weight:bold">
+                    <span>
+                        NHÀ MÁY XỬ LÝ BÙN THẢI SÀI GÒN XANH
+                    </span>
+                    <br />
+                    <span>
+                        Đ/C : Q.Lộ 50 - Ấp 1 - xã Đa Phước - Bình Chánh - Tp.HCM
+                    </span>
+                    <br />
+                    <span>
+                        Đ.T: (028).6685.7220
+                    </span>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div style="padding-top: 10px;">
+        <table>
+            <tr>
+                <td style="text-align:center;font-size: 20px;font-weight:bold;">
+                    XÁC NHẬN THỜI GIAN LÀM VIỆC XE CƠ GIỚI
+                </td>
+            </tr>
+        </table>
+    </div>
+    @{
+        var code = string.Empty;
+        var date = DateTime.Now;
+        var mangcongviec = string.Empty;
+        var chungloaixe = string.Empty;
+        var donvithuchien = string.Empty;
+        var soxe = string.Empty;
+        var tgxehu = new TimeSpan(0, 0, 0);
+        var tgBttq = new TimeSpan(0, 0, 0);
+        var tgLamViec = new TimeSpan(0, 0, 0);
+        decimal dauDo = 0;
+        decimal nhot10 = 0;
+        decimal nhot50 = 0;
+        decimal nhot90 = 0;
+        decimal nhot140 = 0;
+        var nguyennhan = string.Empty;
+        if (Model.NhaThau != null)
+        {
+            mangcongviec = Model.NhaThau.MangCongViec;
+            chungloaixe = Model.NhaThau.ChungLoaiXe;
+            donvithuchien = Model.NhaThau.NhaThau;
+            soxe = Model.NhaThau.Xe;
+        }
+
+        if (Model.VanHanhs != null && Model.VanHanhs.Count > 0)
+        {
+            code = Model.VanHanhs[0].PhieuInCa;
+            date = Model.VanHanhs[0].Date;
+        }
+    }
+    <div>
+        <table>
+            <tr>
+                <td><b>- Số Phiếu:</b></td>
+                <td><b>@code</b></td>
+                <td><b>- Ngày làm việc:</b></td>
+                <td>@date.ToString("dd/MM/yyyy")</td>
+            </tr>
+            <tr>
+                <td><b>- Mảng công việc:</b></td>
+                <td>
+                    @mangcongviec
+                </td>
+                <td><b>- Chủng loại xe:</b></td>
+                <td>@chungloaixe</td>
+            </tr>
+            <tr>
+                <td><b>- Đơn vị thực hiện:</b></td>
+                <td>@donvithuchien</td>
+                <td><b>- Số xe/ Tên xe:</b></td>
+                <td>
+                    @soxe
+                </td>
+            </tr>
+            @{
+                if (Model.VanHanhs != null && Model.VanHanhs.Count > 0)
+                {
+                    var ivanhanh = 1;
+                    foreach (var vanhanh in Model.VanHanhs)
+                    {
+                        tgxehu += vanhanh.ThoiGianXeHu;
+                        tgBttq += vanhanh.ThoiGianBTTQ;
+                        tgLamViec += vanhanh.ThoiGianLamViec;
+                        dauDo += vanhanh.Dau;
+                        nhot10 += vanhanh.Nhot10;
+                        nhot50 += vanhanh.Nhot50;
+                        nhot90 += vanhanh.Nhot90;
+                        nhot140 += vanhanh.Nhot140;
+                        if (!string.IsNullOrEmpty(nguyennhan) && !string.IsNullOrEmpty(vanhanh.NguyenNhan))
+                        {
+                            nguyennhan += ";";
+                        }
+                        nguyennhan += vanhanh.NguyenNhan;
+                        <tr>
+                            <td><b>- Bắt đầu @ivanhanh:</b></td>
+                            <td>@vanhanh.Start.ToString(@"hh\:mm")</td>
+                            <td><b>- Kết thúc @ivanhanh:</b></td>
+                            <td>@vanhanh.End.ToString(@"hh\:mm")</td>
+                        </tr>
+                        ivanhanh++;
+                    }
+                }
+            }
+            <tr>
+                <td><b>- T.G xe hư (giờ):</b></td>
+                <td>@tgxehu.ToString(@"hh\:mm")</td>
+                <td><b>- T.G BTTQ (giờ):</b></td>
+                <td>@tgBttq.ToString(@"hh\:mm")</td>
+            </tr>
+            <tr>
+                <td colspan="2"><b>- Tổng Th.Gian làm việc (giờ):</b></td>
+                <td colspan="2"><b>@tgLamViec.ToString(@"hh\:mm")</b></td>
+            </tr>
+        </table>
+    </div>
+    <div>
+        <table>
+            <tr>
+                <td colspan="5"><b>- Nhiên liệu tiêu hao</b></td>
+            </tr>
+            <tr>
+                <td><b>Dầu D.O (lít):</b> @dauDo</td>
+                <td><b>Nhớt 10 (lít):</b> @nhot10</td>
+                <td><b>Nhớt 50 (lít):</b> @nhot50</td>
+                <td><b>Nhớt 90 (lít):</b> @nhot90</td>
+                <td><b>Nhớt 140 (lít):</b> @nhot140</td>
+            </tr>
+            <tr>
+                <td><b>Nguyên nhân:</b></td>
+                <td colspan="4" style="font-size:10px;">@nguyennhan</td>
+            </tr>
+        </table>
+    </div>
+    <div style="clear: both"></div>
+
+    <div style="margin-top: 20px; margin-bottom:60px">
+        <table>
+            <tr class="th">
+                <td colspan="2" style="text-align:center"><b>Nhà Máy Sài Gòn Xanh</b></td>
+                <td><b>Đơn Vị Thực Hiện</b></td>
+            </tr>
+            <tr>
+                <td style="text-align:center">Bộ Phận Thống Kê</td>
+                <td style="text-align:center">Quản Lý / Tổ Trưởng Bộ Phận</td>
+                <td style="text-align:center">Tài Xế</td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+@section scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+        <script src="~/js/factory-phieu-in-ca.js?@DateTime.Now.Ticks"></script>
+    }
+}

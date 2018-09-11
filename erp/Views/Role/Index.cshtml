@@ -1,0 +1,305 @@
+﻿@using System.Globalization;
+@using Common.Utilities;
+@using ViewModels
+@model RoleViewModel
+
+@{
+    Layout = "~/Views/Shared/_LayoutSocialFb.cshtml";
+}
+
+@Html.ValidationSummary()
+
+<div class="card">
+    <div class="card-header">
+        <a data-target="#new-role" data-toggle="collapse" aria-expanded="false" aria-controls="new-role" style="cursor:pointer">
+            <i class="icon-add-to-list mr-1"></i> Tạo mới quyền
+        </a>
+    </div>
+    <div class="collapse" id="new-role">
+        <div class="card-body">
+            <form class="data-form" enctype="multipart/form-data" action="/r/create/" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <div class="form-group">
+                    <label asp-for="@Model.Role.Object" class="control-label"></label>
+                    <input asp-for="@Model.Role.Object" class="form-control form-control-lg" />
+                    <span asp-validation-for="@Model.Role.Object" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="@Model.Role.Description" class="control-label"></label>
+                    <textarea asp-for="@Model.Role.Description" class="form-control form-control-lg"></textarea>
+                    <span asp-validation-for="@Model.Role.Description" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="@Model.Role.Duration" class="control-label"></label>
+                    <input name="Model.Role.Duration" class="form-control form-control-lg" value="0"/>
+                    <span asp-validation-for="@Model.Role.Duration" class="text-danger"></span>
+                </div>
+                <div class="d-flex align-items-center">
+                    <div class="mr-2">
+                        <a href="#new-role" class="btn btn-outline-primaryd" data-toggle="collapse" aria-expanded="true" aria-controls="new-role">Hủy</a>
+                        <button type="submit" class="btn btn-outline-primary"><i class="icon-save"></i>&nbsp;Tạo</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <a href="/r-u/phan-quyen/tao-moi/">
+            <i class="icon-add-to-list mr-1"></i> Tạo quyền cho người dùng
+        </a>
+    </div>
+</div>
+
+<div class="card card-sm">
+    <div class="card-header bg-secondary d-flex justify-content-between align-items-center">
+        <div>
+            <h6>Danh sách quyền</h6>
+        </div>
+        <form class="d-flex align-items-center">
+            <span class="mr-2 text-muted text-small text-nowrap">Sắp xếp:</span>
+            <select class="custom-select">
+                <option value="old-new" selected>Mới nhất</option>
+                <option value="status">Trạng thái</option>
+            </select>
+        </form>
+    </div>
+
+</div>
+
+@if (Model.Roles.Count > 0)
+{
+<div class="row">
+    <div class="col">
+        <table class="table table-responsive table-borderless table-hover align-items-center un-display-block">
+            <thead>
+                <tr>
+                    <th scope="col"></th>
+                    <th scope="col">Quyền</th>
+                    <th scope="col">Mô tả</th>
+                    <th scope="col">Thời hạn (ngày)</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var entity in Model.Roles)
+                {
+                    <tr class="bg-white">
+                        <td>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-outline-primary dropdown-toggle dropdown-toggle-no-arrow" type="button" id="dropdownMenuButton-1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <i class="icon-dots-three-horizontal"></i>
+                                </button>
+                                <div class="dropdown-menu dropdown-menu-sm" aria-labelledby="dropdownMenuButton">
+                                    <a class="dropdown-item edit-item" href="javascript:;" data-toggle="modal" data-target="#editItemModal" data-id="@entity.Id">Chỉnh sửa</a>
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item disable-item" href="javascript:;" data-toggle="modal" data-target="#disableItemModal" data-id="@entity.Id">Vô hiệu</a>
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item delete-item" href="javascript:;" data-toggle="modal" data-target="#deleteItemModal" data-id="@entity.Id">Xóa</a>
+                                </div>
+                            </div>
+                        </td>
+                        <td>@entity.Object</td>
+                        <td>@Utility.TruncateLongString(entity.Description,50)</td>
+                        <td>@entity.Duration</td>
+                    </tr>
+                    <tr class="table-divider"></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <script id="tmplDataItem" type="text/x-jsrender">
+        <input type="hidden" name="Role.Id" value="{{:id}}" class="form-control" />
+        <input type="hidden" name="Role.Timestamp" value="{{:timestamp}}" class="form-control" />
+        <div class="form-group">
+            <label class="control-label">Quyền</label>
+            <input name="Role.Object" value="{{:object}}" class="form-control form-control-lg" readonly />
+        </div>
+        <div class="form-group">
+            <label class="control-label">Mô tả</label>
+            <textarea name="Role.Description" class="form-control form-control-lg text-area">{{:description}}</textarea>
+        </div>
+        <div class="form-group">
+            <label class="control-label">Thời hạn (ngày)</label>
+            <input name="Role.Duration" value="{{:duration}}" class="form-control form-control-lg" />
+        </div>
+    </script>
+
+    <script id="tmplDataItemPlainText" type="text/x-jsrender">
+        <input type="hidden" name="Role.Id" value="{{:id}}" class="form-control" />
+        <input type="hidden" name="Role.Timestamp" value="{{:timestamp}}" class="form-control" />
+        <div class="form-group">
+            <label class="control-label">Quyền</label>
+            <input name="Role.Object" value="{{:object}}" type="text" readonly class="form-control-plaintext" />
+        </div>
+        <div class="form-group">
+            <label class="control-label">Mô tả</label>
+            <textarea name="Role.Description" type="text" readonly class="form-control-plaintext">{{:description}}</textarea>
+        </div>
+        <div class="form-group">
+            <label class="control-label">Thời hạn (ngày)</label>
+            <input name="Role.Duration" value="{{:duration}}" type="text" readonly class="form-control-plaintext" />
+        </div>
+    </script>
+
+    <div class="modal fade" id="editItemModal" tabindex="-1" role="dialog" aria-labelledby="editItemModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editItemModalLabel">Chỉnh sửa</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form class="data-form" action="/r/edit/" method="post" enctype="multipart/form-data">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <span class="result"></span>
+                    <div class="modal-body data-item-edit">
+                        <input type="hidden" name="Role.Id" />
+                        <input type="hidden" name="Role.Timestamp" />
+                        <div class="form-group">
+                            <label class="control-label">Quyền</label>
+                            <input name="Role.Object" class="form-control form-control-lg" readonly/>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Mô tả</label>
+                            <textarea name="Role.Description" class="form-control form-control-lg"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Thời hạn</label>
+                            <input name="Role.Duration" class="form-control form-control-lg" />
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy & Đóng</button>
+                        <button type="submit" class="btn btn-primary"><i class="icon-save"></i>&nbsp;Lưu</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="disableItemModal" tabindex="-1" role="dialog" aria-labelledby="disableItemModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="disableItemModalLabel">Bạn chắc khi vô hiệu?</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form class="data-form" action="/r/disable/" method="post" enctype="multipart/form-data">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div class="modal-body data-item-disable">
+                        <input type="hidden" name="Role.Id" />
+                        <input type="hidden" name="Role.Timestamp" />
+                        <div class="form-group">
+                            <label class="control-label">Quyền</label>
+                            <input name="Role.Object" class="form-control form-control-lg" readonly />
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Mô tả</label>
+                            <textarea name="Role.Description" class="form-control form-control-lg"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Thời hạn</label>
+                            <input name="Role.Duration" class="form-control form-control-lg" />
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy & Đóng</button>
+                        <button type="submit" class="btn btn-primary"><i class="icon-save"></i>&nbsp;Vô hiệu</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="activeItemModal" tabindex="-1" role="dialog" aria-labelledby="activeItemModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="activeItemModalLabel">Bạn chăc khôi phục?</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form class="data-form" action="/r/active/" method="post" enctype="multipart/form-data">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div class="modal-body data-item-active">
+                        <input type="hidden" name="Role.Id" />
+                        <input type="hidden" name="Role.Timestamp" />
+                        <div class="form-group">
+                            <label class="control-label">Quyền</label>
+                            <input name="Role.Object" class="form-control form-control-lg" readonly />
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Mô tả</label>
+                            <textarea name="Role.Description" class="form-control form-control-lg"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Thời hạn</label>
+                            <input name="Role.Duration" class="form-control form-control-lg" />
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy & Đóng</button>
+                        <button type="submit" class="btn btn-primary"><i class="icon-save"></i>&nbsp;Khôi phục</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="deleteItemModal" tabindex="-1" role="dialog" aria-labelledby="deleteItemModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteItemModalLabel">Bạn chắc xóa?</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form class="data-form" action="/r/delete/" method="post" enctype="multipart/form-data">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div class="modal-body data-item-delete">
+                        <input type="hidden" name="Role.Id" />
+                        <input type="hidden" name="Role.Timestamp" />
+                        <div class="form-group">
+                            <label class="control-label">Quyền</label>
+                            <input name="Role.Object" class="form-control form-control-lg" readonly />
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Mô tả</label>
+                            <textarea name="Role.Description" class="form-control form-control-lg"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Thời hạn</label>
+                            <input name="Role.Duration" class="form-control form-control-lg" />
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy & Đóng</button>
+                        <button type="submit" class="btn btn-primary"><i class="icon-save"></i>&nbsp;Xóa</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!--end of col-->
+</div>
+    <!--end of row-->
+}
+else
+{
+    <div class="alert alert-light" role="alert">
+        Không thấy dữ liệu...
+    </div>
+}
+
+@section scripts {
+    <script type="text/javascript" src="~/js/role.js"></script>
+}
+

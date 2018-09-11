@@ -1,0 +1,45 @@
+﻿
+@{
+    ViewData["Title"] = "Page Not Found";
+}
+
+@{
+    Layout = "";
+    ViewData["Title"] = "Oh no, you do not have access to this resource!";
+    ViewData["Description"] = "This page not exist. Data maybe deleted.";
+}
+
+<link href="~/css/error/integrity-light.css" rel="stylesheet" />
+<body class="page-template page-template-template-blank-6 page-template-template-blank-6-php page page-id-14510 x-integrity x-integrity-light x-navbar-fixed-top-active x-full-width-layout-active x-content-sidebar-active x-post-meta-disabled wpb-js-composer js-comp-ver-4.3.5 vc_responsive x-Tribat_2_3 x-child-theme-active x-shortcodes-Tribat_0_5">
+    <div id="top" class="site">
+        <div class="x-main full" role="main">
+            <article id="post-14510" class="post-14510 page type-page status-publish hentry no-post-thumbnail">
+                <div class="entry-content content">
+                    <div id="x-content-band-2" class="x-content-band vc bg-image border-top man" data-x-element="content_band" data-x-params="{&quot;type&quot;:&quot;image&quot;,&quot;parallax&quot;:false}" style="background-image: url(/images/404.jpg); background-color: #272727; padding-top: 15%; padding-bottom: 30%;">
+                        <div class="x-container wpb_row">
+                            <div class="x-column x-sm vc x-1-1" style="">
+                                <div class="x-container max width center-text">
+                                    <h3 class="man w-800" style="color: #fff; text-shadow:1px 1px 4px #000;">
+                                        @ViewData["Title"]
+                                    </h3>
+                                    <h4 style="color: #fff; text-shadow:1px 1px 4px #000;">
+                                        <strong>
+                                            @ViewData["Description"]
+                                        </strong>
+                                    </h4>
+                                    <form>
+                                        <input type="button" value="No, really, go back!" onclick="history.go(-1)" />
+                                    </form>
+                                    <a class="x-btn mbm x-btn-flat x-btn-square x-btn-x-large" style="color: #fff;border-color: #00a94f;background-color: #73c167;" href="/" title="Home page">Back to Homepage</a>
+                                    <a class="x-btn mbm x-btn-flat x-btn-square x-btn-x-large" href="/manage" title="Authorization">My authorization</a>
+                                    <a class="x-btn mbm x-btn-flat x-btn-square x-btn-x-large" href="/support" title="Support">Support</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </div>
+</body>
+

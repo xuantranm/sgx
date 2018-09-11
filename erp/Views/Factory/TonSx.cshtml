@@ -1,0 +1,190 @@
+﻿@using Common.Utilities;
+@using ViewModels;
+@model TonSxViewModel;
+
+@{
+    ViewData["Title"] = "Dữ Liệu Tồn Sản Xuất";
+    Layout = "~/Views/Shared/_LayoutData.cshtml";
+}
+
+<div class="card">
+    <div class="card-body">
+        <a href="/@Constants.LinkFactory.Main/@Constants.LinkFactory.TonSx/@Constants.LinkFactory.Create"><i class="icon-add-to-list mr-1"></i> Nhập số liệu</a>
+    </div>
+</div>
+
+<form method="get" action="/@Constants.LinkFactory.Main/@Constants.LinkFactory.TonSx" id="form-main">
+    <div class="form-row mb-3">
+        <div class="col-md-6">
+            <label class="control-label">Tên NVL/BTP/TP</label>
+            <select asp-for="nvl" class="form-control form-control-lg js-select2-basic-single">
+                <option value="">Tất cả</option>
+                @{
+                    foreach (var item in Model.Products)
+                    {
+                        <option value="@item.Alias" data-unit="@item.Unit" data-alias="@item.Alias">@item.Name</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="col-md-3 date-area">
+            <label class="control-label">Từ</label>
+            @{
+                if (Model.from.HasValue)
+                {
+                    <input class="form-control form-control-lg datepicker datepicker-lg" value="@Model.from.Value.ToString("dd/MM/yyyy")" />
+                }
+                else
+                {
+                    <input class="form-control form-control-lg datepicker datepicker-lg" />
+                }
+            }
+            <input type="hidden" asp-for="from" class="hidedatepicker" />
+        </div>
+        <div class="col-md-3 date-area">
+            <label class="control-label">Đến</label>
+            @{
+                if (Model.to.HasValue)
+                {
+                    <input class="form-control form-control-lg datepicker datepicker-lg" value="@Model.to.Value.ToString("dd/MM/yyyy")" />
+                }
+                else
+                {
+                    <input class="form-control form-control-lg datepicker datepicker-lg" />
+                }
+            }
+            <input type="hidden" asp-for="to" class="hidedatepicker" />
+        </div>
+    </div>
+    <div class="form-row mb-3">
+        <div class="col-md-2">
+            <label class="control-label">LOT</label>
+            <input asp-for="lot" class="form-control" />
+        </div>
+        <div class="col-md-2">
+            <label class="control-label">Dòng</label>
+            <select asp-for="size" class="form-control">
+                <option value="50">50</option>
+                <option value="100">100</option>
+                <option value="500">500</option>
+                <option value="1000">1000</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="control-label">Trang</label>
+            <select asp-for="page" class="form-control">
+                @{
+                    var pages = Model.Pages;
+                    for (var i = 1; i <= pages; i++)
+                    {
+                        <option value="@i">@i</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="control-label"><small>Bấm nút hoặc Enter</small></label>
+            <button class="btn btn-lg btn-info form-control" type="submit"><i class="icon-magnifying-glass"></i> Tìm kiếm</button>
+        </div>
+    </div>
+</form>
+
+<small><span class="badge badge-info">@Model.Records</span> được tìm thấy.</small>
+
+<div class="table-responsive">
+    <table class="table table-sm table-bordered table-striped table-hover">
+        <thead>
+            <tr>
+                <th></th>
+                <th>
+                    Tháng
+                </th>
+                <th>
+                    Ngày
+                </th>
+                <th>
+                    Tên NVL/BTP/TP
+                </th>
+                <th>
+                    ĐVT
+                </th>
+                <th>
+                    LOT
+                </th>
+                <th>
+                    Tồn đầu ngày
+                </th>
+                <th>
+                    Nhập từ sản xuất
+                </th>
+                <th>
+                    Nhập từ kho
+                </th>
+                <th>
+                    Xuất cho kho
+                </th>
+                <th>
+                    Xuất cho sản xuất
+                </th>
+                <th>
+                    Xuất hao hụt
+                </th>
+                <th>
+                    Tồn cuối ngày
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.List)
+            {
+                <tr>
+                    <td>
+                        @Html.ActionLink("Sửa", "Edit", new { id = item.Id }) |
+                        @Html.ActionLink("Chi tiết", "Details", new { id = item.Id }) |
+                        @Html.ActionLink("Xóa", "Delete", new { id = item.Id })
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Month)
+                    </td>
+                    <td>
+                        @item.Date.ToString("dd/MM/yyyy")
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Product)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Unit)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.LOT)
+                    </td>
+                    <td>
+                        @String.Format("{0:#,###,###.##}", item.TonDauNgay)
+                    </td>
+                    <td>
+                        @String.Format("{0:#,###,###.##}", item.NhapTuSanXuat)
+                    </td>
+                    <td>
+                        @String.Format("{0:#,###,###.##}", item.XuatChoSanXuat)
+                    </td>
+                    <td>
+                        @String.Format("{0:#,###,###.##}", item.NhapTuKho)
+                    </td>
+                    <td>
+                        @String.Format("{0:#,###,###.##}", item.XuatChoKho)
+                    </td>
+                    <td>
+                        @String.Format("{0:#,###,###.##}", item.XuatHaoHut)
+                    </td>
+                    <td>
+                        @String.Format("{0:#,###,###.##}", item.TonCuoiNgay)
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@section scripts {
+    <script type="text/javascript" src="~/js/factory-tonsx.js?@DateTime.Now.Ticks"></script>
+}

@@ -1,0 +1,73 @@
+﻿@using Common.Utilities;
+@using ViewModels;
+@model DanhGiaXCGViewModel;
+
+@{
+    ViewData["Title"] = "Biểu đồ đánh giá xe cơ giới";
+    Layout = "~/Views/Shared/_LayoutData.cshtml";
+}
+
+<form method="get" action="/@Constants.LinkFactory.Main/@Constants.LinkFactory.BieuDoXCG" id="form-main">
+    <div class="form-row mb-3">
+        <div class="col-md-6 col-xs-12">
+            <label class="control-label">Xe cơ giới/máy</label>
+            <select asp-for="xm" class="form-control form-control-lg js-select2-basic-single">
+                <option value="">Tất cả</option>
+                @{
+                    foreach (var item in Model.Vehicles)
+                    {
+                        <option value="@item.Alias">@item.Name</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="col-md-2 col-xs-12">
+            <label class="control-label">Xếp hạng</label>
+            <select asp-for="rate" class="form-control form-control-lg">
+                <option value="">Tất cả</option>
+                <option value="A">A</option>
+                <option value="A+">A+</option>
+                <option value="A+_">A++</option>
+                <option value="B">B</option>
+                <option value="C">C</option>
+            </select>
+        </div>
+        <div class="col-md-4 col-xs-12">
+            <label class="control-label"><small>Bấm nút hoặc Enter</small></label>
+            <button class="btn btn-lg btn-info form-control" type="submit"><i class="icon-magnifying-glass"></i> Tìm kiếm</button>
+        </div>
+    </div>
+</form>
+
+<div class="table-responsive">
+    <table class="table table-sm table-bordered table-striped table-hover">
+        <thead>
+            <tr>
+                <th></th>
+                <th>Xe</th>
+                <th>Điểm</th>
+                <th>Xếp hạng</th>
+                <th>Tuần</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.List)
+            {
+                if (!string.IsNullOrEmpty(item.XepHangXCG))
+                {
+                    <tr>
+                        <td></td>
+                        <td>@item.ChungLoaiXe</td>
+                        <td>@String.Format("{0:#,###,###.##}", item.DanhGiaTongThe)</td>
+                        <td>@item.XepHangXCG</td>
+                        <td>@item.Week</td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+@section scripts {
+    <script type="text/javascript" src="~/js/factory-bieu-do-xcg.js?@DateTime.Now.Ticks"></script>
+}

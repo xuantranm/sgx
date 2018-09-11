@@ -1,0 +1,122 @@
+﻿@using Common.Utilities;
+@using ViewModels;
+@model DinhMucViewModel;
+
+@{
+    ViewData["Title"] = "Định mức xe cơ giới";
+    Layout = "~/Views/Shared/_LayoutData.cshtml";
+}
+
+<div class="card">
+    <div class="card-body">
+        <a href="/@Constants.LinkFactory.Main/@Constants.LinkFactory.DinhMucXCG/@Constants.LinkFactory.Create"><i class="icon-add-to-list mr-1"></i> Nhập số liệu</a>
+    </div>
+</div>
+
+<form method="get" action="/@Constants.LinkFactory.Main/@Constants.LinkFactory.DinhMucXCG" id="form-main">
+    <div class="form-row mb-3">
+        <div class="col-md-6 col-xs-12">
+            <label class="control-label">Công đoạn</label>
+            <select asp-for="cd" class="form-control form-control-lg js-select2-basic-single">
+                <option value="">Tất cả</option>
+                @{
+                    foreach (var item in Model.Stages)
+                    {
+                        <option value="@item.Alias">@item.Name</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="col-md-6 col-xs-12">
+            <label class="control-label"><small>Bấm nút hoặc Enter</small></label>
+            <button class="btn btn-lg btn-info form-control" type="submit"><i class="icon-magnifying-glass"></i> Tìm kiếm</button>
+        </div>
+    </div>
+</form>
+
+<div class="table-responsive">
+    <table class="table table-sm table-bordered table-striped table-hover">
+        <thead>
+            <tr>
+                <th></th>
+                <th></th>
+                <th colspan="4">Điểm công đoạn vận hành</th>
+                <th colspan="4">Điểm Năng suất /1h</th>
+                <th colspan="6">Chi phí</th>
+            </tr>
+            <tr>
+                <th></th>
+                <th>Công đoạn</th>
+                <th>
+                    Xe cuốc
+                </th>
+                <th>
+                    Xe ben
+                </th>
+                <th>
+                    Xe ủi
+                </th>
+                <th>
+                    Xe xúc
+                </th>
+                <th>
+                    Xe cuốc
+                </th>
+                <th>
+                    Xe ben
+                </th>
+                <th>
+                    Xe ủi
+                </th>
+                <th>
+                    Xe xúc
+                </th>
+                <th>
+                    Xe cuốc 07
+                </th>
+                <th>
+                    Xe cuốc 05
+                </th>
+                <th>
+                    Xe cuốc 03
+                </th>
+                <th>
+                    Xe ben
+                </th>
+                <th>
+                    Xe ủi
+                </th>
+                <th>
+                    Xe xúc
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.List)
+            {
+                <tr>
+                    <td></td>
+                    <td>@item.CongDoan</td>
+                    <td>@String.Format("{0:#,###,###.##}", item.DiemCongDoanVanHanh.XeCuoc)</td>
+                    <td>@String.Format("{0:#,###,###.##}", item.DiemCongDoanVanHanh.XeBen)</td>
+                    <td>@String.Format("{0:#,###,###.##}", item.DiemCongDoanVanHanh.XeUi)</td>
+                    <td>@String.Format("{0:#,###,###.##}", item.DiemCongDoanVanHanh.XeXuc)</td>
+                    <td>@String.Format("{0:#,###,###.##}", item.DiemNangSuan1h.XeCuoc)</td>
+                    <td>@String.Format("{0:#,###,###.##}", item.DiemNangSuan1h.XeBen)</td>
+                    <td>@String.Format("{0:#,###,###.##}", item.DiemNangSuan1h.XeUi)</td>
+                    <td>@String.Format("{0:#,###,###.##}", item.DiemNangSuan1h.XeXuc)</td>
+                    <td>@String.Format("{0:#,###,###}", item.DinhMucChiPhi.XeCuoc07)</td>
+                    <td>@String.Format("{0:#,###,###}", item.DinhMucChiPhi.XeCuoc05)</td>
+                    <td>@String.Format("{0:#,###,###}", item.DinhMucChiPhi.XeCuoc03)</td>
+                    <td>@String.Format("{0:#,###,###}", item.DinhMucChiPhi.XeBen)</td>
+                    <td>@String.Format("{0:#,###,###}", item.DinhMucChiPhi.XeUi)</td>
+                    <td>@String.Format("{0:#,###,###}", item.DinhMucChiPhi.XeXuc)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@section scripts {
+    <script type="text/javascript" src="~/js/factory-dinh-muc-xcg.js?@DateTime.Now.Ticks"></script>
+}

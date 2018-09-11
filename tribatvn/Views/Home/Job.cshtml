@@ -1,0 +1,147 @@
+﻿@using Common.Utilities;
+@using Helpers;
+@using Helpers;
+@using ViewModels;
+@model JobViewModel;
+
+@{
+    Layout = "~/Views/Shared/_Wingman.cshtml";
+    var language = ViewData["Language"].ToString();
+    var job = Model.Menu.MenusContent.Where(m => m.Code.Equals("job")).First();
+    var contact = Model.Menu.MenusContent.Where(m => m.Code.Equals("contact")).First();
+}
+
+@await Html.PartialAsync("MenuPartial", Model.Menu)
+
+
+<div class="main-container">
+    <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="/">@Html.Raw(TextHelper.GetText(525, language))</a>
+                        </li>
+
+                        <li class="breadcrumb-item active" aria-current="page">@job.Title</li>
+                    </ol>
+                </div>
+                <!--end of col-->
+            </div>
+            <!--end of row-->
+        </div>
+        <!--end of container-->
+    </nav>
+    <section>
+        <div class="container">
+            <div class="row justify-content-center text-center section-intro">
+                <div class="col-12 col-md-9 col-lg-8">
+                    <span class="title-decorative">@Html.Raw(TextHelper.GetText(553, language))</span>
+                    <h2 class="display-4">@Html.Raw(TextHelper.GetText(554, language))</h2>
+                    <span class="lead">@Html.Raw(TextHelper.GetText(555, language))</span>
+                </div>
+                <!--end of col-->
+            </div>
+            <!--end of row-->
+            <div class="row justify-content-center">
+                <div class="col-12 col-md-10">
+
+                    @*<h4 class="mb-4">Design</h4>*@
+                    <div class="card mb-5">
+                        <ul class="list-group list-group-lg list-group-flush">
+                            @{
+                                foreach (var item in Model.Entities)
+                                {
+                                    var link = "/" + Constants.Link.Job + "/" + ViewData["Category"] + "/" + item.Alias;
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <a href="@link">@item.Name</a>
+                                        <span>@item.Description</span>
+                                    </li>
+                                }
+                            }
+                        </ul>
+                    </div>
+                </div>
+                <!--end of col-->
+            </div>
+            <!--end of row-->
+            <div class="row justify-content-center text-center section-outro">
+                <div class="col-lg-4 col-md-5">
+                    <h6>@Html.Raw(TextHelper.GetText(556, language))</h6>
+                    <p>@Html.Raw(TextHelper.GetText(557, language))</p>
+                    <a href="/c/@contact.Url">@contact.Title &rsaquo;</a>
+                </div>
+                <!--end of col-->
+            </div>
+            <!--end of row-->
+        </div>
+        <!--end of container-->
+    </section>
+    <!--end of section-->
+    <section>
+        <div class="container">
+            <div class="row text-center section-intro">
+                <div class="col">
+                    <h2 class="h1">@Html.Raw(TextHelper.GetText(558, language))</h2>
+                </div>
+                <!--end of col-->
+            </div>
+            <!--end of row-->
+            <ul class="row feature-list justify-content-center">
+                <li class="col-12 col-md-6 col-lg-5">
+                    <i class="icon-star h1 text-teal"></i>
+                    <h5>@Html.Raw(TextHelper.GetText(559, language))</h5>
+                    <p>
+                        @Html.Raw(TextHelper.GetText(560, language))
+                    </p>
+                    @if (language == "vi-VN")
+                    {
+                        <a href="/c/policy/">@Html.Raw(TextHelper.GetText(561, language))</a>
+                    }
+                    else
+                    {
+                        <a href="/c/qui-dinh/">@Html.Raw(TextHelper.GetText(561, language))</a>
+                    }
+                </li>
+                <li class="col-12 col-md-6 col-lg-5">
+                    <i class="icon-cloud h1 text-purple"></i>
+                    <h5>@Html.Raw(TextHelper.GetText(562, language))</h5>
+                    <p>
+                        @Html.Raw(TextHelper.GetText(563, language))
+                    </p>
+                </li>
+                <li class="col-12 col-md-6 col-lg-5">
+                    <i class="icon-wallet h1 text-orange"></i>
+                    <h5>@Html.Raw(TextHelper.GetText(564, language))</h5>
+                    <p>
+                        @Html.Raw(TextHelper.GetText(565, language))
+                    </p>
+                </li>
+                <li class="col-12 col-md-6 col-lg-5">
+                    <i class="icon-heart h1 text-red"></i>
+                    <h5>@Html.Raw(TextHelper.GetText(566, language))</h5>
+                    <p>
+                        @Html.Raw(TextHelper.GetText(567, language))
+                    </p>
+                    <a href="#">@Html.Raw(TextHelper.GetText(568, language))</a>
+                </li>
+            </ul>
+        </div>
+        <!--end of container-->
+    </section>
+    <!--end of section-->
+</div>
+
+<div class="modal fade" id="video-modal" tabindex="-1" aria-labelledby="video-modal-label" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-center-viewport">
+        <div class="modal-content">
+            <div class="embed-responsive embed-responsive-16by9">
+                <iframe class="embed-responsive-item" data-src=_global.iframeSrc allowfullscreen></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+
+@await Html.PartialAsync("FooterPartial", Model.Menu)
+

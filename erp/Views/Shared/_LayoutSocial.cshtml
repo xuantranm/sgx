@@ -1,0 +1,143 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+    <title>@Html.Raw(ViewBag.Title)</title>
+    <meta charset="utf-8" />
+    <meta name="robots" content="@Html.Raw(ViewBag.Robots)" />
+    <meta name="keywords" content="@Html.Raw(ViewBag.KeyWords)" />
+    <meta name="description" content="@Html.Raw(ViewBag.Description)" />
+    <meta name="author" content="@Html.Raw(ViewBag.MetaAuthor)" />
+    <meta property="og:url" content="@Html.Raw(ViewBag.OgUrl)" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="@Html.Raw(ViewBag.OgTitle)" />
+    <meta property="og:description" content="@Html.Raw(ViewBag.OgDescription)" />
+
+    <link rel="canonical" href="@Html.Raw(ViewBag.Canonical)" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400,400i,500" rel="stylesheet" />
+    @*<link href="~/assets/wingman/fonts/rubik300-400-400i-500.css" rel="stylesheet" />*@
+    <link href="~/lib/fontawesome-free-5.3.1-web/css/all.css" rel="stylesheet" />
+    <link href="~/assets/wingman/css/socicon.css" rel="stylesheet" type="text/css" media="all" />
+    <link href="~/assets/wingman/css/entypo.css" rel="stylesheet" type="text/css" media="all" />
+    <link href="~/lib/zoom/zoom.css" rel="stylesheet" />
+    <!--Bootstrap 4.1.0-->
+    <link href="~/assets/wingman/css/theme.css" rel="stylesheet" type="text/css" media="all" />
+    <link href="~/assets/wingman/css/custom.css" rel="stylesheet" type="text/css" media="all" />
+    <link href="~/assets/wingman/css/screen.css" rel="stylesheet" type="text/css" media="all" />
+    <style>
+        .validation-summary-errors {
+            position: relative;
+            padding: 0.75rem 1.25rem;
+            margin: 10px 0 0 0;
+            border: 1px solid transparent;
+            border-radius: 0.25rem;
+            color: #712b29;
+            background-color: #f7dddc;
+            border-color: #f4cfce;
+        }
+    </style>
+
+
+    @RenderSection("css", required: false)
+
+    @*
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-52115242-13"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+
+            gtag('config', 'UA-52115242-13');
+        </script>
+    *@
+
+    <script type="text/javascript" src="~/lib/jquery3.2.1/dist/jquery-3.2.1.min.js"></script>
+</head>
+
+<body>
+
+    @if (ViewData["Disable"] != null)
+    {
+        <div class="alert alert-danger" role="alert">
+            @ViewData["Disable"]
+        </div>
+    }
+
+    @RenderBody()
+
+    <div class="alert alert-light d-none" role="alert">
+        Account beta testing: sysadmin - pwd: 06021988
+    </div>
+
+    <script type="text/javascript" src="~/lib/jquery-ui-1.12.1/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="~/lib/popper/popper.min.js"></script>
+    <script type="text/javascript" src="~/assets/wingman/js/jquery.smartWizard.min.js"></script>
+    <script type="text/javascript" src="~/lib/flickity/flickity.pkgd.min.js"></script>
+    <script type="text/javascript" src="~/assets/wingman/js/scrollMonitor.js"></script>
+    <script type="text/javascript" src="~/lib/smooth-scroll/smooth-scroll.polyfills.min.js"></script>
+    <script type="text/javascript" src="~/lib/prism/prism.min.js"></script>
+    <script type="text/javascript" src="~/lib/zoom/zoom-vanilla.min.js"></script>
+    <script type="text/javascript" src="~/lib/bootstrap-4.0.0-dist/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="~/assets/wingman/js/theme.js"></script>
+    <script type="text/javascript" src="~/lib/bootstrap-multiselect/dist/js/bootstrap-multiselect.js"></script>
+    <script type="text/javascript" src="~/lib/autosize/jquery.textarea_autosize.js"></script>
+    <script type="text/javascript" src="~/lib/bootstrap-datepicker-1.6.4-dist/js/bootstrap-datepicker.min.js"></script>
+    <script type="text/javascript" src="~/lib/bootstrap-datepicker-1.6.4-dist/locales/bootstrap-datepicker.vi.min.js" charset="UTF-8"></script>
+    <script type="text/javascript" src="~/lib/moment/moment.min.js"></script>
+    <script type="text/javascript" src="~/lib/moment/moment-with-locales.min.js"></script>
+    <script type="text/javascript" src="~/lib/autoNumber-4-1/autoNumeric.js"></script>
+    <script type="text/javascript" src="~/lib/toastr/toastr.min.js"></script>
+    @*<script type="text/javascript" src="~/lib/bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js"></script>*@
+    <script type="text/javascript" src="~/lib/daterangepicker/daterangepicker.js"></script>
+    <script type="text/javascript" src="~/lib/js-render/jsrender.min.js"></script>
+    <script type="text/javascript" src="~/js/site.js"></script>
+
+    @RenderSection("scripts", required: false)
+
+    <!--Multilanguage-->
+    <script type="text/javascript">
+
+        $('.btn-language').on('click', function () {
+            var language = $(this).attr("data-value");
+            var url = $('.' + language, $('.link-languages')).data('value');
+            console.log(url);
+            $.ajax({
+                url: '/language/change/',
+                data: { language: language },
+                type: 'post',
+                dataType: 'json',
+                success: function (data) {
+                    if (data == true) {
+                        //window.location.reload();
+                        console.log(url);
+                        if (typeof url !== "undefined") {
+                            window.location.replace(url);
+                        }
+                        else {
+                            window.location.reload();
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+
+    <!--Start of Tawk.to Script-->
+    <script type="text/javascript">
+        var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
+        (function () {
+            var s1 = document.createElement("script"), s0 = document.getElementsByTagName("script")[0];
+            s1.async = true;
+            s1.src = 'https://embed.tawk.to/5adae73a227d3d7edc242b43/default';
+            s1.charset = 'UTF-8';
+            s1.setAttribute('crossorigin', '*');
+            s0.parentNode.insertBefore(s1, s0);
+        })();
+    </script>
+    <!--End of Tawk.to Script-->
+</body>
+
+</html>

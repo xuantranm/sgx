@@ -1,0 +1,108 @@
+﻿@using Common.Utilities;
+@using ViewModels;
+@model VanHanhViewModel;
+
+@{
+    ViewData["Title"] = "Báo cáo bốc hàng";
+    Layout = "~/Views/Shared/_LayoutData.cshtml";
+}
+
+<form method="get" action="/@Constants.LinkFactory.Main/@Constants.LinkFactory.ReportBH" id="form-main">
+    <div class="form-row mb-3">
+        <div class="col-md-3 date-area">
+            <label class="control-label">Từ</label>
+            @{
+                if (Model.from.HasValue)
+                {
+                    <input class="form-control form-control-lg datepicker datepicker-lg" value="@Model.from.Value.ToString("dd/MM/yyyy")" />
+                }
+                else
+                {
+                    <input class="form-control form-control-lg datepicker datepicker-lg" />
+                }
+            }
+            <input type="hidden" asp-for="from" class="hidedatepicker" />
+        </div>
+        <div class="col-md-3 date-area">
+            <label class="control-label">Đến</label>
+            @{
+                if (Model.to.HasValue)
+                {
+                    <input class="form-control form-control-lg datepicker datepicker-lg" value="@Model.to.Value.ToString("dd/MM/yyyy")" />
+                }
+                else
+                {
+                    <input class="form-control form-control-lg datepicker datepicker-lg" />
+                }
+            }
+            <input type="hidden" asp-for="to" class="hidedatepicker" />
+        </div>
+        <div class="col-md-6">
+            <label class="control-label">Tên NVL/BTP/TP</label>
+            <select asp-for="nvl" class="form-control form-control-lg js-select2-basic-single">
+                <option value="">Tất cả</option>
+                @{
+                    foreach (var item in Model.Products)
+                    {
+                        <option value="@item.Alias">@item.Name</option>
+                    }
+                }
+            </select>
+        </div>
+
+    </div>
+    <div class="form-row mb-3">
+        <div class="col-12">
+            <label class="control-label"><small>Bấm nút hoặc Enter</small></label>
+            <button class="btn btn-lg btn-info form-control" type="submit"><i class="icon-magnifying-glass"></i> Tìm kiếm</button>
+        </div>
+    </div>
+</form>
+
+<div class="table-responsive">
+    <table class="table table-sm table-bordered table-striped table-hover">
+        <thead>
+            <tr>
+                <th></th>
+                <th>
+                    Thành phẩm
+                </th>
+                <th>
+                    Số lượng bốc hàng
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                var groups = (from p in Model.List
+                              group p by new
+                              {
+                                  p.NVLTP
+                              }
+                              into d
+                              select new
+                              {
+                                  ThanhPham = d.Key.NVLTP,
+                                  reports = d.ToList()
+                              }).ToList();
+
+                foreach (var group in groups)
+                {
+                    <tr>
+                        <td></td>
+                        <td>
+                            @group.ThanhPham
+                        </td>
+                        <td>
+                            @String.Format("{0:#,###,###.##}", group.reports.Sum(x => x.SoLuongBocHang))
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+@section scripts {
+    <script type="text/javascript" src="~/js/factory-van-hanh.js?@DateTime.Now.Ticks"></script>
+}

@@ -1,0 +1,6 @@
+﻿#logo img {
+    height: auto;
+}
+#header.sticky-header:not(.static-sticky):not(.sticky-style-2):not(.sticky-style-3) #logo img {
+    height: 50px;
+}

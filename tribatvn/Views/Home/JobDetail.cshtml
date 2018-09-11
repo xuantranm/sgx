@@ -1,0 +1,222 @@
+﻿@using Common.Utilities;
+@using Helpers;
+@using ViewModels;
+@using Common.Utilities;
+@using ViewModels;
+@model JobDetailViewModel;
+
+@{
+    Layout = "~/Views/Shared/_Wingman.cshtml";
+    var language = ViewData["Language"].ToString();
+    var job = Model.Menu.MenusContent.Where(m => m.Code.Equals("job")).First();
+
+    //Sharing
+    var host = Context.Request.Host;
+    string currentUrl = Context.Request.Scheme + "://" + Context.Request.Host + Context.Request.Path;
+    string enc = System.Net.WebUtility.UrlEncode(currentUrl);
+    string text = System.Net.WebUtility.UrlEncode(Model.Entity.Name);
+}
+
+@await Html.PartialAsync("MenuPartial", Model.Menu)
+
+@if (Model.Entity != null)
+{
+    <div class="main-container">
+        <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">
+                                <a href="/">@Html.Raw(TextHelper.GetText(525, language))</a>
+                            </li>
+                            @foreach (var breadcum in Model.Breadcrumbs)
+                            {
+                                <li class="breadcrumb-item">
+                                    <a href="@breadcum.Url">@breadcum.Name</a>
+                                </li>
+                            }
+                            <li class="breadcrumb-item active" aria-current="page">@Model.Entity.Name</li>
+                        </ol>
+                    </div>
+                    <!--end of col-->
+                </div>
+                <!--end of row-->
+            </div>
+            <!--end of container-->
+        </nav>
+        <section class="bg-white space-sm">
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <h1>@Model.Entity.Name</h1>
+                        <span class="lead">@Model.Entity.Description</span>
+                        <a href="#" class="btn btn-success">@Html.Raw(TextHelper.GetText(569, language))</a>
+                    </div>
+                    <!--end of col-->
+                </div>
+                <!--end of row-->
+            </div>
+            <!--end of container-->
+        </section>
+        <!--end of section-->
+        <section>
+            <div class="container">
+                <div class="row justify-content-between">
+                    <div class="col-12 col-md-8 col-lg-7">
+                        <article>
+                            @Html.Raw(Model.Entity.Content)
+                        </article>
+                        <hr>
+                        <small>
+                            @Html.Raw(TextHelper.GetText(571, language))
+                        </small>
+                        <hr>
+                        <h5 class="mb-4">@Html.Raw(TextHelper.GetText(570, language))</h5>
+                        <form class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <a href="#" class="btn btn-success">@Html.Raw(TextHelper.GetText(569, language))</a>
+                            </div>
+                            <div>
+                                <a href="/j/@job.Url">@job.Title &rsaquo;</a>
+                            </div>
+                        </form>
+                    </div>
+                    <!--end of col-->
+                    <div class="col-12 col-md-4">
+                        <div class="card">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item">
+                                    <div class="d-flex justify-content-between">
+                                        <div><i class="icon-tools mr-1"></i> @Html.Raw(TextHelper.GetText(572, language))</div>
+                                        <span>Engineering</span>
+                                    </div>
+                                </li>
+                                <li class="list-group-item">
+                                    <div class="d-flex justify-content-between">
+                                        <div><i class="icon-home mr-1"></i> @Html.Raw(TextHelper.GetText(573, language))</div>
+                                        <span>Melbourne, AU</span>
+                                    </div>
+                                </li>
+                                <li class="list-group-item">
+                                    <div class="d-flex justify-content-between">
+                                        <div><i class="icon-stopwatch mr-1"></i> @Html.Raw(TextHelper.GetText(574, language))</div>
+                                        <span>Full time</span>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between">
+                                <div>
+                                    <span class="h6">Development</span>
+                                    <span class="badge badge-secondary">6</span>
+                                </div>
+                                <a href="#">View all &rsaquo;</a>
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-unstyled list-spacing-sm">
+                                    <li>
+                                        <i class="icon-text-document text-muted mr-1"></i>
+                                        <a href="#">Setting up API end-points</a>
+                                    </li>
+                                    <li>
+                                        <i class="icon-text-document text-muted mr-1"></i>
+                                        <a href="#">Importing contacts via CSV</a>
+                                    </li>
+                                    <li>
+                                        <i class="icon-text-document text-muted mr-1"></i>
+                                        <a href="#">Integrating your Gulp workflow</a>
+                                    </li>
+                                    <li>
+                                        <i class="icon-text-document text-muted mr-1"></i>
+                                        <a href="#">Forking a repo</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <!--end of card-->
+                        <div class="card">
+                            <div class="card-header">
+                                <span class="h6">@Html.Raw(TextHelper.GetText(575, language))</span>
+                            </div>
+                            <div class="list-group list-group-flush">
+
+                                <a class="list-group-item d-flex justify-content-between" href="#">
+                                    <div>
+                                        <i class="icon-area-graph mr-1"></i>
+                                        <span>Analytics</span>
+                                    </div>
+                                    <div>
+                                        <i class="icon-chevron-right"></i>
+                                    </div>
+                                </a>
+
+                                <a class="list-group-item d-flex justify-content-between" href="#">
+                                    <div>
+                                        <i class="icon-power-plug mr-1"></i>
+                                        <span>API Integration</span>
+                                    </div>
+                                    <div>
+                                        <i class="icon-chevron-right"></i>
+                                    </div>
+                                </a>
+
+                                <a class="list-group-item d-flex justify-content-between" href="#">
+                                    <div>
+                                        <i class="icon-credit-card mr-1"></i>
+                                        <span>Billing</span>
+                                    </div>
+                                    <div>
+                                        <i class="icon-chevron-right"></i>
+                                    </div>
+                                </a>
+
+                                <a class="list-group-item d-flex justify-content-between" href="#">
+                                    <div>
+                                        <i class="icon-code mr-1"></i>
+                                        <span>Development</span>
+                                    </div>
+                                    <div>
+                                        <i class="icon-chevron-right"></i>
+                                    </div>
+                                </a>
+
+                                <a class="list-group-item d-flex justify-content-between" href="#">
+                                    <div>
+                                        <i class="icon-shield mr-1"></i>
+                                        <span>Security</span>
+                                    </div>
+                                    <div>
+                                        <i class="icon-chevron-right"></i>
+                                    </div>
+                                </a>
+
+                                <a class="list-group-item d-flex justify-content-between" href="#">
+                                    <div>
+                                        <i class="icon-folder mr-1"></i>
+                                        <span>Storage</span>
+                                    </div>
+                                    <div>
+                                        <i class="icon-chevron-right"></i>
+                                    </div>
+                                </a>
+
+                            </div>
+                        </div>
+                    </div>
+                    <!--end of col-->
+                </div>
+                <!--end of row-->
+            </div>
+            <!--end of container-->
+        </section>
+        <!--end of section-->
+    </div>
+}
+else
+{
+    @await Html.PartialAsync("UpdatePartial")
+}
+
+@await Html.PartialAsync("FooterPartial", Model.Menu)

@@ -1,0 +1,51 @@
+﻿@using Common.Utilities;
+@using Helpers;
+@using ViewModels;
+@model JobViewModel;
+
+@{
+    Layout = "~/Views/Shared/_Core.cshtml";
+    var language = ViewData["Language"].ToString();
+}
+
+<div class="main-container">
+    <section>
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-12 col-md-10">
+                    <h4 class="mb-4">Core</h4>
+                    <div class="card mb-5">
+                        <ul class="list-group list-group-lg list-group-flush">
+
+                            <li class="list-group-item d-flex justify-content-between">
+                                <a href="/core/product">Product</a>
+                                <span>Manage product, service,...</span>
+                            </li>
+
+                            <li class="list-group-item d-flex justify-content-between">
+                                <a href="/core/news">News</a>
+                                <span>News, category news,...</span>
+                            </li>
+
+                            <li class="list-group-item d-flex justify-content-between">
+                                <a href="/core/job">Job</a>
+                                <span>Job, category job,...</span>
+                            </li>
+
+                            <li class="list-group-item d-flex justify-content-between">
+                                <a href="/core/content">Content</a>
+                                <span>about, contact,...</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <!--end of col-->
+            </div>
+            <!--end of row-->
+        </div>
+        <!--end of container-->
+    </section>
+    <!--end of section-->
+</div>
+
+

@@ -1,0 +1,2051 @@
+﻿@using Common.Utilities;
+@using Common.Enums;
+@model ViewModels.EmployeeDataViewModel
+
+@{
+    Layout = "~/Views/Shared/_LayoutSocialFb.cshtml";
+    var i = 0;
+}
+
+<div class="main-container">
+    <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="/">Trang chủ</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="/hr/nhan-su">Nhân sự</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">Cập nhật tài khoản @Model.Employee.FullName</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="bg-white space-sm pb-4">
+        <div class="container">
+            <div class="row justify-content-between align-items-center">
+                <div class="col-auto">
+                    <h1 class="h2">Chỉnh sửa thông tin</h1>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="flush-with-above space-0">
+        <div class="bg-white">
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <ul class="nav nav-tabs" id="myTab" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="general-tab" data-toggle="tab" href="#general" role="tab" aria-controls="general" aria-selected="true">Thông tin</a>
+                            </li>
+                            @{
+                                if (ViewBag.SalatyRight > (int)ERights.None)
+                                {
+                                    <li class="nav-item">
+                                        <a class="nav-link" id="salary-tab" data-toggle="tab" href="#salary" role="tab" aria-controls="salary" aria-selected="false">Lương & Thanh toán</a>
+                                    </li>
+                                }
+                            }
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MAIN -->
+    <form class="data-form" asp-action="Edit" enctype="multipart/form-data">
+        <section class="flush-with-above height-80 d-block">
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="general" role="tabpanel" aria-labelledby="general-tab">
+                    <input asp-for="Employee.Id" type="hidden" />
+                    <input asp-for="Employee.Code" type="hidden" />
+                    <input name="checkUserName" type="hidden" value="@Model.Employee.UserName" />
+                    <input name="checkEMail" type="hidden" value="@Model.Employee.Email" />
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="media flex-wrap mb-0 align-items-center" id="avatar-upload">
+                                    @if (Model.Employee.Avatar != null)
+                                    {
+                                        <img id="avatarShow" alt="@Model.Employee.FullName" src="@Model.Employee.Avatar.Path@Model.Employee.Avatar.FileName" class="avatar avatar-lg mb-3 mb-md-0" />
+                                    }
+                                    else
+                                    {
+                                        <img id="avatarShow" alt="@Model.Employee.FullName" src="holder.js/120x120" class="avatar avatar-lg mb-3 mb-md-0" />
+                                    }
+                                    <div class="media-body">
+                                        <label class="custom-file mb-2" for="file2">
+                                            <input type="file" id="avatar-input" name="avatar" class="custom-file-input height-0">
+                                            <span class="btn btn-primary"><i class="icon-upload-to-cloud">&nbsp;</i>Chọn hình</span>
+                                        </label>
+                                        <div>
+                                            <small>
+                                                Để có kết quả tốt nhất, hãy sử dụng hình ảnh có kích thước tối thiểu 256px x 256px ở định dạng .jpg hoặc .png
+                                                @*For best results, use an image at least 256px by 256px in either .jpg or .png format*@
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr />
+                        <div class="row mb-4">
+                            <div class="col">
+                                <h5><i class="icon icon-info"></i>Thông tin</h5>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12 col-md-4 order-md-2">
+                                <div class="alert alert-info text-small" role="alert">
+                                    <i class="icon-shield"></i>
+                                    <span>
+                                        @*Your information is always kept encrypted and can never be accessed by third parties.*@
+                                        Thông tin của bạn luôn được mã hóa và không bao giờ cho các bên thứ ba truy cập.
+                                    </span>
+                                    <a href="/pp/chinh-sach-bao-mat">@*See our privacy policy*@Xem chính sách bảo mật của chúng tôi</a>
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-md-8 order-md-1">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="form-group">
+                                            <i class="icon icon-text"></i>
+                                            <label asp-for="Employee.FullName" class="control-label"></label><span class="text-red">*</span>
+                                            <input asp-for="Employee.FullName" class="form-control form-control-lg" autofocus />
+                                            <span asp-validation-for="Employee.FullName" class="text-danger"></span>
+                                            <small>Thông tin này hiển thị trên hồ sơ công khai của bạn</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="form-group">
+                                            <i class="icon icon-login"></i>
+                                            <label asp-for="Employee.UserName" class="control-label"></label><span class="text-red">*</span>
+                                            <input asp-for="Employee.UserName" class="form-control form-control-lg" readonly />
+                                            <small>Thông tin này hiển thị trên hồ sơ công khai của bạn</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="form-group">
+                                            <i class="icon icon-email"></i>
+                                            <label asp-for="Employee.Email" class="control-label"></label><span class="text-red">*</span>
+                                            <input asp-for="Employee.Email" class="form-control form-control-lg" readonly />
+                                            <span asp-validation-for="Employee.Email" class="text-danger"></span>
+                                            <small>@*Can used to log in to your account*@Có thể đăng nhập bằng email, mật khẩu được gửi tới email này.</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="form-group">
+                                            <i class="icon icon-phone"></i>
+                                            <label asp-for="Employee.Tel" class="control-label"></label>
+                                            <input asp-for="Employee.Tel" class="form-control form-control-lg" />
+                                            <span asp-validation-for="Employee.Tel" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                    @{
+                                        if (Model.Employee.Mobiles != null && Model.Employee.Mobiles.Count > 0)
+                                        {
+                                            i = 0;
+                                            var dnoneMobile = Model.Employee.Mobiles.Count == 1 ? "d-none" : string.Empty;
+                                            foreach (var mobile in Model.Employee.Mobiles)
+                                            {
+                                                if (!string.IsNullOrEmpty(mobile.Number))
+                                                {
+                                                    <div class="col-6 nodeMobile node">
+                                                        <div class="form-group">
+                                                            <i class="icon icon-phone"></i>
+                                                            <label class="control-label">Số điện thoại</label>
+                                                            <button type="button" class="btn btn-link btn-sm @dnoneMobile remove-item"><i class="icon-squared-cross"></i>Xóa</button>
+                                                            <input name="Employee.Mobiles[@i].Number" value="@mobile.Number" class="form-control form-control-lg" />
+                                                        </div>
+                                                        <input type="hidden" class="codeMobile" value="@i" />
+                                                    </div>
+                                                    i++;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    <div class="col-12 p-1 more-mobile">
+                                        <div class="form-group">
+                                            <button class="btn btn-secondary btn-sm addMobile" type="button"><i class="icon icon-add-to-list"></i> Thêm số di động</button>
+                                        </div>
+                                    </div>
+                                    <script id="tmplMobile" type="text/x-jsrender">
+                                        <div class="col-6 nodeMobile node">
+                                            <div class="form-group">
+                                                <i class="icon icon-phone"></i>
+                                                <label>Số điện thoại</label>
+                                                <button type="button" class="btn btn-link btn-sm remove-item"><i class="icon-squared-cross"></i>Xóa</button>
+                                                <input name="Employee.Mobiles[{{:code}}].Number" class="form-control form-control-lg" />
+                                            </div>
+                                            <input type="hidden" class="codeMobile" value="{{:code}}" />
+                                        </div>
+                                    </script>
+                                    <div class="col-6">
+                                        <div class="form-group">
+                                            <i class="icon icon-cake"></i>
+                                            <label asp-for="Employee.Birthday" class="control-label"></label>
+                                            <input class="form-control form-control-lg datepicker datepicker-lg" value="@Model.Employee.Birthday.ToString("dd/MM/yyyy")" />
+                                            <span asp-validation-for="Employee.Birthday" class="text-danger"></span>
+                                            <input type="hidden" name="Employee.Birthday" value="@Model.Employee.Birthday" class="form-control form-control-lg hidedatepicker datepicker-lg" />
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="form-group">
+                                            <i class="icon icon-select-arrows"></i>
+                                            <label asp-for="Employee.Gender" class="control-label"></label>
+                                            <select asp-for="Employee.Gender" class="form-control form-control-lg">
+                                                <option value="Nam">Nam</option>
+                                                <option value="Nữ">Nữ</option>
+                                                <option value="Khác">Khác</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="form-group">
+                                            <i class="icon icon-select-arrows"></i>
+                                            <label asp-for="Employee.Department" class="control-label"></label>
+                                            <div class="row">
+                                                <div class="col-10">
+                                                    <select asp-for="Employee.Department" class="form-control form-control-lg">
+                                                        <option value="" selected>Chọn</option>
+                                                        @{
+                                                            foreach (var item in ViewBag.Departments)
+                                                            {
+                                                                <option value="@item.Name">@item.Name</option>
+                                                            }
+                                                        }
+                                                    </select>
+                                                </div>
+                                                <div class="col-2 align-middle">
+                                                    <button class="btn btn-sm btn-add-department" type="button" data-toggle="modal" data-target="#newDepartment" title="Tạo mới Phòng/ban">+</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="form-group">
+                                            <i class="icon icon-select-arrows"></i>
+                                            <label asp-for="Employee.Part" class="control-label"></label>
+                                            <div class="row">
+                                                <div class="col-10">
+                                                    <select asp-for="Employee.Part" class="form-control form-control-lg">
+                                                        <option value="" selected>Chọn</option>
+                                                        @{
+                                                            foreach (var item in ViewBag.Parts)
+                                                            {
+                                                                <option value="@item.Name">@item.Name</option>
+                                                            }
+                                                        }
+                                                    </select>
+                                                </div>
+                                                <div class="col-2 align-middle">
+                                                    <button class="btn btn-sm btn-add-part" type="button" data-toggle="modal" data-target="#newPart" title="Tạo mới Bộ phận">+</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="form-group">
+                                            <i class="icon icon-select-arrows"></i>
+                                            <label asp-for="Employee.Title" class="control-label"></label>
+                                            <div class="row">
+                                                <div class="col-10">
+                                                    <select asp-for="Employee.Title" class="form-control form-control-lg">
+                                                        <option value="" selected>Chọn</option>
+                                                        @{
+                                                            foreach (var item in ViewBag.Titles)
+                                                            {
+                                                                <option value="@item.Name">@item.Name</option>
+                                                            }
+                                                        }
+                                                    </select>
+                                                </div>
+                                                <div class="col-2 align-middle">
+                                                    <button class="btn btn-sm btn-add-title" type="button" data-toggle="modal" data-target="#newTitle" title="Tạo mới Công việc">+</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="form-group">
+                                            <i class="icon icon-select-arrows"></i>
+                                            <label class="control-label">Người quản lý trực tiếp</label>
+                                            <select name="Employee.ManagerId" id="ManagerId" class="form-control form-control-lg js-select2-basic-single">
+                                                <option value="">Không có quản lý</option>
+                                                @{
+                                                    foreach (var item in Model.Employees)
+                                                    {
+                                                        <option value="@item.Id">@item.FullName [@item.Title]</option>
+                                                    }
+                                                }
+                                            </select>
+                                            <input type="hidden" value="@Model.Employee.ManagerId" id="hidManagerId" />
+                                            <script id="tmplManagePeople" type="text/x-jsrender">
+                                                <option value="{{:id}}">{{:fullName}} [{{:title}}]</option>
+                                            </script>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="form-group">
+                                            <i class="icon icon-time-slot"></i>
+                                            <label asp-for="Employee.Joinday" class="control-label"></label>
+                                            <input class="form-control form-control-lg datepicker datepicker-lg" value="@Model.Employee.Joinday.ToString("dd/MM/yyyy")" />
+                                            <span asp-validation-for="Employee.Joinday" class="text-danger"></span>
+                                            <input type="hidden" name="Employee.Joinday" value="@Model.Employee.Joinday" class="form-control form-control-lg hidedatepicker datepicker-lg" />
+                                        </div>
+                                    </div>
+
+                                    <div class="col-6 workplace">
+                                        <div class="form-group">
+                                            <i class="icon icon-location"></i>
+                                            <label class="control-label">Nơi làm việc</label>
+                                            <select class="form-control form-control-lg multi-select-workplace" multiple="multiple">
+                                                @{
+                                                    var selectedNM = string.Empty;
+                                                    var selectedVP = string.Empty;
+                                                    if (Model.Employee.Workplaces != null && Model.Employee.Workplaces.Count > 0)
+                                                    {
+                                                        i = 0;
+                                                        foreach (var workplace in Model.Employee.Workplaces)
+                                                        {
+                                                            if (workplace.Code == "NM")
+                                                            {
+                                                                selectedNM = "selected";
+                                                            }
+                                                            if (workplace.Code == "VP")
+                                                            {
+                                                                selectedVP = "selected";
+                                                            }
+                                                        }
+                                                    }
+                                                    if (!string.IsNullOrEmpty(selectedNM))
+                                                    {
+                                                        <option value="NM" selected="selected">Nhà máy</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="NM">Nhà máy</option>
+                                                    }
+                                                    if (!string.IsNullOrEmpty(selectedVP))
+                                                    {
+                                                        <option value="VP" selected="selected">Văn phòng</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="VP">Văn phòng</option>
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+                                    </div>
+                                    @{
+                                        if (Model.Employee.Workplaces != null && Model.Employee.Workplaces.Count > 0)
+                                        {
+                                            i = 0;
+                                            foreach (var workplace in Model.Employee.Workplaces)
+                                            {
+                                                <div class="col-6 nodeWorkplace node">
+                                                    <div class="form-group">
+                                                        <span class="badge badge-primary">@workplace.Name</span>
+                                                        <i class="icon icon-fingerprint"></i>
+                                                        <label class="control-label">Mã chấm công</label>
+                                                        <input name="Employee.Workplaces[@i].Fingerprint" class="form-control form-control-lg" value="@workplace.Fingerprint" />
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label class="control-label">Thời gian làm việc</label>
+                                                        <select name="Employee.Workplaces[@i].WorkingScheduleTime" class="form-control form-control-lg">
+                                                            @{
+                                                                foreach (var workTimeType in ViewBag.WorkTimeTypes)
+                                                                {
+                                                                    var workScheduleTime = new TimeSpan(7, 0, 0);
+                                                                    if (!string.IsNullOrEmpty(Model.Employee.Workplaces[i].WorkingScheduleTime))
+                                                                    {
+                                                                        workScheduleTime = TimeSpan.Parse(Model.Employee.Workplaces[i].WorkingScheduleTime.Split('-')[0]);
+                                                                    }
+                                                                    if (workTimeType.Start == workScheduleTime)
+                                                                    {
+                                                                        <option value="@workTimeType.Start.ToString(@"hh\:mm")-@workTimeType.End.ToString(@"hh\:mm")" selected>@workTimeType.Start.ToString(@"hh\:mm") - @workTimeType.End.ToString(@"hh\:mm")</option>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <option value="@workTimeType.Start.ToString(@"hh\:mm")-@workTimeType.End.ToString(@"hh\:mm")" @selected>@workTimeType.Start.ToString(@"hh\:mm") - @workTimeType.End.ToString(@"hh\:mm")</option>
+                                                                    }
+                                                                }
+                                                            }
+                                                        </select>
+                                                    </div>
+                                                    <input type="hidden" name="Employee.Workplaces[@i].Code" value="@workplace.Code" />
+                                                    <input type="hidden" name="Employee.Workplaces[@i].Name" value="@workplace.Name" />
+                                                </div>
+                                                i++;
+                                            }
+                                        }
+                                    }
+                                    <script id="tmplWorkplace" type="text/x-jsrender">
+                                        <div class="col-6 nodeWorkplace node">
+                                            <div class="form-group">
+                                                <span class="badge badge-primary">{{:nameWorkplace}}</span>
+                                                <i class="icon icon-fingerprint"></i>
+                                                <label class="control-label">Mã chấm công</label>
+                                                <input name="Employee.Workplaces[{{:code}}].Fingerprint" class="form-control form-control-lg" />
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label">Thời gian làm việc</label>
+                                                <select name="Employee.Workplaces[{{:code}}].WorkingScheduleTime" class="form-control form-control-lg">
+                                                    @{
+                                                        foreach (var workTimeType in ViewBag.WorkTimeTypes)
+                                                        {
+                                                            if (workTimeType.Start == new TimeSpan(7, 0, 0))
+                                                            {
+                                                                <option value="@workTimeType.Start.ToString(@"hh\:mm")-@workTimeType.End.ToString(@"hh\:mm")" selected>@workTimeType.Start.ToString(@"hh\:mm") - @workTimeType.End.ToString(@"hh\:mm")</option>
+                                                            }
+                                                            else
+                                                            {
+                                                                <option value="@workTimeType.Start.ToString(@"hh\:mm")-@workTimeType.End.ToString(@"hh\:mm")" @selected>@workTimeType.Start.ToString(@"hh\:mm") - @workTimeType.End.ToString(@"hh\:mm")</option>
+
+                                                            }
+                                                        }
+                                                    }
+                                                </select>
+                                            </div>
+                                            <input type="hidden" class="employee-workplace-exist" name="Employee.Workplaces[{{:code}}].Code" value="{{:codeWorkplace}}" />
+                                            <input type="hidden" name="Employee.Workplaces[{{:code}}].Name" value="{{:nameWorkplace}}" />
+                                        </div>
+                                    </script>
+
+                                    <div class="col-12">
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <div>
+                                                    <div class="custom-control custom-checkbox">
+                                                        @{
+                                                            var checkTimeKeeper = string.Empty;
+                                                            if (Model.Employee.IsTimeKeeper)
+                                                            {
+                                                                checkTimeKeeper = "checked";
+                                                            }
+                                                        }
+
+                                                        <input type="checkbox" class="custom-control-input" @checkTimeKeeper id="check-timekeeper">
+                                                        <label class="custom-control-label text-small" for="check-timekeeper">
+                                                            Không tính thời gian làm việc
+                                                        </label>
+                                                        <input type="hidden" asp-for="Employee.IsTimeKeeper" />
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-6">
+                                                <div class="form-group">
+                                                    <i class="icon icon-archive"></i>
+                                                    <label asp-for="Employee.LeaveLevelYear" class="control-label"></label>
+                                                    <select asp-for="Employee.LeaveLevelYear" class="form-control form-control-lg">
+                                                        <option value="12">12 ngày</option>
+                                                        <option value="14">14 ngày</option>
+                                                        <option value="16">16 ngày</option>
+                                                    </select>
+                                                    <span asp-validation-for="Employee.LeaveLevelYear" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="form-group">
+                                                    <i class="icon icon-archive"></i>
+                                                    <label class="control-label">Số ngày phép còn lại</label>
+                                                    <input name="Employee.LeaveDayAvailable" value="@Model.Employee.LeaveDayAvailable.ToString("G29")" class="form-control form-control-lg" />
+                                                    <span asp-validation-for="Employee.LeaveDayAvailable" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    @{
+                                        var showFilter = "";
+                                        var textFilter = "Mở rộng";
+                                    }
+
+                                    <a class="nav-link custom-more collapsed" data-toggle="collapse" href="#more" aria-expanded="false" aria-controls="more">
+                                        <i class="icon icon-add-to-list"></i> @textFilter
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div id="more" class="col-12 collapse @showFilter">
+                            <!-- PERSONAL INFORMATION -->
+                            <div class="row mb-4">
+                                <div class="col">
+                                    <h5>Thông tin cá nhân</h5>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6">
+                                    <div>
+                                        <div class="custom-control custom-checkbox">
+                                            @{
+                                                var enableStatus = string.Empty;
+                                                var displayLeave = "d-none";
+                                                if (!Model.Employee.Enable)
+                                                {
+                                                    enableStatus = "checked";
+                                                    displayLeave = "";
+                                                }
+                                            }
+
+                                            <input type="checkbox" class="custom-control-input" @enableStatus id="check-enable">
+                                            <label class="custom-control-label text-small" for="check-enable">
+                                                Nghỉ việc
+                                            </label>
+                                            <input type="hidden" asp-for="Employee.Enable" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6 leave-extend @displayLeave">
+                                    <div class="form-group">
+                                        <label asp-for="Employee.Leaveday" class="control-label"></label>
+                                        @{
+                                            if (Model.Employee.Leaveday.HasValue)
+                                            {
+                                                <input class="form-control form-control-lg datepicker datepicker-lg" value="@Model.Employee.Leaveday.Value.ToString("dd/MM/yyyy")" />
+                                            }
+                                            else
+                                            {
+                                                <input class="form-control form-control-lg datepicker datepicker-lg" />
+                                            }
+                                        }
+                                        <input type="hidden" name="Employee.Leaveday" class="form-control form-control-lg hidedatepicker" value="@Model.Employee.Leaveday" />
+                                    </div>
+                                </div>
+                                <div class="col-12 leave-extend @displayLeave">
+                                    <div class="form-group">
+                                        <label asp-for="Employee.LeaveReason" class="control-label"></label>
+                                        <textarea asp-for="Employee.LeaveReason" class="form-control form-control-lg"></textarea>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-group">
+                                        <label asp-for="Employee.Bornplace" class="control-label"></label>
+                                        <input asp-for="Employee.Bornplace" class="form-control form-control-lg" />
+                                        <span asp-validation-for="Employee.Bornplace" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-group">
+                                        <label asp-for="Employee.AddressResident" class="control-label"></label>
+                                        <input asp-for="Employee.AddressResident" class="form-control form-control-lg" />
+                                        <span asp-validation-for="Employee.AddressResident" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-group">
+                                        <label asp-for="Employee.AddressTemporary" class="control-label"></label>
+                                        <input asp-for="Employee.AddressTemporary" class="form-control form-control-lg" />
+                                        <span asp-validation-for="Employee.AddressTemporary" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-group">
+                                        <i class="icon icon-email"></i>
+                                        <label asp-for="Employee.EmailPersonal" class="control-label"></label><span class="text-red">*</span>
+                                        <input asp-for="Employee.EmailPersonal" class="form-control form-control-lg" />
+                                        <span asp-validation-for="Employee.EmailPersonal" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6 col-xs-12">
+                                    <div class="form-group">
+                                        <label asp-for="Employee.StatusMarital" class="control-label"></label>
+                                        <select asp-for="Employee.StatusMarital" class="form-control form-control-lg">
+                                            <option value="">Chọn</option>
+                                            <option value="S">Độc thân</option>
+                                            <option value="M">Kết hôn</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6 col-xs-12">
+                                    <div class="form-group">
+                                        <label asp-for="Employee.Nation" class="control-label"></label>
+                                        <input asp-for="Employee.Nation" class="form-control form-control-lg" />
+                                    </div>
+                                </div>
+                                <div class="col-sm-6 col-xs-12">
+                                    <div class="form-group">
+                                        <label asp-for="Employee.Religion" class="control-label"></label>
+                                        <input asp-for="Employee.Religion" class="form-control form-control-lg" />
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-group">
+                                        <label asp-for="Employee.Intro" class="control-label"></label>
+                                        <textarea asp-for="Employee.Intro" class="form-control form-control-lg js-auto-size"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- CMND/PASSPORT, BHXH -->
+                            <hr />
+                            <div class="row mb-4">
+                                <div class="col">
+                                    <h5>Số thẻ định danh</h5>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12 col-md-4 order-md-2">
+                                    <div class="alert alert-info text-small" role="alert">
+                                        <i class="icon-user"></i>
+                                        <span>
+                                            Thông tin này được bảo mật.
+                                        </span>
+                                        <a href="/pp/chinh-sach-bao-mat">Xem chính sách bảo mật</a>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-md-8 order-md-1">
+                                    <div class="row">
+                                        <!-- CMND -->
+                                        <div class="col-12">
+                                            <div class="form-group">
+                                                <label asp-for="Employee.IdentityCard" class="control-label"></label>
+                                                <input asp-for="Employee.IdentityCard" class="form-control form-control-lg" />
+                                                <span asp-validation-for="Employee.IdentityCard" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="form-group">
+                                                <label asp-for="Employee.IdentityCardDate" class="control-label"></label>
+                                                @{
+                                                    if (Model.Employee.IdentityCardDate.HasValue)
+                                                    {
+                                                        <input class="form-control form-control-lg datepicker datepicker-lg" value="@Model.Employee.IdentityCardDate.Value.ToString("dd/MM/yyyy")" />
+                                                    }
+                                                    else
+                                                    {
+                                                        <input class="form-control form-control-lg datepicker datepicker-lg" />
+                                                    }
+                                                }
+                                                <input type="hidden" name="Employee.IdentityCardDate" class="form-control form-control-lg hidedatepicker" value="@Model.Employee.IdentityCardDate" />
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="form-group">
+                                                <label asp-for="Employee.IdentityCardPlace" class="control-label"></label>
+                                                <input asp-for="Employee.IdentityCardPlace" class="form-control form-control-lg" />
+                                                <span asp-validation-for="Employee.IdentityCardPlace" class="text-danger"></span>
+                                            </div>
+                                        </div>
+
+                                        <!-- HO KHAU -->
+                                        <hr />
+                                        <div class="col-12">
+                                            <div class="form-group">
+                                                <label asp-for="Employee.HouseHold" class="control-label"></label>
+                                                <input asp-for="Employee.HouseHold" class="form-control form-control-lg" />
+                                                <span asp-validation-for="Employee.HouseHold" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="form-group">
+                                                <label asp-for="Employee.HouseHoldOwner" class="control-label"></label>
+                                                <input asp-for="Employee.HouseHoldOwner" class="form-control form-control-lg" />
+                                                <span asp-validation-for="Employee.HouseHoldOwner" class="text-danger"></span>
+                                            </div>
+                                        </div>
+
+                                        <!-- PASSPORT -->
+                                        <hr />
+                                        <div class="col-12">
+                                            <div class="form-group">
+                                                <label asp-for="Employee.Passport" class="control-label"></label>
+                                                <input asp-for="Employee.Passport" class="form-control form-control-lg" />
+                                                <span asp-validation-for="Employee.Passport" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="form-group">
+                                                <label asp-for="Employee.PassportType" class="control-label"></label>
+                                                <input asp-for="Employee.PassportType" class="form-control form-control-lg" value="P" />
+                                                <span asp-validation-for="Employee.PassportType" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="form-group">
+                                                <label asp-for="Employee.PassportCode" class="control-label"></label>
+                                                <input asp-for="Employee.PassportCode" class="form-control form-control-lg" value="VNM" />
+                                                <span asp-validation-for="Employee.PassportCode" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="form-group">
+                                                <label asp-for="Employee.PassportDate" class="control-label"></label>
+                                                @{
+                                                    if (Model.Employee.PassportDate.HasValue)
+                                                    {
+                                                        <input class="form-control form-control-lg datepicker datepicker-lg" value="@Model.Employee.PassportDate.Value.ToString("dd/MM/yyyy")" />
+                                                    }
+                                                    else
+                                                    {
+                                                        <input class="form-control form-control-lg datepicker datepicker-lg" />
+                                                    }
+                                                }
+                                                <input type="hidden" name="Employee.PassportDate" class="form-control form-control-lg hidedatepicker" value="@Model.Employee.PassportDate" />
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="form-group">
+                                                <label asp-for="Employee.PassportExpireDate" class="control-label"></label>
+                                                @{
+                                                    if (Model.Employee.PassportExpireDate.HasValue)
+                                                    {
+                                                        <input class="form-control form-control-lg datepicker datepicker-lg" value="@Model.Employee.PassportExpireDate.Value.ToString("dd/MM/yyyy")" />
+                                                    }
+                                                    else
+                                                    {
+                                                        <input class="form-control form-control-lg datepicker datepicker-lg" />
+                                                    }
+                                                }
+                                                <input type="hidden" name="Employee.PassportExpireDate" class="form-control form-control-lg hidedatepicker" value="@Model.Employee.PassportExpireDate" />
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="form-group">
+                                                <label asp-for="Employee.PassportPlace" class="control-label"></label>
+                                                <input asp-for="Employee.PassportPlace" class="form-control form-control-lg" value="Cục Quản lý xuất nhập cảnh" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- BHXH -->
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="form-group">
+                                        @{
+                                            var check = Model.Employee.BhxhEnable ? "checked" : "";
+                                            var dnone = Model.Employee.BhxhEnable ? "" : "d-none";
+                                        }
+                                        <div class="custom-control custom-checkbox custom-checkbox-switch">
+                                            <input type="checkbox" class="custom-control-input" id="public" @check />
+                                            <label class="custom-control-label" for="public">Bảo hiểm xã hội</label>
+                                            <input name="Employee.BhxhEnable" type="hidden" class="custom-control-input" value="@Model.Employee.BhxhEnable" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="enableBhxh col-12 @dnone">
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <div class="form-group">
+                                                <label asp-for="Employee.BhxhBookNo" class="control-label"></label>
+                                                <input asp-for="Employee.BhxhBookNo" class="form-control form-control-lg" />
+                                                <span asp-validation-for="Employee.BhxhBookNo" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="form-group">
+                                                <label asp-for="Employee.BhxhCode" class="control-label"></label>
+                                                <input asp-for="Employee.BhxhCode" class="form-control form-control-lg" />
+                                                <span asp-validation-for="Employee.BhxhCode" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="form-group">
+                                                <label asp-for="Employee.BhxhStart" class="control-label"></label>
+                                                @{
+                                                    if (Model.Employee.BhxhStart.HasValue)
+                                                    {
+                                                        <input class="form-control form-control-lg datepicker datepicker-lg" value="@Model.Employee.BhxhStart.Value.ToString("dd/MM/yyyy")" />
+                                                    }
+                                                    else
+                                                    {
+                                                        <input class="form-control form-control-lg datepicker datepicker-lg" />
+                                                    }
+                                                }
+                                                <input type="hidden" name="Employee.BhxhStart" class="form-control form-control-lg hidedatepicker" value="@Model.Employee.BhxhStart" />
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="form-group">
+                                                <label asp-for="Employee.BhxhEnd" class="control-label"></label>
+                                                @{
+                                                    if (Model.Employee.BhxhEnd.HasValue)
+                                                    {
+                                                        <input class="form-control form-control-lg datepicker datepicker-lg" value="@Model.Employee.BhxhEnd.Value.ToString("dd/MM/yyyy")" />
+                                                    }
+                                                    else
+                                                    {
+                                                        <input class="form-control form-control-lg datepicker datepicker-lg" />
+                                                    }
+                                                }
+                                                <input type="hidden" name="Employee.BhxhEnd" value="@Model.Employee.BhxhEnd" class="form-control form-control-lg hidedatepicker" />
+                                            </div>
+                                        </div>
+                                        @*<div class="col-6">
+                                                <div class="form-group">
+                                                    <label asp-for="Employee.BhxhDependecy" class="control-label"></label>
+                                                    <input asp-for="Employee.BhxhDependecy" class="form-control form-control-lg" />
+                                                    <span asp-validation-for="Employee.BhxhDependecy" class="text-danger"></span>
+                                                </div>
+                                            </div>*@
+                                        <div class="col-6">
+                                            <div class="form-group">
+                                                <label asp-for="Employee.BhxhStatus" class="control-label"></label>
+                                                <select asp-for="Employee.BhxhStatus" class="form-control form-control-lg">
+                                                    <option value="Đang đóng">Đang đóng</option>
+                                                    <option value="Chưa đóng">Chưa đóng</option>
+                                                </select>
+                                                <span asp-validation-for="Employee.BhxhStatus" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="form-group">
+                                                <label asp-for="Employee.BhxhHospital" class="control-label"></label>
+                                                <div class="row">
+                                                    <div class="col-10">
+                                                        <select asp-for="Employee.BhxhHospital" class="form-control form-control-lg js-select2-basic-single" style="width:100%;">
+                                                            <option value="">Chọn</option>
+                                                            @{
+                                                                foreach (var hospital in ViewBag.Hospitals)
+                                                                {
+                                                                    <option value="@hospital.Name">@hospital.Name</option>
+                                                                }
+                                                            }
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-2 align-middle">
+                                                        <button class="btn btn-sm btn-add-hospital" type="button" data-toggle="modal" data-target="#newHospital" title="Tạo mới Cơ sở khám chữa bệnh">+</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-12">
+                                            <div class="form-group">
+                                                <label asp-for="Employee.BhytCode" class="control-label"></label>
+                                                <input asp-for="Employee.BhytCode" class="form-control form-control-lg" />
+                                                <span asp-validation-for="Employee.BhytCode" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="form-group">
+                                                <label asp-for="Employee.BhytStart" class="control-label"></label>
+                                                @{
+                                                    if (Model.Employee.BhytStart.HasValue)
+                                                    {
+                                                        <input class="form-control form-control-lg datepicker datepicker-lg" value="@Model.Employee.BhytStart.Value.ToString("dd/MM/yyyy")" />
+                                                    }
+                                                    else
+                                                    {
+                                                        <input class="form-control form-control-lg datepicker datepicker-lg" />
+                                                    }
+                                                }
+                                                <input type="hidden" name="Employee.BhytStart" value="@Model.Employee.BhytStart" class="form-control form-control-lg hidedatepicker" />
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="form-group">
+                                                <label asp-for="Employee.BhytEnd" class="control-label"></label>
+                                                @{
+                                                    if (Model.Employee.BhytEnd.HasValue)
+                                                    {
+                                                        <input class="form-control form-control-lg datepicker datepicker-lg" value="@Model.Employee.BhytEnd.Value.ToString("dd/MM/yyyy")" />
+                                                    }
+                                                    else
+                                                    {
+                                                        <input class="form-control form-control-lg datepicker datepicker-lg" />
+                                                    }
+                                                }
+                                                <input type="hidden" name="Employee.BhytEnd" value="@Model.Employee.BhytEnd" class="form-control form-control-lg hidedatepicker" />
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="form-group">
+                                                <label asp-for="Employee.BhxhLocation" class="control-label"></label>
+                                                <input asp-for="Employee.BhxhLocation" class="form-control form-control-lg" />
+                                                <span asp-validation-for="Employee.BhxhLocation" class="text-danger"></span>
+                                            </div>
+                                        </div>
+
+                                        <span class="badge badge-info">Tác vụ BHXH</span>
+                                        @{
+                                            if (Model.Employee.BhxhHistories != null && Model.Employee.BhxhHistories.Count > 0)
+                                            {
+                                                i = 0;
+                                                foreach (var item in Model.Employee.BhxhHistories)
+                                                {
+                                                    <div class="col-12 nodeBHXH node">
+                                                        <hr />
+                                                        <div class="row bd-example">
+                                                            <div class="col-12">
+                                                                <div class="form-group">
+                                                                    <label class="control-label">Tác vụ</label>
+                                                                    <select asp-for="Employee.BhxhHistories[i].Task" class="form-control form-control-lg">
+                                                                        <option value="tang-bhxh">Tăng BHXH</option>
+                                                                        <option value="giam-bhxh">Giảm BHXH</option>
+                                                                        <option value="the-bhyt">Thẻ BHYT</option>
+                                                                        <option value="ghi-che-do-thai-san">Ghi chế độ thai sản</option>
+                                                                        <option value="ghi-che-do-om-dau">Ghi chế độ ốm đau</option>
+                                                                        <option value="ghi-che-do-tai-nan-lao-dong">Ghi chế độ tai nan lao động</option>
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-6">
+                                                                <div class="form-group">
+                                                                    <label class="control-label">Ngày thực hiện</label>
+                                                                    @{
+                                                                        if (item.DateAction.HasValue)
+                                                                        {
+                                                                            <input class="form-control form-control-lg datepicker datepicker-lg" value="@item.DateAction.Value.ToString("dd/MM/yyyy")" />
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <input class="form-control form-control-lg datepicker datepicker-lg" />
+                                                                        }
+                                                                    }
+                                                                    <input type="hidden" name="Employee.BhxhHistories[@i].DateAction" value="@item.DateAction" class="form-control form-control-lg hidedatepicker" />
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-6">
+                                                                <div class="form-group">
+                                                                    <label class="control-label">Ngày trả kết quả</label>
+                                                                    @{
+                                                                        if (item.DateResult.HasValue)
+                                                                        {
+                                                                            <input class="form-control form-control-lg datepicker datepicker-lg" value="@item.DateResult.Value.ToString("dd/MM/yyyy")" />
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <input class="form-control form-control-lg datepicker datepicker-lg" />
+                                                                        }
+                                                                    }
+                                                                    <input type="hidden" name="Employee.BhxhHistories[@i].DateResult" value="@item.DateResult" class="form-control form-control-lg hidedatepicker" />
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-6">
+                                                                <div class="form-group">
+                                                                    <label class="control-label">Tình trạng</label>
+                                                                    <select asp-for="Employee.BhxhHistories[i].Status" class="form-control form-control-lg">
+                                                                        <option value="0">Chờ</option>
+                                                                        <option value="1">Hoàn thành</option>
+                                                                        <option value="2">Không xác định</option>
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-12">
+                                                                <button type="button" class="btn btn-danger btn-sm remove-item"><i class="note-icon-col-remove"></i>Xóa</button>
+                                                            </div>
+                                                        </div>
+                                                        <input type="hidden" class="codeBHXH" value="@i" />
+                                                    </div>
+                                                    i++;
+                                                }
+                                            }
+                                        }
+
+                                        <div class="col-12 p-1 more-task-bhxh">
+                                            <div class="form-group">
+                                                <button class="btn btn-secondary btn-sm addBHXH" type="button"><i class="icon icon-add-to-list"></i> Thêm tác vụ</button>
+                                            </div>
+                                        </div>
+
+                                        <script id="tmplBHXH" type="text/x-jsrender">
+                                            <div class="col-12 nodeBHXH node">
+                                                <hr />
+                                                <div class="row bd-example">
+                                                    <div class="col-12">
+                                                        <div class="form-group">
+                                                            <label class="control-label">Tác vụ</label>
+                                                            <select name="Employee.BhxhHistories[{{:code}}].Task" class="form-control form-control-lg task-bhxh">
+                                                                <option value="tang-bhxh">Tăng BHXH</option>
+                                                                <option value="giam-bhxh">Giảm BHXH</option>
+                                                                <option value="the-bhyt">Thẻ BHYT</option>
+                                                                <option value="ghi-che-do-thai-san">Ghi chế độ thai sản</option>
+                                                                <option value="ghi-che-do-om-dau">Ghi chế độ ốm đau</option>
+                                                                <option value="ghi-che-do-tai-nan-lao-dong">Ghi chế độ tai nan lao động</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <div class="form-group">
+                                                            <label class="control-label">Ngày thực hiện</label>
+                                                            <input class="form-control form-control-lg datepicker datepicker-lg" value="@DateTime.Now.ToString("dd/MM/yyyy")" />
+                                                            <input type="hidden" name="Employee.BhxhHistories[{{:code}}].DateAction" class="form-control form-control-lg hidedatepicker" value="false" />
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <div class="form-group">
+                                                            <label class="control-label">Ngày trả kết quả</label>
+                                                            <input class="form-control form-control-lg datepicker datepicker-lg" value="@DateTime.Now.ToString("dd/MM/yyyy")" />
+                                                            <input type="hidden" name="Employee.BhxhHistories[{{:code}}].DateResult" class="form-control form-control-lg hidedatepicker" value="false" />
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <div class="form-group">
+                                                            <label class="control-label">Tình trạng</label>
+                                                            <select name="Employee.BhxhHistories[{{:code}}].Status" class="form-control form-control-lg">
+                                                                <option value="0">Chờ</option>
+                                                                <option value="1">Hoàn thành</option>
+                                                                <option value="2">Không xác định</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <button type="button" class="btn btn-danger btn-sm remove-item"><i class="note-icon-col-remove"></i>Xóa</button>
+                                                    </div>
+                                                </div>
+                                                <input type="hidden" class="codeBHXH" value="{{:code}}" />
+                                                <input type="hidden" name="Employee.BhxhHistories[{{:code}}].TaskDisplay" class="task-bhxh-display" />
+                                            </div>
+                                        </script>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Certificates -->
+                            <hr />
+                            <div class="row mb-4">
+                                <div class="col">
+                                    <h5>Học vấn</h5>
+                                </div>
+                                <!--end of col-->
+                            </div>
+                            <div class="row">
+                                @{
+                                    if (Model.Employee.Certificates != null && Model.Employee.Certificates.Count > 0)
+                                    {
+                                        i = 0;
+                                        foreach (var item in Model.Employee.Certificates)
+                                        {
+                                            <div class="col-12 nodeCertificate node">
+                                                <div class="row bd-example">
+                                                    <div class="col-6">
+                                                        <div class="form-group">
+                                                            <label class="control-label">Học vấn</label>
+                                                            <input asp-for="Employee.Certificates[i].Type" class="form-control form-control-lg" />
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-12">
+                                                        <div class="form-group">
+                                                            <label class="control-label">Nơi cấp</label>
+                                                            <input asp-for="Employee.Certificates[i].Location" class="form-control form-control-lg" />
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-12">
+                                                        <div class="form-group">
+                                                            <label class="control-label">Mô tả</label>
+                                                            <textarea asp-for="Employee.Certificates[i].Description" class="form-control form-control-lg js-auto-size"></textarea>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-12">
+                                                        <button type="button" class="btn btn-danger btn-sm remove-item"><i class="glyphicon-remove"></i>Xóa</button>
+                                                    </div>
+                                                </div>
+                                                <input type="hidden" class="codeCertificate" value="@i" />
+                                            </div>
+                                            i++;
+                                        }
+                                    }
+                                }
+
+                                <div class="col-12 p-1 more-certificate">
+                                    <div class="form-group">
+                                        <button class="btn btn-secondary btn-sm addCertificate" type="button"><i class="icon icon-add-to-list"></i> Thêm học vấn</button>
+                                    </div>
+                                </div>
+                                <script id="tmplCertificate" type="text/x-jsrender">
+                                    <div class="col-12 nodeCertificate node">
+                                        <div class="row bd-example">
+                                            <div class="col-6">
+                                                <div class="form-group">
+                                                    <label class="control-label">Học vấn</label>
+                                                    <input name="Employee.Certificates[{{:code}}].Type" class="form-control form-control-lg" />
+                                                </div>
+                                            </div>
+                                            <div class="col-12">
+                                                <div class="form-group">
+                                                    <label class="control-label">Nơi cấp</label>
+                                                    <input name="Employee.Certificates[{{:code}}].Location" class="form-control form-control-lg" />
+                                                </div>
+                                            </div>
+                                            <div class="col-12">
+                                                <div class="form-group">
+                                                    <label class="control-label">Mô tả</label>
+                                                    <textarea name="Employee.Certificates[{{:code}}].Description" class="form-control form-control-lg js-auto-size"></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="col-12">
+                                                <button type="button" class="btn btn-danger btn-sm remove-item"><i class="glyphicon-remove"></i>Xóa</button>
+                                            </div>
+                                        </div>
+                                        <input type="hidden" class="codeCertificate" value="{{:code}}" />
+                                    </div>
+                                </script>
+                            </div>
+
+
+                            <!-- FAMILY -->
+                            <hr />
+                            <div class="row mb-4">
+                                <div class="col">
+                                    <h5>Thành viên gia đình</h5>
+                                </div>
+                                <!--end of col-->
+                            </div>
+
+                            <div class="row">
+                                @{
+                                    if (Model.Employee.EmployeeFamilys != null && Model.Employee.EmployeeFamilys.Count > 0)
+                                    {
+                                        i = 0;
+                                        foreach (var item in Model.Employee.EmployeeFamilys)
+                                        {
+                                            if (!string.IsNullOrEmpty(item.FullName) && item.FullName.Length > 2)
+                                            {
+                                                <div class="col-12 nodeFamily node">
+                                                    <div class="row bd-example">
+                                                        <div class="col-6">
+                                                            <div class="form-group">
+                                                                <label class="control-label">Quan hệ</label>
+                                                                <select asp-for="Employee.EmployeeFamilys[i].Relation" class="form-control form-control-lg">
+                                                                    <option value="">Chọn</option>
+                                                                    <option value="3">Con</option>
+                                                                    <option value="2">Vợ/chồng</option>
+                                                                    <option value="1">Cha/mẹ</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-6">
+                                                            <div class="form-group">
+                                                                <label class="control-label">Ngày sinh nhật</label>
+                                                                @{
+                                                                    if (item.Birthday.HasValue)
+                                                                    {
+                                                                        <input class="form-control form-control-lg datepicker datepicker-lg" value="@item.Birthday.Value.ToString("dd/MM/yyyy")" />
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <input class="form-control form-control-lg datepicker datepicker-lg" />
+                                                                    }
+                                                                }
+                                                                <input type="hidden" name="Employee.EmployeeFamilys[@i].Birthday" value="@item.Birthday" class="hidedatepicker" />
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-12">
+                                                            <div class="form-group">
+                                                                <label class="control-label">Họ và tên</label>
+                                                                <input name="Employee.EmployeeFamilys[@i].FullName" value="@item.FullName" class="form-control form-control-lg" />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <input type="hidden" class="codeFamily" value="@i" />
+                                                </div>
+                                                i++;
+                                            }
+                                        }
+                                    }
+                                }
+                                <div class="col-12 p-1 more-family">
+                                    <div class="form-group">
+                                        <button class="btn btn-secondary btn-sm addFamily" type="button"><i class="icon icon-add-user"></i> Thêm thành viên</button>
+                                    </div>
+                                </div>
+
+                                <script id="tmplFamily" type="text/x-jsrender">
+                                    <div class="col-12 nodeFamily node">
+                                        <div class="row bd-example">
+                                            <div class="col-6">
+                                                <div class="form-group">
+                                                    <label class="control-label">Quan hệ</label>
+                                                    <select name="Employee.EmployeeFamilys[{{:code}}].Relation" class="form-control form-control-lg">
+                                                        <option value="3">Con</option>
+                                                        <option value="2">Vợ/chồng</option>
+                                                        <option value="1">Cha/mẹ</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="form-group">
+                                                    <label class="control-label">Ngày sinh nhật</label>
+                                                    <input class="form-control form-control-lg datepicker datepicker-lg" />
+                                                    <input type="hidden" name="Employee.EmployeeFamilys[{{:code}}].Birthday" class="hidedatepicker" />
+                                                </div>
+                                            </div>
+                                            <div class="col-12">
+                                                <div class="form-group">
+                                                    <label class="control-label">Họ và tên</label>
+                                                    <input name="Employee.EmployeeFamilys[{{:code}}].FullName" class="form-control form-control-lg" />
+                                                </div>
+                                            </div>
+                                            <div class="col-12">
+                                                <button type="button" class="btn btn-danger btn-sm remove-item"><i class="icon-remove-user"></i>Xóa</button>
+                                            </div>
+                                        </div>
+                                        <input type="hidden" class="codeFamily" value="{{:code}}" />
+                                    </div>
+                                </script>
+                            </div>
+
+                            <!-- HOP DONG LAO DONG -->
+                            <div class="row mb-4">
+                                <div class="col">
+                                    <h5>Hợp đồng lao động</h5>
+                                </div>
+                                <!--end of col-->
+                            </div>
+                            <div class="row">
+                                @{
+                                    if (Model.Employee.Contracts != null && Model.Employee.Contracts.Count > 0)
+                                    {
+                                        i = 0;
+                                        foreach (var contract in Model.Employee.Contracts)
+                                        {
+                                            if (!string.IsNullOrEmpty(contract.Code))
+                                            {
+                                                <div class="col-12 nodeContract node">
+                                                    <div class="bd-example">
+                                                        <div class="col-sm-6 col-xs-12">
+                                                            <div class="form-group">
+                                                                <label class="control-label">Loại hợp đồng</label>
+                                                                <select asp-for="Employee.Contracts[i].Type" class="form-control form-control-lg contract-type">
+                                                                    @{
+                                                                        foreach (var item in ViewBag.Contracts)
+                                                                        {
+                                                                            <option value="@item.Id">@item.Name</option>
+                                                                        }
+                                                                    }
+                                                                </select>
+                                                                <input type="hidden" asp-for="Employee.Contracts[i].TypeName" class="contract-type-name" />
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-sm-6 col-xs-12">
+                                                            <div class="form-group">
+                                                                <label class="control-label">Số hợp đồng</label>
+                                                                <input asp-for="Employee.Contracts[i].Code" class="form-control form-control-lg" />
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-sm-6 col-xs-12">
+                                                            <div class="form-group">
+                                                                <label class="control-label">PLHĐ</label>
+                                                                <input asp-for="Employee.Contracts[i].PLHD" class="form-control form-control-lg" />
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-sm-6 col-xs-12">
+                                                            <div class="form-group">
+                                                                <label class="control-label">Phụ lục điều chỉnh lương</label>
+                                                                <input asp-for="Employee.Contracts[i].PhuLucDieuChinhLuong" class="form-control form-control-lg" />
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-sm-6 col-xs-12">
+                                                            <div class="form-group">
+                                                                <label class="control-label">Ghi chú</label>
+                                                                <input asp-for="Employee.Contracts[i].Description" class="form-control form-control-lg" />
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-sm-6 col-xs-12">
+                                                            <div class="form-group">
+                                                                <label class="control-label">Ngày hiệu lực</label>
+                                                                @{
+                                                                    if (contract.Start.HasValue)
+                                                                    {
+                                                                        <input class="form-control form-control-lg datepicker datepicker-lg" value="@contract.Start.Value.ToString("dd/MM/yyyy")" />
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <input class="form-control form-control-lg datepicker datepicker-lg" />
+                                                                    }
+                                                                }
+                                                                <input type="hidden" name="Employee.Contracts[@i].Start" value="@contract.Start" class="hidedatepicker" />
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-sm-6 col-xs-12">
+                                                            <div class="form-group">
+                                                                <label class="control-label">Ngày hết hiệu lực</label>
+                                                                @{
+                                                                    if (contract.End.HasValue)
+                                                                    {
+                                                                        <input class="form-control form-control-lg datepicker datepicker-lg" value="@contract.End.Value.ToString("dd/MM/yyyy")" />
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <input class="form-control form-control-lg datepicker datepicker-lg" />
+                                                                    }
+                                                                }
+                                                                <input type="hidden" name="Employee.Contracts[@i].End" value="@contract.End" class="hidedatepicker" />
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-12">
+                                                            <button type="button" class="btn btn-danger btn-sm remove-item"><i class="note-icon-col-remove"></i>Xóa</button>
+                                                        </div>
+                                                    </div>
+                                                    <input type="hidden" class="codeContract" value="@i" />
+                                                </div>
+                                                i++;
+                                            }
+                                        }
+                                    }
+                                }
+
+                                <div class="col-12 p-1 more-contract">
+                                    <div class="form-group">
+                                        <button class="btn btn-secondary btn-sm addContract" type="button"><i class="icon icon-add-user"></i> Thêm hợp đồng</button>
+                                    </div>
+                                </div>
+
+                                <script id="tmplContract" type="text/x-jsrender">
+                                    <div class="col-12 nodeContract node">
+                                        <div class="row bd-example">
+                                            <div class="col-sm-6 col-xs-12">
+                                                <div class="form-group">
+                                                    <label class="control-label">Loại hợp đồng</label>
+                                                    <select name="Employee.Contracts[{{:code}}].Type" class="form-control form-control-lg contract-type">
+                                                        @{
+                                                            foreach (var item in ViewBag.Contracts)
+                                                            {
+                                                                <option value="@item.Id">@item.Name</option>
+                                                            }
+                                                        }
+                                                    </select>
+                                                    <input type="hidden" name="Employee.Contracts[{{:code}}].TypeName" class="contract-type-name" />
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-6 col-xs-12">
+                                                <div class="form-group">
+                                                    <label class="control-label">Số hợp đồng</label>
+                                                    <input name="Employee.Contracts[{{:code}}].Code" class="form-control form-control-lg" />
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-6 col-xs-12">
+                                                <div class="form-group">
+                                                    <label class="control-label">PLHĐ</label>
+                                                    <input name="Employee.Contracts[{{:code}}].PLHD" class="form-control form-control-lg" />
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-6 col-xs-12">
+                                                <div class="form-group">
+                                                    <label class="control-label">Phụ lục điều chỉnh lương</label>
+                                                    <input name="Employee.Contracts[{{:code}}].PhuLucDieuChinhLuong" class="form-control form-control-lg" />
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-6 col-xs-12">
+                                                <div class="form-group">
+                                                    <label class="control-label">Ghi chú</label>
+                                                    <input name="Employee.Contracts[{{:code}}].Description" class="form-control form-control-lg" />
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-6 col-xs-12">
+                                                <div class="form-group">
+                                                    <label class="control-label">Ngày hiệu lực</label>
+                                                    <input class="form-control form-control-lg datepicker datepicker-lg" value="@DateTime.Now.ToString("dd/MM/yyyy")" />
+                                                    <input type="hidden" name="Employee.Contracts[{{:code}}].Start" class="hidedatepicker" />
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-6 col-xs-12">
+                                                <div class="form-group">
+                                                    <label class="control-label">Ngày hết hiệu lực</label>
+                                                    <input class="form-control form-control-lg datepicker datepicker-lg" value="@DateTime.Now.AddYears(1).ToString("dd/MM/yyyy")" />
+                                                    <input type="hidden" name="Employee.Contracts[{{:code}}].End" class="hidedatepicker" />
+                                                </div>
+                                            </div>
+                                            <div class="col-12">
+                                                <button type="button" class="btn btn-danger btn-sm remove-item"><i class="note-icon-col-remove"></i>Xóa</button>
+                                            </div>
+                                        </div>
+                                        <input type="hidden" class="codeContract" value="{{:code}}" />
+                                    </div>
+                                </script>
+                            </div>
+                            <hr />
+
+                            <!-- SO LUONG BAN LUU -->
+                            <hr />
+                            <div class="row mb-4">
+                                <div class="col">
+                                    <h5>Số lượng bản lưu</h5>
+                                </div>
+                                <!--end of col-->
+                            </div>
+                            <div class="row">
+                                @{
+                                    if (Model.Employee.StorePapers != null && Model.Employee.StorePapers.Count > 0)
+                                    {
+                                        i = 0;
+                                        foreach (var item in Model.Employee.StorePapers)
+                                        {
+                                            <div class="col-12 nodeStorePaper node">
+                                                <div class="row bd-example">
+                                                    <div class="col-sm-6 col-xs-12">
+                                                        <div class="form-group">
+                                                            <label class="control-label">Loại bảng lưu</label>
+                                                            <input asp-for="Employee.StorePapers[i].Type" class="form-control form-control-lg" />
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-sm-6 col-xs-12">
+                                                        <div class="form-group">
+                                                            <label class="control-label">Số lượng</label>
+                                                            <input asp-for="Employee.StorePapers[i].Count" class="form-control form-control-lg" />
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-12">
+                                                        <button type="button" class="btn btn-danger btn-sm remove-item"><i class="glyphicon-remove"></i>Xóa</button>
+                                                    </div>
+                                                </div>
+                                                <input type="hidden" class="codeStorePaper" value="@i" />
+                                            </div>
+                                            i++;
+                                        }
+                                    }
+                                }
+
+                                <div class="col-12 p-1 more-storepaper">
+                                    <div class="form-group">
+                                        <button class="btn btn-secondary btn-sm addStorePaper" type="button"><i class="icon icon-add-to-list"></i> Thêm loại bảng lưu</button>
+                                    </div>
+                                </div>
+
+                                <script id="tmplStorePaper" type="text/x-jsrender">
+                                    <div class="col-12 nodeStorePaper node">
+                                        <div class="row bd-example">
+                                            <div class="col-sm-6 col-xs-12">
+                                                <div class="form-group">
+                                                    <label class="control-label">Loại bảng lưu</label>
+                                                    <input name="Employee.StorePapers[{{:code}}].Type" class="form-control form-control-lg" />
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-6 col-xs-12">
+                                                <div class="form-group">
+                                                    <label class="control-label">Số lượng</label>
+                                                    <input name="Employee.StorePapers[{{:code}}].Count" class="form-control form-control-lg" />
+                                                </div>
+                                            </div>
+                                            <div class="col-12">
+                                                <button type="button" class="btn btn-danger btn-sm remove-item"><i class="glyphicon-remove"></i>Xóa</button>
+                                            </div>
+                                        </div>
+                                        <input type="hidden" class="codeStorePaper" value="{{:code}}" />
+                                    </div>
+                                </script>
+                            </div>
+
+                            <!-- DAO TAO -->
+                            <hr />
+                            <div class="row mb-4">
+                                <div class="col">
+                                    <h5>ĐÀO TẠO (THỜI GIAN, CHUYÊN MÔN, CHỨNG CHỈ)</h5>
+                                </div>
+                            </div>
+                            <div class="row">
+                                @{
+                                    if (Model.Employee.EmployeeEducations != null && Model.Employee.EmployeeEducations.Count > 0)
+                                    {
+                                        i = 0;
+                                        foreach (var item in Model.Employee.EmployeeEducations)
+                                        {
+                                            var no = i + 1;
+                                            <div class="col-12 nodeEducation node">
+                                                <div class="row bd-example">
+                                                    <div class="col-12">
+                                                        <div class="form-group">
+                                                            <label class="control-label">Lần @no - Nội dung</label>
+                                                            <textarea asp-for="Employee.EmployeeEducations[i].Content" class="form-control form-control-lg js-auto-size"></textarea>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-12">
+                                                        <button type="button" class="btn btn-danger btn-sm remove-item"><i class="glyphicon-remove"></i>Xóa</button>
+                                                    </div>
+                                                </div>
+                                                <input type="hidden" name="Employee.EmployeeEducations[@i].No" value="@i" />
+                                                <input type="hidden" class="codeEducation" value="@i" />
+                                            </div>
+                                            i++;
+                                        }
+                                    }
+                                }
+
+                                <div class="col-12 p-1 more-education">
+                                    <div class="form-group">
+                                        <button class="btn btn-secondary btn-sm addEducation" type="button"><i class="icon icon-add-to-list"></i> Thêm</button>
+                                    </div>
+                                </div>
+
+                                <script id="tmplEducation" type="text/x-jsrender">
+                                    <div class="col-12 nodeEducation node">
+                                        <div class="row bd-example">
+                                            <div class="col-12">
+                                                <div class="form-group">
+                                                    <label class="control-label">Lần {{:code+1}} - Nội dung</label>
+                                                    <textarea name="Employee.EmployeeEducations[{{:code}}].Content" class="form-control form-control-lg js-auto-size"></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="col-12">
+                                                <button type="button" class="btn btn-danger btn-sm remove-item"><i class="glyphicon-remove"></i>Xóa</button>
+                                            </div>
+                                        </div>
+                                        <input type="hidden" class="codeEducation" value="{{:code}}" />
+                                    </div>
+                                </script>
+                            </div>
+
+
+                            <!-- DIEU CHUYEN EmployeeMovements -->
+                            <!-- KHEN THUONG -->
+                            <!-- KY LUAT -->
+                            <!-- DANH GIA NANG LUC -->
+                            <!-- NGUOI LIEN LAC -->
+                            <!-- GIAY TO KHAC -->
+                            <!-- NGUOI CHECK -->
+                        </div>
+                    </div>
+                </div>
+                <!--end of tab pane-->
+
+                @if (ViewBag.SalatyRight > (int)ERights.None)
+                {
+                    <div class="tab-pane fade" id="salary" role="tabpanel" arialabelledby="salary-tab">
+                        <div class="container">
+                            <!-- ONLY USER HAVE RIGHT NHAN-SU -->
+                            @{
+                                if (ViewBag.SalatyRight == (int)ERights.View)
+                                {
+                                    <div class="row">
+                                        <div class="col-sm-6 col-12">
+                                            <div class="form-group">
+                                                <i class="icon icon-target"></i>
+                                                <label class="control-label">Bậc lương</label><span class="badge badge-light">@Model.Employee.LevelSalary</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <table class="table align-items-center">
+                                                <thead>
+                                                    <tr>
+                                                        <th scope="col">STT</th>
+                                                        <th scope="col">Nội dung lương</th>
+                                                        <th scope="col">Mức</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @{
+                                                        if (Model.Employee.Salaries != null)
+                                                        {
+                                                            var iListSalaryDetail = 1;
+                                                            foreach (var salary in Model.Employee.Salaries)
+                                                            {
+                                                                if (!string.IsNullOrEmpty(salary.Title))
+                                                                {
+                                                                    <tr>
+                                                                        <td>
+                                                                            @iListSalaryDetail
+                                                                        </td>
+                                                                        <td>
+                                                                            @salary.Title
+                                                                        </td>
+                                                                        <td>
+                                                                            @string.Format("{0:n0}", salary.Money)
+                                                                        </td>
+                                                                    </tr>
+                                                                    iListSalaryDetail++;
+                                                                }
+                                                            }
+                                                        }
+                                                        else
+                                                        {
+                                                            <tr>
+                                                                <td colspan="3">
+                                                                    <small>
+                                                                        <i class="icon-info"></i>
+                                                                        Dữ liệu chưa cập nhật. Liên hệ quản lý hoặc trực tiếp phòng Hành chính nhân sự.
+                                                                        Xin lỗi về sự bất tiện này.
+                                                                    </small>
+                                                                </td>
+                                                            </tr>
+                                                        }
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="form-group">
+                                                <i class="icon icon-target"></i>
+                                                <label class="control-label">Ước tính lương tháng</label>
+                                                <span class="badge badge-info">@string.Format("{0:n0}", Model.Employee.Salary)</span>
+                                                <small>Thông tin này có giá trị tham khảo, tùy qui định của công ty.</small>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!--BANKS-->
+                                    <hr />
+                                    <div class="row mb-4">
+                                        <div class="col">
+                                            <h5>Thông tin nhận lương</h5>
+                                        </div>
+                                        <!--end of col-->
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-sm-6 col-12">
+                                            <div class="form-group">
+                                                <i class="icon icon-hand"></i>
+                                                <label class="control-label">Hình thức nhận lương</label>
+                                                <input value="@Constants.SalaryPaymentMethod(Model.Employee.SalaryPayMethod)" type="text" readonly class="form-control-plaintext" />
+                                            </div>
+                                        </div>
+                                        <!--end of col-->
+                                    </div>
+                                    @if (Model.Employee.SalaryPayMethod == 1)
+                                    {
+                                        <div class="row bank-method">
+                                            <div class="col-sm-6 col-12">
+                                                <div class="form-group">
+                                                    <i class="icon icon-hand"></i>
+                                                    <label class="control-label">Tài khoản</label>
+                                                    <input asp-for="Employee.EmployeeBank.BankAccount" type="text" readonly class="form-control-plaintext" />
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-6 col-12">
+                                                <div class="form-group">
+                                                    <i class="icon icon-hand"></i>
+                                                    <label class="control-label">Họ tên</label>
+                                                    <input asp-for="Employee.EmployeeBank.BankHolder" type="text" readonly class="form-control-plaintext" />
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-6 col-12">
+                                                <div class="form-group">
+                                                    <label class="control-label">Ngân hàng</label>
+                                                    <input asp-for="Employee.EmployeeBank.BankName" type="text" readonly class="form-control-plaintext" />
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-6 col-12">
+                                                <div class="form-group">
+                                                    <label class="control-label">Chi nhánh</label>
+                                                    <input asp-for="Employee.EmployeeBank.BankLocation" type="text" readonly class="form-control-plaintext" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <div class="row">
+                                        <div class="col-sm-6 col-12">
+                                            <div class="form-group">
+                                                <i class="icon icon-target"></i>
+                                                <label class="control-label">Bậc lương</label>
+                                                <input asp-for="Employee.LevelSalary" class="form-control form-control-lg" />
+                                            </div>
+                                        </div>
+                                        @{
+                                            i = 0;
+                                            decimal total = 0;
+                                            foreach (var salaryItem in Model.Employee.Salaries)
+                                            {
+                                                if (!string.IsNullOrEmpty(salaryItem.Title))
+                                                {
+
+                                                    <div class="col-12 nodeSalary node">
+                                                        <div class="row bd-example">
+                                                            <div class="col-sm-6 col-12">
+                                                                <span class="badge badge-danger badge-order">@(i + 1)</span>
+                                                                <div class="form-group">
+                                                                    <i class="icon icon-text"></i>
+                                                                    <label class="control-label">Nội dung lương</label>
+                                                                    <input name="Employee.Salaries[@i].Title" value="@salaryItem.Title" class="form-control form-control-lg" readonly />
+                                                                    <input type="hidden" name="Employee.Salaries[@i].Order" value="@salaryItem.Order" />
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-sm-6 col-12">
+                                                                <div class="form-group">
+                                                                    <i class="icon icon-database"></i>
+                                                                    <label class="control-label">Mức lương</label>
+                                                                    <input class="form-control form-control-lg autonumeric-@i" value="@salaryItem.Money" />
+                                                                    <span class="moneytostring badge badge-info"></span>
+                                                                    <input type="hidden" name="Employee.Salaries[@i].Money" value="@salaryItem.Money" class="autonumeric-value salary-item-money" />
+                                                                </div>
+                                                            </div>
+                                                            @{
+                                                                var dnonetypeSalary = string.Empty;
+                                                                if (string.IsNullOrEmpty(salaryItem.Type))
+                                                                {
+                                                                    dnonetypeSalary = "d-none";
+                                                                }
+                                                            }
+                                                            <div class="col-sm-6 col-12 @dnonetypeSalary">
+                                                                <div class="form-group">
+                                                                    <i class="icon-suitcase"></i>
+                                                                    <label class="control-label">Loại lương</label>
+                                                                    <input name="Employee.Salaries[@i].Type" value="@salaryItem.Type" class="form-control form-control-lg" readonly />
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-sm-6 col-12">
+                                                                <div class="form-group">
+                                                                    <i class="icon icon-code"></i>
+                                                                    <label class="control-label">Mã tham chiếu</label>
+                                                                    <input name="Employee.Salaries[@i].Code" value="@salaryItem.Code" class="form-control form-control-lg" />
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-sm-6 col-12 d-none">
+                                                                <div class="form-group">
+                                                                    <i class="icon icon-code"></i>
+                                                                    <label class="control-label">Ngày cập nhật</label>
+                                                                    <input name="Employee.Salaries[@i].Date" class="form-control form-control-lg" />
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <input type="hidden" class="codeSalary" value="@i" />
+                                                    </div>
+                                                    i++;
+                                                    total += salaryItem.Money;
+                                                }
+                                            }
+                                        }
+                                        <div class="col-12">
+                                            <div class="form-group">
+                                                <i class="icon icon-target"></i>
+                                                <label class="control-label">Ước tính lương tháng</label>
+                                                <input type="text" id="salary-estimate" readonly class="form-control-plaintext text-success" value="@string.Format("{0:n0}", total)" />
+                                                <small>Thông tin này có giá trị tham khảo, tùy qui định của công ty.</small>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!--BANKS-->
+                                    <hr />
+                                    <div class="row mb-4">
+                                        <div class="col">
+                                            <h5>Thông tin nhận lương</h5>
+                                        </div>
+                                        <!--end of col-->
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-sm-6 col-12">
+                                            <div class="form-group">
+                                                <i class="icon icon-hand"></i>
+                                                <label class="control-label">Hình thức nhận lương</label>
+                                                <select asp-for="Employee.SalaryPayMethod" class="form-control form-control-lg">
+                                                    <option value="0">Tiền mặt</option>
+                                                    <option value="1">Chuyển khoản</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <!--end of col-->
+                                    </div>
+
+                                    var dnonetypeSalaryEdit = string.Empty;
+                                    if (Model.Employee.SalaryPayMethod == 0)
+                                    {
+                                        dnonetypeSalaryEdit = "d-none";
+                                    }
+
+                                    <div class="row bank-method @dnonetypeSalaryEdit">
+                                        <div class="col-sm-6 col-12">
+                                            <div class="form-group">
+                                                <i class="icon icon-hand"></i>
+                                                <label class="control-label">Tài khoản</label>
+                                                <input asp-for="Employee.EmployeeBank.BankAccount" class="form-control form-control-lg" />
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-6 col-12">
+                                            <div class="form-group">
+                                                <i class="icon icon-hand"></i>
+                                                <label class="control-label">Họ tên</label>
+                                                <input asp-for="Employee.EmployeeBank.BankHolder" class="form-control form-control-lg" />
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-6 col-12">
+                                            <div class="form-group">
+                                                <label class="control-label">Ngân hàng</label>
+                                                <select asp-for="Employee.EmployeeBank.BankName" class="form-control form-control-lg">
+                                                    @foreach (var bank in ViewBag.Banks)
+                                                    {
+                                                        <option value="@bank.Name" data-shorten="@bank.Shorten">@bank.Name (@bank.Shorten)</option>
+                                                    }
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-6 col-12">
+                                            <div class="form-group">
+                                                <label class="control-label">Chi nhánh</label>
+                                                <select asp-for="Employee.EmployeeBank.BankLocation" class="form-control form-control-lg">
+                                                    <option value="Hồ Chí Minh">Hồ Chí Minh</option>
+                                                    <option value="Hà Nội">Hà Nội</option>
+                                                    <option value="Đà Nẵng">Đà Nẵng</option>
+                                                    <option value="Hải Phòng">Hải Phòng</option>
+                                                    <option value="Cần Thơ">Cần Thơ</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row bank-list d-none">
+                                        <div class="col-12 d-none">
+                                            <table class="table align-items-center">
+                                                <thead>
+                                                    <tr>
+                                                        <th scope="col">Card Type</th>
+                                                        <th scope="col">Card Number</th>
+                                                        <th scope="col">Default Payment Method</th>
+                                                        <th scope="col">Remove</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <th scope="row">
+                                                            <img alt="Image" src="~/assets/img/logo-payment-visa.svg" class="avatar avatar-sm" />
+                                                        </th>
+                                                        <td>
+                                                            <span class="d-block">&bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull; 8372</span>
+                                                            <small class="text-muted">Exp: 06/22</small>
+                                                        </td>
+                                                        <td>
+                                                            <div class="custom-control custom-radio">
+                                                                <input id="radio1" name="payment-default" type="radio" class="custom-control-input" checked />
+                                                                <label class="custom-control-label" for="radio1"></label>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <button type="submit" class="btn btn-sm btn-danger"><i class="icon-squared-cross"></i> Remove card</button>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th scope="row">
+                                                            <img alt="Image" src="~/assets/img/logo-payment-amex.svg" class="avatar avatar-sm avatar-square" />
+                                                        </th>
+                                                        <td>
+                                                            <span class="d-block">&bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull; 1225</span>
+                                                            <small class="text-muted">Exp: 07/21</small>
+                                                        </td>
+                                                        <td>
+                                                            <div class="custom-control custom-radio">
+                                                                <input id="radio2" name="payment-default" type="radio" class="custom-control-input">
+                                                                <label class="custom-control-label" for="radio2"></label>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <button type="submit" class="btn btn-sm btn-danger"><i class="icon-squared-cross"></i> Remove card</button>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                            @*<button class="btn btn-success">Thêm tài khoản</button>*@
+                                        </div>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+                }
+                <!--end of tab pane-->
+            </div>
+            <!--end of tabs content-->
+        </section>
+
+        <div class="row">
+            <div class="col-12 col-md-8">
+                <div class="form-group">
+                    <button class="btn btn-success btn-lg btn-block btn-submit" type="submit" disabled><i class="icon icon-save"></i> Lưu</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div>
+    <a asp-action="Index"><i class="icon icon-back"></i>Trở về</a>
+</div>
+
+<div class="modal fade" id="newDepartment" tabindex="-1" role="dialog" aria-labelledby="newDepartmentLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editItemModalLabel">Thêm mới Phòng/ban</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Đóng">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form class="data-form" method="post" action="/hr/nhan-su/phong-ban/tao-moi/" enctype="multipart/form-data">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <span class="result"></span>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="control-label">Phòng/ban</label>
+                        <input name="Name" class="form-control form-control-lg" />
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Mô tả</label>
+                        <textarea name="Description" class="form-control form-control-lg js-auto-size"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy & Đóng</button>
+                    <button type="button" class="btn btn-primary btn-save-department"><i class="icon-save"></i>&nbsp;Lưu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="newPart" tabindex="-1" role="dialog" aria-labelledby="newPartLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editItemModalLabel">Thêm mới Bộ phận</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Đóng">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form class="data-form" method="post" action="/hr/nhan-su/bo-phan/tao-moi/" enctype="multipart/form-data">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <span class="result"></span>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="control-label">Bộ phận</label>
+                        <input name="Name" class="form-control form-control-lg" />
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Mô tả</label>
+                        <textarea name="Description" class="form-control form-control-lg js-auto-size"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy & Đóng</button>
+                    <button type="button" class="btn btn-primary btn-save-part"><i class="icon-save"></i>&nbsp;Lưu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="newTitle" tabindex="-1" role="dialog" aria-labelledby="newTitleLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editItemModalLabel">Thêm mới Công việc</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Đóng">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form class="data-form" method="post" action="/hr/nhan-su/cong-viec/tao-moi/" enctype="multipart/form-data">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <span class="result"></span>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="control-label">Công việc</label>
+                        <input name="Name" class="form-control form-control-lg" />
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Mô tả</label>
+                        <textarea name="Description" class="form-control form-control-lg js-auto-size"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy & Đóng</button>
+                    <button type="button" class="btn btn-primary btn-save-title"><i class="icon-save"></i>&nbsp;Lưu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="newHospital" tabindex="-1" role="dialog" aria-labelledby="newHospitalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editItemModalLabel">Thêm mới Bệnh viện</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Đóng">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form class="data-form" method="post" action="/hr/nhan-su/benh-vien/tao-moi/" enctype="multipart/form-data">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <span class="result"></span>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="control-label">Mã KCB</label>
+                        <input name="Code" class="form-control form-control-lg" />
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Tuyến</label>
+                        <input name="Local" class="form-control form-control-lg" />
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Tỉnh/Thành phố</label>
+                        <input name="City" class="form-control form-control-lg" />
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Quận/Huyện</label>
+                        <input name="District" class="form-control form-control-lg" />
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Cơ sở khám chữa bệnh</label>
+                        <input name="Name" class="form-control form-control-lg" />
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Địa chỉ</label>
+                        <input name="Address" class="form-control form-control-lg" />
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Điều kiện</label>
+                        <textarea name="Condition" class="form-control form-control-lg js-auto-size"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Ghi chú</label>
+                        <textarea name="Note" class="form-control form-control-lg js-auto-size"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy & Đóng</button>
+                    <button type="button" class="btn btn-primary btn-save-hospital"><i class="icon-save"></i>&nbsp;Lưu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="resultModal" tabindex="-1" role="dialog" aria-labelledby="resultModal" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content" id="modalnotice">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-footer">
+                <a href="/hr/nhan-su/thong-tin/" class="btn btn-danger">Thêm thông tin</a>
+                <a href="/hr/nhan-su/tao-moi" class="btn btn-primary">Thêm mới</a>
+                <a href="/hr/nhan-su" class="btn btn-info">Danh sách</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script id="tmplModalNotice" type="text/x-jsrender">
+    <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">{{:message}}</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="modal-footer">
+        <a href="/hr/nhan-su/thong-tin/{{:id}}" class="btn btn-info">Xem thông tin</a>
+        <a href="/hr/nhan-su/tao-moi" class="btn btn-primary">Thêm mới</a>
+        <a href="/hr/nhan-su" class="btn btn-cyan">Danh sách</a>
+    </div>
+</script>
+
+@section scripts {
+    @{
+            /**/
+
+            await Html.RenderPartialAsync("_ValidationScriptsPartial");
+            <script src="~/js/employee-data.js?@DateTime.Now.Ticks"></script>
+    }
+}
+

@@ -1,0 +1,9 @@
+C:\Projects\Tribat\sourcecode\xcore\bin\Release\netcoreapp2.1\win10-x64\xcore.deps.json
+C:\Projects\Tribat\sourcecode\xcore\bin\Release\netcoreapp2.1\win10-x64\xcore.dll
+C:\Projects\Tribat\sourcecode\xcore\bin\Release\netcoreapp2.1\win10-x64\xcore.pdb
+C:\Projects\Tribat\sourcecode\xcore\obj\Release\netcoreapp2.1\win10-x64\xcore.csprojAssemblyReference.cache
+C:\Projects\Tribat\sourcecode\xcore\obj\Release\netcoreapp2.1\win10-x64\xcore.csproj.CoreCompileInputs.cache
+C:\Projects\Tribat\sourcecode\xcore\obj\Release\netcoreapp2.1\win10-x64\xcore.AssemblyInfoInputs.cache
+C:\Projects\Tribat\sourcecode\xcore\obj\Release\netcoreapp2.1\win10-x64\xcore.AssemblyInfo.cs
+C:\Projects\Tribat\sourcecode\xcore\obj\Release\netcoreapp2.1\win10-x64\xcore.dll
+C:\Projects\Tribat\sourcecode\xcore\obj\Release\netcoreapp2.1\win10-x64\xcore.pdb

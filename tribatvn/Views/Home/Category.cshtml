@@ -1,0 +1,205 @@
+﻿@using Common.Utilities;
+@using Helpers;
+@using ViewModels;
+@model CategoryViewModel;
+
+@{
+    Layout = "~/Views/Shared/_Wingman.cshtml";
+    var language = ViewData["Language"].ToString();
+}
+
+@await Html.PartialAsync("MenuPartial", Model.Menu)
+
+@if (Model.Entities != null && Model.Entities.Count > 0)
+{
+    <div class="main-container">
+        @*<section class="bg-light space-sm">
+                <div class="main-carousel" data-flickity='{ "cellAlign": "center", "contain": true, "prevNextButtons": false, "pageDots":false, "wrapAround":true, "autoPlay":5000, "imagesLoaded":true }'>
+                    @foreach (var entity in Model.Entities)
+                    {
+                        var link = "/" + Constants.Link.Product + "/" + ViewData["Category"] + "/" + @entity.Alias;
+                        <div class="carousel-cell col-9 col-md-8 col-lg-5 text-center">
+                            <a href="@link" class="d-block mb-3">
+                                @if (entity.Images != null && entity.Images.Count > 0)
+                                {
+                                    <img src="~/@entity.Images[0].Path/@entity.Images[0].FileName" class="img-fluid rounded" alt="@entity.Name" />
+                                }
+                                else
+                                {
+                                    <img src="~/images/1449046872no-img.jpg" class="img-fluid rounded" alt="@entity.Name" />
+                                }
+                            </a>
+                            <span class="h6">@entity.Name</span>
+                        </div>
+                    }
+                </div>
+            </section>*@
+
+        <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">
+                                <a href="/">@Html.Raw(TextHelper.GetText(525, language))</a>
+                            </li>
+                            <li class="breadcrumb-item active" aria-current="page">@Model.Entity.Name</li>
+                        </ol>
+                    </div>
+                    <!--end of col-->
+                </div>
+                <!--end of row-->
+            </div>
+            <!--end of container-->
+        </nav>
+
+
+        <section class="space-sm flush-with-above">
+            <div class="container">
+                @*<div class="row mb-4">
+                        <div class="col-12 d-flex justify-content-between">
+                            <div>
+                                <span class="text-muted text-small">Results 1 - 12 of 25</span>
+                            </div>
+                            <form class="d-flex align-items-center">
+                                <span class="mr-2 text-muted text-small text-nowrap">Sort by:</span>
+                                <select class="custom-select">
+                                    <option value="alpha">Alphabetical</option>
+                                    <option value="old-new" selected>Newest</option>
+                                    <option value="new-old">Popular</option>
+                                    <option value="recent">Recently Updated</option>
+                                </select>
+                            </form>
+                        </div>
+                    </div>*@
+                <!--end of row-->
+
+                <ul class="row feature-list feature-list-sm">
+                    @foreach (var entity in Model.Entities)
+                    {
+                        var link = "/" + Constants.Link.Product + "/" + ViewData["Category"] + "/" + @entity.Alias;
+                        <li class="col-12 col-md-6 col-lg-4">
+                            <div class="card card-lg">
+                                <div class="card-img">
+                                    <a href="@link">
+                                        @if (entity.Images != null && entity.Images.Count > 0)
+                                        {
+                                            <img class="card-img-top card-img-top-custom" src="~/@entity.Images[0].Path/@entity.Images[0].FileName" alt="@entity.Name" />
+                                        }
+                                        else
+                                        {
+                                            <img class="card-img-top card-img-top-custom" src="~/images/1449046872no-img.jpg" alt="@entity.Name" />
+                                        }
+                                    </a>
+                                </div>
+
+                                <div class="card-body">
+                                    <a href="@link">
+                                        <h4 class="card-title mb-3">@entity.Name</h4>
+                                    </a>
+                                    <p class="card-text">@entity.Description</p>
+                                </div>
+                                <div class="card-footer card-footer-borderless d-flex justify-content-between">
+                                    <div class="text-small">
+                                        <ul class="list-inline">
+                                            <li class="list-inline-item"><i class="icon-heart"></i> 221</li>
+                                            <li class="list-inline-item"><i class="icon-message"></i> 14</li>
+                                        </ul>
+                                    </div>
+                                    <div class="dropup">
+                                        <button class="btn btn-sm btn-outline-primary dropdown-toggle dropdown-toggle-no-arrow" type="button" id="SidekickButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <i class="icon-dots-three-horizontal"></i>
+                                        </button>
+                                        <div class="dropdown-menu dropdown-menu-sm" aria-labelledby="SidekickButton">
+                                            <a class="dropdown-item" href="#">Save</a>
+                                            <a class="dropdown-item" href="#">Share</a>
+                                            <a class="dropdown-item" href="#">Comment</a>
+                                            <div class="dropdown-divider"></div>
+                                            <a class="dropdown-item" href="#">Report</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    }
+                </ul>
+                <!--end of row-->
+                <div class="row justify-content-center display-none">
+                    <div class="col-auto">
+                        <nav aria-label="Page navigation example">
+                            <ul class="pagination">
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#" aria-label="Previous">
+                                        <span aria-hidden="true">
+                                            <i class="icon-chevron-left"></i>
+                                        </span>
+                                        <span class="sr-only">Previous</span>
+                                    </a>
+                                </li>
+                                <li class="page-item active">
+                                    <a class="page-link" href="#">1</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="#">2</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="#">3</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="#" aria-label="Next">
+                                        <span aria-hidden="true">
+                                            <i class="icon-chevron-right"></i>
+                                        </span>
+                                        <span class="sr-only">Next</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                    <!--end of col-->
+                </div>
+                <!--end of row-->
+            </div>
+            <!--end of container-->
+        </section>
+        <!--end of section-->
+
+        <section class="space-sm">
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <div class="mb-3">
+                            @foreach (var keyword in Model.Entity.KeyWords.Split(","))
+                            {
+                                <a href="#" class="btn btn-secondary mb-1">@keyword</a>
+                            }
+                        </div>
+                        @*<a href="#" class="text-small">Explore all categories &rsaquo;</a>*@
+                    </div>
+                    <!--end of col-->
+                </div>
+                <!--end of row-->
+            </div>
+            <!--end of container-->
+        </section>
+    </div>
+
+    <div class="link-languages display-none">
+        <ul>
+            @foreach (var link in Model.Links)
+            {
+                <li data-value="@link.Url" class="@link.Language">@link.Url</li>
+            }
+        </ul>
+    </div>
+}
+else
+{
+    @await Html.PartialAsync("UpdatePartial")
+}
+
+@await Html.PartialAsync("FooterPartial", Model.Menu)
+
+
+
+

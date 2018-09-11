@@ -1,0 +1,7 @@
+C:\Projects\Tribat\sourcecode\TimeKeeperBusiness\bin\Release\TimeKeeperBusiness.exe.config
+C:\Projects\Tribat\sourcecode\TimeKeeperBusiness\bin\Release\TimeKeeperBusiness.exe
+C:\Projects\Tribat\sourcecode\TimeKeeperBusiness\bin\Release\TimeKeeperBusiness.pdb
+C:\Projects\Tribat\sourcecode\TimeKeeperBusiness\obj\Release\TimeKeeperBusiness.csprojAssemblyReference.cache
+C:\Projects\Tribat\sourcecode\TimeKeeperBusiness\obj\Release\TimeKeeperBusiness.csproj.CoreCompileInputs.cache
+C:\Projects\Tribat\sourcecode\TimeKeeperBusiness\obj\Release\TimeKeeperBusiness.exe
+C:\Projects\Tribat\sourcecode\TimeKeeperBusiness\obj\Release\TimeKeeperBusiness.pdb

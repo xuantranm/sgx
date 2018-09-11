@@ -1,0 +1,322 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.AspNetCore.Mvc;
+using Tribat.ModelsTribat;
+using Microsoft.Extensions.Caching.Distributed;
+using Tribat.Data;
+using Tribat.Models;
+using Newtonsoft.Json;
+using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Hosting;
+using MongoDB.Driver;
+using Tribat.Models.Tribats;
+using Tribat.Common.Utilities;
+
+namespace Tribat.Controllers
+{
+    //[Authorize]
+    public class ReleaseController : Controller
+    {
+        IHostingEnvironment _hostingEnvironment;
+
+        private readonly TribatContext _context;
+
+        MongoDBContext dbContext = new MongoDBContext();
+
+        private readonly IDistributedCache _cache;
+
+        private readonly string key;
+        private readonly string keyProduct;
+        private readonly string exports;
+
+        public ReleaseController(TribatContext context, IDistributedCache cache, IConfiguration configuration, IHostingEnvironment env)
+        {
+            _context = context;
+            _cache = cache;
+            key = Constants.Collection.XuatHang;
+            exports = Constants.Exports.XuatHang;
+            Configuration = configuration;
+            _hostingEnvironment = env;
+        }
+
+        public IConfiguration Configuration { get; }
+
+        private void CacheReLoad()
+        {
+            _cache.SetString(key + Constants.FlagCacheKey, Constants.String_N);
+        }
+
+        public bool IsRight(string function, int right)
+        {
+            var roles = dbContext.NhanViens.Find(m => m.UserName.Equals(User.Identity.Name)).First().Roles;
+            foreach (string role in roles.Split(';'))
+            {
+                if (role.Split(':')[0] == "System")
+                {
+                    return true;
+                }
+                if (role.Split(':')[0] == function && Convert.ToInt32(role.Split(':')[1]) >= right)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public Tuple<string, string> PageSizeAndCache()
+        {
+            var pageSize = Configuration.GetSection("Setting:PageSize").Value;
+            var cacheEnable = Configuration.GetSection("Setting:Cached").Value;
+
+            var cacheSettings = _cache.GetString(Constants.Collection.Settings);
+            var settings = JsonConvert.DeserializeObject<IEnumerable<Setting>>(cacheSettings);
+            if (settings.Count() != 0)
+            {
+                var setting = settings.Where(m => m.Key == "PageSize").First();
+                if (setting != null)
+                {
+                    pageSize = setting.Content;
+                }
+                var cache = settings.Where(m => m.Key == Constants.Cache + key).FirstOrDefault();
+                if (cache != null)
+                {
+                    cacheEnable = cache.Content;
+                }
+            }
+            return new Tuple<string, string>(pageSize, cacheEnable);
+        }
+
+        // GET: Country
+        [Route("/xuat-hang/")]
+        public ActionResult Index(string loc, string pxh, string pyc, string mahanghoa, int? trang)
+        {
+            #region Authorization
+            if (Convert.ToInt32(Configuration.GetSection("Setting:Live").Value) == 1)
+            {
+                if (!IsRight("REQUEST", 1))
+                {
+                    return RedirectToAction("AccessDenied", "Account");
+                }
+            }
+            #endregion
+
+            #region DDL
+            var status = new List<Status>
+            {
+                new Status()
+                {
+                    Id = Constants.Status.Open,
+                    Name = Constants.Status.Open
+                },
+                new Status()
+                {
+                    Id = Constants.Status.Complete,
+                    Name = Constants.Status.Complete
+                }
+            };
+            ViewData["Status"] = status;
+            #endregion
+
+            ViewData["CurrentSort"] = loc;
+            ViewData["CodeSortParm"] = String.IsNullOrEmpty(loc) ? "code_desc" : "";
+
+            var searchOut = string.Empty;
+            var searchPhieuYeuCau = string.Empty;
+            var searchCode = string.Empty;
+
+            if (!string.IsNullOrEmpty(pxh) || !string.IsNullOrEmpty(pyc) || !string.IsNullOrEmpty(mahanghoa))
+            {
+                //page = 1;
+                if (!string.IsNullOrEmpty(pxh))
+                {
+                    searchOut = pxh;
+                }
+                if (!string.IsNullOrEmpty(pyc))
+                {
+                    searchPhieuYeuCau = pyc;
+                }
+                if (!string.IsNullOrEmpty(mahanghoa))
+                {
+                    searchCode = mahanghoa;
+                }
+            }
+
+            ViewData["CurrentCode"] = searchCode;
+            ViewData["CurrentOut"] = searchOut;
+            ViewData["CurrentMrf"] = searchPhieuYeuCau;
+
+            var pageCache = PageSizeAndCache();
+            var pageSize = Convert.ToInt32(pageCache.Item1);
+            var cacheEnable = pageCache.Item2;
+
+            var results = from e in dbContext.XuatHangs.AsQueryable()
+                          select e;
+            if (!string.IsNullOrEmpty(searchCode))
+            {
+                results = (from e in dbContext.XuatHangs.AsQueryable()
+                           where e.ProductXuatHangs.Any(c => c.Code.Equals(searchCode))
+                           select e);
+            }
+            if (!string.IsNullOrEmpty(searchOut))
+            {
+                results = results.Where(s => s.Code.Equals(searchOut));
+            }
+            if (!string.IsNullOrEmpty(searchPhieuYeuCau))
+            {
+                results = results.Where(s => s.PhieuYeuCau.Equals(searchPhieuYeuCau));
+            }
+
+            // Code, Name, Type
+            switch (loc)
+            {
+                case "code_desc":
+                    results = results.OrderByDescending(s => s.Code);
+                    break;
+                default:
+                    results = results.OrderBy(s => s.Code);
+                    break;
+            }
+            return View(PaginatedList<Release>.Create(results, trang ?? 1, pageSize));
+        }
+
+        // GET: Stock/Create
+        [Route("/xuat-hang/tao-moi/")]
+        public ActionResult Create()
+        {
+            #region DDL
+
+            #endregion
+
+            #region Default NewCode
+            var newCode = NewCode();
+            ViewData["newCode"] = newCode;
+            #endregion
+
+            return View();
+        }
+
+        private string NewCode()
+        {
+            var subCode = "XH" + DateTime.Now.Year.ToString() + DateTime.Now.Month.ToString("d2");
+            var newCodeFormat = subCode + "001";
+            var lastRecord = dbContext.XuatHangs.Find(m => true).SortByDescending(m => m.Id).Limit(1);
+            if (lastRecord.Count() > 0)
+            {
+                var lastCode = lastRecord.First().Code;
+                var newCode = int.Parse(lastCode.Substring(8)) + 1;
+                newCodeFormat = subCode + newCode.ToString().PadLeft(3, '0');
+            }
+            return newCodeFormat;
+        }
+
+        // POST: Requisition/Create
+        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
+        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Route("/xuat-hang/tao-moi/")]
+        public ActionResult Create(Release entity)
+        {
+            if (ModelState.IsValid)
+            {
+                #region DDL
+                #endregion
+
+                #region Check Duplicate Code
+                var lastRecord = dbContext.NhanHangs.Find(m => true).SortByDescending(m => m.Id).Limit(1).FirstOrDefault();
+                if (lastRecord != null)
+                {
+                    if (lastRecord.Code == entity.Code)
+                    {
+                        var newCode = NewCode();
+                        ModelState.AddModelError("Code", "Phiếu nhận hàng đã được tạo " + entity.Code + ", đã cập nhật phiếu nhận hàng mới." + newCode);
+                        ViewData["newCode"] = newCode;
+                        return View(entity);
+                    }
+                }
+                #endregion
+
+                var userId = User.Identity.Name;
+                if (Convert.ToInt32(Configuration.GetSection("Setting:Live").Value) == 0)
+                {
+                    userId = "administrator";
+                }
+                var now = DateTime.Now;
+                entity.CreatedBy = userId;
+                entity.UpdatedBy = userId;
+                entity.CheckedBy = userId;
+                entity.ApprovedBy = userId;
+                dbContext.XuatHangs.InsertOne(entity);
+
+                foreach (var request in entity.ProductXuatHangs)
+                {
+                    #region Update Kho
+                    var khohang = dbContext.Products.Find(m => m.Code.Equals(request.Code) && m.Enable.Equals(true)).First();
+                    var quantityCurrent = khohang.Quantity;
+                    var min = khohang.QuantityInStoreSafe;
+                    var max = khohang.QuantityInStoreMax;
+                    var quantityNext = (quantityCurrent - request.Quantity);
+                    var statusKhoHang = Constants.Status.Avg;
+                    if (quantityNext < min)
+                    {
+                        statusKhoHang = Constants.Status.Min;
+                    }
+                    if (quantityNext > max)
+                    {
+                        statusKhoHang = Constants.Status.Max;
+                    }
+
+                    var filterKho = Builders<Product>.Filter.Eq(m => m.Code, request.Code);
+                    var updateKho = Builders<Product>.Update.Inc(m => m.Quantity, -(request.Quantity)).Set(m=>m.Status, statusKhoHang);
+                    var resultKho = dbContext.Products.UpdateOne(filterKho, updateKho);
+
+                    // Log
+                    dbContext.ProductLogs.InsertOne(new ProductLog
+                    {
+                        Code = request.Code,
+                        Name = request.Name,
+                        Quantity = quantityCurrent,
+                        QuantityChange = request.Quantity,
+                        Request = entity.PhieuYeuCau,
+                        DatHang = string.Empty,
+                        NhanHang = string.Empty,
+                        XuatHang = entity.Code,
+                        CreatedBy = userId,
+                        UpdatedBy = userId,
+                        CheckedBy = userId,
+                        ApprovedBy = userId
+                    });
+                    #endregion
+                }
+
+
+                var newId = entity.Code;
+
+                CacheReLoad();
+
+                #region Activities
+                var objectId = newId;
+                var objectName = entity.Code;
+
+                var activity = new TrackingUser
+                {
+                    UserId = userId,
+                    Function = Constants.Collection.XuatHang,
+                    Action = "create",
+                    Values = objectId,
+                    ValuesDisplay = objectName,
+                    Description = "create" + " " + Constants.Collection.XuatHang + objectName,
+                    Created = now,
+                    Link = "/xuat-hang/thong-tin/" + objectId
+                };
+                dbContext.TrackingUsers.InsertOne(activity);
+                #endregion
+
+                return RedirectToAction(nameof(Index));
+            }
+
+            return View(entity);
+        }
+    }
+}

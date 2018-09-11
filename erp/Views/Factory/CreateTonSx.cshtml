@@ -1,0 +1,243 @@
+﻿@using Common.Utilities;
+@using ViewModels;
+@model TonSxDataViewModel
+
+@{
+    ViewData["Title"] = "Nhập dữ liệu tồn theo ngày";
+    Layout = "~/Views/Shared/_LayoutData.cshtml";
+}
+
+<div class="row">
+    <div class="col-12">
+        <form action="/@Constants.LinkFactory.Main/@Constants.LinkFactory.TonSx/@Constants.LinkFactory.Create" method="post" class="data-form">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="Entity.Product" class="control-label"></label>
+                <div class="row">
+                    <div class="col-10">
+                        <select asp-for="Entity.ProductId" class="form-control form-control-lg js-select2-basic-single">
+                            <option value="">Chọn</option>
+                            @{
+                                foreach (var item in Model.Products)
+                                {
+                                    <option value="@item.Id">@item.Name</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="col-2 align-middle">
+                        <button class="btn btn-sm btn-add-product" type="button" data-toggle="modal" data-target="#newProduct" title="Tạo mới NVL/BTP/TP">+</button>
+                    </div>
+                </div>
+                <span asp-validation-for="Entity.Product" class="text-danger"></span>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-4 col-sm-6 col-xs-12">
+                    <div class="form-group">
+                        <label asp-for="Entity.Date" class="control-label"></label>
+                        @*<input class="form-control form-control-lg datepicker datepicker-lg" value="@DateTime.Now.ToString("dd/MM/yyyy")"/>
+                        <input type="hidden" name="Entity.Date" class="hidedatepicker" />*@
+                        <p><span>@DateTime.Now.ToString("dd/MM/yyyy")</span></p>
+                        <input type="hidden" asp-for="Entity.Date" value="@DateTime.Now.ToString("MM-dd-yyyy")" />
+                    </div>
+                </div>
+                <div class="col-lg-4 col-sm-6 col-xs-12">
+                    <div class="form-group">
+                        <label asp-for="Entity.Unit" class="control-label"></label>
+                        <input asp-for="Entity.Unit" class="form-control form-control-lg" />
+                    </div>
+                </div>
+                <div class="col-lg-4 col-sm-6 col-xs-12">
+                    <div class="form-group">
+                        <label asp-for="Entity.LOT" class="control-label"></label>
+                        <input asp-for="Entity.LOT" class="form-control form-control-lg" />
+                        <span asp-validation-for="Entity.LOT" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-sm-6 col-xs-12">
+                    <div class="form-group">
+                        <label asp-for="Entity.TonDauNgay" class="control-label"></label>
+                        <input class="form-control form-control-lg tondaungay" value="0"/>
+                        @*<p><span class="tondaungay">0</span></p>*@
+                        <input type="hidden" asp-for="Entity.TonDauNgay" value="0"/>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-sm-6 col-xs-12">
+                    <div class="form-group">
+                        <label asp-for="Entity.NhapTuSanXuat" class="control-label"></label>
+                        <input class="form-control form-control-lg autonumeric autonumeric-1" data-id="1" value="0" />
+                        <span class="moneytostring badge badge-info"></span>
+                        <input type="hidden" asp-for="Entity.NhapTuSanXuat" class="autonumeric-value" value="0" />
+                        <span asp-validation-for="Entity.NhapTuSanXuat" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-sm-6 col-xs-12">
+                    <div class="form-group">
+                        <label asp-for="Entity.XuatChoSanXuat" class="control-label"></label>
+                        <input class="form-control form-control-lg autonumeric autonumeric-2" data-id="2" value="0" />
+                        <span class="moneytostring badge badge-info"></span>
+                        <input type="hidden" asp-for="Entity.XuatChoSanXuat" class="autonumeric-value" value="0" />
+                        <span asp-validation-for="Entity.XuatChoSanXuat" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-sm-6 col-xs-12">
+                    <div class="form-group">
+                        <label asp-for="Entity.NhapTuKho" class="control-label"></label>
+                        <input class="form-control form-control-lg autonumeric autonumeric-3" data-id="3" value="0" />
+                        <span class="moneytostring badge badge-info"></span>
+                        <input type="hidden" asp-for="Entity.NhapTuKho" class="autonumeric-value" value="0" />
+                        <span asp-validation-for="Entity.NhapTuKho" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-sm-6 col-xs-12">
+                    <div class="form-group">
+                        <label asp-for="Entity.XuatChoKho" class="control-label"></label>
+                        <input class="form-control form-control-lg autonumeric autonumeric-4" data-id="4" value="0" />
+                        <span class="moneytostring badge badge-info"></span>
+                        <input type="hidden" asp-for="Entity.XuatChoKho" class="autonumeric-value" value="0" />
+                        <span asp-validation-for="Entity.XuatChoKho" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-sm-6 col-xs-12">
+                    <div class="form-group">
+                        <label asp-for="Entity.XuatHaoHut" class="control-label"></label>
+                        <input class="form-control form-control-lg autonumeric autonumeric-5" data-id="5" value="0" />
+                        <span class="moneytostring badge badge-info"></span>
+                        <input type="hidden" asp-for="Entity.XuatHaoHut" class="autonumeric-value" value="0" />
+                        <span asp-validation-for="Entity.XuatHaoHut" class="text-danger"></span>
+                    </div>
+                </div>
+                @if (ViewBag.roleTaiNhap)
+                {
+                    <div class="col-lg-4 col-sm-6 col-xs-12">
+                        <div class="form-group">
+                            <label asp-for="Entity.TaiXuat" class="control-label"></label>
+                            <input class="form-control form-control-lg autonumeric autonumeric-6" data-id="6" value="0" />
+                            <input type="hidden" asp-for="Entity.TaiXuat" class="autonumeric-value" value="0" />
+                            <span asp-validation-for="Entity.TaiXuat" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-sm-6 col-xs-12">
+                        <div class="form-group">
+                            <label asp-for="Entity.TaiNhap" class="control-label"></label>
+                            <input class="form-control form-control-lg autonumeric autonumeric-7" data-id="7" value="0" />
+                            <input type="hidden" asp-for="Entity.TaiNhap" class="autonumeric-value" value="0" />
+                            <span asp-validation-for="Entity.TaiNhap" class="text-danger"></span>
+                        </div>
+                    </div>
+                }
+                <div class="col-lg-4 col-sm-6 col-xs-12">
+                    <div class="form-group">
+                        <label asp-for="Entity.TonCuoiNgay" class="control-label"></label>
+                        <input class="form-control form-control-lg toncuoingay" />
+                        <input type="hidden" asp-for="Entity.TonCuoiNgay"/>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn btn-danger btn-lg btn-block">
+                    <icon class="icon-paper-plane"></icon> Cập nhật
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a href="/@Constants.LinkFactory.Main/@Constants.LinkFactory.TonSx/" class="btn btn-outline-info btn-block"><icon class="icon-forward"></icon>Danh sách</a>
+</div>
+
+<div class="modal fade" id="newProduct" tabindex="-1" role="dialog" aria-labelledby="newProductLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editItemModalLabel">Thêm mới NVL/BTP/TP"</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Đóng">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form class="data-form" method="post" action="/@Constants.LinkFactory.Main/@Constants.LinkFactory.NewProduct" enctype="multipart/form-data">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <span class="result"></span>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="control-label">Loại</label>
+                        <select name="Type" class="form-control form-control-lg js-auto-size">
+                            <option value="">NVL/BTP/TP</option>
+                            <option value="NVL">NVL</option>
+                            <option value="BTP">BTP</option>
+                            <option value="TP">TP</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Tên NVL/BTP/TP</label>
+                        <input name="Name" class="form-control form-control-lg" />
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">ĐVT</label>
+                        <input name="Unit" class="form-control form-control-lg" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy & Đóng</button>
+                    <button type="button" class="btn btn-primary btn-save-product"><i class="icon-save"></i>&nbsp;Lưu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="newUnit" tabindex="-1" role="dialog" aria-labelledby="newUnitLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editItemModalLabel">Thêm mới ĐVT</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Đóng">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form class="data-form" method="post" action="/@Constants.LinkFactory.Main/@Constants.LinkFactory.NewUnit" enctype="multipart/form-data">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <span class="result"></span>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="control-label">Công việc</label>
+                        <input name="Name" class="form-control form-control-lg" />
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Mô tả</label>
+                        <textarea name="Description" class="form-control form-control-lg js-auto-size"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy & Đóng</button>
+                    <button type="button" class="btn btn-primary btn-save-unit"><i class="icon-save"></i>&nbsp;Lưu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="resultModal" tabindex="-1" role="dialog" aria-labelledby="resultModal" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content" id="modalnotice">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Nhập liệu được ghi nhận.</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Đóng">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-footer">
+                <a href="/@Constants.LinkFactory.Main/@Constants.LinkFactory.TonSx/@Constants.LinkFactory.Create" class="btn btn-primary">Nhập liệu mới</a>
+                <a href="/@Constants.LinkFactory.Main/@Constants.LinkFactory.TonSx" class="btn btn-info">Danh sách</a>
+            </div>
+        </div>
+    </div>
+</div>
+@section scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+        <script src="~/js/factory-tonsx-data.js?@DateTime.Now.Ticks"></script>
+    }
+}

@@ -1,0 +1,7 @@
+C:\Projects\Tribat\sourcecode\tribatvn\obj\Release\netcoreapp2.1\win10-x64\tribatvn.csprojAssemblyReference.cache
+C:\Projects\Tribat\sourcecode\tribatvn\obj\Release\netcoreapp2.1\win10-x64\tribatvn.csproj.CoreCompileInputs.cache
+C:\Projects\Tribat\sourcecode\tribatvn\obj\Release\netcoreapp2.1\win10-x64\tribatvn.RazorAssemblyInfo.cache
+C:\Projects\Tribat\sourcecode\tribatvn\obj\Release\netcoreapp2.1\win10-x64\tribatvn.RazorAssemblyInfo.cs
+C:\Projects\Tribat\sourcecode\tribatvn\obj\Release\netcoreapp2.1\win10-x64\UserSecretsAssemblyInfo.cs
+C:\Projects\Tribat\sourcecode\tribatvn\obj\Release\netcoreapp2.1\win10-x64\tribatvn.AssemblyInfoInputs.cache
+C:\Projects\Tribat\sourcecode\tribatvn\obj\Release\netcoreapp2.1\win10-x64\tribatvn.AssemblyInfo.cs

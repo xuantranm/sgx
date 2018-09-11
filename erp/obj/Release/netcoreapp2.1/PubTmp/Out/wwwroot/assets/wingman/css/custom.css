@@ -1,0 +1,130 @@
+﻿.toplink .hotline {
+    background: url("/images/phone.png") 0 0 no-repeat;
+    padding-left: 25px;
+    text-transform: uppercase;
+    margin-right: 15px;
+}
+.navbar-light .navbar-nav .nav-link {
+    color: #000000;
+}
+    .navbar-light .navbar-nav .nav-link:hover, .navbar-light .navbar-nav .nav-link:focus {
+        color: #00a859;
+    }
+
+.section-intro h4, .section-intro .h4 {
+    line-height: 1.875rem;
+    margin-bottom: 2rem;
+}
+.menu-mobile .text {
+    text-transform: uppercase;
+    display: inline-block;
+}
+.display-none{
+    display:none;
+}
+.bg-dark .breadcrumb-item a, .text-light .breadcrumb-item a, .text-white .breadcrumb-item a {
+    margin-bottom: 0;
+}
+.js-auto-size{
+    min-height:60px !important;
+}
+.img-product-detail {
+    max-height: 333px;
+    max-width: 500px;
+}
+.card-img-top-custom{
+    max-height:233px;
+}
+.nav-container .position-absolute, .nav-container .position-fixed {
+    z-index: 99;
+    width: 100%;
+    top: 0;
+}
+.autocomplete-avatar{
+    margin-right:10px;
+}
+.ui-menu .ui-menu-item {
+    margin-bottom: 5px;
+}
+.datepicker-lg {
+    padding: 0.6875rem 1.5rem;
+}
+.bd-example {
+    position: relative;
+    padding: 1rem;
+    margin: 1rem -15px 0;
+    border: solid #f7f7f9;
+    border-width: .2rem 0 0;
+    background-color:#ffffff;
+}
+
+.thumbnail_container {
+    position: relative;
+    width: 100%;
+    padding-bottom: 100%;
+    float:left;
+}
+
+.thumbnail {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+    .thumbnail img {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        margin: auto;
+    }
+
+img {
+    max-height: 100%;
+    max-width: 100%;
+}
+/*.multiselect-container li {
+    font-size: 16px;
+}*/
+
+
+.form-check .custom-control-label {
+    color: #2c2b2c;
+    font-size: 12px;
+    line-height: 2.7;
+    padding-left: 15px;
+    text-transform: uppercase;
+}
+
+    .form-check .custom-control-label::after,
+    .form-check .custom-control-label::before {
+        height: 25px;
+        width: 25px;
+    }
+
+    .form-check .custom-control-label::before {
+        background-color: #fff;
+        border: 1px solid #2c2b2c;
+        border-radius: 50%;
+    }
+
+/* When I remove background the icon goes back to that default size */
+/*.custom-control-input:checked ~ .custom-control-label::before {
+    background-color: red !important;
+}*/
+
+.section-custom > .tab-content {
+    padding: 0;
+}
+
+.badge-order {
+    position: absolute;
+    margin-left: -1.75rem;
+}
+.select2-container--bootstrap .select2-selection--single {
+    height: 48px;
+    font-size: 16px;
+    padding-top: 13px;
+    padding-left: 15px;
+}

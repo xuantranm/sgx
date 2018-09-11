@@ -1,0 +1,19 @@
+﻿@*@using Models.Tribats;
+@model SEO;
+
+@{
+    var language = ViewData["Language"].ToString();
+    if (Model != null)
+    {
+        ViewData["Title"] = Model.Title;
+        ViewData["KeyWords"] = Model.KeyWords;
+        ViewData["Description"] = Model.Description;
+        ViewData["MetaOwner"] = Model.MetaOwner;
+        ViewData["Canonical"] = Model.Canonical;
+        ViewData["OgUrl"] = Model.OgUrl;
+        ViewData["OgTitle"] = Model.OgTitle;
+        ViewData["OgDescription"] = Model.OgDescription;
+    }
+}*@
+
+@*<p>This is sii</p>*@

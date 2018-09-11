@@ -1,0 +1,354 @@
+﻿@using Common.Utilities;
+@using ViewModels;
+@model VanHanhViewModel;
+
+@{
+    ViewData["Title"] = "Dữ Liệu Vận Hành";
+    Layout = "~/Views/Shared/_LayoutData.cshtml";
+}
+
+<div class="card">
+    <div class="card-body">
+        <a href="/@Constants.LinkFactory.Main/@Constants.LinkFactory.VanHanh/@Constants.LinkFactory.Create"><i class="icon-add-to-list mr-1"></i> Nhập số liệu</a>
+    </div>
+</div>
+
+<form method="get" action="/@Constants.LinkFactory.Main/@Constants.LinkFactory.VanHanh">
+    <div class="form-row mb-3">
+        <div class="col-md-3 col-xs-12">
+            <label class="control-label">Ca</label>
+            <select asp-for="ca" class="form-control form-control-lg">
+                <option value="">Tất cả</option>
+                <option value="ca-1">Ca 1</option>
+                <option value="ca-2">Ca 2</option>
+            </select>
+        </div>
+        <div class="col-md-3 col-xs-12">
+            <label class="control-label">Ca làm việc</label>
+            <select asp-for="calamviec" class="form-control form-control-lg">
+                <option value="">Tất cả</option>
+                <option value="S">S</option>
+                <option value="C1">C1</option>
+                <option value="C2">C2</option>
+                <option value="T">T</option>
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label class="control-label">Mảng công việc</label>
+            <select asp-for="cv" class="form-control form-control-lg">
+                <option value="">Tất cả</option>
+                @{
+                    foreach (var item in Model.Works)
+                    {
+                        <option value="@item.Alias">@item.Name</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label class="control-label">Công đoạn</label>
+            <select asp-for="cd" class="form-control form-control-lg js-select2-basic-single">
+                <option value="">Tất cả</option>
+                @{
+                    foreach (var item in Model.Stages)
+                    {
+                        <option value="@item.Alias">@item.Name</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label class="control-label">Xe cơ giới/máy</label>
+            <select asp-for="xm" class="form-control form-control-lg js-select2-basic-single">
+                <option value="">Tất cả</option>
+                @{
+                    foreach (var item in Model.Vehicles)
+                    {
+                        <option value="@item.Alias">@item.Name</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label class="control-label">Tên NVL/BTP/TP</label>
+            <select asp-for="nvl" class="form-control form-control-lg js-select2-basic-single">
+                <option value="">Tất cả</option>
+                @{
+                    foreach (var item in Model.Products)
+                    {
+                        <option value="@item.Alias">@item.Name</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="col-md-3 date-area">
+            <label class="control-label">Từ</label>
+            @{
+                if (Model.from.HasValue)
+                {
+                    <input class="form-control form-control-lg datepicker datepicker-lg" value="@Model.from.Value.ToString("dd/MM/yyyy")" />
+                }
+                else
+                {
+                    <input class="form-control form-control-lg datepicker datepicker-lg" />
+                }
+            }
+            <input type="hidden" asp-for="from" class="hidedatepicker" />
+        </div>
+        <div class="col-md-3 date-area">
+            <label class="control-label">Đến</label>
+            @{
+                if (Model.to.HasValue)
+                {
+                    <input class="form-control form-control-lg datepicker datepicker-lg" value="@Model.to.Value.ToString("dd/MM/yyyy")" />
+                }
+                else
+                {
+                    <input class="form-control form-control-lg datepicker datepicker-lg" />
+                }
+            }
+            <input type="hidden" asp-for="to" class="hidedatepicker" />
+        </div>
+    </div>
+    <div class="form-row mb-3">
+        <div class="col-md-2">
+            <label class="control-label">LOT</label>
+            <input asp-for="lot" class="form-control form-control-lg" />
+        </div>
+        <div class="col-md-2">
+            <label class="control-label">Phiếu in ca</label>
+            <input asp-for="phieuinca" class="form-control form-control-lg" />
+        </div>
+        <div class="col-md-2">
+            <label class="control-label">Dòng</label>
+            <select asp-for="size" class="form-control form-control-lg">
+                <option value="50">50</option>
+                <option value="100">100</option>
+                <option value="500">500</option>
+                <option value="1000">1000</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="control-label">Trang</label>
+            <select asp-for="page" class="form-control form-control-lg">
+                @{
+                    var pages = Model.Pages;
+                    for (var i = 1; i <= pages; i++)
+                    {
+                        <option value="@i">@i</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="control-label"><small>Bấm nút hoặc Enter</small></label>
+            <button class="btn btn-lg btn-info form-control btn-lg" type="submit"><i class="icon-magnifying-glass"></i> Tìm kiếm</button>
+        </div>
+    </div>
+</form>
+
+<small><span class="badge badge-info">@Model.Records</span> được tìm thấy.</small>
+<p><small><span class="badge badge-light">Ghi chú:</span> Thời gian tính theo giờ:phút.</small></p>
+<div class="table-responsive">
+    <table class="table table-sm table-bordered table-striped table-hover">
+        <thead>
+            <tr>
+                <th></th>
+                <th>
+                    Tháng
+                </th>
+                <th>
+                    Ngày
+                </th>
+                <th>
+                    Ca
+                </th>
+                <th>
+                    Ca làm việc
+                </th>
+                <th>
+                    Mảng công việc
+                </th>
+                <th>
+                    Công đoạn
+                </th>
+                <th>
+                    LOT
+                </th>
+                <th>
+                    Xe cơ giới/Máy
+                </th>
+                <th>
+                    NVL/BTP/TP
+                </th>
+                <th>
+                    SL công nhân
+                </th>
+                <th>
+                    Thời gian bắt đầu
+                </th>
+                <th>
+                    Thời gian kết thúc
+                </th>
+                <th>
+                    Thời gian BTTQ
+                </th>
+                <th>
+                    Thời gian xe hư
+                </th>
+                <th>
+                    Thời gian nghỉ
+                </th>
+                <th>
+                    Thời gian CV khác
+                </th>
+                <th>
+                    Thời gian đậy/mở bạt
+                </th>
+                <th>
+                    Thời gian bốc hàng
+                </th>
+                <th>
+                    Thời gian làm việc
+                </th>
+                <th>
+                    Số lượng thực hiện
+                </th>
+                <th>
+                    Số lượng đóng gói
+                </th>
+                <th>
+                    SL bốc hàng
+                </th>
+                <th>
+                    Dầu
+                </th>
+                <th>
+                    Nhớt 10
+                </th>
+                <th>
+                    Nhớt 50
+                </th>
+                <th>
+                    Nguyên nhận
+                </th>
+                <th>
+                    Tổng thời gian bốc hàng
+                </th>
+                <th>
+                    Tổng thời gian đóng gói
+                </th>
+                <th>
+                    Tổng thời gian CV khác
+                </th>
+                <th>
+                    Tổng thời gian đậy/mở bạt
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.List)
+            {
+            <tr>
+                <td>
+                    <a href="/@Constants.LinkFactory.Main/@Constants.LinkFactory.PhieuInCa?phieuinca=@item.PhieuInCa" target="_blank">@item.PhieuInCa</a>
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Month)
+                </td>
+                <td>
+                    @item.Date.ToString("dd/MM/yyyy")
+                </td>
+                <td>
+                    @item.Ca
+                </td>
+                <td>
+                    @item.CaLamViec
+                </td>
+                <td>
+                    @item.MangCongViec
+                </td>
+                <td>
+                    @item.CongDoan
+                </td>
+                <td>
+                    @item.LOT
+                </td>
+                <td>
+                    @item.XeCoGioiMay
+                </td>
+                <td>
+                    @item.NVLTP
+                </td>
+                <td>
+                    @String.Format("{0:#,###,###.##}", item.SLNhanCong)
+                </td>
+                <td>
+                    @item.Start.ToString(@"hh\:mm")
+                </td>
+                <td>
+                    @item.End.ToString(@"hh\:mm")
+                </td>
+                <td>
+                    @item.ThoiGianBTTQ.ToString(@"hh\:mm")
+                </td>
+                <td>
+                    @item.ThoiGianXeHu.ToString(@"hh\:mm")
+                </td>
+                <td>
+                    @item.ThoiGianNghi.ToString(@"hh\:mm")
+                </td>
+                <td>
+                    @item.ThoiGianCVKhac.ToString(@"hh\:mm")
+                </td>
+                <td>
+                    @item.ThoiGianDayMoBat.ToString(@"hh\:mm")
+                </td>
+                <td>
+                    @item.ThoiGianBocHang.ToString(@"hh\:mm")
+                </td>
+                <td>
+                    @item.ThoiGianLamViec.ToString(@"hh\:mm")
+                </td>
+                <td>
+                    @String.Format("{0:#,###,###.##}", item.SoLuongThucHien)
+                </td>
+                <td>
+                    @String.Format("{0:#,###,###.##}", item.SoLuongDongGoi)
+                </td>
+                <td>
+                    @String.Format("{0:#,###,###.##}", item.SoLuongBocHang)
+                </td>
+                <td>
+                    @String.Format("{0:#,###,###.##}", item.Dau)
+                </td>
+                <td>
+                    @String.Format("{0:#,###,###.##}", item.Nhot10)
+                </td>
+                <td>
+                    @String.Format("{0:#,###,###.##}", item.Nhot50)
+                </td>
+                <td>
+                    @item.NguyenNhan
+                </td>
+                <td>
+                    @Constants.GetHHMMFromSecond(item.TongThoiGianBocHang)
+                </td>
+                <td>
+                    @Constants.GetHHMMFromSecond(item.TongThoiGianDongGoi)
+                </td>
+                <td>
+                    @Constants.GetHHMMFromSecond(item.TongThoiGianCVKhac)
+                </td>
+                <td>
+                    @Constants.GetHHMMFromSecond(item.TongThoiGianDayMoBat)
+                </td>
+            </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@section scripts {
+    <script type="text/javascript" src="~/js/factory-van-hanh.js?@DateTime.Now.Ticks"></script>
+}

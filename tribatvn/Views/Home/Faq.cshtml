@@ -1,0 +1,8 @@
+﻿@using Helpers;
+@{
+    Layout = "~/Views/Shared/_Wingman.cshtml";
+    var language = ViewData["Language"].ToString();
+}
+
+@await Html.PartialAsync("UpdatePartial")
+

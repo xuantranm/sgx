@@ -1,0 +1,353 @@
+﻿@using System.Globalization;
+@using Common.Utilities;
+@using ViewModels
+@model SettingViewModel
+
+@{
+    Layout = "~/Views/Shared/_LayoutSocialFb.cshtml";
+}
+
+@Html.ValidationSummary()
+
+<div class="card">
+    <div class="card-header">
+        <a data-target="#new-setting" data-toggle="collapse" aria-expanded="false" aria-controls="new-setting" style="cursor:pointer">
+            <i class="icon-add-to-list mr-1"></i> Create new notification
+        </a>
+    </div>
+    <div class="collapse" id="new-setting">
+        <div class="card-body">
+            <form asp-action="Create" class="data-form" enctype="multipart/form-data">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <div class="form-group">
+                    <label asp-for="Setting.Key" class="control-label"></label>
+                    <input asp-for="Setting.Key" class="form-control" />
+                    <span asp-validation-for="Setting.Key" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Setting.Value" class="control-label"></label>
+                    <input asp-for="Setting.Value" class="form-control" />
+                    <span asp-validation-for="Setting.Value" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Setting.Title" class="control-label"></label>
+                    <input asp-for="Setting.Title" class="form-control" />
+                    <span asp-validation-for="Setting.Title" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Setting.Content" class="control-label"></label>
+                    <textarea asp-for="Setting.Content" class="form-control"></textarea>
+                    <span asp-validation-for="Setting.Content" class="text-danger"></span>
+                </div>
+                <div class="d-flex align-items-center">
+                    <div class="mr-2">
+                        <a href="#new-setting" class="btn btn-outline-primaryd" data-toggle="collapse" aria-expanded="true" aria-controls="new-setting">Hủy</a>
+                        <button type="submit" class="btn btn-outline-primary"><i class="icon-save"></i>&nbsp;Tạo</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="card card-sm">
+    <div class="card-header bg-secondary d-flex justify-content-between align-items-center">
+        <div>
+            <h6>Settings</h6>
+        </div>
+        <form class="d-flex align-items-center">
+            <span class="mr-2 text-muted text-small text-nowrap">Sắp xếp:</span>
+            <select class="custom-select">
+                <option value="old-new" selected>Mới nhất</option>
+                <option value="status">Trạng thái</option>
+            </select>
+        </form>
+    </div>
+
+</div>
+
+@if (Model.Settings.Count > 0)
+{
+<div class="row">
+    <div class="col">
+        <table class="table table-responsive table-borderless table-hover align-items-center un-display-block">
+            <thead>
+                <tr>
+                    <th scope="col"></th>
+                    <th scope="col">Key</th>
+                    <th scope="col">Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var entity in Model.Settings)
+                {
+                    <tr class="bg-white">
+                        <td>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-outline-primary dropdown-toggle dropdown-toggle-no-arrow" type="button" id="dropdownMenuButton-1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <i class="icon-dots-three-horizontal"></i>
+                                </button>
+                                <div class="dropdown-menu dropdown-menu-sm" aria-labelledby="dropdownMenuButton">
+                                    <a class="dropdown-item edit-item" href="javascript:;" data-toggle="modal" data-target="#editItemModal" data-id="@entity.Id">Chỉnh sửa</a>
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item disable-item" href="javascript:;" data-toggle="modal" data-target="#disableItemModal" data-id="@entity.Id">Vô hiệu</a>
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item delete-item" href="javascript:;" data-toggle="modal" data-target="#deleteItemModal" data-id="@entity.Id">Xóa</a>
+                                </div>
+                            </div>
+                        </td>
+                        <td>@entity.Key</td>
+                        <td>@entity.Value</td>
+
+                    </tr>
+                    <tr class="table-divider"></tr>
+                }
+                <tr><td colspan="3"><h6>Disable list</h6></td></tr>
+                @foreach (var disable in Model.SettingsDisable)
+                {
+                    <tr class="bg-white">
+                        <td>
+                            <a class="dropdown-item active-item badge badge-success" href="javascript:;" data-toggle="modal" data-target="#activeItemModal" data-id="@disable.Id">Active</a>
+                        </td>
+                        <td>@disable.Key</td>
+                        <td>@disable.Value</td>
+                    </tr>
+                    <tr class="table-divider"></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <script id="tmplDataItem" type="text/x-jsrender">
+        <input type="hidden" name="Setting.Id" value="{{:id}}" class="form-control" />
+        <input type="hidden" name="Setting.Timestamp" value="{{:timestamp}}" class="form-control" />
+        <div class="form-group">
+            <label class="control-label" for="Setting_Key">Key</label>
+            <input name="Setting.Key" value="{{:key}}" class="form-control" readonly />
+            <span asp-validation-for="Setting.Key" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label class="control-label" for="Setting_Value">Value</label>
+            <input name="Setting.Value" value="{{:value}}" class="form-control" />
+            <span asp-validation-for="Setting.Value" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label class="control-label" for="Setting_Title">Title</label>
+            <input name="Setting.Title" value="{{:title}}" class="form-control" />
+            <span asp-validation-for="Setting.Title" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label class="control-label" for="Setting_Content">Content</label>
+            <textarea name="Setting.Content" value="{{:content}}" class="form-control"></textarea>
+            <span asp-validation-for="Setting.Content" class="text-danger"></span>
+        </div>
+    </script>
+
+    <script id="tmplDataItemPlainText" type="text/x-jsrender">
+        <input type="hidden" name="Setting.Id" value="{{:id}}" class="form-control" />
+        <input type="hidden" name="Setting.Timestamp" value="{{:timestamp}}" class="form-control" />
+        <div class="form-group">
+            <label class="control-label" for="Setting_Key">Key</label>
+            <input name="Setting.Key" value="{{:key}}" class="form-control-plaintext" readonly />
+        </div>
+        <div class="form-group">
+            <label class="control-label" for="Setting_Value">Value</label>
+            <input name="Setting.Value" value="{{:value}}" class="form-control-plaintext" />
+        </div>
+        <div class="form-group">
+            <label class="control-label" for="Setting_Title">Title</label>
+            <input name="Setting.Title" value="{{:title}}" class="form-control-plaintext" />
+        </div>
+        <div class="form-group">
+            <label class="control-label" for="Setting_Content">Content</label>
+            <textarea name="Setting.Content" value="{{:content}}" class="form-control-plaintext"></textarea>
+        </div>
+    </script>
+
+    <div class="modal fade" id="editItemModal" tabindex="-1" role="dialog" aria-labelledby="editItemModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editItemModalLabel">Edit</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form class="data-form" asp-action="Edit" enctype="multipart/form-data">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <span class="result"></span>
+                    <div class="modal-body data-item-edit">
+                        <input type="hidden" asp-for="Setting.Id" class="form-control" />
+                        <input type="hidden" asp-for="Setting.Timestamp" class="form-control" />
+                        <div class="form-group">
+                            <label asp-for="Setting.Key" class="control-label"></label>
+                            <input asp-for="Setting.Key" class="form-control" />
+                            <span asp-validation-for="Setting.Key" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Setting.Value" class="control-label"></label>
+                            <input asp-for="Setting.Value" class="form-control" />
+                            <span asp-validation-for="Setting.Value" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Setting.Title" class="control-label"></label>
+                            <input asp-for="Setting.Title" class="form-control" />
+                            <span asp-validation-for="Setting.Title" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Setting.Content" class="control-label"></label>
+                            <textarea asp-for="Setting.Content" class="form-control"></textarea>
+                            <span asp-validation-for="Setting.Content" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel & Close</button>
+                        <button type="submit" class="btn btn-primary"><i class="icon-save"></i>&nbsp;Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="disableItemModal" tabindex="-1" role="dialog" aria-labelledby="disableItemModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="disableItemModalLabel">Are you sure to disable?</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form class="data-form" asp-action="Disable" enctype="multipart/form-data">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div class="modal-body data-item-disable">
+                        <input type="hidden" asp-for="Setting.Id" class="form-control" />
+                        <div class="form-group">
+                            <label asp-for="Setting.Key" class="control-label"></label>
+                            <input asp-for="Setting.Key" class="form-control-plaintext" />
+                            <span asp-validation-for="Setting.Key" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Setting.Value" class="control-label"></label>
+                            <input asp-for="Setting.Value" class="form-control-plaintext" />
+                            <span asp-validation-for="Setting.Value" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Setting.Title" class="control-label"></label>
+                            <input asp-for="Setting.Title" class="form-control-plaintext" />
+                            <span asp-validation-for="Setting.Title" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Setting.Content" class="control-label"></label>
+                            <textarea asp-for="Setting.Content" class="form-control-plaintext"></textarea>
+                            <span asp-validation-for="Setting.Content" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel & Close</button>
+                        <button type="submit" class="btn btn-primary"><i class="icon-save"></i>&nbsp;Disable</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="activeItemModal" tabindex="-1" role="dialog" aria-labelledby="activeItemModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="activeItemModalLabel">Are you sure to active?</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form class="data-form" asp-action="Active" enctype="multipart/form-data">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div class="modal-body data-item-active">
+                        <input type="hidden" asp-for="Setting.Id" class="form-control" />
+                        <div class="form-group">
+                            <label asp-for="Setting.Key" class="control-label"></label>
+                            <input asp-for="Setting.Key" class="form-control-plaintext" />
+                            <span asp-validation-for="Setting.Key" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Setting.Value" class="control-label"></label>
+                            <input asp-for="Setting.Value" class="form-control-plaintext" />
+                            <span asp-validation-for="Setting.Value" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Setting.Title" class="control-label"></label>
+                            <input asp-for="Setting.Title" class="form-control-plaintext" />
+                            <span asp-validation-for="Setting.Title" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Setting.Content" class="control-label"></label>
+                            <textarea asp-for="Setting.Content" class="form-control-plaintext"></textarea>
+                            <span asp-validation-for="Setting.Content" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel & Close</button>
+                        <button type="submit" class="btn btn-primary"><i class="icon-save"></i>&nbsp;Active</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="deleteItemModal" tabindex="-1" role="dialog" aria-labelledby="deleteItemModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteItemModalLabel">Are you sure to delete?</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form class="data-form" asp-action="Delete" enctype="multipart/form-data">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div class="modal-body data-item-delete">
+                        <input type="hidden" asp-for="Setting.Id" class="form-control" />
+                        <div class="form-group">
+                            <label asp-for="Setting.Key" class="control-label"></label>
+                            <input asp-for="Setting.Key" class="form-control-plaintext" />
+                            <span asp-validation-for="Setting.Key" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Setting.Value" class="control-label"></label>
+                            <input asp-for="Setting.Value" class="form-control-plaintext" />
+                            <span asp-validation-for="Setting.Value" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Setting.Title" class="control-label"></label>
+                            <input asp-for="Setting.Title" class="form-control-plaintext" />
+                            <span asp-validation-for="Setting.Title" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Setting.Content" class="control-label"></label>
+                            <textarea asp-for="Setting.Content" class="form-control-plaintext"></textarea>
+                            <span asp-validation-for="Setting.Content" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel & Close</button>
+                        <button type="submit" class="btn btn-primary"><i class="icon-save"></i>&nbsp;Delete</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!--end of col-->
+</div>
+    <!--end of row-->
+}
+else
+{
+    <div class="alert alert-light" role="alert">
+        No data.
+    </div>
+}
+
+@section scripts {
+    <script type="text/javascript" src="~/js/setting.js"></script>
+}
+

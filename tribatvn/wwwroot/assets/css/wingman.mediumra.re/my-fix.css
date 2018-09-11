@@ -1,0 +1,5 @@
+﻿@media (min-width: 992px) {
+    .mb-5, .my-5 {
+        margin-bottom: 2.5rem !important;
+    }
+}

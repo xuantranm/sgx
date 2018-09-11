@@ -1,0 +1,304 @@
+﻿@using System;
+@using System.Globalization;
+@using Common.Utilities;
+@using ViewModels
+@model TimeKeeperViewModel
+
+@{
+    Layout = "~/Views/Shared/_LayoutSocialFb.cshtml";
+}
+
+<section>
+    <div class="container">
+        <div class="row justify-content-center align-items-center">
+            <div class="col">
+                <div class="media align-items-center">
+                    <a href="/hr/nhan-su/thong-tin/@Model.Employee.Id" class="mr-4">
+                        @if (Model.Employee.Avatar != null)
+                        {
+                            <img class="avatar" src="@Model.Employee.Avatar.Path@Model.Employee.Avatar.FileName" alt="@Model.Employee.FullName" />
+                        }
+                        else
+                        {
+                            <img alt="@Model.Employee.FullName" src="holder.js/120x120" class="avatar avatar-lg avatar-square">
+                        }
+                    </a>
+                    <div class="media-body">
+                        <div class="mb-3">
+                            <h1 class="h2 mb-2">@Model.Employee.FullName</h1>
+                            <span class="badge badge-primary">@Model.Employee.Code</span>
+                            <span class="badge badge-danger">@Model.Employee.Department</span>
+                            <span class="badge badge-danger">@Model.Employee.Part</span>
+                            <span class="badge badge-danger">@Model.Employee.Title</span>
+                        </div>
+                        <div>
+                            <ul class="list-inline text-small d-inline-block">
+                                <li class="list-inline-item">
+                                    <i class="icon-link"></i>  <a href="/hr/nhan-su/thong-tin/@Model.Employee.Id">@Constants.System.domain/hr/nhan-su/thong-tin/@Model.Employee.Id</a>
+                                </li>
+                                <li class="list-inline-item"><i class="icon-users"></i> 12</li>
+                                <li class="list-inline-item"><i class="icon-message"></i> 6</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!--end of col-->
+            @*<div class="col-auto">
+                    <button class="btn btn-primary"><i class="icon-add-user mr-1"></i> Invite Member</button>
+                </div>*@
+            <!--end of col-->
+        </div>
+        <!--end of row-->
+    </div>
+    <!--end of container-->
+</section>
+
+<form method="get" action="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Index">
+    <div class="form-row mb-3">
+        <div class="col-md-6">
+            <label class="control-label">Nhân viên</label>
+            <select asp-for="employee" class="form-control form-control-lg js-select2-basic-single">
+                <option value="">Tất cả</option>
+                @{
+                    foreach (var item in Model.Employees)
+                    {
+                        <option value="@item.Id">@item.FullName [@item.Title]</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="col-md-3 date-area">
+            <label class="control-label">Tháng</label>
+            <select asp-for="times" class="form-control form-control-lg js-select2-basic-single">
+                @{
+                    foreach (var item in Model.MonthYears)
+                    {
+                        <option value="@item.Month-@item.Year">@item.Month/@item.Year</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="control-label"><small>Bấm nút hoặc Enter</small></label>
+            <button class="btn btn-info form-control" type="submit"><i class="icon-magnifying-glass"></i> Tìm kiếm</button>
+        </div>
+    </div>
+</form>
+
+<h5 class="mb-4">Tổng quan</h5>
+<div class="card">
+    @{
+        var lastUpdated = DateTime.Now.ToString("dd/MM/yyyy");
+        double dayworking = ViewBag.DayWorking;
+        double workday = dayworking;
+        double late = 0;
+        double early = 0;
+        if (Model.EmployeeWorkTimeMonthLog != null)
+        {
+            var employeeWorkTimeMonthLog = Model.EmployeeWorkTimeMonthLog;
+            lastUpdated = employeeWorkTimeMonthLog.LastUpdated.ToString("dd/MM/yyyy");
+            workday = employeeWorkTimeMonthLog.Workday;
+            late = employeeWorkTimeMonthLog.Late;
+            early = employeeWorkTimeMonthLog.Early;
+        }
+    }
+    <span class="text-small"> Dữ liệu tính tới ngày @lastUpdated</span>
+    <ul class="list-group list-group-flush">
+        <li class="list-group-item">
+            <div class="d-flex justify-content-between">
+                <div><i class="icon-calculator mr-1"></i> Số ngày làm việc: (@Model.StartWorkingDate.ToString("dd/MM/yyyy") - @Model.EndWorkingDate.ToString("dd/MM/yyyy"))</div>
+                <span class="badge badge-light">@dayworking</span>
+            </div>
+        </li>
+
+        <li class="list-group-item">
+            <div class="d-flex justify-content-between">
+                <div><i class="icon-calculator mr-1"></i> Chấm công: (ngày)</div>
+                <span class="badge badge-light">@workday</span>
+            </div>
+        </li>
+        <li class="list-group-item">
+            <div class="d-flex justify-content-between">
+                <div><i class="icon-calculator mr-1"></i> Đi trễ: (phút)</div>
+                <span class="badge badge-light">@Math.Round(late, 0)</span>
+            </div>
+        </li>
+        <li class="list-group-item">
+            <div class="d-flex justify-content-between">
+                <div><i class="icon-calculator mr-1"></i> Về sớm: (phút)</div>
+                <span class="badge badge-light">@Math.Round(early, 0)</span>
+            </div>
+        </li>
+    </ul>
+</div>
+
+<div class="card card-sm">
+    <div class="card-header bg-secondary d-flex justify-content-between align-items-center">
+        <div>
+            <h6>Lịch sử chấm công</h6>
+        </div>
+        <form class="d-flex align-items-center">
+            <span class="mr-2 text-muted text-small text-nowrap">Sắp xếp:</span>
+            <select class="custom-select">
+                <option value="old-new" selected>Mới nhất</option>
+                <option value="status">Trạng thái</option>
+            </select>
+        </form>
+    </div>
+
+</div>
+
+@if (Model.EmployeeWorkTimeLogs.Count > 0)
+{
+    <div class="row">
+        <div class="table-responsive">
+            <table class="table table-sm table-striped">
+                <thead>
+                    <tr>
+                        <th scope="col"></th>
+                        <th scope="col">Ngày</th>
+                        <th scope="col">Vào</th>
+                        <th scope="col">Ra</th>
+                        <th scope="col">Ca làm việc</th>
+                        <th scope="col">Đi trễ (phút)</th>
+                        <th scope="col">Về sớm (phút)</th>
+                        <th scope="col">Giờ làm việc</th>
+                        <th scope="col">Nơi chấm công</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var log in Model.EmployeeWorkTimeLogs)
+                    {
+                        <tr>
+                            <td class="log-@log.Id">
+                                @{
+                                    if (log.Status == 0)
+                                    {
+                                        if (log.Date.Date == DateTime.Now.AddDays(-1).Date)
+                                        {
+                                            <input type="button" class="btn btn-sm btn-danger" value="Xác nhận" data-toggle="modal" data-target="#requestTimeKeeperModal" data-id="@log.Id" />
+                                        }
+                                        else
+                                        {
+                                            if (Math.Round(log.Late.TotalMinutes, 0) > 0)
+                                            {
+                                                <span class="badge badge-warning">Đi trễ</span>
+                                            }
+                                            if (Math.Round(log.Early.TotalMinutes, 0) > 0)
+                                            {
+                                                <span class="badge badge-warning">Về sớm</span>
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-info">@Constants.TimeKeeper(log.Status)</span>
+                                    }
+                                }
+                            </td>
+                            <td scope="row">
+                                <a class="media align-items-center" href="#">
+                                    <div class="media-body">
+                                        <span class="text-muted">@log.DateOnlyRecord.ToString("dd/MM/yyyy")</span>
+                                    </div>
+                                </a>
+                            </td>
+                            <td>@log.In</td>
+                            <td>@log.Out</td>
+                            <td>@log.Start.ToString(@"hh\:mm")-@log.End.ToString(@"hh\:mm")</td>
+                            <td>@Math.Round(log.Late.TotalMinutes, 0)</td>
+                            <td>@Math.Round(log.Early.TotalMinutes, 0)</td>
+                            <td>@Math.Round(log.WorkTime.TotalHours, 2)</td>
+                            <td>@log.WorkplaceCode</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <!--end of col-->
+    </div>
+    <!--end of row-->
+}
+else
+{
+    <div class="alert alert-light" role="alert">
+        Không có dữ liệu hoặc bạn thuộc danh sách không chấm công.
+    </div>
+}
+<script id="tmplDataItem" type="text/x-jsrender">
+    <input type="hidden" name="Setting.Id" value="{{:id}}" class="form-control" />
+    <input type="hidden" name="Setting.Timestamp" value="{{:timestamp}}" class="form-control" />
+    <div class="form-group">
+        <label class="control-label" for="Setting_Key">Key</label>
+        <input name="Setting.Key" value="{{:key}}" class="form-control" readonly />
+        <span asp-validation-for="Setting.Key" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label class="control-label" for="Setting_Value">Value</label>
+        <input name="Setting.Value" value="{{:value}}" class="form-control" />
+        <span asp-validation-for="Setting.Value" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label class="control-label" for="Setting_Title">Title</label>
+        <input name="Setting.Title" value="{{:title}}" class="form-control" />
+        <span asp-validation-for="Setting.Title" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label class="control-label" for="Setting_Content">Content</label>
+        <textarea name="Setting.Content" value="{{:content}}" class="form-control"></textarea>
+        <span asp-validation-for="Setting.Content" class="text-danger"></span>
+    </div>
+</script>
+
+<div class="modal fade" id="requestTimeKeeperModal" tabindex="-1" role="dialog" aria-labelledby="requestTimeKeeperModal" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editItemModalLabel">Xác nhận công</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form class="data-form" method="post" action="/fg/cham-cong/xac-nhan-cong/" enctype="multipart/form-data">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <span class="result"></span>
+                <div class="modal-body data-item-edit">
+                    <input type="hidden" name="manager" class="form-control" value="@Model.Employee" />
+                    <input type="hidden" name="Setting.Id" class="form-control" />
+                    <div class="form-group">
+                        <label class="control-label">Quản lý</label>
+                        <!-- Multi users, apply later -->
+                        <input name="Setting.Value" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Ngày</label>
+                        <input name="Setting.Value" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Thời gian thiếu</label>
+                        <input name="Setting.Value" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Lý do</label>
+                        <textarea name="Setting.Title" class="form-control"></textarea>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy và đóng</button>
+                    <button type="submit" class="btn btn-primary"><i class="icon-save"></i>&nbsp;Gửi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+        <script type="text/javascript" src="~/js/timekeeper.js?@DateTime.Now.Ticks"></script>
+    }
+}
+
+

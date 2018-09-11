@@ -1,0 +1,30 @@
+﻿//22.07.2018
+db.Employees.update({}, {$rename:{"EmployeeModifySalarys":"Salaries"}}, false, true);
+db.Employees.update({},
+                          {$set : {"Salary":0}},
+                          {upsert:false,
+                          multi:true}) 
+db.Employees.update({},
+{$set : {"Leave": false}},
+{upsert:false,
+multi:true}) 
+
+//08.08.2018
+db.Settings.update({},
+{$set : {"Type": "hcns"}},
+{upsert:false,
+multi:true})
+
+db.Employees.update({}, {$unset: {Roles:1}}, false, true);
+
+db.Employees.update({}, {$unset: {WorkingScheduleTime:1}}, false, true);
+
+db.Employees.update({},
+{$set : {"IsTimeKeeper": false}},
+{upsert:false,
+multi:true})
+
+db.Employees.update({},
+{$set : {"ManagerId": null}},
+{upsert:false,
+multi:true})

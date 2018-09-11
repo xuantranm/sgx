@@ -1,0 +1,159 @@
+﻿
+.progress {
+    display: block;
+    text-align: center;
+    width: 0;
+    height: 3px;
+    background: red;
+    transition: width .3s;
+}
+    .progress.hide {
+        opacity: 0;
+        transition: opacity 1.3s;
+    }
+
+textarea {
+    box-sizing: border-box;
+    max-height: 160px;
+    /*optional but recommended min-height: 38px;*/
+    overflow-x: hidden;
+    /*for Firefox (issue #5)*/
+}
+
+/* Carousel */
+.carousel-caption p {
+    font-size: 20px;
+    line-height: 1.4;
+}
+
+/* Make .svg files in the carousel display properly in older browsers */
+.carousel-inner .item img[src$=".svg"] {
+    width: 100%;
+}
+
+/* QR code generator */
+#qrCode {
+    margin: 15px;
+}
+
+/* Hide/rearrange for smaller screens */
+@media screen and (max-width: 767px) {
+    /* Hide captions */
+    .carousel-caption {
+        display: none;
+    }
+}
+
+.active a {
+    /* And disable the pointer events */
+    pointer-events: none;
+}
+
+a.disabled {
+    /* Make the disabled links grayish*/
+    /*color: gray;*/
+    /* And disable the pointer events */
+    pointer-events: none;
+}
+
+.show > .lq .ln {
+    color: #fff;
+    background-color: transparent;
+}
+
+.show > .lq .active {
+    color: #fff;
+    background-color: #1997c6;
+}
+
+.custom-more {
+    margin-top: -20px;
+    margin-left: -15px;
+}
+
+.hide {
+    display: none !important;
+}
+
+.thumb {
+    height: 75px;
+    border: 1px solid #000;
+    margin: 10px 5px 0 0;
+}
+
+.img-thumbnail {
+    padding: 0;
+}
+
+.output {
+    margin-bottom: 10px;
+    margin-top: -15px;
+}
+
+#project-label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 1em;
+}
+
+.img-icon {
+    float: left;
+    height: 32px;
+    width: 32px;
+}
+
+#project-description {
+    margin: 0;
+    padding: 0;
+}
+
+.bold {
+    font-weight: bold;
+}
+
+.requestcode {
+    width: 165px;
+}
+/* 
+    OVERRIDE BOOTSTRAP -INVERSE
+*/
+@media (min-width: 768px) {
+    .modal-dialog {
+        width: 600px;
+        margin: 30px auto;
+    }
+
+    .modal-content {
+        -webkit-box-shadow: 0 5px 15px rgba(0, 0, 0, .5);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, .5);
+    }
+
+    .modal-sm {
+        width: 300px;
+    }
+}
+
+@media (min-width: 992px) {
+    .modal-lg {
+        max-width: 900px;
+        width: 900px;
+    }
+}
+
+.btn-point {
+    cursor: pointer;
+}
+.tel:after {
+    background: url('https://i1.social.s-msft.com/Forums/RequestReduceContent/e86d865d9e0b3e364a92de3f1bfe644b-f42f2c0bb4a1af504673c6ef1d9a22c8.png') no-repeat scroll -772px -3px;
+    width: 19px;
+    height: 19px;
+    overflow: hidden;
+    background-position: -238px 0;
+}
+.sms:after {
+    background: url('https://i1.social.s-msft.com/Forums/RequestReduceContent/e86d865d9e0b3e364a92de3f1bfe644b-f42f2c0bb4a1af504673c6ef1d9a22c8.png') no-repeat scroll -772px -3px;
+    width: 19px;
+    height: 19px;
+    overflow: hidden;
+    background-position: -238px 0;
+}

@@ -1,0 +1,165 @@
+﻿@using Helpers;
+@using ViewModels;
+@model MenuViewModel;
+@{
+    var language = ViewData["Language"].ToString();
+}
+
+<div class="nav-container">
+    <div class="bg-white navbar-light" data-sticky="top">
+        <div class="container">
+            <nav class="navbar navbar-expand-lg">
+                <a class="navbar-brand" href="/">
+                    @*<img alt="Wingman" src="assets/wingman/img/logo-back.svg" />*@
+                    <img alt="tribat" src="~/images/logo.png" />
+                </a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <i class="icon-menu h4"></i>
+                </button>
+                <div class="collapse navbar-collapse justify-content-between" id="navbarNav">
+                    <ul class="navbar-nav">
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="pagesDropdown" role="button" data-toggle="dropdown">@Html.Raw(TextHelper.GetText(501, language))</a>
+                            <div class="dropdown-menu" aria-labelledby="pagesDropdown">
+                                @{
+                                    var last = Model.MenusProduct.Last();
+                                    foreach (var menu in Model.MenusProduct)
+                                    {
+                                        <a class="dropdown-item" href="@menu.Url">
+                                            <span class="h6 mb-0">@menu.Title</span>
+                                            <p class="text-small text-muted">@menu.Description</p>
+                                        </a>
+
+                                        if (!menu.Equals(last))
+                                        {
+                                            <div class="dropdown-divider"></div>
+                                        }
+                                    } }
+                            </div>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="pagesDropdown" role="button" data-toggle="dropdown">@Html.Raw(TextHelper.GetText(506, language))</a>
+                            <div class="dropdown-menu" aria-labelledby="pagesDropdown">
+                                @{
+                                    last = Model.MenusProccess.Last();
+                                    foreach (var menu in Model.MenusProccess)
+                                    {
+                                        <a class="dropdown-item" href="@menu.Url">
+                                            <span class="h6 mb-0">@menu.Title</span>
+                                            <p class="text-small text-muted">@menu.Description</p>
+                                        </a>
+                                        if (!menu.Equals(last))
+                                        {
+                                            <div class="dropdown-divider"></div>
+                                        }
+                                    } }
+                            </div>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="pagesDropdown" role="button" data-toggle="dropdown">@Html.Raw(TextHelper.GetText(510, language))</a>
+                            <div class="dropdown-menu" aria-labelledby="pagesDropdown">
+                                @{
+                                    last = Model.MenusService.Last();
+                                    foreach (var menu in Model.MenusService)
+                                    {
+                                        <a class="dropdown-item" href="@menu.Url">
+                                            <span class="h6 mb-0">@menu.Title</span>
+                                            <p class="text-small text-muted">@menu.Description</p>
+                                        </a>
+                                        if (!menu.Equals(last))
+                                        {
+                                            <div class="dropdown-divider"></div>
+                                        }
+                                    }}
+                            </div>
+                        </li>
+                        @{
+                            var news = Model.MenusContent.Where(m => m.Code.Equals("news")).First();
+                            <li class="nav-item">
+                                <a href="/n/@news.Url" class="nav-link">@news.Title</a>
+                            </li>
+                            var contact = Model.MenusContent.Where(m => m.Code.Equals("contact")).First();
+                            <li class="nav-item">
+                                <a href="/c/@contact.Url" class="nav-link">@contact.Title</a>
+                            </li>
+                            var about = Model.MenusContent.Where(m => m.Code.Equals("about")).First();
+                            <li class="nav-item">
+                                <a href="/a/@about.Url" class="nav-link">@about.Title</a>
+                            </li>
+                        }
+                        @*<li class="nav-item">
+                                <a href="@Model.Contact.Url" class="nav-link">@Model.Contact.Title</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="@Model.About.Url" class="nav-link">@Model.About.Title</a>
+                            </li>*@
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="pagesDropdown" role="button" data-toggle="dropdown">@Html.Raw(TextHelper.GetText(514, language))</a>
+                            <div class="dropdown-menu" aria-labelledby="pagesDropdown">
+                                <a class="dropdown-item" target="_blank" href="/2">
+                                    <span class="h6 mb-0">@Html.Raw(TextHelper.GetText(514, language)) 2</span>
+                                </a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" target="_blank" href="/3">
+                                    <span class="h6 mb-0">@Html.Raw(TextHelper.GetText(514, language)) 3</span>
+                                </a>
+                            </div>
+                        </li>
+                    </ul>
+
+                    <ul class="navbar-nav">
+                        <li class="nav-item toplink">
+                            <a href="tel:0942464745" class="hotline">0942 46 47 45</a>
+                            @*<span>&nbsp;or&nbsp;</span>*@
+                        </li>
+                        <li class="nav-item toplink li-language">
+                            @if (language == "vi-VN")
+                            {
+                                <a href="javascript:;" class="btn-language" data-value="en-US" alt="English"><img src="~/images/en.png" alt="English" /></a>
+                            }
+                            else
+                            {
+                                <a href="javascript:;" class="btn-language" data-value="vi-VN" alt="Tiếng Việt"><img src="~/images/vi.png" alt="Tiếng Việt" /></a>
+                            }
+                        </li>
+                    </ul>
+                </div>
+                <!--end nav collapse-->
+            </nav>
+        </div>
+        <!--end of container-->
+    </div>
+</div>
+
+<div class="container">
+    <div class="row d-sm-none menu-mobile">
+        <div class="col">
+            <div class="flex flex-column justify-center relative shadow-hover default hover-bg-white br2 hide-child">
+                <a href="/" class="flex flex-column items-center justify-center color-inherit w-100 pa2 br2 br--top no-underline hover-bg-blue4 hover-white">
+                    <i class="fab fa-product-hunt" style="font-size: 60px;"></i>
+                </a>
+                <div class="w-100 ph1 pv2 tc f2">
+                    <span class="db select-all gray5 hover-gray7 text">product</span>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="flex flex-column justify-center relative shadow-hover default hover-bg-white br2 hide-child">
+                <a href="/" class="flex flex-column items-center justify-center color-inherit w-100 pa2 br2 br--top no-underline hover-bg-blue4 hover-white">
+                    <i class="fas fa-recycle text-center" style="font-size: 60px;"></i>
+                </a>
+                <span class="db select-all gray5 hover-gray7 text">@Html.Raw(TextHelper.GetText(506, language))</span>
+            </div>
+        </div>
+        <div class="col">
+            <div class="flex flex-column justify-center relative shadow-hover default hover-bg-white br2 hide-child">
+                <a href="/" class="flex flex-column items-center justify-center color-inherit w-100 pa2 br2 br--top no-underline hover-bg-blue4 hover-white">
+                    <i class="fas fa-truck" style="font-size: 60px;"></i>
+                </a>
+                <div class="w-100 ph1 pv2 tc f2">
+                    <span class="db select-all gray5 hover-gray7 text">SERVICES</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
