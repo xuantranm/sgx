@@ -561,7 +561,8 @@ namespace erp.Controllers
                 if (files.Count > 0)
                 {
                     var images = new List<Image>();
-                    var mapFolder = "images\\" + Constants.Link.Employee + "\\" + sysCode;
+                    //var mapFolder = "images\\" + Constants.Link.Employee + "\\" + sysCode;
+                    var mapFolder = Path.Combine("images", Constants.Link.Employee, sysCode);
                     var uploads = Path.Combine(_hostingEnvironment.WebRootPath, mapFolder);
                     if (!Directory.Exists(uploads))
                     {
@@ -573,6 +574,27 @@ namespace erp.Controllers
                     {
                         // only save images in input name [files-entity]
                         if (Image != null && Image.Length > 0 && Image.Name == "avatar")
+                        {
+                            var file = Image;
+                            //There is an error here
+                            if (file.Length > 0)
+                            {
+                                var fileName = Guid.NewGuid().ToString().Replace("-", "") + Path.GetExtension(file.FileName);
+                                using (var fileStream = new FileStream(Path.Combine(uploads, fileName), FileMode.Create))
+                                {
+                                    await file.CopyToAsync(fileStream);
+                                    var currentImage = new Image
+                                    {
+                                        Path = "\\" + mapFolder + "\\",
+                                        FileName = fileName,
+                                        OrginalName = file.FileName
+                                    };
+                                    images.Add(currentImage);
+                                    user.Avatar = currentImage;
+                                }
+                            }
+                        }
+                        else if (Image != null && Image.Length > 0 && Image.Name == "cover")
                         {
                             var file = Image;
                             //There is an error here
@@ -591,7 +613,7 @@ namespace erp.Controllers
                                         OrginalName = file.FileName
                                     };
                                     images.Add(currentImage);
-                                    user.Avatar = currentImage;
+                                    user.Cover = currentImage;
                                 }
                             }
                         }
@@ -839,6 +861,7 @@ namespace erp.Controllers
                 var now = DateTime.Now;
                 #region Images, each product 1 folder. (return images)
                 var avatarImage = new Image();
+                var coverImage = new Image();
                 var files = HttpContext.Request.Form.Files;
                 if (files.Count > 0)
                 {
@@ -873,6 +896,30 @@ namespace erp.Controllers
                                     };
                                     images.Add(currentImage);
                                     avatarImage = currentImage;
+                                }
+                            }
+                        }
+
+                        else if (Image != null && Image.Length > 0 && Image.Name == "cover")
+                        {
+                            var file = Image;
+                            //There is an error here
+
+                            if (file.Length > 0)
+                            {
+                                var fileName = Guid.NewGuid().ToString().Replace("-", "") + Path.GetExtension(file.FileName);
+                                using (var fileStream = new FileStream(Path.Combine(uploads, fileName), FileMode.Create))
+                                {
+                                    await file.CopyToAsync(fileStream);
+                                    //emp.BookPic = fileName;
+                                    var currentImage = new Image
+                                    {
+                                        Path = "\\" + mapFolder + "\\",
+                                        FileName = fileName,
+                                        OrginalName = file.FileName
+                                    };
+                                    images.Add(currentImage);
+                                    coverImage = currentImage;
                                 }
                             }
                         }
@@ -967,6 +1014,11 @@ namespace erp.Controllers
                 if (avatarImage != null && !string.IsNullOrEmpty(avatarImage.FileName))
                 {
                     update = update.Set(m => m.Avatar, avatarImage);
+                }
+
+                if (coverImage != null && !string.IsNullOrEmpty(coverImage.FileName))
+                {
+                    update = update.Set(m => m.Cover, coverImage);
                 }
 
                 dbContext.Employees.UpdateOne(filter, update);

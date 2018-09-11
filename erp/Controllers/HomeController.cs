@@ -198,11 +198,11 @@ namespace erp.Controllers
             var sortNotification = Builders<Notification>.Sort.Ascending(m => m.CreatedOn);
             var notifications = dbContext.Notifications.Find(m => m.Enable.Equals(true) && m.UserId.Equals(ownerId)).Sort(sortNotification).ToList();
 
-            var ownerViewModel = new OwnerViewModel
-            {
-                Main = owner,
-                NotificationCount = notifications != null ? notifications.Count() : 0
-            };
+            //var ownerViewModel = new OwnerViewModel
+            //{
+            //    Main = owner,
+            //    NotificationCount = notifications != null ? notifications.Count() : 0
+            //};
 
             return View();
         }

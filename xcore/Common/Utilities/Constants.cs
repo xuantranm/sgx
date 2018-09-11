@@ -17,6 +17,11 @@ namespace Common.Utilities
             public const string login = "/account/login/";
         }
 
+        public static class Rights
+        {
+            public const string System = "system";
+        }
+
         public static class ContactType
         {
             public const string personal = "personal";
@@ -50,10 +55,8 @@ namespace Common.Utilities
         {
             public const string Main = "hr";
             public const string Human = "nhan-su";
+            public const string Information = "thong-tin";
             public const string List = "danh-sach";
-            public const string TonSx = "ton-sx";
-            public const string ReportTonSx = "bao-cao-ton-sx";
-            public const string VanHanh = "van-hanh";
             public const string Create = "nhap-lieu";
             public const string Edit = "chinh-sua";
 

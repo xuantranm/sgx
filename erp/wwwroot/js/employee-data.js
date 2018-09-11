@@ -9,6 +9,8 @@
 
     document.getElementById('avatar-input').addEventListener('change', loadAvatar, false);
 
+    document.getElementById('cover-input').addEventListener('change', readCover, true);
+
     $('input[name="Employee.FullName"]').focusout(function (e) {
         if ($(this).val().length > 0) {
             $.ajax({
@@ -441,6 +443,12 @@ function setValue() {
             date.format('MM-DD-YYYY')
         );
     });
+
+    // load cover
+
+    //document.getElementById('cover').style.backgroundImage = "url(" + reader.result + ")";
+    //document.getElementById('cover').style.width = "357px";
+    //document.getElementById('cover').style.height = "167px";
 }
 
 function eventContractType() {
@@ -496,12 +504,25 @@ function loadAvatar(evt) {
                 // Render thumbnail.
                 document.getElementById('avatarShow').src = e.target.result;
                 document.getElementById('avatarShow').title = escape(theFile.name);
-
             };
         })(f);
 
         // Read in the image file as a data URL.
         reader.readAsDataURL(f);
+    }
+}
+
+function readCover() {
+    var file = document.getElementById("cover-input").files[0];
+    var reader = new FileReader();
+    reader.onloadend = function () {
+        document.getElementById('cover').style.backgroundImage = "url(" + reader.result + ")";
+        document.getElementById('cover').style.width = "357px";
+        document.getElementById('cover').style.height = "167px";
+    }
+    if (file) {
+        reader.readAsDataURL(file);
+    } else {
     }
 }
 

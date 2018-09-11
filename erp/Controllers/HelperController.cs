@@ -121,7 +121,6 @@ namespace erp.Controllers
             var userInformation = dbContext.Employees.Find(m => m.Id.Equals(userId)).First();
 
             var owner = isOwner ? userInformation : dbContext.Employees.Find(m => m.Id.Equals(ownerId)).First();
-            owner.Cover = owner.Avatar;
             if (owner.Avatar == null)
             {
                 owner.Avatar = new Image
@@ -138,11 +137,6 @@ namespace erp.Controllers
             // notification
             var sortNotification = Builders<Notification>.Sort.Ascending(m => m.CreatedOn);
             var notifications = dbContext.Notifications.Find(m => m.Enable.Equals(true) && m.UserId.Equals(ownerId)).Sort(sortNotification).ToList();
-
-            var ownerViewModel = new OwnerViewModel{
-                Main = owner,
-                NotificationCount = notifications != null ? notifications.Count() : 0
-            };
 
             #region Fix no data
             if (string.IsNullOrEmpty(userInformation.Title))
@@ -161,7 +155,8 @@ namespace erp.Controllers
             
             var erpViewModel = new ErpViewModel()
             {
-                OwnerInformation = ownerViewModel,
+                OwnerInformation = owner,
+                NotificationCount = notifications != null ? notifications.Count() : 0,
                 UserInformation = userInformation,
                 TrackingUser = trackingUsers
             };

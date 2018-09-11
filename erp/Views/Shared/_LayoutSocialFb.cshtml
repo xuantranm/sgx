@@ -1,4 +1,5 @@
 ﻿@using Common.Utilities;
+@using Common.Enums;
 
 <!doctype html>
 <html lang="en">
@@ -64,13 +65,16 @@
     @{
         var login = User.Identity.Name;
         var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
-        // check root
-        //loginUserName == Constants.System.account
-
-        //if (!string.IsNullOrEmpty(login))
-        //{
-        //    Utility.IsRight(login, "nhan-su", (int)ERights.View)
-        //}
+        var rightSystem = false;
+        if (!string.IsNullOrEmpty(login))
+        {
+            rightSystem = Utility.IsRight(login, Constants.Rights.System, (int)ERights.View);
+        }
+        // override if system account
+        if (loginUserName == Constants.System.account)
+        {
+            rightSystem = true;
+        }
     }
 
     @if (ViewData["Disable"] != null)
@@ -93,42 +97,42 @@
                     </button>
                     <div class="collapse navbar-collapse justify-content-between" id="navbarNav">
                         <ul class="navbar-nav">
-                            <li class="nav-item">
+                            <li class="nav-item d-none">
                                 <a href="/" class="nav-link">Trang chủ</a>
                             </li>
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" id="pagesDropdown" role="button" data-toggle="dropdown">Administrator</a>
-                                <div class="dropdown-menu" aria-labelledby="pagesDropdown">
-                                    <a class="dropdown-item" href="/r-u/phan-quyen/">
-                                        <span class="h6 mb-0">Phân quyền</span>
-                                        <p class="text-small text-muted">Configuration information system</p>
-                                    </a>
-                                    <div class="dropdown-divider"></div>
+                            @if (rightSystem)
+                                {
+                                    <li class="nav-item dropdown">
+                                        <a class="nav-link dropdown-toggle" href="#" id="pagesDropdown" role="button" data-toggle="dropdown">Administrator</a>
+                                        <div class="dropdown-menu" aria-labelledby="pagesDropdown">
+                                            <a class="dropdown-item" href="/r-u/phan-quyen/">
+                                                <span class="h6 mb-0">Phân quyền</span>
+                                                <p class="text-small text-muted">Configuration information system</p>
+                                            </a>
+                                            <div class="dropdown-divider"></div>
 
-                                    <a class="dropdown-item" href="/st/cai-dat/">
-                                        <span class="h6 mb-0">Cài đặt</span>
-                                        <p class="text-small text-muted">Configuration information system</p>
-                                    </a>
-                                    <div class="dropdown-divider"></div>
+                                            <a class="dropdown-item" href="/st/cai-dat/">
+                                                <span class="h6 mb-0">Cài đặt</span>
+                                                <p class="text-small text-muted">Configuration information system</p>
+                                            </a>
+                                            <div class="dropdown-divider"></div>
 
-                                    <a class="dropdown-item" href="/text/">
-                                        <span class="h6 mb-0">Nội dung</span>
-                                        <p class="text-small text-muted">Multi languages display control</p>
-                                    </a>
-                                </div>
-                            </li>
-                            <li class="nav-item dropdown">
+                                            <a class="dropdown-item" href="/text/">
+                                                <span class="h6 mb-0">Nội dung</span>
+                                                <p class="text-small text-muted">Multi languages display control</p>
+                                            </a>
+                                        </div>
+                                    </li>
+                                }
+                            <li class="nav-item dropdown d-none">
                                 <a class="nav-link dropdown-toggle" href="#" id="componentsDropdown" role="button" data-toggle="dropdown">Hướng dẫn</a>
                                 <div class="dropdown-menu" aria-labelledby="componentsDropdown">
-
                                     <a class="dropdown-item" href="/tai-lieu/nhan-su">Nhân sự</a>
-
                                     <a class="dropdown-item" href="/tai-lieu/hanh-chinh">Hành chính</a>
-
                                 </div>
                             </li>
                         </ul>
-                        <form class="form-inline col p-0 pl-md-2 pr-md-3">
+                        <form class="form-inline col p-0 pl-md-2 pr-md-3 d-none">
                             <input class="form-control w-100 common-search" type="search" placeholder="Tìm kiếm" aria-label="Tìm kiếm" onsearch="OnSearch(this)" />
                         </form>
 
@@ -154,20 +158,14 @@
                             </li>
                         </ul>
                         <script id="tmplOwnerInfo" type="text/x-jsrender">
-                            <a class="nav-link dropdown-toggle dropdown-toggle-no-arrow p-lg-0" href="/hr/nhan-su/thong-tin/{{:id}}" id="dropdown01" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                {{if main.avatar && main.avatar.length}}
-                                <img alt="{{:main.fullName}}" src="{{:main.avatar.path}}/{{:main.avatar.fileName}}" class="avatar avatar-xs" />
-                                {{else}}
-                                <img alt="{{:main.fullName}}" src="http://via.placeholder.com/36x36" class="avatar avatar-xs" />
-                                {{/if}}
+                            <a class="nav-link dropdown-toggle dropdown-toggle-no-arrow p-lg-0" href="/@Constants.LinkHr.Main/@Constants.LinkHr.Human/@Constants.LinkHr.Information/{{:ownerInformation.id}}" id="dropdown01" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <img alt="{{:ownerInformation.fullName}}" src="{{:ownerInformation.cover.path}}{{:ownerInformation.cover.fileName}}" class="avatar avatar-xs" />
                                 <span class="badge badge-danger">{{:notificationCount}}</span>
                             </a>
                             <div class="dropdown-menu dropdown-menu-sm" aria-labelledby="dropdown01">
                                 <a class="dropdown-item" href="/thong-bao">Thông báo <span class="badge badge-danger">{{:notificationCount}}</span></a>
-                                <a class="dropdown-item" href="/nhan-su/nhan-vien/thong-tin/">Thông tin</a>
+                                <a class="dropdown-item" href="/@Constants.LinkHr.Main/@Constants.LinkHr.Human/@Constants.LinkHr.Information/">Thông tin</a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="/st/cai-dat/">Cài đặt</a>
-                                <a class="dropdown-item" href="#">Nhóm</a>
                                 <form action="/account/logout" method="post" id="logoutForm" class="navbar-right">
                                     <button type="submit" class="btn btn-link dropdown-item">Đăng xuất</button>
                                 </form>

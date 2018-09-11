@@ -73,11 +73,20 @@
                 <input asp-for="Employee.Code" type="hidden" />
                 <div class="container">
                     <div class="row">
-                        <div class="col-12">
+                        @{
+                            var coverDisplay = string.Empty;
+                            var cover = Model.Employee.Cover;
+                            @if (cover != null)
+                            {
+                                var pathCover = Url.Content("https://localhost:44366" + cover.Path + cover.FileName);
+                                coverDisplay = "background-image: url(" + pathCover.Replace("\\","/") + "); width:354px;height:167px";
+                            }
+                        }
+                        <div class="col-12" id="cover" style="@coverDisplay">
                             <div class="media flex-wrap mb-0 align-items-center" id="avatar-upload">
                                 @if (Model.Employee.Avatar != null)
                                 {
-                                    <img id="avatarShow" alt="@Model.Employee.FullName" src="@Model.Employee.Avatar.Path@Model.Employee.Avatar.FileName" class="avatar avatar-lg mb-3 mb-md-0" />
+                                    <img id="avatarShow" alt="@Model.Employee.FullName" src="@Url.Content(Model.Employee.Avatar.Path)@Url.Content(Model.Employee.Avatar.FileName)" class="avatar avatar-lg mb-3 mb-md-0" />
                                 }
                                 else
                                 {

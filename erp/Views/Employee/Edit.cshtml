@@ -61,7 +61,7 @@
 
     <!-- MAIN -->
     <form class="data-form" asp-action="Edit" enctype="multipart/form-data">
-        <section class="flush-with-above height-80 d-block">
+        <section class="flush-with-above height-80 d-block" style="padding: 1.5rem 0;">
             <div class="tab-content">
                 <div class="tab-pane fade show active" id="general" role="tabpanel" aria-labelledby="general-tab">
                     <input asp-for="Employee.Id" type="hidden" />
@@ -70,11 +70,20 @@
                     <input name="checkEMail" type="hidden" value="@Model.Employee.Email" />
                     <div class="container">
                         <div class="row">
-                            <div class="col-12">
+                            @{
+                                var coverDisplay = string.Empty;
+                                var cover = Model.Employee.Cover;
+                                @if (cover != null)
+                                {
+                                    var pathCover = Url.Content("https://localhost:44366" + cover.Path + cover.FileName);
+                                    coverDisplay = "background-image: url(" + pathCover.Replace("\\", "/") + "); width:354px;height:167px";
+                                }
+                            }
+                            <div class="col-12" id="cover" style="@coverDisplay">
                                 <div class="media flex-wrap mb-0 align-items-center" id="avatar-upload">
                                     @if (Model.Employee.Avatar != null)
                                     {
-                                        <img id="avatarShow" alt="@Model.Employee.FullName" src="@Model.Employee.Avatar.Path@Model.Employee.Avatar.FileName" class="avatar avatar-lg mb-3 mb-md-0" />
+                                        <img id="avatarShow" alt="@Model.Employee.FullName" src="@Url.Content(Model.Employee.Avatar.Path)@Url.Content(Model.Employee.Avatar.FileName)" class="avatar avatar-lg mb-3 mb-md-0" />
                                     }
                                     else
                                     {
@@ -84,6 +93,10 @@
                                         <label class="custom-file mb-2" for="file2">
                                             <input type="file" id="avatar-input" name="avatar" class="custom-file-input height-0">
                                             <span class="btn btn-primary"><i class="icon-upload-to-cloud">&nbsp;</i>Chọn hình</span>
+                                        </label>
+                                        <label class="custom-file mb-2">
+                                            <input type="file" id="cover-input" name="cover" class="custom-file-input height-0">
+                                            <span class="btn btn-primary"><i class="icon-upload-to-cloud">&nbsp;</i>Chọn hình nền</span>
                                         </label>
                                         <div>
                                             <small>
@@ -2042,10 +2055,10 @@
 
 @section scripts {
     @{
-            /**/
+        /**/
 
-            await Html.RenderPartialAsync("_ValidationScriptsPartial");
-            <script src="~/js/employee-data.js?@DateTime.Now.Ticks"></script>
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+        <script src="~/js/employee-data.js?@DateTime.Now.Ticks"></script>
     }
 }
 
