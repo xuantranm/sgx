@@ -36,21 +36,22 @@
         <div class="card-body">
             <div class="row">
                 @{
-                    foreach (var type in Model.Types.Where(m => m.SalaryPay.Equals(true)).ToList())
+                    //foreach (var type in Model.Types.Where(m => m.SalaryPay.Equals(true)).ToList())
+                    foreach (var type in Model.Types)
                     {
-                <div class="col-12">
-                    @{
-                        decimal number = 0;
-                        var leaveEmployee = Model.LeaveEmployees.Where(m => m.LeaveTypeId.Equals(type.Id)).FirstOrDefault();
-                        @if (leaveEmployee != null)
-                        {
-                            number = leaveEmployee.Number;
-                        }
-                    }
-                    <span class="leave-duration badge badge-info">@number</span> ngày -
-                    <label>@type.Name</label>
-                    <span class="small">@type.Description</span>
-                </div>
+                        <div class="col-12">
+                            @{
+                                decimal number = 0;
+                                var leaveEmployee = Model.LeaveEmployees.Where(m => m.LeaveTypeId.Equals(type.Id)).FirstOrDefault();
+                                @if (leaveEmployee != null)
+                                {
+                                    number = leaveEmployee.Number;
+                                }
+                            }
+                            <span class="leave-duration badge badge-info">@number</span> ngày -
+                            <label>@type.Name</label>
+                            <span class="small">@type.Description</span>
+                        </div>
                     }
                 }
             </div>

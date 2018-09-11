@@ -31,5 +31,9 @@ namespace ViewModels
 
         // Load news...
         public IList<News> News { get; set; }
+
+        public IList<Leave> Leaves { get; set; }
+
+        public IList<EmployeeWorkTimeLog> TimeKeepers { get; set; }
     }
 }

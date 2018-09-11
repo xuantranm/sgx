@@ -100,7 +100,7 @@
                                     <div class="alert alert-info text-small mb-0" role="alert">
                                         <i class="icon-shield"></i>
                                         <span>
-                                            @notification.Title @notification.Content 
+                                            @notification.Title @notification.Content
                                         </span>
                                         <span>vào @notification.CreatedOn</span>
                                         <span>bởi @notification.CreatedBy</span>
@@ -109,8 +109,8 @@
                                 </div>
                             }
                             @*<div class="col-12">
-                                <a href="/nt/thong-bao">Xem thêm ›</a>
-                            </div>*@
+                                    <a href="/nt/thong-bao">Xem thêm ›</a>
+                                </div>*@
                         </div>
                     </div>
                 </div>
@@ -118,7 +118,6 @@
         </section>
     }
 }
-
 
 @{
     if (Model.NotificationTaskBhxhs != null && Model.NotificationTaskBhxhs.Count > 0)
@@ -142,6 +141,131 @@
                                             @notification.Title
                                         </span>
                                         <a href="@notification.Link">Chi tiết ›</a>
+                                    </div>
+                                </div>
+                            }
+                            <div class="col-12">
+                                <a href="/nt/thong-bao">Xem thêm ›</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    }
+}
+
+@{
+    if (Model.Leaves != null && Model.Leaves.Count > 0)
+    {
+        <section class="bg-white" style="padding: 1rem 0">
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <a href="javascript:;" data-target="#leave-approve" data-toggle="collapse">
+                            <h5><i class="icon-sound mr-1"></i>Duyệt nghỉ phép <span class="badge badge-danger leave-approve-total">@Model.Leaves.Count</span><i class="icon-popup"></i></h5>
+                        </a>
+                    </div>
+                    <div class="col-12 collapse show" id="leave-approve">
+                        <div class="row">
+                            @foreach (var leave in Model.Leaves)
+                            {
+                                <div class="col-12 leave-item" style="padding:5px 0">
+                                    <div class="alert alert-info text-small mb-0" role="alert">
+                                        <i class="icon-shield"></i>
+                                        <span>
+                                            @leave.EmployeeName
+                                        </span>
+                                        <span>
+                                            @leave.From - @leave.To  (@leave.Number)
+                                        </span>
+                                        <span>
+                                            @leave.TypeName
+                                        </span>
+                                        <div class="row">
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                <form action="/@Constants.LinkLeave.Main/@Constants.LinkLeave.ApprovePost" method="post" class="navbar-right leave-home-submit">
+                                                    <input name="id" type="hidden" value="@leave.Id" />
+                                                    <input name="secure" type="hidden" value="@leave.SecureCode" />
+                                                    <input name="approve" type="hidden" value="1" />
+                                                    <button type="submit" data-original-text="Đồng ý" class="btn btn-success btn-submit btn-accept">Đồng ý</button>
+                                                </form>
+                                            </div>
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                <form action="/@Constants.LinkLeave.Main/@Constants.LinkLeave.ApprovePost" method="post" class="navbar-right leave-home-submit">
+                                                    <input name="id" type="hidden" value="@leave.Id" />
+                                                    <input name="secure" type="hidden" value="@leave.SecureCode" />
+                                                    <input name="approve" type="hidden" value="2" />
+                                                    <button type="submit" data-original-text="Không đồng ý" class="btn btn-danger btn-submit btn-cancel">Không đồng ý</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                            <div class="col-12">
+                                <a href="/nt/thong-bao">Xem thêm ›</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    }
+}
+
+@{
+    if (Model.TimeKeepers != null && Model.TimeKeepers.Count > 0)
+    {
+        <section class="bg-white" style="padding: 1rem 0">
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <a href="javascript:;" data-target="#leave-approve" data-toggle="collapse">
+                            <h5><i class="icon-sound mr-1"></i>Xác nhận công <span class="badge badge-danger leave-approve-total">@Model.TimeKeepers.Count</span><i class="icon-popup"></i></h5>
+                        </a>
+                    </div>
+                    <div class="col-12 collapse show" id="leave-approve">
+                        <div class="row">
+                            @foreach (var timeKeeper in Model.TimeKeepers)
+                            {
+                                <div class="col-12 leave-item" style="padding:5px 0">
+                                    <div class="alert alert-info text-small mb-0" role="alert">
+                                        <i class="icon-shield"></i>
+                                        <span>
+                                            @timeKeeper.EnrollNumber - @timeKeeper.RequestDate
+                                        </span>
+                                        Chi tiết:
+                                        @if (timeKeeper.Late.TotalMinutes > 0)
+                                        {
+                                            <span>Trễ (phút)</span><span class="badge badge-info">@timeKeeper.Late.TotalMinutes</span>
+                                        }
+                                        @if (timeKeeper.Early.TotalMinutes > 0)
+                                        {
+                                            <span>Về sớm (phút)</span><span class="badge badge-info">@timeKeeper.Early.TotalMinutes</span>
+                                        }
+                                        @foreach(var log in timeKeeper.Logs)
+                                        {
+                                            <span>@log.Date</span>
+                                        }
+                                        <div class="row">
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                <form action="/@Constants.LinkLeave.Main/@Constants.LinkLeave.ApprovePost" method="post" class="navbar-right leave-home-submit">
+                                                    @*<input name="id" type="hidden" value="@leave.Id" />
+                                                    <input name="secure" type="hidden" value="@leave.SecureCode" />
+                                                    <input name="approve" type="hidden" value="1" />*@
+                                                    <button type="submit" data-original-text="Đồng ý" class="btn btn-success btn-submit btn-accept">Đồng ý</button>
+                                                </form>
+                                            </div>
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                <form action="/@Constants.LinkLeave.Main/@Constants.LinkLeave.ApprovePost" method="post" class="navbar-right leave-home-submit">
+                                                    @*<input name="id" type="hidden" value="@leave.Id" />
+                                                    <input name="secure" type="hidden" value="@leave.SecureCode" />
+                                                    <input name="approve" type="hidden" value="2" />*@
+                                                    <button type="submit" data-original-text="Không đồng ý" class="btn btn-danger btn-submit btn-cancel">Không đồng ý</button>
+                                                </form>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             }
@@ -207,6 +331,7 @@
     </div>
 </section>
 
+<!-- MẪU -->
 <section class="bg-white">
     <div class="container">
         <div class="row">
@@ -390,10 +515,14 @@
                 </div>
                 <!--end of card-->
 
-                <div class="text-center mt-5">
+                <div class="text-center mt-5 d-none">
                     <button class="btn btn-outline-secondary">Tải thêm</button>
                 </div>
             </div>
         </div>
     </div>
 </section>
+
+@section scripts {
+    <script type="text/javascript" src="~/js/home.js?@DateTime.Now.Ticks"></script>
+}

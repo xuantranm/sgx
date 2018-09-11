@@ -102,7 +102,7 @@ namespace erp.Controllers
                         approves.Add(new IdName
                         {
                             Id = approveEntity.Id,
-                            Name = approveEntity.FirstName
+                            Name = approveEntity.FullName
                         });
                     }
                 }
@@ -208,7 +208,7 @@ namespace erp.Controllers
 
         [HttpPost]
         [Route(Constants.LinkLeave.Create)]
-        public IActionResult Create(LeaveViewModel viewModel)
+        public async Task<IActionResult> Create(LeaveViewModel viewModel)
         {
             #region Authorization
             var login = User.Identity.Name;
@@ -219,7 +219,7 @@ namespace erp.Controllers
             if (userInformation == null)
             {
                 #region snippet1
-                HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                 #endregion
                 return RedirectToAction("login", "account");
             }
@@ -263,20 +263,20 @@ namespace erp.Controllers
             #endregion
 
             #region Tạo trùng ngày
-            var builderCheckDuplicate = Builders<Leave>.Filter;
-            var filterCheckDuplicate = builderCheckDuplicate.Eq(m => m.Enable, true)
-                & builderCheckDuplicate.Eq(x => x.EmployeeId, entity.EmployeeId)
-                & builderCheckDuplicate.Gte(x => x.From, entity.From.Date)
-                & builderCheckDuplicate.Lte(x => x.To, entity.To.Date);
-
-            var checkDuplicateData = dbContext.Leaves.Find(filterCheckDuplicate).ToList();
-            if (checkDuplicateData != null && checkDuplicateData.Count > 0)
+            var builderExist = Builders<Leave>.Filter;
+            var filterExist = builderExist.Eq(m => m.Enable, true);
+            filterExist = filterExist & builderExist.Gte(m => m.From, entity.From);
+            filterExist = filterExist & builderExist.Lte(m => m.To, entity.To);
+            
+            var exists = await dbContext.Leaves.Find(filterExist).ToListAsync();
+            if (exists != null && exists.Count > 0)
             {
                 return Json(new { result = false, message = "Ngày yêu cầu đã được duyệt. Xem danh sách nghỉ bên dưới. Vui lòng yêu cầu ngày khác." });
             }
             #endregion
 
             entity.SecureCode = Helper.HashedPassword(Guid.NewGuid().ToString("N").Substring(0, 12));
+            entity.EmployeeName = employee.FullName;
             entity.Status = 0;
             entity.CreatedBy = login;
             entity.UpdatedBy = login;
@@ -626,6 +626,208 @@ namespace erp.Controllers
             return View(viewModel);
         }
 
+        [Route(Constants.LinkLeave.ApprovePost)]
+        [AllowAnonymous]
+        [HttpPost]
+        public IActionResult ApprovePost(string id, int approve, string secure)
+        {
+            var viewModel = new LeaveViewModel
+            {
+                Approve = approve
+            };
+            var leave = dbContext.Leaves.Find(m => m.Id.Equals(id)).FirstOrDefault();
+
+            #region Extensions
+            var builderTraining = Builders<Trainning>.Filter;
+            var filterTraining = builderTraining.Eq(m => m.Enable, true);
+            filterTraining = filterTraining & builderTraining.Eq(m => m.Type, "anh-van");
+            var listTraining = dbContext.Trainnings.Find(filterTraining).Limit(10).SortByDescending(m => m.CreatedOn).ToList();
+            viewModel.ListTraining = listTraining;
+            #endregion
+
+            if (leave.SecureCode != secure && leave.Status == 1)
+            {
+                ViewData["Status"] = "Rất tiếc! Dữ liệu đã được cập nhật hoặc thông tin không tồn tại trên hệ thống.";
+
+                return View(viewModel);
+            }
+
+            viewModel.Leave = leave;
+
+            #region Update status
+            var filter = Builders<Leave>.Filter.Eq(m => m.Id, id);
+            var update = Builders<Leave>.Update
+                .Set(m => m.Status, approve)
+                .Set(m => m.ApprovedBy, leave.ApproverId);
+
+            dbContext.Leaves.UpdateOne(filter, update);
+            #endregion
+
+            #region update Leave Date if CANCEL
+            if (approve == 2)
+            {
+                #region QUAN LY LOAI PHEP, BU, NGHI KO TINH LUONG,...
+                var typeLeave = dbContext.LeaveTypes.Find(m => m.Id.Equals(leave.TypeId)).FirstOrDefault();
+                // Nghi phep
+                if (typeLeave.Alias == "phep-nam")
+                {
+                    var builderLeaveEmployee = Builders<LeaveEmployee>.Filter;
+                    var filterLeaveEmployee = builderLeaveEmployee.Eq(m => m.EmployeeId, leave.EmployeeId)
+                                            & builderLeaveEmployee.Eq(x => x.LeaveTypeId, leave.TypeId);
+                    var updateLeaveEmployee = Builders<LeaveEmployee>.Update.Inc(m => m.Number, -(leave.Number));
+                    dbContext.LeaveEmployees.UpdateOne(filterLeaveEmployee, updateLeaveEmployee);
+                }
+                // Phep khac,...
+                #endregion
+            }
+            #endregion
+
+            #region Tracking everything
+
+            #endregion
+
+            var approvement = dbContext.Employees.Find(m => m.Id.Equals(leave.ApproverId)).FirstOrDefault();
+            // Tự yêu cầu
+            bool seftFlag = leave.EmployeeId == leave.CreatedBy ? true : false;
+            var employee = dbContext.Employees.Find(m => m.Id.Equals(leave.EmployeeId)).FirstOrDefault();
+            var userCreate = employee;
+            if (!seftFlag)
+            {
+                userCreate = dbContext.Employees.Find(m => m.Id.Equals(leave.CreatedBy)).FirstOrDefault();
+            }
+
+            #region Send email to user leave
+            var requester = employee.FullName;
+            var tos = new List<EmailAddress>();
+            var ccs = new List<EmailAddress>();
+            //tos.Add(new EmailAddress { Name = "xuan", Address = "xuan.tm@tribat.vn" });
+            tos.Add(new EmailAddress { Name = employee.FullName, Address = employee.Email });
+
+            // Send mail to HR: if approve = 1;
+            if (approve == 1)
+            {
+                var listEmailHR = string.Empty;
+                var settingListEmailHR = dbContext.Settings.Find(m => m.Enable.Equals(true) && m.Key.Equals("ListEmailHRApproveLeave")).FirstOrDefault();
+                if (settingListEmailHR != null)
+                {
+                    listEmailHR = settingListEmailHR.Value;
+                }
+                if (!string.IsNullOrEmpty(listEmailHR))
+                {
+                    foreach (var email in listEmailHR.Split(";"))
+                    {
+                        tos.Add(new EmailAddress { Name = email, Address = email });
+                    }
+                }
+                requester += " , HR";
+            }
+
+            if (!seftFlag)
+            {
+                // cc người tạo dùm
+                //ccs.Add(new EmailAddress { Name = "xuan", Address = "xuan.tm@tribat.vn" });
+                ccs.Add(new EmailAddress { Name = userCreate.FullName, Address = userCreate.Email });
+            }
+
+            var webRoot = Environment.CurrentDirectory;
+            var pathToFile = _env.WebRootPath
+                    + Path.DirectorySeparatorChar.ToString()
+                    + "Templates"
+                    + Path.DirectorySeparatorChar.ToString()
+                    + "EmailTemplate"
+                    + Path.DirectorySeparatorChar.ToString()
+                    + "LeaveApprove.html";
+
+            #region parameters
+            //{0} : Subject
+            //{1} : Nguoi gui yeu cau  - Nguoi tao yeu cau (dùm) 
+            //{2} : Tình trạng (đồng ý/hủy)
+            //{3} : Nguoi duyet
+            //{4} : Email
+            //{5} : Chức vụ
+            //{6} : Date (từ, đến, số ngày)
+            //{7} : Lý do
+            //{8} : Số ngày phép còn lại
+            //{9} : Loại phép
+            //{10} : Số điện thoại liên hệ
+            //{11}: Link chi tiết
+            //{12}: Website
+            #endregion
+            var subject = "[TRIBAT] Xác nhận nghỉ phép.";
+            var status = approve == 1 ? "Đồng ý" : "Không duyệt";
+            var dateRequest = leave.From.ToString("dd/MM/yyyy HH:mm") + " - " + leave.To.ToString("dd/MM/yyyy HH:mm") + " (" + leave.Number + " ngày)";
+            var linkDetail = Constants.System.domain;
+            var bodyBuilder = new BodyBuilder();
+            using (StreamReader SourceReader = System.IO.File.OpenText(pathToFile))
+            {
+                bodyBuilder.HtmlBody = SourceReader.ReadToEnd();
+            }
+            string messageBody = string.Format(bodyBuilder.HtmlBody,
+                subject,
+                requester,
+                status,
+                approvement.FullName,
+                approvement.Email,
+                approvement.Title,
+                dateRequest,
+                leave.Reason,
+                employee.LeaveDayAvailable,
+                leave.TypeName,
+                leave.Phone,
+                linkDetail,
+                Constants.System.domain
+                );
+            var emailMessage = new EmailMessage()
+            {
+                ToAddresses = tos,
+                CCAddresses = ccs,
+                Subject = subject,
+                BodyContent = messageBody
+            };
+            try
+            {
+                var message = new MimeMessage();
+                message.To.AddRange(emailMessage.ToAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
+                if (emailMessage.CCAddresses != null && emailMessage.CCAddresses.Count > 0)
+                {
+                    message.Cc.AddRange(emailMessage.CCAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
+                }
+                if (emailMessage.FromAddresses == null || emailMessage.FromAddresses.Count == 0)
+                {
+                    emailMessage.FromAddresses = new List<EmailAddress>
+                                {
+                                    new EmailAddress { Name = "[TRIBAT-HCNS-Thử nghiệm] Hệ thống tự động", Address = "test-erp@tribat.vn" }
+                                };
+                }
+                message.From.AddRange(emailMessage.FromAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
+                message.Subject = emailMessage.Subject;
+                message.Body = new TextPart(TextFormat.Html)
+                {
+                    Text = emailMessage.BodyContent
+                };
+                using (var emailClient = new MailKit.Net.Smtp.SmtpClient())
+                {
+                    //The last parameter here is to use SSL (Which you should!)
+                    emailClient.Connect("test-erp@tribat.vn", 465, true);
+
+                    //Remove any OAuth functionality as we won't be using it. 
+                    emailClient.AuthenticationMechanisms.Remove("XOAUTH2");
+
+                    emailClient.Authenticate("test-erp@tribat.vn", "Kh0ngbiet@123");
+
+                    emailClient.Send(message);
+                    emailClient.Disconnect(true);
+                    Console.WriteLine("The mail has been sent successfully !!");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            #endregion
+
+            return Json(new { result = true, message = "Cám ơn đã xác nhận, kết quả đang gửi cho người liên quan." });
+        }
         #region Sub Data
         [HttpPost]
         [Route(Constants.LinkLeave.CalculatorDate)]
@@ -645,7 +847,7 @@ namespace erp.Controllers
             if (!string.IsNullOrEmpty(type))
             {
                 var leaveType = dbContext.LeaveTypes.Find(m => m.Id.Equals(type)).FirstOrDefault();
-                if (leaveType != null)
+                if (leaveType != null && leaveType.MaxOnce > 0)
                 {
                     if (leaveType.MaxOnce < date)
                     {

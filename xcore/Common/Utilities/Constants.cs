@@ -162,6 +162,7 @@ namespace Common.Utilities
             public const string UpdateLeaveDay = "cap-nhat-ngay-nghi";
             public const string Create = "create";
             public const string CalculatorDate = "calculator-date";
+            public const string ApprovePost = "post-duyet-phep";
             // API
             public const string Approve = "duyet-phep";
         }

@@ -1,51 +1,13 @@
 ﻿$(function () {
-    $('input[name="Leave.TypeName"]').val($('select[name="Leave.TypeId"] option:selected').text());
-
-    $('select[name="Leave.TypeId"]').on('change', function () {
-        $('input[name="Leave.TypeName"]').val($('select[name="Leave.TypeId"] option:selected').text());
-    });
-
-    $('input[name="Leave.ApproverName"]').val($('select[name="Leave.ApproverId"] option:selected').text());
-
-    $('select[name="Leave.ApproverId"]').on('change', function () {
-        $('input[name="Leave.ApproverName"]').val($('select[name="Leave.ApproverId"] option:selected').text());
-    });
-
-    registerTimePicker();
-
-    //$('.datetimes').daterangepicker({
-    //    timePicker: true,
-    //    //"autoApply": true, notworking use paralel timepicker
-    //    startDate: moment().startOf('hour').set({ hour: 07, minute: 0, second: 0 }),
-    //    endDate: moment().startOf('hour').set({ hour: 17, minute: 0, second: 0 }),
-    //    //"minDate": moment().set({ hour: 0, minute: 0, second: 0 }),
-    //    locale: {
-    //        format: 'DD/MM/YYYY hh:mm A'
-    //    }
-    //}, function (start, end, label) {
-    //    console.log('New date range selected: ' + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD') + ' (predefined range: ' + label + ')');
-    //    $('input[name="Leave.From"]').val(start.format('MM-DD-YYYY HH:mm'));
-    //    $('input[name="Leave.To"]').val(end.format('MM-DD-YYYY HH:mm'));
-    //    //6/13/2018 3:26:51 PM
-    //    console.log(start.toString());
-    //});
-
-    $(".data-form").on("submit", function (event) {
+    $('.leave-home-submit').on("submit", function (event) {
         event.preventDefault();
-        var formData = new FormData($(this)[0]);
-        // loading button
-        $('#btnSubmitLeave').prop('disabled', true);
-        $('input', $('.data-form')).prop('disabled', true);
-        $('select', $('.data-form')).prop('disabled', true);
-        $('textarea', $('.data-form')).prop('disabled', true);
-
-        var loadingText = '<i class="fas fa-spinner"></i> đang xử lý...';
-        $('#btnSubmitLeave').html(loadingText);
-
-        //grab all form data  
-        
-        //console.log(formData);
         var $this = $(this);
+        var formData = new FormData($this[0]);
+        // loading button
+        $('.btn-submit').prop('disabled', true);
+        var loadingText = '<i class="fas fa-spinner"></i> đang xử lý...';
+        $('.btn-submit', $this).html(loadingText);
+
         var frmValues = $this.serialize();
         $.ajax({
             type: $this.attr('method'),
@@ -58,23 +20,22 @@
             .done(function (data) {
                 if (data.result === true) {
                     toastr.success(data.message);
-                    setTimeout(function () {
-                        window.location.reload();
-                    }, 1000);
+                    // remove this records
+                    $this.closest('.leave-item').remove();
+                    // cal number total
+                    var totalApproveLeave = parseInt($('.leave-approve-total').html()) - 1;
+                    $('.leave-approve-total').html(totalApproveLeave);
                 }
                 else {
                     toastr.error(data.message);
-                    $('#btnSubmitLeave').prop('disabled', false);
-                    $('input', $('.data-form')).prop('disabled', false);
-                    $('select', $('.data-form')).prop('disabled', false);
-                    $('textarea', $('.data-form')).prop('disabled', false);
-                    $('#btnSubmitLeave').html($('#btnSubmitLeave').data('original-text'));
                 }
+                $('.btn-submit').prop('disabled', false);
+                $('.btn-submit', $this).html($('.btn-submit', $this).data('original-text'));
             })
             .fail(function () {
                 toastr.error(data.message);
-                $('#btnSubmitLeave').prop('disabled', false);
-                $('#btnSubmitLeave').html($('#btnSubmitLeave').data('original-text'));
+                $('.btn-submit', $this).prop('disabled', false);
+                $('.btn-submit', $this).html($('.btn-submit', $this).data('original-text'));
             });
         event.preventDefault();
     });

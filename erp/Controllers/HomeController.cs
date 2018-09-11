@@ -59,7 +59,7 @@ namespace erp.Controllers
             _logger = logger;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             //var userAgent = Request.Headers["User-Agent"];
             //var ua = new UserAgent(userAgent);
@@ -69,7 +69,7 @@ namespace erp.Controllers
             if (userInformation == null)
             {
                 #region snippet1
-                HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                 #endregion
 
                 return RedirectToAction("login", "account");
@@ -118,12 +118,12 @@ namespace erp.Controllers
 
             #region Notification
             var sortNotification = Builders<Notification>.Sort.Ascending(m => m.CreatedOn).Descending(m => m.CreatedOn);
-            var notificationSystems = dbContext.Notifications.Find(m => m.Enable.Equals(true) && m.Type.Equals(1)).Sort(sortNotification).Limit(getItems).ToList();
-            var notificationHRs = dbContext.Notifications.Find(m => m.Enable.Equals(true) && m.Type.Equals(2)).Sort(sortNotification).Limit(getItems).ToList();
-            var notificationExpires = dbContext.Notifications.Find(m => m.Enable.Equals(true) && m.Type.Equals(3)).Sort(sortNotification).Limit(getItems).ToList();
-            var notificationTaskBHXHs = dbContext.Notifications.Find(m => m.Enable.Equals(true) && m.Type.Equals(4)).Sort(sortNotification).Limit(getItems).ToList();
-            var notificationCompanies = dbContext.Notifications.Find(m => m.Enable.Equals(true) && m.Type.Equals(5)).Sort(sortNotification).Limit(getItems).ToList();
-            var notificationActions = dbContext.NotificationActions.Find(m => m.UserId.Equals(loginId)).ToList();
+            var notificationSystems = await dbContext.Notifications.Find(m => m.Enable.Equals(true) && m.Type.Equals(1)).Sort(sortNotification).Limit(getItems).ToListAsync();
+            var notificationHRs = await dbContext.Notifications.Find(m => m.Enable.Equals(true) && m.Type.Equals(2)).Sort(sortNotification).Limit(getItems).ToListAsync();
+            var notificationExpires = await dbContext.Notifications.Find(m => m.Enable.Equals(true) && m.Type.Equals(3)).Sort(sortNotification).Limit(getItems).ToListAsync();
+            var notificationTaskBHXHs = await dbContext.Notifications.Find(m => m.Enable.Equals(true) && m.Type.Equals(4)).Sort(sortNotification).Limit(getItems).ToListAsync();
+            var notificationCompanies = await dbContext.Notifications.Find(m => m.Enable.Equals(true) && m.Type.Equals(5)).Sort(sortNotification).Limit(getItems).ToListAsync();
+            var notificationActions = await dbContext.NotificationActions.Find(m => m.UserId.Equals(loginId)).ToListAsync();
             #endregion
 
             #region Tracking Other User (check user activities,...)
@@ -141,6 +141,14 @@ namespace erp.Controllers
             var news = dbContext.News.Find(m => m.Enable.Equals(true)).Sort(sortNews).Limit(getItems).ToList();
             #endregion
 
+            #region Leave Manager
+            var leaves = await dbContext.Leaves.Find(m => m.ApproverId.Equals(loginId) && m.Status.Equals(0)).ToListAsync();
+            #endregion
+
+            #region Times Manager
+            var timeKeepers = await dbContext.EmployeeWorkTimeLogs.Find(m => m.ConfirmId.Equals(loginId) && m.Status.Equals(2)).ToListAsync();
+            #endregion
+
             var viewModel = new HomeErpViewModel()
             {
                 UserInformation = userInformation,
@@ -153,7 +161,9 @@ namespace erp.Controllers
                 Trackings = trackings,
                 TrackingsOther = trackingsOther,
                 News = news,
-                Birthdays = nextBirthdays
+                Birthdays = nextBirthdays,
+                Leaves = leaves,
+                TimeKeepers = timeKeepers
             };
 
             return View(viewModel);
