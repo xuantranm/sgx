@@ -160,3 +160,5 @@ backup
 .vs/tribatvn/
 erp/bin/
 erp/obj/
+tribatvn/bin/
+tribatvn/obj/
