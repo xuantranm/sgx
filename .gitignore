@@ -150,9 +150,11 @@ Docs
 temp
 backup
 # packages/
-obj/
+erp/obj/
+erp/bin/
 *.lock
 *.ide
 *.ide-shm
 *.ide-wal
 *.cache
+*.config
