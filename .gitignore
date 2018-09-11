@@ -151,3 +151,8 @@ temp
 backup
 # packages/
 obj/
+*.lock
+*.ide
+*.ide-shm
+*.ide-wal
+*.cache
