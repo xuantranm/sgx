@@ -193,9 +193,9 @@ function loadCommonData() {
             }
             else {
                 if (data.length !== 0) {
-                    //console.log(data.userInformation);
+                    console.log(data);
                     $('.card-info').html($.templates("#tmplCardInfo").render(data.userInformation));
-                    $('#ownerInfo li').html($.templates("#tmplOwnerInfo").render(data.ownerInformation));
+                    $('#ownerInfo li').html($.templates("#tmplOwnerInfo").render(data));
                 }
             }
         }

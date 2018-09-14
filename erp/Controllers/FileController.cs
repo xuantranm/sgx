@@ -17,11 +17,13 @@ using Common.Utilities;
 using NPOI.SS.UserModel;
 using NPOI.HSSF.UserModel;
 using NPOI.XSSF.UserModel;
+using NPOI.SS.Util;
 using MongoDB.Bson;
 using System.Globalization;
 using MimeKit;
 using Services;
 using Microsoft.AspNetCore.Authorization;
+using System.Drawing;
 
 namespace erp.Controllers
 {
@@ -159,24 +161,27 @@ namespace erp.Controllers
             {
                 IWorkbook workbook;
                 workbook = new XSSFWorkbook();
-                ISheet excelSheet = workbook.CreateSheet("Demo");
-                IRow row = excelSheet.CreateRow(0);
+                ISheet sheet = workbook.CreateSheet("Demo");
+
+                IRow row = sheet.CreateRow(0);
+
+                
 
                 row.CreateCell(0).SetCellValue("ID");
                 row.CreateCell(1).SetCellValue("Name");
                 row.CreateCell(2).SetCellValue("Age");
 
-                row = excelSheet.CreateRow(1);
+                row = sheet.CreateRow(1);
                 row.CreateCell(0).SetCellValue(1);
                 row.CreateCell(1).SetCellValue("Kane Williamson");
                 row.CreateCell(2).SetCellValue(29);
 
-                row = excelSheet.CreateRow(2);
+                row = sheet.CreateRow(2);
                 row.CreateCell(0).SetCellValue(2);
                 row.CreateCell(1).SetCellValue("Martin Guptil");
                 row.CreateCell(2).SetCellValue(33);
 
-                row = excelSheet.CreateRow(3);
+                row = sheet.CreateRow(3);
                 row.CreateCell(0).SetCellValue(3);
                 row.CreateCell(1).SetCellValue("Colin Munro");
                 row.CreateCell(2).SetCellValue(23);

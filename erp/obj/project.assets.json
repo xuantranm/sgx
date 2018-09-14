@@ -29,24 +29,56 @@
           "lib/netstandard1.3/DnsClient.dll": {}
         }
       },
-      "DotNetCore.NPOI/1.0.2": {
+      "DotNetCore.NPOI/1.2.0": {
         "type": "package",
         "dependencies": {
-          "SharpZipLib": "1.0.0-alpha2",
-          "System.Text.Encoding.CodePages": "4.4.0",
-          "ZKWeb.System.Drawing": "4.0.0"
+          "DotNetCore.NPOI.Core": "1.2.0",
+          "DotNetCore.NPOI.OpenXml4Net": "1.2.0",
+          "DotNetCore.NPOI.OpenXmlFormats": "1.2.0"
         },
         "compile": {
-          "lib/netstandard2.0/NPOI.OOXML.dll": {},
-          "lib/netstandard2.0/NPOI.OpenXml4Net.dll": {},
-          "lib/netstandard2.0/NPOI.OpenXmlFormats.dll": {},
+          "lib/netstandard2.0/NPOI.OOXML.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/NPOI.OOXML.dll": {}
+        }
+      },
+      "DotNetCore.NPOI.Core/1.2.0": {
+        "type": "package",
+        "dependencies": {
+          "SharpZipLib": "1.0.0-rc1",
+          "System.Drawing.Common": "4.5.0",
+          "System.Text.Encoding.CodePages": "4.5.0"
+        },
+        "compile": {
           "lib/netstandard2.0/NPOI.dll": {}
         },
         "runtime": {
-          "lib/netstandard2.0/NPOI.OOXML.dll": {},
-          "lib/netstandard2.0/NPOI.OpenXml4Net.dll": {},
-          "lib/netstandard2.0/NPOI.OpenXmlFormats.dll": {},
           "lib/netstandard2.0/NPOI.dll": {}
+        }
+      },
+      "DotNetCore.NPOI.OpenXml4Net/1.2.0": {
+        "type": "package",
+        "dependencies": {
+          "DotNetCore.NPOI.Core": "1.2.0"
+        },
+        "compile": {
+          "lib/netstandard2.0/NPOI.OpenXml4Net.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/NPOI.OpenXml4Net.dll": {}
+        }
+      },
+      "DotNetCore.NPOI.OpenXmlFormats/1.2.0": {
+        "type": "package",
+        "dependencies": {
+          "DotNetCore.NPOI.OpenXml4Net": "1.2.0"
+        },
+        "compile": {
+          "lib/netstandard2.0/NPOI.OpenXmlFormats.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/NPOI.OpenXmlFormats.dll": {}
         }
       },
       "EPPlus.Core/1.5.4": {
@@ -2864,6 +2896,24 @@
           }
         }
       },
+      "Microsoft.Win32.SystemEvents/4.5.0": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.NETCore.Platforms": "2.0.0"
+        },
+        "compile": {
+          "ref/netstandard2.0/_._": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/Microsoft.Win32.SystemEvents.dll": {}
+        },
+        "runtimeTargets": {
+          "runtimes/win/lib/netcoreapp2.0/Microsoft.Win32.SystemEvents.dll": {
+            "assetType": "runtime",
+            "rid": "win"
+          }
+        }
+      },
       "MimeKit/2.0.4": {
         "type": "package",
         "dependencies": {
@@ -3235,16 +3285,13 @@
           }
         }
       },
-      "SharpZipLib/1.0.0-alpha2": {
+      "SharpZipLib/1.0.0-rc1": {
         "type": "package",
-        "dependencies": {
-          "NETStandard.Library": "1.6.1"
-        },
         "compile": {
-          "lib/netstandard1.3/ICSharpCode.SharpZipLib.dll": {}
+          "lib/netstandard2.0/ICSharpCode.SharpZipLib.dll": {}
         },
         "runtime": {
-          "lib/netstandard1.3/ICSharpCode.SharpZipLib.dll": {}
+          "lib/netstandard2.0/ICSharpCode.SharpZipLib.dll": {}
         }
       },
       "System.AppContext/4.3.0": {
@@ -3344,10 +3391,10 @@
           "lib/netstandard1.3/System.Collections.Specialized.dll": {}
         }
       },
-      "System.ComponentModel/4.3.0": {
+      "System.ComponentModel/4.0.1": {
         "type": "package",
         "dependencies": {
-          "System.Runtime": "4.3.0"
+          "System.Runtime": "4.1.0"
         },
         "compile": {
           "ref/netstandard1.0/System.ComponentModel.dll": {}
@@ -3365,12 +3412,12 @@
           "lib/netcoreapp2.0/_._": {}
         }
       },
-      "System.ComponentModel.Primitives/4.3.0": {
+      "System.ComponentModel.Primitives/4.1.0": {
         "type": "package",
         "dependencies": {
-          "System.ComponentModel": "4.3.0",
-          "System.Resources.ResourceManager": "4.3.0",
-          "System.Runtime": "4.3.0"
+          "System.ComponentModel": "4.0.1",
+          "System.Resources.ResourceManager": "4.0.1",
+          "System.Runtime": "4.1.0"
         },
         "compile": {
           "ref/netstandard1.0/System.ComponentModel.Primitives.dll": {}
@@ -3379,24 +3426,24 @@
           "lib/netstandard1.0/System.ComponentModel.Primitives.dll": {}
         }
       },
-      "System.ComponentModel.TypeConverter/4.3.0": {
+      "System.ComponentModel.TypeConverter/4.1.0": {
         "type": "package",
         "dependencies": {
-          "System.Collections": "4.3.0",
-          "System.Collections.NonGeneric": "4.3.0",
-          "System.Collections.Specialized": "4.3.0",
-          "System.ComponentModel": "4.3.0",
-          "System.ComponentModel.Primitives": "4.3.0",
-          "System.Globalization": "4.3.0",
-          "System.Linq": "4.3.0",
-          "System.Reflection": "4.3.0",
-          "System.Reflection.Extensions": "4.3.0",
-          "System.Reflection.Primitives": "4.3.0",
-          "System.Reflection.TypeExtensions": "4.3.0",
-          "System.Resources.ResourceManager": "4.3.0",
-          "System.Runtime": "4.3.0",
-          "System.Runtime.Extensions": "4.3.0",
-          "System.Threading": "4.3.0"
+          "System.Collections": "4.0.11",
+          "System.Collections.NonGeneric": "4.0.1",
+          "System.Collections.Specialized": "4.0.1",
+          "System.ComponentModel": "4.0.1",
+          "System.ComponentModel.Primitives": "4.1.0",
+          "System.Globalization": "4.0.11",
+          "System.Linq": "4.1.0",
+          "System.Reflection": "4.1.0",
+          "System.Reflection.Extensions": "4.0.1",
+          "System.Reflection.Primitives": "4.0.1",
+          "System.Reflection.TypeExtensions": "4.1.0",
+          "System.Resources.ResourceManager": "4.0.1",
+          "System.Runtime": "4.1.0",
+          "System.Runtime.Extensions": "4.1.0",
+          "System.Threading": "4.0.11"
         },
         "compile": {
           "ref/netstandard1.5/System.ComponentModel.TypeConverter.dll": {}
@@ -3742,10 +3789,11 @@
           "ref/netstandard1.5/System.Diagnostics.Tracing.dll": {}
         }
       },
-      "System.Drawing.Common/4.5.0-preview1-25914-04": {
+      "System.Drawing.Common/4.5.0": {
         "type": "package",
         "dependencies": {
-          "Microsoft.NETCore.Platforms": "2.0.0"
+          "Microsoft.NETCore.Platforms": "2.0.0",
+          "Microsoft.Win32.SystemEvents": "4.5.0"
         },
         "compile": {
           "ref/netstandard2.0/System.Drawing.Common.dll": {}
@@ -5232,23 +5280,6 @@
           "lib/netstandard1.3/System.Xml.XPath.XmlDocument.dll": {}
         }
       },
-      "ZKWeb.System.Drawing/4.0.0": {
-        "type": "package",
-        "dependencies": {
-          "System.Collections.NonGeneric": "4.3.0",
-          "System.Collections.Specialized": "4.3.0",
-          "System.ComponentModel.TypeConverter": "4.3.0",
-          "System.Runtime.InteropServices": "4.3.0",
-          "System.Runtime.Serialization.Primitives": "4.3.0",
-          "System.Threading.Thread": "4.3.0"
-        },
-        "compile": {
-          "lib/netstandard2.0/ZKWeb.System.Drawing.dll": {}
-        },
-        "runtime": {
-          "lib/netstandard2.0/ZKWeb.System.Drawing.dll": {}
-        }
-      },
       "xcore/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v2.1",
@@ -5281,17 +5312,48 @@
         "lib/netstandard1.3/DnsClient.xml"
       ]
     },
-    "DotNetCore.NPOI/1.0.2": {
-      "sha512": "aG/PvJGcY4RkMsVSDuxgEohuZDE1RYoBMfvLDgwhUvJEMR8R9QYz1tBKaINV5Zzly9sT59QHLWmTTb0B32IfEQ==",
+    "DotNetCore.NPOI/1.2.0": {
+      "sha512": "I84WUzaFpXX50fFrmKfaBtE9DLQC1KdpaN3nAaqTN6xTf+HLIThBsY8k+wSvvcpBQheOHCvNyW3Gr8aJ0Zue2g==",
       "type": "package",
-      "path": "dotnetcore.npoi/1.0.2",
+      "path": "dotnetcore.npoi/1.2.0",
       "files": [
-        "dotnetcore.npoi.1.0.2.nupkg.sha512",
+        "dotnetcore.npoi.1.2.0.nupkg.sha512",
         "dotnetcore.npoi.nuspec",
-        "lib/netstandard2.0/NPOI.OOXML.dll",
-        "lib/netstandard2.0/NPOI.OpenXml4Net.dll",
-        "lib/netstandard2.0/NPOI.OpenXmlFormats.dll",
+        "lib/net461/NPOI.OOXML.dll",
+        "lib/netstandard2.0/NPOI.OOXML.dll"
+      ]
+    },
+    "DotNetCore.NPOI.Core/1.2.0": {
+      "sha512": "91/JZ50lWIxlEvI0CO72rF2CLhBRcjKrk/dOYNLoLyiV/pVsO1OUhM7aS7ZGwjagooRAB2l7XFVhB6AiEGjnvQ==",
+      "type": "package",
+      "path": "dotnetcore.npoi.core/1.2.0",
+      "files": [
+        "dotnetcore.npoi.core.1.2.0.nupkg.sha512",
+        "dotnetcore.npoi.core.nuspec",
+        "lib/net461/NPOI.dll",
         "lib/netstandard2.0/NPOI.dll"
+      ]
+    },
+    "DotNetCore.NPOI.OpenXml4Net/1.2.0": {
+      "sha512": "LwuzesHHxUdDq0thoQumXLyPZ8hEgTG/zAaxk8HUxRob1CYzyhINZ/7jXH3JlySBRBqqbHOBpgewKfIw/FHfGg==",
+      "type": "package",
+      "path": "dotnetcore.npoi.openxml4net/1.2.0",
+      "files": [
+        "dotnetcore.npoi.openxml4net.1.2.0.nupkg.sha512",
+        "dotnetcore.npoi.openxml4net.nuspec",
+        "lib/net461/NPOI.OpenXml4Net.dll",
+        "lib/netstandard2.0/NPOI.OpenXml4Net.dll"
+      ]
+    },
+    "DotNetCore.NPOI.OpenXmlFormats/1.2.0": {
+      "sha512": "qf0qbqxn8aKdeRSQOU0ojJyyu5c0XZqLSW7fyaAW7wJ/Rphg/ykSS/MaGIJNrd6EQSoPYy1+3wZUmLlEFsTh1g==",
+      "type": "package",
+      "path": "dotnetcore.npoi.openxmlformats/1.2.0",
+      "files": [
+        "dotnetcore.npoi.openxmlformats.1.2.0.nupkg.sha512",
+        "dotnetcore.npoi.openxmlformats.nuspec",
+        "lib/net461/NPOI.OpenXmlFormats.dll",
+        "lib/netstandard2.0/NPOI.OpenXmlFormats.dll"
       ]
     },
     "EPPlus.Core/1.5.4": {
@@ -8119,6 +8181,25 @@
         "version.txt"
       ]
     },
+    "Microsoft.Win32.SystemEvents/4.5.0": {
+      "sha512": "aXrCxI6PdEEJkqIDRYCe2oBRZ1gto5Ac1Y/WuahG/CD+PB5rAVFU7VpkBILBUQQG/NBtxbIRM0Q61m5uJQLTPw==",
+      "type": "package",
+      "path": "microsoft.win32.systemevents/4.5.0",
+      "files": [
+        ".signature.p7s",
+        "LICENSE.TXT",
+        "THIRD-PARTY-NOTICES.TXT",
+        "lib/net461/Microsoft.Win32.SystemEvents.dll",
+        "lib/netstandard2.0/Microsoft.Win32.SystemEvents.dll",
+        "microsoft.win32.systemevents.4.5.0.nupkg.sha512",
+        "microsoft.win32.systemevents.nuspec",
+        "ref/net461/Microsoft.Win32.SystemEvents.dll",
+        "ref/netstandard2.0/Microsoft.Win32.SystemEvents.dll",
+        "runtimes/win/lib/netcoreapp2.0/Microsoft.Win32.SystemEvents.dll",
+        "useSharedDesignerContext.txt",
+        "version.txt"
+      ]
+    },
     "MimeKit/2.0.4": {
       "sha512": "3PjQWuiquP9XJxGqKLen2Pvj1sTdLwRR/jENQBc72Fb2TI3HO8nA8z6CKuh7OeRGgRIohRmmC3qGc1stY4hR+Q==",
       "type": "package",
@@ -8671,14 +8752,16 @@
         "version.txt"
       ]
     },
-    "SharpZipLib/1.0.0-alpha2": {
-      "sha512": "ndshrRoIzWdvoHr5ncGvSp3p/At+H2l4nT4bfWgPB0VU39TOT5/6uS6XbkO9N95Y8quO5RgLMiEBO3M0nq4pXw==",
+    "SharpZipLib/1.0.0-rc1": {
+      "sha512": "1ggoes7vEnHQvwINcuY0VDpSx4BnJKOjoslFVQjP0nSfio2RsOOfVT1loZ1iLC8w7bFTnjVazSBVM2JyOWsflQ==",
       "type": "package",
-      "path": "sharpziplib/1.0.0-alpha2",
+      "path": "sharpziplib/1.0.0-rc1",
       "files": [
-        "lib/netstandard1.3/ICSharpCode.SharpZipLib.dll",
-        "lib/netstandard1.3/ICSharpCode.SharpZipLib.xml",
-        "sharpziplib.1.0.0-alpha2.nupkg.sha512",
+        "lib/net45/ICSharpCode.SharpZipLib.dll",
+        "lib/net45/ICSharpCode.SharpZipLib.xml",
+        "lib/netstandard2.0/ICSharpCode.SharpZipLib.dll",
+        "lib/netstandard2.0/ICSharpCode.SharpZipLib.xml",
+        "sharpziplib.1.0.0-rc1.nupkg.sha512",
         "sharpziplib.nuspec"
       ]
     },
@@ -8991,10 +9074,10 @@
         "system.collections.specialized.nuspec"
       ]
     },
-    "System.ComponentModel/4.3.0": {
-      "sha512": "0GrwQi/yS+qePQ/4OnjWv5X73ZEV6GyFfL11Fi5gIgxzezwj4Q6b0qaynwjfEyQj+n9Wrd/TyJXwya3DUx9W6Q==",
+    "System.ComponentModel/4.0.1": {
+      "sha512": "oBZFnm7seFiVfugsIyOvQCWobNZs7FzqDV/B7tx20Ep/l3UUFCPDkdTnCNaJZTU27zjeODmy2C/cP60u3D4c9w==",
       "type": "package",
-      "path": "system.componentmodel/4.3.0",
+      "path": "system.componentmodel/4.0.1",
       "files": [
         "ThirdPartyNotices.txt",
         "dotnet_library_license.txt",
@@ -9044,7 +9127,7 @@
         "ref/xamarinmac20/_._",
         "ref/xamarintvos10/_._",
         "ref/xamarinwatchos10/_._",
-        "system.componentmodel.4.3.0.nupkg.sha512",
+        "system.componentmodel.4.0.1.nupkg.sha512",
         "system.componentmodel.nuspec"
       ]
     },
@@ -9136,10 +9219,10 @@
         "version.txt"
       ]
     },
-    "System.ComponentModel.Primitives/4.3.0": {
-      "sha512": "9KpnXz+JqJNXdqoLUQrHb5sYTdapjv2neZok9MSasXlZqsP9zkFdcGmkonyxRBTq0b83o7FKIXRsofaTDRX+9Q==",
+    "System.ComponentModel.Primitives/4.1.0": {
+      "sha512": "sc/7eVCdxPrp3ljpgTKVaQGUXiW05phNWvtv/m2kocXqrUQvTVWKou1Edas2aDjTThLPZOxPYIGNb/HN0QjURg==",
       "type": "package",
-      "path": "system.componentmodel.primitives/4.3.0",
+      "path": "system.componentmodel.primitives/4.1.0",
       "files": [
         "ThirdPartyNotices.txt",
         "dotnet_library_license.txt",
@@ -9169,14 +9252,14 @@
         "ref/xamarinmac20/_._",
         "ref/xamarintvos10/_._",
         "ref/xamarinwatchos10/_._",
-        "system.componentmodel.primitives.4.3.0.nupkg.sha512",
+        "system.componentmodel.primitives.4.1.0.nupkg.sha512",
         "system.componentmodel.primitives.nuspec"
       ]
     },
-    "System.ComponentModel.TypeConverter/4.3.0": {
-      "sha512": "Hsy0PIXIOh9Bc302eFVtHqK14z9glDcKs8eFEzw+/vuuPcc9Zj9d8LYKNIScnan/lf3REtNdKMPPAZWOLjijig==",
+    "System.ComponentModel.TypeConverter/4.1.0": {
+      "sha512": "MnDAlaeJZy9pdB5ZdOlwdxfpI+LJQ6e0hmH7d2+y2LkiD8DRJynyDYl4Xxf3fWFm7SbEwBZh4elcfzONQLOoQw==",
       "type": "package",
-      "path": "system.componentmodel.typeconverter/4.3.0",
+      "path": "system.componentmodel.typeconverter/4.1.0",
       "files": [
         "ThirdPartyNotices.txt",
         "dotnet_library_license.txt",
@@ -9220,7 +9303,7 @@
         "ref/xamarinmac20/_._",
         "ref/xamarintvos10/_._",
         "ref/xamarinwatchos10/_._",
-        "system.componentmodel.typeconverter.4.3.0.nupkg.sha512",
+        "system.componentmodel.typeconverter.4.1.0.nupkg.sha512",
         "system.componentmodel.typeconverter.nuspec"
       ]
     },
@@ -9922,11 +10005,12 @@
         "system.diagnostics.tracing.nuspec"
       ]
     },
-    "System.Drawing.Common/4.5.0-preview1-25914-04": {
-      "sha512": "xe9fRaplCuFFkqa2FNSuhZrux4ENP6b1sKxcGIqI0en4aEDMHsHQxtIwwkMsvlKDHoFlLcPkvpUefUnttajA8w==",
+    "System.Drawing.Common/4.5.0": {
+      "sha512": "LLI+GGolsv4K8Eu2PN5N3/1t4pM5zoU4fM3lWhSOawJuCjv9iQJJODjd4/QJIgpjlqxzQDMMoOjAaVuzrNJT0g==",
       "type": "package",
-      "path": "system.drawing.common/4.5.0-preview1-25914-04",
+      "path": "system.drawing.common/4.5.0",
       "files": [
+        ".signature.p7s",
         "LICENSE.TXT",
         "THIRD-PARTY-NOTICES.TXT",
         "lib/MonoAndroid10/_._",
@@ -9947,7 +10031,7 @@
         "ref/xamarinwatchos10/_._",
         "runtimes/unix/lib/netcoreapp2.0/System.Drawing.Common.dll",
         "runtimes/win/lib/netcoreapp2.0/System.Drawing.Common.dll",
-        "system.drawing.common.4.5.0-preview1-25914-04.nupkg.sha512",
+        "system.drawing.common.4.5.0.nupkg.sha512",
         "system.drawing.common.nuspec",
         "useSharedDesignerContext.txt",
         "version.txt"
@@ -13760,17 +13844,6 @@
         "system.xml.xpath.xmldocument.nuspec"
       ]
     },
-    "ZKWeb.System.Drawing/4.0.0": {
-      "sha512": "lcw/HyN/nOstmAWFBnokLT/LXUbY3Dsu9VP4z/V7XIVHfM3V3/kORZ4DfYw2X9LdEYDO2xMX12kj/aZ5aIpLHw==",
-      "type": "package",
-      "path": "zkweb.system.drawing/4.0.0",
-      "files": [
-        "lib/net45/ZKWeb.System.Drawing.dll",
-        "lib/netstandard2.0/ZKWeb.System.Drawing.dll",
-        "zkweb.system.drawing.4.0.0.nupkg.sha512",
-        "zkweb.system.drawing.nuspec"
-      ]
-    },
     "xcore/1.0.0": {
       "type": "project",
       "path": "../xcore/xcore.csproj",
@@ -13779,7 +13852,7 @@
   },
   "projectFileDependencyGroups": {
     ".NETCoreApp,Version=v2.1": [
-      "DotNetCore.NPOI >= 1.0.2",
+      "DotNetCore.NPOI >= 1.2.0",
       "EPPlus.Core >= 1.5.4",
       "MailKit >= 2.0.4",
       "MaxMind.GeoIP2 >= 3.0.0",
@@ -13837,7 +13910,7 @@
         "dependencies": {
           "DotNetCore.NPOI": {
             "target": "Package",
-            "version": "[1.0.2, )"
+            "version": "[1.2.0, )"
           },
           "EPPlus.Core": {
             "target": "Package",

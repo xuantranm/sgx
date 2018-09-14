@@ -5,6 +5,12 @@
         $('input[name="Leave.TypeName"]').val($('select[name="Leave.TypeId"] option:selected').text());
     });
 
+    $('input[name="Leave.ApproverName"]').val($('select[name="Leave.ApproverId"] option:selected').text());
+
+    $('select[name="Leave.ApproverId"]').on('change', function () {
+        $('input[name="Leave.ApproverName"]').val($('select[name="Leave.ApproverId"] option:selected').text());
+    });
+
     registerTimePicker();
 
     //$('.datetimes').daterangepicker({
@@ -26,13 +32,18 @@
 
     $(".data-form").on("submit", function (event) {
         event.preventDefault();
+        var formData = new FormData($(this)[0]);
         // loading button
         $('#btnSubmitLeave').prop('disabled', true);
+        $('input', $('.data-form')).prop('disabled', true);
+        $('select', $('.data-form')).prop('disabled', true);
+        $('textarea', $('.data-form')).prop('disabled', true);
+
         var loadingText = '<i class="fas fa-spinner"></i> đang xử lý...';
         $('#btnSubmitLeave').html(loadingText);
 
         //grab all form data  
-        var formData = new FormData($(this)[0]);
+        
         //console.log(formData);
         var $this = $(this);
         var frmValues = $this.serialize();
@@ -54,6 +65,9 @@
                 else {
                     toastr.error(data.message);
                     $('#btnSubmitLeave').prop('disabled', false);
+                    $('input', $('.data-form')).prop('disabled', false);
+                    $('select', $('.data-form')).prop('disabled', false);
+                    $('textarea', $('.data-form')).prop('disabled', false);
                     $('#btnSubmitLeave').html($('#btnSubmitLeave').data('original-text'));
                 }
             })

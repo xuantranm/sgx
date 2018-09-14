@@ -575,6 +575,28 @@ namespace Common.Utilities
             return str.Substring(0, Math.Min(str.Length, maxLength)) + "...";
         }
 
+        public static DateTime WorkingMonthToDate(string times)
+        {
+            if (string.IsNullOrEmpty(times))
+            {
+                // calculator date: 26 - > 25
+                // now: 25/08 => [to] times: -> 25/07
+                // now: 26/08 => [to] times: -> 25/08
+                // now: 01/09 => [to] times: -> 25/08
+                // now: 24/09 => [to] times: -> 25/08
+                var now = DateTime.Now;
+                times = now.Month + "-" + now.Year;
+                if (now.Day < 26)
+                {
+                    var lastMonth = now.AddMonths(-1);
+                    times = lastMonth.Month + "-" + lastMonth.Year;
+                }
+            }
+            int month = Convert.ToInt32(times.Split('-')[0]);
+            int year = Convert.ToInt32(times.Split('-')[1]);
+            return new DateTime(year, month, 25);
+        }
+
         public static int ClosestTo(this IEnumerable<int> collection, int target)
         {
             // NB Method will return int.MaxValue for a sequence containing no elements.

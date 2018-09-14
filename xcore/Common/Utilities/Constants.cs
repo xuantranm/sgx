@@ -61,7 +61,10 @@ namespace Common.Utilities
             public const string Edit = "chinh-sua";
 
             public const string ChildrenReport = "danh-sach-con-cua-nhan-vien";
-            public const string Export = "export";
+            public const string Export = "xuat";
+            public const string Department = "phong-ban";
+            public const string Children = "con-cai";
+
             public const string NewProduct = "them-san-pham";
             public const string NewUnit = "them-dvt";
         }

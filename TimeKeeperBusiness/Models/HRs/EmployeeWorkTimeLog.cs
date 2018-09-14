@@ -13,7 +13,13 @@ namespace Models
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
 
+        public string EmployeeId { get; set; }
+
         public string EnrollNumber { get; set; }
+
+        public int Year { get; set; } = DateTime.Now.Year;
+
+        public int Month { get; set; } = DateTime.Now.Month;
 
         public string VerifyMode { get; set; }
 
@@ -38,6 +44,10 @@ namespace Models
         public TimeSpan Late { get; set; }
 
         public TimeSpan Early { get; set; }
+
+        public int StatusLate { get; set; } = 1;
+
+        public int StatusEarly { get; set; } = 1;
 
         public int Status { get; set; } = 1;
 
@@ -74,7 +84,7 @@ namespace Models
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime? ConfirmDate { get; set; }
 
-        // No use
+        // Use if 1: leave. ... define later
         public string InOutMode { get; set; }
 
         public string Workcode { get; set; }

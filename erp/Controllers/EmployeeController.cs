@@ -19,6 +19,8 @@ using Common.Utilities;
 using NPOI.SS.UserModel;
 using NPOI.HSSF.UserModel;
 using NPOI.XSSF.UserModel;
+using NPOI.SS.UserModel;
+using NPOI.SS.Util;
 using Microsoft.AspNetCore.Authorization;
 using MimeKit;
 using Services;
@@ -29,6 +31,7 @@ using System.Security.Claims;
 using System.Threading;
 using Common.Enums;
 using MongoDB.Bson;
+using NPOI.HSSF.Util;
 
 namespace erp.Controllers
 {
@@ -38,7 +41,7 @@ namespace erp.Controllers
     {
         MongoDBContext dbContext = new MongoDBContext();
         private readonly IDistributedCache _cache;
-        IHostingEnvironment _hostingEnvironment;
+        IHostingEnvironment _env;
 
         private readonly ILogger _logger;
 
@@ -52,7 +55,7 @@ namespace erp.Controllers
         {
             _cache = cache;
             Configuration = configuration;
-            _hostingEnvironment = env;
+            _env = env;
             _emailSender = emailSender;
             _smsSender = smsSender;
             _logger = logger;
@@ -85,15 +88,9 @@ namespace erp.Controllers
 
             #region Get Setting Value
             var settings = dbContext.Settings.Find(m => m.Enable.Equals(true)).ToList();
-            var pageSize = Constants.PageSize;
-            var pageSizeSetting = settings.First(m => m.Key.Equals("pageSize"));
-            if (pageSizeSetting != null)
-            {
-                pageSize = Convert.ToInt32(pageSizeSetting.Value);
-            }
             bhxh = false;
             var bhxhSetting = settings.First(m => m.Key.Equals("NoBHXH"));
-            if (pageSizeSetting != null)
+            if (bhxhSetting != null)
             {
                 bhxh = bhxhSetting.Value == "true" ? false : true;
             }
@@ -193,8 +190,222 @@ namespace erp.Controllers
                 finger = finger,
                 nl = nl
             };
+
             return View(viewModel);
         }
+
+        [Route(Constants.LinkHr.Human+"/"+ Constants.LinkHr.Export +"/" + Constants.LinkHr.List)]
+        public async Task<IActionResult> Export(string ten, string code, string finger, string nl, /*int? page, int? size,*/ string sortBy)
+        {
+            #region Authorization
+            var login = User.Identity.Name;
+            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+            ViewData["LoginUserName"] = loginUserName;
+
+            var userInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
+            if (userInformation == null)
+            {
+                #region snippet1
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                #endregion
+                return RedirectToAction("login", "account");
+            }
+
+            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, "nhan-su", (int)ERights.View)))
+            {
+                return RedirectToAction("AccessDenied", "Account");
+            }
+
+            #endregion
+
+            #region Get Setting Value
+            var settings = dbContext.Settings.Find(m => m.Enable.Equals(true)).ToList();
+            bhxh = false;
+            var bhxhSetting = settings.First(m => m.Key.Equals("NoBHXH"));
+            if (bhxhSetting != null)
+            {
+                bhxh = bhxhSetting.Value == "true" ? false : true;
+            }
+            #endregion
+
+            #region Dropdownlist
+            var sortDepartments = Builders<Department>.Sort.Ascending(m => m.Order);
+            var departments = dbContext.Departments.Find(m => m.Enable.Equals(true)).Sort(sortDepartments).ToList();
+            ViewData["Departments"] = departments;
+
+            var sortParts = Builders<Part>.Sort.Ascending(m => m.Order);
+            var parts = dbContext.Parts.Find(m => m.Enable.Equals(true)).Sort(sortParts).ToList();
+            ViewData["Parts"] = parts;
+            #endregion
+
+            #region Filter
+            var builder = Builders<Employee>.Filter;
+            var filter = builder.Eq(m => m.Enable, true);
+            if (!String.IsNullOrEmpty(ten))
+            {
+                filter = filter & (builder.Eq(x => x.Email, ten) | builder.Regex(x => x.FullName, ten));
+            }
+            if (!String.IsNullOrEmpty(code))
+            {
+                filter = filter & builder.Regex(m => m.Code, code);
+            }
+            if (!String.IsNullOrEmpty(finger))
+            {
+                filter = filter & builder.Where(m => m.Workplaces.Any(c => c.Fingerprint == finger));
+                // Eq("Related._id", "b125");
+            }
+            if (!String.IsNullOrEmpty(nl))
+            {
+                filter = filter & builder.Where(m => m.Workplaces.Any(c => c.Code == nl));
+                // Eq("Related._id", "b125");
+            }
+            if (bhxh)
+            {
+                filter = filter & builder.Eq(m => m.BhxhEnable, bhxh);
+            }
+            filter = filter & !builder.Eq(i => i.UserName, Constants.System.account);
+            #endregion
+
+            #region Sort
+            var sortBuilder = Builders<Employee>.Sort.Ascending(m => m.Code);
+            if (!string.IsNullOrEmpty(sortBy))
+            {
+                var sortField = sortBy.Split("-")[0];
+                var sort = sortBy.Split("-")[1];
+                switch (sortField)
+                {
+                    case "code":
+                        sortBuilder = sort == "asc" ? Builders<Employee>.Sort.Ascending(m => m.Code) : Builders<Employee>.Sort.Descending(m => m.Code);
+                        break;
+                    case "department":
+                        sortBuilder = sort == "asc" ? Builders<Employee>.Sort.Ascending(m => m.Department) : Builders<Employee>.Sort.Descending(m => m.Department);
+                        break;
+                    case "name":
+                        sortBuilder = sort == "asc" ? Builders<Employee>.Sort.Ascending(m => m.FullName) : Builders<Employee>.Sort.Descending(m => m.FullName);
+                        break;
+                    default:
+                        sortBuilder = sort == "asc" ? Builders<Employee>.Sort.Ascending(m => m.Code) : Builders<Employee>.Sort.Descending(m => m.Code);
+                        break;
+                }
+            }
+            #endregion
+
+            var records = await dbContext.Employees.CountDocumentsAsync(filter);
+            var results = await dbContext.Employees.Find(filter).Sort(sortBuilder).ToListAsync();
+
+            // leave data
+            var leaves = await dbContext.Employees.Find(m => m.Enable.Equals(false)).ToListAsync();
+
+            var departmentsFilter = new List<Department>();
+
+            foreach (var employee in results)
+            {
+                if (!string.IsNullOrEmpty(employee.Department))
+                {
+                    var match = departmentsFilter.FirstOrDefault(m => m.Name.Contains(employee.Department));
+                    if (match == null)
+                    {
+                        var department = departments.Find(m => m.Name.Equals(employee.Department));
+                        departmentsFilter.Add(department);
+                    }
+                }
+            }
+
+            string exportFolder = Path.Combine(_env.WebRootPath,"exports");
+            string sFileName = @"hanh-chinh-nhan-su-" + DateTime.Now.ToString("ddMMyyyyhhmm") +".xlsx";
+            string URL = string.Format("{0}://{1}/{2}", Request.Scheme, Request.Host, sFileName);
+            FileInfo file = new FileInfo(Path.Combine(exportFolder, sFileName));
+            var memory = new MemoryStream();
+            using (var fs = new FileStream(Path.Combine(exportFolder, sFileName), FileMode.Create, FileAccess.Write))
+            {
+                IWorkbook workbook = new XSSFWorkbook();
+                #region Styling
+                var cellStyleBorder = workbook.CreateCellStyle();
+                cellStyleBorder.BorderBottom = BorderStyle.Thin;
+                cellStyleBorder.BorderLeft = BorderStyle.Thin;
+                cellStyleBorder.BorderRight = BorderStyle.Thin;
+                cellStyleBorder.BorderTop = BorderStyle.Thin;
+                cellStyleBorder.Alignment = HorizontalAlignment.Center;
+                cellStyleBorder.VerticalAlignment = VerticalAlignment.Center;
+
+                var cellStyleHeader = workbook.CreateCellStyle();
+                //cellStyleHeader.CloneStyleFrom(cellStyleBorder);
+                //cellStyleHeader.FillForegroundColor = HSSFColor.Blue.Index2;
+                cellStyleHeader.FillForegroundColor = HSSFColor.Grey25Percent.Index;
+                cellStyleHeader.FillPattern = FillPattern.SolidForeground;
+                #endregion
+
+                ISheet sheet1 = workbook.CreateSheet("Danh-sach");
+
+                //sheet1.AddMergedRegion(new CellRangeAddress(0, 0, 0, 10));
+                var rowIndex = 0;
+                IRow row = sheet1.CreateRow(rowIndex);
+                row.CreateCell(0, CellType.String).SetCellValue("STT");
+                row.CreateCell(1, CellType.String).SetCellValue("Mã");
+                row.CreateCell(2, CellType.String).SetCellValue("Họ tên");
+                row.CreateCell(3, CellType.String).SetCellValue("Email");
+                row.CreateCell(4, CellType.String).SetCellValue("Phòng ban");
+                row.CreateCell(5, CellType.String).SetCellValue("Số ngày phép còn lại");
+                // Set style
+                for(int i = 0; i <= 5; i++)
+                {
+                    row.Cells[i].CellStyle = cellStyleHeader;
+                }
+                rowIndex++;
+
+                foreach (var data in results)
+                {
+                    row = sheet1.CreateRow(rowIndex);
+                    row.CreateCell(0, CellType.Numeric).SetCellValue(rowIndex);
+                    row.CreateCell(1, CellType.String).SetCellValue(data.CodeOld);
+                    row.CreateCell(2, CellType.String).SetCellValue(data.FullName);
+                    row.CreateCell(3, CellType.String).SetCellValue(data.Email);
+                    row.CreateCell(4, CellType.String).SetCellValue(data.Department);
+                    row.CreateCell(5, CellType.Numeric).SetCellValue((double)data.LeaveDayAvailable);
+                    //sheet1.AutoSizeColumn(0);
+                    rowIndex++;
+                }
+
+                var sheet2 = workbook.CreateSheet("Phong-ban");
+                var style1 = workbook.CreateCellStyle();
+                style1.FillForegroundColor = HSSFColor.Blue.Index2;
+                style1.FillPattern = FillPattern.SolidForeground;
+
+                var style2 = workbook.CreateCellStyle();
+                style2.FillForegroundColor = HSSFColor.Yellow.Index2;
+                style2.FillPattern = FillPattern.SolidForeground;
+
+                var cell2 = sheet2.CreateRow(0).CreateCell(0);
+                cell2.CellStyle = style1;
+                cell2.SetCellValue(0);
+
+                cell2 = sheet2.CreateRow(1).CreateCell(0);
+                cell2.CellStyle = style2;
+                cell2.SetCellValue(1);
+
+                workbook.Write(fs);
+            }
+            using (var stream = new FileStream(Path.Combine(exportFolder, sFileName), FileMode.Open))
+            {
+                await stream.CopyToAsync(memory);
+            }
+            memory.Position = 0;
+            return File(memory, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", sFileName);
+
+            //var viewModel = new EmployeeViewModel
+            //{
+            //    Employees = results,
+            //    Departments = departmentsFilter,
+            //    EmployeesDisable = leaves,
+            //    Records = (int)records,
+            //    ten = ten,
+            //    code = code,
+            //    finger = finger,
+            //    nl = nl
+            //};
+            //return View(viewModel);
+        }
+
 
         [HttpPost]
         [AllowAnonymous]
@@ -563,7 +774,7 @@ namespace erp.Controllers
                     var images = new List<Image>();
                     //var mapFolder = "images\\" + Constants.Link.Employee + "\\" + sysCode;
                     var mapFolder = Path.Combine("images", Constants.Link.Employee, sysCode);
-                    var uploads = Path.Combine(_hostingEnvironment.WebRootPath, mapFolder);
+                    var uploads = Path.Combine(_env.WebRootPath, mapFolder);
                     if (!Directory.Exists(uploads))
                     {
                         Directory.CreateDirectory(uploads);
@@ -867,7 +1078,7 @@ namespace erp.Controllers
                 {
                     var images = new List<Image>();
                     var mapFolder = "images\\" + Constants.Link.Employee + "\\" + entity.Code;
-                    var uploads = Path.Combine(_hostingEnvironment.WebRootPath, mapFolder);
+                    var uploads = Path.Combine(_env.WebRootPath, mapFolder);
                     if (!Directory.Exists(uploads))
                     {
                         Directory.CreateDirectory(uploads);
@@ -1155,7 +1366,7 @@ namespace erp.Controllers
         [Route(Constants.LinkHr.ChildrenReport+ "/"+ Constants.LinkHr.Export)]
         public async Task<IActionResult> ChildrenReportExport(string fileName)
         {
-            string sWebRootFolder = _hostingEnvironment.WebRootPath;
+            string sWebRootFolder = _env.WebRootPath;
             fileName = @"demo.xlsx";
             string URL = string.Format("{0}://{1}/{2}", Request.Scheme, Request.Host, fileName);
             FileInfo file = new FileInfo(Path.Combine(sWebRootFolder, fileName));
@@ -1281,10 +1492,10 @@ namespace erp.Controllers
             string Message = "[erp-tribat] Nhân sự mới - Setup máy, email, phần mềm liên quan.";
             // string body;
 
-            var webRoot = _hostingEnvironment.WebRootPath; //get wwwroot Folder
+            var webRoot = _env.WebRootPath; //get wwwroot Folder
 
             //Get TemplateFile located at wwwroot/Templates/EmailTemplate/Register_EmailTemplate.html
-            var pathToFile = _hostingEnvironment.WebRootPath
+            var pathToFile = _env.WebRootPath
                     + Path.DirectorySeparatorChar.ToString()
                     + "Templates"
                     + Path.DirectorySeparatorChar.ToString()
@@ -1344,7 +1555,7 @@ namespace erp.Controllers
 
         public async Task<IActionResult> OnPostExport()
         {
-            string sWebRootFolder = _hostingEnvironment.WebRootPath;
+            string sWebRootFolder = _env.WebRootPath;
             string sFileName = @"demo.xlsx";
             string URL = string.Format("{0}://{1}/{2}", Request.Scheme, Request.Host, sFileName);
             FileInfo file = new FileInfo(Path.Combine(sWebRootFolder, sFileName));
@@ -1389,7 +1600,7 @@ namespace erp.Controllers
         {
             IFormFile file = Request.Form.Files[0];
             string folderName = "Upload";
-            string webRootPath = _hostingEnvironment.WebRootPath;
+            string webRootPath = _env.WebRootPath;
             string newPath = Path.Combine(webRootPath, folderName);
             StringBuilder sb = new StringBuilder();
             if (!Directory.Exists(newPath))

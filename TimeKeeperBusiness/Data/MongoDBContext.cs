@@ -121,6 +121,14 @@ namespace Data
             }
         }
 
+        public IMongoCollection<Leave> Leaves
+        {
+            get
+            {
+                return _database.GetCollection<Leave>("Leaves");
+            }
+        }
+
         public IMongoCollection<Employee> Employees
         {
             get

@@ -62,7 +62,7 @@ using Models;
             WriteLiteral("\n<h2>Update password for security</h2>\n\n");
             EndContext();
             BeginContext(141, 158, false);
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("form", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "66380d140f944e83ba3220b1a5a402a2", async() => {
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("form", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "5209b3102a8c4787a86dd758bcab4ca6", async() => {
                 BeginContext(176, 116, true);
                 WriteLiteral("\r\n    <div class=\"form-group\">\r\n        <input type=\"submit\" value=\"Update\" class=\"btn btn-default\" />\r\n    </div>\r\n");
                 EndContext();
@@ -86,7 +86,7 @@ using Models;
             WriteLiteral("\n\n<h2>Add function for security</h2>\r\n");
             EndContext();
             BeginContext(337, 154, false);
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("form", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "e6500d3849d04674963daa00151625aa", async() => {
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("form", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "1eb53fc5b4c44758bd9d1d9feb70be69", async() => {
                 BeginContext(368, 116, true);
                 WriteLiteral("\r\n    <div class=\"form-group\">\r\n        <input type=\"submit\" value=\"Update\" class=\"btn btn-default\" />\r\n    </div>\r\n");
                 EndContext();
@@ -110,7 +110,7 @@ using Models;
             WriteLiteral("\n\n<h2>Update role for security</h2>\r\n");
             EndContext();
             BeginContext(528, 160, false);
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("form", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "34ea1d1206154b0a8dbdf7d0b5dad087", async() => {
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("form", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "4e8b4485ff60411fb4d054cffce2bd5f", async() => {
                 BeginContext(565, 116, true);
                 WriteLiteral("\r\n    <div class=\"form-group\">\r\n        <input type=\"submit\" value=\"Update\" class=\"btn btn-default\" />\r\n    </div>\r\n");
                 EndContext();

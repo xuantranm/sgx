@@ -17,7 +17,7 @@
             $('i', $('.part-' + obj)).removeClass('icon-chevron-up').addClass('icon-chevron-down');
             $('#' + obj).addClass('d-none');
         }
-        scroll(0, parseInt(location) * 50);
+        //scroll(0, parseInt(location) * 50);
         //window.location.hash = '#'+obj;
     });
 

@@ -13,8 +13,14 @@ namespace Models
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
 
+        public string EmployeeId { get; set; }
+
         [Display(Name = "Mã chấm công")]
         public string EnrollNumber { get; set; }
+
+        public int Year { get; set; } = DateTime.Now.Year;
+
+        public int Month { get; set; } = DateTime.Now.Month;
 
         [Display(Name = "Loại chấm công")]
         public string VerifyMode { get; set; }
@@ -50,6 +56,10 @@ namespace Models
 
         [Display(Name = "Về sớm")]
         public TimeSpan Early { get; set; }
+
+        public int StatusLate { get; set; } = 1;
+
+        public int StatusEarly { get; set; } = 1;
 
         // 0: cần xác nhận công; 1: đủ ngày công ; 2: đã gửi xác nhận công, 3: đồng ý; 4: từ chối  
         [Display(Name = "Trạng thái")]
@@ -94,8 +104,7 @@ namespace Models
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime? ConfirmDate { get; set; }
 
-        // No use
-        [Display(Name = "Vào/Ra")]
+        // Use if 1: leave. ... define later
         public string InOutMode { get; set; }
 
         [Display(Name = "Work code")]

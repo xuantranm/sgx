@@ -84,5 +84,8 @@
     <Content Include="helper.txt" />
     <Content Include="mongo1v11helper.txt" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="SDK\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

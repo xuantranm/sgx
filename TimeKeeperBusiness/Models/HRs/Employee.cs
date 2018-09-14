@@ -153,6 +153,8 @@ namespace Models
 
         public string Email { get; set; }
 
+        public string EmailPersonal { get; set; }
+
         public bool ConfirmEmail { get; set; } = true;
 
         [BsonRepresentation(BsonType.Decimal128)]
