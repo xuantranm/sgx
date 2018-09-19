@@ -25,9 +25,9 @@ namespace Models
 
         public double Workday { get; set; }
 
-        // Store minutes
+        // store miliseconds
         public double WorkTime { get; set; }
-        
+
         public double Late { get; set; }
 
         public double Early { get; set; }

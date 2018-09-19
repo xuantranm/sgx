@@ -5,6 +5,26 @@
 @{
     Layout = "~/Views/Shared/_LayoutSocialFb.cshtml";
     var i = 0;
+    var login = User.Identity.Name;
+    var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+    var rightSystem = false;
+    var rightHr = false;
+    var rightLuong = false;
+    var rightNhaMay = false;
+    if (!string.IsNullOrEmpty(login))
+    {
+        rightSystem = Utility.IsRight(login, Constants.Rights.System, (int)ERights.View);
+        rightHr = Utility.IsRight(login, Constants.Rights.HR, (int)ERights.Edit);
+        rightLuong = Utility.IsRight(login, Constants.Rights.Luong, (int)ERights.Edit);
+        rightNhaMay = Utility.IsRight(login, Constants.Rights.NhaMay, (int)ERights.View);
+    }
+
+    var readonlyMode = true;
+    if (rightHr)
+    {
+        readonlyMode = false;
+    }
+
 }
 
 <div class="main-container">
@@ -33,6 +53,25 @@
                     <h1 class="h2">Chỉnh sửa thông tin</h1>
                 </div>
             </div>
+            @{
+                if (Model.Variances != null && Model.Variances.Count > 0)
+                {
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <span>Thông tin thay đổi</span>
+                        </div>
+                        @foreach (var change in Model.Variances)
+                        {
+                            <div class="col-xs-4">
+                                <label asp-for="Employee.Bornplace" class="control-label"></label>
+                            </div>
+                            <div class="col-xs-8">
+                                @change.ValA <i class="fas fa-arrow-right"></i> @change.ValB
+                            </div>
+                        }
+                    </div>
+                }
+            }
         </div>
     </section>
     <section class="flush-with-above space-0">
@@ -44,13 +83,11 @@
                             <li class="nav-item">
                                 <a class="nav-link active" id="general-tab" data-toggle="tab" href="#general" role="tab" aria-controls="general" aria-selected="true">Thông tin</a>
                             </li>
-                            @{
-                                if (ViewBag.SalatyRight > (int)ERights.None)
-                                {
-                                    <li class="nav-item">
-                                        <a class="nav-link" id="salary-tab" data-toggle="tab" href="#salary" role="tab" aria-controls="salary" aria-selected="false">Lương & Thanh toán</a>
-                                    </li>
-                                }
+                            @if (rightLuong)
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" id="salary-tab" data-toggle="tab" href="#salary" role="tab" aria-controls="salary" aria-selected="false">Lương & Thanh toán</a>
+                                </li>
                             }
                         </ul>
                     </div>
@@ -134,7 +171,14 @@
                                         <div class="form-group">
                                             <i class="icon icon-text"></i>
                                             <label asp-for="Employee.FullName" class="control-label"></label><span class="text-red">*</span>
-                                            <input asp-for="Employee.FullName" class="form-control form-control-lg" autofocus />
+                                            @if (readonlyMode)
+                                            {
+                                                <p><span>@Model.Employee.FullName</span></p>
+                                            }
+                                            else
+                                            {
+                                                <input asp-for="Employee.FullName" class="form-control form-control-lg" autofocus />
+                                            }
                                             <span asp-validation-for="Employee.FullName" class="text-danger"></span>
                                             <small>Thông tin này hiển thị trên hồ sơ công khai của bạn</small>
                                         </div>
@@ -143,7 +187,8 @@
                                         <div class="form-group">
                                             <i class="icon icon-login"></i>
                                             <label asp-for="Employee.UserName" class="control-label"></label><span class="text-red">*</span>
-                                            <input asp-for="Employee.UserName" class="form-control form-control-lg" readonly />
+                                            <p><span>@Model.Employee.UserName</span></p>
+                                            @*<input asp-for="Employee.UserName" class="form-control form-control-lg" readonly />*@
                                             <small>Thông tin này hiển thị trên hồ sơ công khai của bạn</small>
                                         </div>
                                     </div>
@@ -151,7 +196,8 @@
                                         <div class="form-group">
                                             <i class="icon icon-email"></i>
                                             <label asp-for="Employee.Email" class="control-label"></label><span class="text-red">*</span>
-                                            <input asp-for="Employee.Email" class="form-control form-control-lg" readonly />
+                                            <p><span>@Model.Employee.Email</span></p>
+                                            @*<input asp-for="Employee.Email" class="form-control form-control-lg" readonly />*@
                                             <span asp-validation-for="Employee.Email" class="text-danger"></span>
                                             <small>@*Can used to log in to your account*@Có thể đăng nhập bằng email, mật khẩu được gửi tới email này.</small>
                                         </div>
@@ -207,7 +253,14 @@
                                         <div class="form-group">
                                             <i class="icon icon-cake"></i>
                                             <label asp-for="Employee.Birthday" class="control-label"></label>
-                                            <input class="form-control form-control-lg datepicker datepicker-lg" value="@Model.Employee.Birthday.ToString("dd/MM/yyyy")" />
+                                            @if (readonlyMode)
+                                            {
+                                                <p><span>@Model.Employee.Birthday.ToString("dd/MM/yyyy")</span></p>
+                                            }
+                                            else
+                                            {
+                                                <input class="form-control form-control-lg datepicker datepicker-lg" value="@Model.Employee.Birthday.ToString("dd/MM/yyyy")" />
+                                            }
                                             <span asp-validation-for="Employee.Birthday" class="text-danger"></span>
                                             <input type="hidden" name="Employee.Birthday" value="@Model.Employee.Birthday" class="form-control form-control-lg hidedatepicker datepicker-lg" />
                                         </div>
@@ -216,92 +269,141 @@
                                         <div class="form-group">
                                             <i class="icon icon-select-arrows"></i>
                                             <label asp-for="Employee.Gender" class="control-label"></label>
-                                            <select asp-for="Employee.Gender" class="form-control form-control-lg">
-                                                <option value="Nam">Nam</option>
-                                                <option value="Nữ">Nữ</option>
-                                                <option value="Khác">Khác</option>
-                                            </select>
+                                            @if (readonlyMode)
+                                            {
+                                                <p><span>@Model.Employee.Gender</span></p>
+                                            }
+                                            else
+                                            {
+                                                <select asp-for="Employee.Gender" class="form-control form-control-lg">
+                                                    <option value="Nam">Nam</option>
+                                                    <option value="Nữ">Nữ</option>
+                                                    <option value="Khác">Khác</option>
+                                                </select>
+                                            }
                                         </div>
                                     </div>
                                     <div class="col-6">
                                         <div class="form-group">
                                             <i class="icon icon-select-arrows"></i>
                                             <label asp-for="Employee.Department" class="control-label"></label>
-                                            <div class="row">
-                                                <div class="col-10">
-                                                    <select asp-for="Employee.Department" class="form-control form-control-lg">
-                                                        <option value="" selected>Chọn</option>
-                                                        @{
-                                                            foreach (var item in ViewBag.Departments)
-                                                            {
-                                                                <option value="@item.Name">@item.Name</option>
+                                            @if (readonlyMode)
+                                            {
+                                                <p><span>@Model.Employee.Department</span></p>
+                                            }
+                                            else
+                                            {
+                                                <div class="row">
+                                                    <div class="col-10">
+                                                        <select asp-for="Employee.Department" class="form-control form-control-lg">
+                                                            <option value="" selected>Chọn</option>
+                                                            @{
+                                                                foreach (var item in ViewBag.Departments)
+                                                                {
+                                                                    <option value="@item.Name">@item.Name</option>
+                                                                }
                                                             }
-                                                        }
-                                                    </select>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-2 align-middle">
+                                                        <button class="btn btn-sm btn-add-department" type="button" data-toggle="modal" data-target="#newDepartment" title="Tạo mới Phòng/ban">+</button>
+                                                    </div>
                                                 </div>
-                                                <div class="col-2 align-middle">
-                                                    <button class="btn btn-sm btn-add-department" type="button" data-toggle="modal" data-target="#newDepartment" title="Tạo mới Phòng/ban">+</button>
-                                                </div>
-                                            </div>
+                                            }
                                         </div>
                                     </div>
                                     <div class="col-6">
                                         <div class="form-group">
                                             <i class="icon icon-select-arrows"></i>
-                                            <label asp-for="Employee.Part" class="control-label"></label>
-                                            <div class="row">
-                                                <div class="col-10">
-                                                    <select asp-for="Employee.Part" class="form-control form-control-lg">
-                                                        <option value="" selected>Chọn</option>
-                                                        @{
-                                                            foreach (var item in ViewBag.Parts)
-                                                            {
-                                                                <option value="@item.Name">@item.Name</option>
+                                            <label asp-for="Employee.Department" class="control-label"></label>
+                                            @if (readonlyMode)
+                                            {
+                                                <p><span>@Model.Employee.Department</span></p>
+                                            }
+                                            else
+                                            {
+                                                <div class="row">
+                                                    <div class="col-10">
+                                                        <select asp-for="Employee.Part" class="form-control form-control-lg">
+                                                            <option value="" selected>Chọn</option>
+                                                            @{
+                                                                foreach (var item in ViewBag.Parts)
+                                                                {
+                                                                    <option value="@item.Name">@item.Name</option>
+                                                                }
                                                             }
-                                                        }
-                                                    </select>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-2 align-middle">
+                                                        <button class="btn btn-sm btn-add-part" type="button" data-toggle="modal" data-target="#newPart" title="Tạo mới Bộ phận">+</button>
+                                                    </div>
                                                 </div>
-                                                <div class="col-2 align-middle">
-                                                    <button class="btn btn-sm btn-add-part" type="button" data-toggle="modal" data-target="#newPart" title="Tạo mới Bộ phận">+</button>
-                                                </div>
-                                            </div>
+                                            }
                                         </div>
                                     </div>
                                     <div class="col-6">
                                         <div class="form-group">
                                             <i class="icon icon-select-arrows"></i>
                                             <label asp-for="Employee.Title" class="control-label"></label>
-                                            <div class="row">
-                                                <div class="col-10">
-                                                    <select asp-for="Employee.Title" class="form-control form-control-lg">
-                                                        <option value="" selected>Chọn</option>
-                                                        @{
-                                                            foreach (var item in ViewBag.Titles)
-                                                            {
-                                                                <option value="@item.Name">@item.Name</option>
+                                            @if (readonlyMode)
+                                            {
+                                                <p><span>@Model.Employee.Title</span></p>
+                                            }
+                                            else
+                                            {
+                                                <div class="row">
+                                                    <div class="col-10">
+                                                        <select asp-for="Employee.Title" class="form-control form-control-lg">
+                                                            <option value="" selected>Chọn</option>
+                                                            @{
+                                                                foreach (var item in ViewBag.Titles)
+                                                                {
+                                                                    <option value="@item.Name">@item.Name</option>
+                                                                }
                                                             }
-                                                        }
-                                                    </select>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-2 align-middle">
+                                                        <button class="btn btn-sm btn-add-title" type="button" data-toggle="modal" data-target="#newTitle" title="Tạo mới Công việc">+</button>
+                                                    </div>
                                                 </div>
-                                                <div class="col-2 align-middle">
-                                                    <button class="btn btn-sm btn-add-title" type="button" data-toggle="modal" data-target="#newTitle" title="Tạo mới Công việc">+</button>
-                                                </div>
-                                            </div>
+                                            }
                                         </div>
                                     </div>
                                     <div class="col-6">
                                         <div class="form-group">
                                             <i class="icon icon-select-arrows"></i>
                                             <label class="control-label">Người quản lý trực tiếp</label>
-                                            <select name="Employee.ManagerId" id="ManagerId" class="form-control form-control-lg js-select2-basic-single">
-                                                <option value="">Không có quản lý</option>
-                                                @{
-                                                    foreach (var item in Model.Employees)
+                                            @if (readonlyMode)
+                                            {
+                                                @if (Model.Employee != null && !string.IsNullOrEmpty(Model.Manager.FullName))
+                                                {
+                                                    var managerDisplay = Model.Manager.FullName;
+                                                    if (!string.IsNullOrEmpty(Model.Manager.Title))
                                                     {
-                                                        <option value="@item.Id">@item.FullName [@item.Title]</option>
+                                                        managerDisplay += " [" + Model.Manager.Title + "]";
                                                     }
+                                                    <p>
+                                                        <span>
+                                                            @managerDisplay
+                                                        </span>
+                                                    </p>
                                                 }
-                                            </select>
+                                                
+                                            }
+                                            else
+                                            {
+                                                <select name="Employee.ManagerId" id="ManagerId" class="form-control form-control-lg js-select2-basic-single">
+                                                    <option value="">Không có quản lý</option>
+                                                    @{
+                                                        foreach (var item in Model.Employees)
+                                                        {
+                                                            <option value="@item.Id">@item.FullName [@item.Title]</option>
+                                                        }
+                                                    }
+                                                </select>
+                                            }
+
                                             <input type="hidden" value="@Model.Employee.ManagerId" id="hidManagerId" />
                                             <script id="tmplManagePeople" type="text/x-jsrender">
                                                 <option value="{{:id}}">{{:fullName}} [{{:title}}]</option>
@@ -312,9 +414,16 @@
                                         <div class="form-group">
                                             <i class="icon icon-time-slot"></i>
                                             <label asp-for="Employee.Joinday" class="control-label"></label>
-                                            <input class="form-control form-control-lg datepicker datepicker-lg" value="@Model.Employee.Joinday.ToString("dd/MM/yyyy")" />
-                                            <span asp-validation-for="Employee.Joinday" class="text-danger"></span>
-                                            <input type="hidden" name="Employee.Joinday" value="@Model.Employee.Joinday" class="form-control form-control-lg hidedatepicker datepicker-lg" />
+                                            @if (readonlyMode)
+                                            {
+                                                <p><span>@Model.Employee.Joinday.ToString("dd/MM/yyyy")</span></p>
+                                            }
+                                            else
+                                            {
+                                                <input class="form-control form-control-lg datepicker datepicker-lg" value="@Model.Employee.Joinday.ToString("dd/MM/yyyy")" />
+                                                <span asp-validation-for="Employee.Joinday" class="text-danger"></span>
+                                                <input type="hidden" name="Employee.Joinday" value="@Model.Employee.Joinday" class="form-control form-control-lg hidedatepicker datepicker-lg" />
+                                            }
                                         </div>
                                     </div>
 
@@ -322,43 +431,46 @@
                                         <div class="form-group">
                                             <i class="icon icon-location"></i>
                                             <label class="control-label">Nơi làm việc</label>
-                                            <select class="form-control form-control-lg multi-select-workplace" multiple="multiple">
-                                                @{
-                                                    var selectedNM = string.Empty;
-                                                    var selectedVP = string.Empty;
-                                                    if (Model.Employee.Workplaces != null && Model.Employee.Workplaces.Count > 0)
-                                                    {
-                                                        i = 0;
-                                                        foreach (var workplace in Model.Employee.Workplaces)
+                                            @if (!readonlyMode)
+                                            {
+                                                <select class="form-control form-control-lg multi-select-workplace" multiple="multiple">
+                                                    @{
+                                                        var selectedNM = string.Empty;
+                                                        var selectedVP = string.Empty;
+                                                        if (Model.Employee.Workplaces != null && Model.Employee.Workplaces.Count > 0)
                                                         {
-                                                            if (workplace.Code == "NM")
+                                                            i = 0;
+                                                            foreach (var workplace in Model.Employee.Workplaces)
                                                             {
-                                                                selectedNM = "selected";
-                                                            }
-                                                            if (workplace.Code == "VP")
-                                                            {
-                                                                selectedVP = "selected";
+                                                                if (workplace.Code == "NM")
+                                                                {
+                                                                    selectedNM = "selected";
+                                                                }
+                                                                if (workplace.Code == "VP")
+                                                                {
+                                                                    selectedVP = "selected";
+                                                                }
                                                             }
                                                         }
+                                                        if (!string.IsNullOrEmpty(selectedNM))
+                                                        {
+                                                            <option value="NM" selected="selected">Nhà máy</option>
+                                                        }
+                                                        else
+                                                        {
+                                                            <option value="NM">Nhà máy</option>
+                                                        }
+                                                        if (!string.IsNullOrEmpty(selectedVP))
+                                                        {
+                                                            <option value="VP" selected="selected">Văn phòng</option>
+                                                        }
+                                                        else
+                                                        {
+                                                            <option value="VP">Văn phòng</option>
+                                                        }
                                                     }
-                                                    if (!string.IsNullOrEmpty(selectedNM))
-                                                    {
-                                                        <option value="NM" selected="selected">Nhà máy</option>
-                                                    }
-                                                    else
-                                                    {
-                                                        <option value="NM">Nhà máy</option>
-                                                    }
-                                                    if (!string.IsNullOrEmpty(selectedVP))
-                                                    {
-                                                        <option value="VP" selected="selected">Văn phòng</option>
-                                                    }
-                                                    else
-                                                    {
-                                                        <option value="VP">Văn phòng</option>
-                                                    }
-                                                }
-                                            </select>
+                                                </select>
+                                            }
                                         </div>
                                     </div>
                                     @{
@@ -404,6 +516,7 @@
                                             }
                                         }
                                     }
+
                                     <script id="tmplWorkplace" type="text/x-jsrender">
                                         <div class="col-6 nodeWorkplace node">
                                             <div class="form-group">
@@ -449,6 +562,15 @@
                                                             }
                                                         }
 
+                                                        @if (readonlyMode)
+                                                        {
+
+                                                        }
+                                                        else
+                                                        {
+
+
+                                                        }
                                                         <input type="checkbox" class="custom-control-input" @checkTimeKeeper id="check-timekeeper">
                                                         <label class="custom-control-label text-small" for="check-timekeeper">
                                                             Không tính thời gian làm việc
@@ -462,6 +584,15 @@
                                                 <div class="form-group">
                                                     <i class="icon icon-archive"></i>
                                                     <label asp-for="Employee.LeaveLevelYear" class="control-label"></label>
+                                                    @if (readonlyMode)
+                                                    {
+
+                                                    }
+                                                    else
+                                                    {
+
+
+                                                    }
                                                     <select asp-for="Employee.LeaveLevelYear" class="form-control form-control-lg">
                                                         <option value="12">12 ngày</option>
                                                         <option value="14">14 ngày</option>
@@ -470,7 +601,7 @@
                                                     <span asp-validation-for="Employee.LeaveLevelYear" class="text-danger"></span>
                                                 </div>
                                             </div>
-                                            <div class="col-6">
+                                            <div class="col-6 d-none">
                                                 <div class="form-group">
                                                     <i class="icon icon-archive"></i>
                                                     <label class="control-label">Số ngày phép còn lại</label>
@@ -503,49 +634,53 @@
                                 </div>
                             </div>
                             <div class="row">
-                                <div class="col-6">
-                                    <div>
-                                        <div class="custom-control custom-checkbox">
-                                            @{
-                                                var enableStatus = string.Empty;
-                                                var displayLeave = "d-none";
-                                                if (!Model.Employee.Enable)
-                                                {
-                                                    enableStatus = "checked";
-                                                    displayLeave = "";
+                                @if (!readonlyMode)
+                                {
+                                    <div class="col-6">
+                                        <div>
+                                            <div class="custom-control custom-checkbox">
+                                                @{
+                                                    var enableStatus = string.Empty;
+                                                    var displayLeave = "d-none";
+                                                    if (!Model.Employee.Enable)
+                                                    {
+                                                        enableStatus = "checked";
+                                                        displayLeave = "";
+                                                    }
                                                 }
-                                            }
 
-                                            <input type="checkbox" class="custom-control-input" @enableStatus id="check-enable">
-                                            <label class="custom-control-label text-small" for="check-enable">
-                                                Nghỉ việc
-                                            </label>
-                                            <input type="hidden" asp-for="Employee.Enable" />
+                                                <input type="checkbox" class="custom-control-input" @enableStatus id="check-enable">
+                                                <label class="custom-control-label text-small" for="check-enable">
+                                                    Nghỉ việc
+                                                </label>
+                                                <input type="hidden" asp-for="Employee.Enable" />
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="col-6 leave-extend @displayLeave">
-                                    <div class="form-group">
-                                        <label asp-for="Employee.Leaveday" class="control-label"></label>
-                                        @{
-                                            if (Model.Employee.Leaveday.HasValue)
-                                            {
-                                                <input class="form-control form-control-lg datepicker datepicker-lg" value="@Model.Employee.Leaveday.Value.ToString("dd/MM/yyyy")" />
+                                    <div class="col-6 leave-extend @displayLeave">
+                                        <div class="form-group">
+                                            <label asp-for="Employee.Leaveday" class="control-label"></label>
+                                            @{
+                                                if (Model.Employee.Leaveday.HasValue)
+                                                {
+                                                    <input class="form-control form-control-lg datepicker datepicker-lg" value="@Model.Employee.Leaveday.Value.ToString("dd/MM/yyyy")" />
+                                                }
+                                                else
+                                                {
+                                                    <input class="form-control form-control-lg datepicker datepicker-lg" />
+                                                }
                                             }
-                                            else
-                                            {
-                                                <input class="form-control form-control-lg datepicker datepicker-lg" />
-                                            }
-                                        }
-                                        <input type="hidden" name="Employee.Leaveday" class="form-control form-control-lg hidedatepicker" value="@Model.Employee.Leaveday" />
+                                            <input type="hidden" name="Employee.Leaveday" class="form-control form-control-lg hidedatepicker" value="@Model.Employee.Leaveday" />
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="col-12 leave-extend @displayLeave">
-                                    <div class="form-group">
-                                        <label asp-for="Employee.LeaveReason" class="control-label"></label>
-                                        <textarea asp-for="Employee.LeaveReason" class="form-control form-control-lg"></textarea>
+                                    <div class="col-12 leave-extend @displayLeave">
+                                        <div class="form-group">
+                                            <label asp-for="Employee.LeaveReason" class="control-label"></label>
+                                            <textarea asp-for="Employee.LeaveReason" class="form-control form-control-lg"></textarea>
+                                        </div>
                                     </div>
-                                </div>
+                                }
+
                                 <div class="col-12">
                                     <div class="form-group">
                                         <label asp-for="Employee.Bornplace" class="control-label"></label>
@@ -804,12 +939,12 @@
                                             </div>
                                         </div>
                                         @*<div class="col-6">
-                                                <div class="form-group">
-                                                    <label asp-for="Employee.BhxhDependecy" class="control-label"></label>
-                                                    <input asp-for="Employee.BhxhDependecy" class="form-control form-control-lg" />
-                                                    <span asp-validation-for="Employee.BhxhDependecy" class="text-danger"></span>
-                                                </div>
-                                            </div>*@
+            <div class="form-group">
+                <label asp-for="Employee.BhxhDependecy" class="control-label"></label>
+                <input asp-for="Employee.BhxhDependecy" class="form-control form-control-lg" />
+                <span asp-validation-for="Employee.BhxhDependecy" class="text-danger"></span>
+            </div>
+        </div>*@
                                         <div class="col-6">
                                             <div class="form-group">
                                                 <label asp-for="Employee.BhxhStatus" class="control-label"></label>
@@ -889,9 +1024,10 @@
                                             </div>
                                         </div>
 
-                                        <span class="badge badge-info">Tác vụ BHXH</span>
-                                        @{
-                                            if (Model.Employee.BhxhHistories != null && Model.Employee.BhxhHistories.Count > 0)
+                                        @if (!readonlyMode)
+                                        {
+                                            <span class="badge badge-info">Tác vụ BHXH</span>
+                                            @if (Model.Employee.BhxhHistories != null && Model.Employee.BhxhHistories.Count > 0)
                                             {
                                                 i = 0;
                                                 foreach (var item in Model.Employee.BhxhHistories)
@@ -963,14 +1099,12 @@
                                                     i++;
                                                 }
                                             }
-                                        }
-
-                                        <div class="col-12 p-1 more-task-bhxh">
-                                            <div class="form-group">
-                                                <button class="btn btn-secondary btn-sm addBHXH" type="button"><i class="icon icon-add-to-list"></i> Thêm tác vụ</button>
+                                            <div class="col-12 p-1 more-task-bhxh">
+                                                <div class="form-group">
+                                                    <button class="btn btn-secondary btn-sm addBHXH" type="button"><i class="icon icon-add-to-list"></i> Thêm tác vụ</button>
+                                                </div>
                                             </div>
-                                        </div>
-
+                                        }
                                         <script id="tmplBHXH" type="text/x-jsrender">
                                             <div class="col-12 nodeBHXH node">
                                                 <hr />
@@ -1207,6 +1341,7 @@
                                     </div>
                                 </script>
                             </div>
+
 
                             <!-- HOP DONG LAO DONG -->
                             <div class="row mb-4">
@@ -1521,7 +1656,7 @@
                 </div>
                 <!--end of tab pane-->
 
-                @if (ViewBag.SalatyRight > (int)ERights.None)
+                @if (rightLuong)
                 {
                     <div class="tab-pane fade" id="salary" role="tabpanel" arialabelledby="salary-tab">
                         <div class="container">
@@ -1862,7 +1997,7 @@
         <div class="row">
             <div class="col-12 col-md-8">
                 <div class="form-group">
-                    <button class="btn btn-success btn-lg btn-block btn-submit" type="submit" disabled><i class="icon icon-save"></i> Lưu</button>
+                    <button class="btn btn-success btn-lg btn-block btn-submit" type="submit" data-toggle="tooltip" title="Bấm lưu thay đổi thông tin tài khoản." disabled><i class="icon icon-save"></i> Lưu</button>
                 </div>
             </div>
         </div>

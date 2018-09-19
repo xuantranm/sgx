@@ -15,6 +15,10 @@ namespace Models
 
         public string EmployeeId { get; set; }
 
+        public string EmployeeName { get; set; }
+
+        public string EmployeeTitle { get; set; }
+
         [Display(Name = "Mã chấm công")]
         public string EnrollNumber { get; set; }
 
@@ -48,8 +52,7 @@ namespace Models
         public TimeSpan WorkTime { get; set; }
 
         [Display(Name = "Ngày công")]
-        [BsonRepresentation(BsonType.Decimal128)]
-        public decimal WorkDay { get; set; } = 0;
+        public double WorkDay { get; set; } = 0;
 
         [Display(Name = "Trễ")]
         public TimeSpan Late { get; set; }
@@ -87,12 +90,15 @@ namespace Models
         }
 
         // XÁC NHẬN
-        [Display(Name = "Người yêu cầu")]
+        // User request, current use login user.
         public string Request { get; set; }
 
         [Display(Name ="Ngày gửi xác nhận công")]
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime? RequestDate { get; set; }
+
+        [Display(Name = "Lý do")]
+        public string Reason { get; set; }
 
         [Display(Name ="Người xác nhận")]
         public string ConfirmId { get; set; }
@@ -100,14 +106,17 @@ namespace Models
         [Display(Name = "Người xác nhận")]
         public string ConfirmName { get; set; }
 
-        [Display(Name = "Ngày gửi xác nhận công")]
+        [Display(Name = "Ngày xác nhận công")]
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime? ConfirmDate { get; set; }
 
         // Use if 1: leave. ... define later
         public string InOutMode { get; set; }
 
+        // Use define: Nghỉ, Chủ nhật, Không chấm công
         [Display(Name = "Work code")]
         public string Workcode { get; set; }
+
+        public string SecureCode { get; set; }
     }
 }

@@ -163,7 +163,7 @@
                 <div class="row">
                     <div class="col">
                         <a href="javascript:;" data-target="#leave-approve" data-toggle="collapse">
-                            <h5><i class="icon-sound mr-1"></i>Duyệt nghỉ phép <span class="badge badge-danger leave-approve-total">@Model.Leaves.Count</span><i class="icon-popup"></i></h5>
+                            <h5><i class="fas fa-calendar-alt"></i> Duyệt nghỉ phép <span class="badge badge-danger leave-approve-total">@Model.Leaves.Count</span><i class="icon-popup"></i></h5>
                         </a>
                     </div>
                     <div class="col-12 collapse show" id="leave-approve">
@@ -172,15 +172,19 @@
                             {
                                 <div class="col-12 leave-item" style="padding:5px 0">
                                     <div class="alert alert-info text-small mb-0" role="alert">
-                                        <i class="icon-shield"></i>
+                                        <i class="fab fa-fort-awesome-alt"></i>
+                                        <b>@leave.EmployeeName</b>
+                                        @if (!string.IsNullOrEmpty(leave.EmployeeTitle))
+                                        {
+                                            <span> - @leave.EmployeeTitle</span>
+                                        }
+                                        . Ngày tạo phép: <b>@leave.CreatedOn.ToString("dd/MM/yyyy")</b>
+                                        <br />
                                         <span>
-                                            @leave.EmployeeName
+                                            Loại phép: <b>@leave.TypeName</b>.
                                         </span>
                                         <span>
-                                            @leave.From - @leave.To  (@leave.Number)
-                                        </span>
-                                        <span>
-                                            @leave.TypeName
+                                            Thời gian nghỉ: <b>@leave.From - @leave.To</b> (Tổng số ngày: <b>@leave.Number</b>)
                                         </span>
                                         <div class="row">
                                             <div class="col-md-4 col-sm-6 col-xs-12">
@@ -188,7 +192,7 @@
                                                     <input name="id" type="hidden" value="@leave.Id" />
                                                     <input name="secure" type="hidden" value="@leave.SecureCode" />
                                                     <input name="approve" type="hidden" value="1" />
-                                                    <button type="submit" data-original-text="Đồng ý" class="btn btn-success btn-submit btn-accept">Đồng ý</button>
+                                                    <button type="submit" data-original-text="Đồng ý" class="btn btn-sm btn-success btn-submit btn-accept">Đồng ý</button>
                                                 </form>
                                             </div>
                                             <div class="col-md-4 col-sm-6 col-xs-12">
@@ -196,16 +200,13 @@
                                                     <input name="id" type="hidden" value="@leave.Id" />
                                                     <input name="secure" type="hidden" value="@leave.SecureCode" />
                                                     <input name="approve" type="hidden" value="2" />
-                                                    <button type="submit" data-original-text="Không đồng ý" class="btn btn-danger btn-submit btn-cancel">Không đồng ý</button>
+                                                    <button type="submit" data-original-text="Không đồng ý" class="btn btn-sm btn-danger btn-submit btn-cancel">Không đồng ý</button>
                                                 </form>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             }
-                            <div class="col-12">
-                                <a href="/nt/thong-bao">Xem thêm ›</a>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -222,7 +223,7 @@
                 <div class="row">
                     <div class="col">
                         <a href="javascript:;" data-target="#leave-approve" data-toggle="collapse">
-                            <h5><i class="icon-sound mr-1"></i>Xác nhận công <span class="badge badge-danger leave-approve-total">@Model.TimeKeepers.Count</span><i class="icon-popup"></i></h5>
+                            <h5><i class="fas fa-clock"></i> Xác nhận công <span class="badge badge-danger leave-approve-total">@Model.TimeKeepers.Count</span><i class="icon-popup"></i></h5>
                         </a>
                     </div>
                     <div class="col-12 collapse show" id="leave-approve">
@@ -231,47 +232,66 @@
                             {
                                 <div class="col-12 leave-item" style="padding:5px 0">
                                     <div class="alert alert-info text-small mb-0" role="alert">
-                                        <i class="icon-shield"></i>
-                                        <span>
-                                            @timeKeeper.EnrollNumber - @timeKeeper.RequestDate
-                                        </span>
-                                        Chi tiết:
-                                        @if (timeKeeper.Late.TotalMinutes > 0)
+                                        <i class="fas fa-fingerprint"></i>
+                                        <b>@timeKeeper.EmployeeName</b>
+                                        @if (!string.IsNullOrEmpty(timeKeeper.EmployeeTitle))
                                         {
-                                            <span>Trễ (phút)</span><span class="badge badge-info">@timeKeeper.Late.TotalMinutes</span>
+                                            <span> - @timeKeeper.EmployeeTitle</span>
                                         }
-                                        @if (timeKeeper.Early.TotalMinutes > 0)
-                                        {
-                                            <span>Về sớm (phút)</span><span class="badge badge-info">@timeKeeper.Early.TotalMinutes</span>
+                                        . Ngày gửi xác nhận: <b>@timeKeeper.RequestDate.Value.ToString("dd/MM/yyyy")</b>
+                                        <br />
+                                        Lý do: <b>@timeKeeper.Reason</b>
+                                        <br />
+                                        Chi tiết chấm công:
+                                        @{
+                                            var detail = string.Empty;
+                                            var inTime = timeKeeper.In.HasValue ? timeKeeper.In.Value.ToString(@"hh\:mm") : string.Empty;
+                                            var outTime = timeKeeper.Out.HasValue ? timeKeeper.Out.Value.ToString(@"hh\:mm") : string.Empty;
+                                            var lateTime = timeKeeper.Late.TotalMilliseconds > 0 ? timeKeeper.Late.TotalMinutes.ToString() : string.Empty;
+                                            var earlyTime = timeKeeper.Early.TotalMilliseconds > 0 ? timeKeeper.Early.TotalMinutes.ToString() : string.Empty;
+                                            var sumTime = string.Empty;
+                                            if (string.IsNullOrEmpty(inTime) && string.IsNullOrEmpty(outTime))
+                                            {
+                                                sumTime = "1 ngày";
+                                            }
+                                            else if (string.IsNullOrEmpty(inTime) || string.IsNullOrEmpty(outTime))
+                                            {
+                                                sumTime = "0.5 ngày";
+                                            }
+                                            var minutesMissing = TimeSpan.FromMilliseconds(timeKeeper.Late.TotalMilliseconds + timeKeeper.Early.TotalMilliseconds).TotalMinutes;
+                                            if (minutesMissing > 0)
+                                            {
+                                                if (!string.IsNullOrEmpty(sumTime))
+                                                {
+                                                    sumTime += ", ";
+                                                }
+                                                sumTime += minutesMissing + " phút";
+                                            }
+
+                                            detail = "Ngày: " + timeKeeper.Date.ToString("dd/MM/yyyy") + "; thiếu: " + sumTime + " | giờ vào: " + inTime + "; trễ: " + lateTime + "; giờ ra: " + outTime + "; sớm: " + earlyTime;
                                         }
-                                        @foreach(var log in timeKeeper.Logs)
-                                        {
-                                            <span>@log.Date</span>
-                                        }
+                                        <b>@detail</b>
                                         <div class="row">
                                             <div class="col-md-4 col-sm-6 col-xs-12">
-                                                <form action="/@Constants.LinkLeave.Main/@Constants.LinkLeave.ApprovePost" method="post" class="navbar-right leave-home-submit">
-                                                    @*<input name="id" type="hidden" value="@leave.Id" />
-                                                    <input name="secure" type="hidden" value="@leave.SecureCode" />
-                                                    <input name="approve" type="hidden" value="1" />*@
-                                                    <button type="submit" data-original-text="Đồng ý" class="btn btn-success btn-submit btn-accept">Đồng ý</button>
+                                                <form action="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.AprrovePost" method="post" class="navbar-right leave-home-submit">
+                                                    <input name="id" type="hidden" value="@timeKeeper.Id" />
+                                                    <input name="secure" type="hidden" value="@timeKeeper.SecureCode" />
+                                                    <input name="approve" type="hidden" value="3" />
+                                                    <button type="submit" data-original-text="Đồng ý" class="btn btn-sm btn-success btn-submit btn-accept">Đồng ý</button>
                                                 </form>
                                             </div>
                                             <div class="col-md-4 col-sm-6 col-xs-12">
-                                                <form action="/@Constants.LinkLeave.Main/@Constants.LinkLeave.ApprovePost" method="post" class="navbar-right leave-home-submit">
-                                                    @*<input name="id" type="hidden" value="@leave.Id" />
-                                                    <input name="secure" type="hidden" value="@leave.SecureCode" />
-                                                    <input name="approve" type="hidden" value="2" />*@
-                                                    <button type="submit" data-original-text="Không đồng ý" class="btn btn-danger btn-submit btn-cancel">Không đồng ý</button>
+                                                <form action="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.AprrovePost" method="post" class="navbar-right leave-home-submit">
+                                                    <input name="id" type="hidden" value="@timeKeeper.Id" />
+                                                    <input name="secure" type="hidden" value="@timeKeeper.SecureCode" />
+                                                    <input name="approve" type="hidden" value="4" />
+                                                    <button type="submit" data-original-text="Không đồng ý" class="btn btn-sm btn-danger btn-submit btn-cancel">Không đồng ý</button>
                                                 </form>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             }
-                            <div class="col-12">
-                                <a href="/nt/thong-bao">Xem thêm ›</a>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -280,13 +300,17 @@
     }
 }
 
+<!-- BIRTHDAYS NOTIFICATIONS -->
 <section class="bg-white" style="padding: 1rem 0">
     <div class="container">
         <div class="row">
             <div class="col-12">
                 <a href="javascript:;" data-target="#alert-birthday" data-toggle="collapse">
                     <h5><i class="icon-cake mr-1"></i>Sinh nhật <span class="badge badge-danger">@Model.Birthdays.Count()</span><i class="icon-popup"></i></h5>
-                    <span class="small">Mốc thời gian từ @DateTime.Now.ToString("dd/MM/yyyy") đến @DateTime.Now.AddDays(Convert.ToInt32(ViewData["birthdayNoticeBefore"])).ToString("dd/MM/yyyy"). Thay đổi trong cài đặt.</span>
+                    @if (ViewBag.rightHr)
+                    {
+                        <span class="small">Mốc thời gian từ @DateTime.Now.ToString("dd/MM/yyyy") đến @DateTime.Now.AddDays(Convert.ToInt32(ViewData["birthdayNoticeBefore"])).ToString("dd/MM/yyyy"). Thay đổi trong cài đặt.</span>
+                    }
                 </a>
             </div>
             <div class="col-12 collapse" id="alert-birthday">
@@ -302,7 +326,7 @@
                                     }
                                     else
                                     {
-                                        <img class="" src="holder.js/100px180" alt="@birthday.FullName" />
+                                        <img class="" src="~/images/svg/no-img-282-180.svg" alt="@birthday.FullName" />
                                     }
                                     <div class="card-body">
                                         <h4 class="card-title">@birthday.FullName</h4>
@@ -331,8 +355,163 @@
     </div>
 </section>
 
-<!-- MẪU -->
+<!-- ACTIVITIES -->
 <section class="bg-white">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <h5>Hoạt động</h5>
+            </div>
+            @if (Model.MyWorkTimeLogs != null && Model.MyWorkTimeLogs.Count > 0)
+            {
+                <div class="col-sm-6 col-12">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between">
+                            <div>
+                                <span class="h6">Chấm công</span>
+                            </div>
+                            <a href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Index">Xem tất cả ›</a>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-unstyled list-spacing-sm">
+                                @foreach (var timeKeeper in Model.MyWorkTimeLogs)
+                                {
+                                    <li>
+                                        <a href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Index" class="text-small">
+                                            <span class="badge badge-info">@Constants.TimeKeeper(timeKeeper.Status)</span>
+                                            @if (timeKeeper.RequestDate.HasValue)
+                                            {
+                                            <span>. Ngày gửi xác nhận: @timeKeeper.RequestDate.Value.ToString("dd/MM/yyyy")</span>
+                                            }
+                                            <br />
+                                            @if (!string.IsNullOrEmpty(timeKeeper.Reason))
+                                            {
+                                            <span>Lý do: @timeKeeper.Reason</span>
+                                                <br />
+                                            }
+                                            @{
+                                                var detail = string.Empty;
+                                                var inTime = timeKeeper.In.HasValue ? timeKeeper.In.Value.ToString(@"hh\:mm") : string.Empty;
+                                                var outTime = timeKeeper.Out.HasValue ? timeKeeper.Out.Value.ToString(@"hh\:mm") : string.Empty;
+                                                var lateTime = timeKeeper.Late.TotalMilliseconds > 0 ? timeKeeper.Late.TotalMinutes.ToString() : string.Empty;
+                                                var earlyTime = timeKeeper.Early.TotalMilliseconds > 0 ? timeKeeper.Early.TotalMinutes.ToString() : string.Empty;
+                                                var sumTime = string.Empty;
+                                                if (string.IsNullOrEmpty(inTime) && string.IsNullOrEmpty(outTime))
+                                                {
+                                                    sumTime = "1 ngày";
+                                                }
+                                                else if (string.IsNullOrEmpty(inTime) || string.IsNullOrEmpty(outTime))
+                                                {
+                                                    sumTime = "0.5 ngày";
+                                                }
+                                                var minutesMissing = TimeSpan.FromMilliseconds(timeKeeper.Late.TotalMilliseconds + timeKeeper.Early.TotalMilliseconds).TotalMinutes;
+                                                if (minutesMissing > 0)
+                                                {
+                                                    if (!string.IsNullOrEmpty(sumTime))
+                                                    {
+                                                        sumTime += ", ";
+                                                    }
+                                                    sumTime += minutesMissing + " phút";
+                                                }
+
+                                                detail += "Ngày: " + timeKeeper.Date.ToString("dd/MM/yyyy") + "; thiếu: " + sumTime;
+                                                if (!string.IsNullOrEmpty(inTime))
+                                                {
+                                                    detail += " | giờ vào: " + inTime;
+                                                }
+                                                if (!string.IsNullOrEmpty(lateTime))
+                                                {
+                                                    detail += "; trễ: " + lateTime;
+                                                }
+                                                if (!string.IsNullOrEmpty(outTime))
+                                                {
+                                                    detail += "; giờ ra: " + outTime;
+                                                }
+                                                if (!string.IsNullOrEmpty(earlyTime))
+                                                {
+                                                    detail += "; sớm: " + earlyTime;
+                                                }
+                                            }
+                                            <span class="text-small">Chi tiết: @detail</span>
+                                        </a>
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            @if (Model.MyLeaves != null && Model.MyLeaves.Count > 0)
+            {
+                <div class="col-sm-6 col-12">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between">
+                            <div>
+                                <span class="h6">Ngày nghỉ</span>
+                            </div>
+                            <a href="/@Constants.LinkLeave.Main/@Constants.LinkLeave.Index">Xem tất cả ›</a>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-unstyled list-spacing-sm">
+                                @foreach (var leave in Model.MyLeaves)
+                                {
+                                    <li>
+                                        <a href="/@Constants.LinkLeave.Main/@Constants.LinkLeave.Index" class="text-small">
+                                            <span class="badge badge-info">@Constants.StatusLeave(leave.Status)</span>
+                                            . Ngày tạo phép: <b>@leave.CreatedOn.ToString("dd/MM/yyyy")</b>
+                                            <br />
+                                            <span>
+                                                Loại phép: <b>@leave.TypeName</b>.
+                                            </span>
+                                            <span>
+                                                Thời gian nghỉ: <b>@leave.From - @leave.To</b> (Tổng số ngày: <b>@leave.Number</b>)
+                                            </span>
+                                        </a>
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <div class="col-12">
+                <!-- TRAINNING -->
+                @{
+                    if (Model.Trackings != null && Model.Trainnings.Count > 0)
+                    {
+                        foreach (var item in Model.Trainnings)
+                        {
+                            <div class="card">
+                                <div class="card-header card-header-borderless d-flex justify-content-between">
+                                    <small class="text-muted"><i class="fab fa-youtube"></i> @item.Name</small>
+                                    <small class="text-muted">@item.CreatedOn.ToString("dd/MM/yyyy")</small>
+                                </div>
+                                <div class="card-body">
+                                    <div class="media">
+                                        <div class="video-cover rounded w-50">
+                                            <div class="embed-responsive embed-responsive-16by9">
+                                                <iframe class="embed-responsive-item" src="@item.Link" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                                            </div>
+                                        </div>
+                                        <!--end of video cover-->
+                                        <div class="media-body">
+                                            <span>@item.Description</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- MẪU -->
+<section class="bg-white d-none">
     <div class="container">
         <div class="row">
             <div class="col-12">

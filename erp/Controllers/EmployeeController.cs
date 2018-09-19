@@ -32,6 +32,7 @@ using System.Threading;
 using Common.Enums;
 using MongoDB.Bson;
 using NPOI.HSSF.Util;
+using MimeKit.Text;
 
 namespace erp.Controllers
 {
@@ -194,7 +195,7 @@ namespace erp.Controllers
             return View(viewModel);
         }
 
-        [Route(Constants.LinkHr.Human+"/"+ Constants.LinkHr.Export +"/" + Constants.LinkHr.List)]
+        [Route(Constants.LinkHr.Human + "/" + Constants.LinkHr.Export + "/" + Constants.LinkHr.List)]
         public async Task<IActionResult> Export(string ten, string code, string finger, string nl, /*int? page, int? size,*/ string sortBy)
         {
             #region Authorization
@@ -311,8 +312,8 @@ namespace erp.Controllers
                 }
             }
 
-            string exportFolder = Path.Combine(_env.WebRootPath,"exports");
-            string sFileName = @"hanh-chinh-nhan-su-" + DateTime.Now.ToString("ddMMyyyyhhmm") +".xlsx";
+            string exportFolder = Path.Combine(_env.WebRootPath, "exports");
+            string sFileName = @"hanh-chinh-nhan-su-" + DateTime.Now.ToString("ddMMyyyyhhmm") + ".xlsx";
             string URL = string.Format("{0}://{1}/{2}", Request.Scheme, Request.Host, sFileName);
             FileInfo file = new FileInfo(Path.Combine(exportFolder, sFileName));
             var memory = new MemoryStream();
@@ -347,7 +348,7 @@ namespace erp.Controllers
                 row.CreateCell(4, CellType.String).SetCellValue("Phòng ban");
                 row.CreateCell(5, CellType.String).SetCellValue("Số ngày phép còn lại");
                 // Set style
-                for(int i = 0; i <= 5; i++)
+                for (int i = 0; i <= 5; i++)
                 {
                     row.Cells[i].CellStyle = cellStyleHeader;
                 }
@@ -693,44 +694,44 @@ namespace erp.Controllers
             }
             #endregion
 
-            var user = viewModel.Employee;
-            if (checkUserName != user.UserName && !CheckExist(user))
+            var entity = viewModel.Employee;
+            if (checkUserName != entity.UserName && !CheckExist(entity))
             {
                 return Json(new { result = false, source = "user", id = string.Empty, message = "Tên đăng nhập đã có trong hệ thống." });
             }
 
-            if (checkEmail != user.Email && !CheckEmail(user))
+            if (checkEmail != entity.Email && !CheckEmail(entity))
             {
                 return Json(new { result = false, source = "email", id = string.Empty, message = "Email đã có trong hệ thống." });
             }
 
             #region Update missing field
-            if (user.Contracts != null)
+            if (entity.Contracts != null)
             {
-                if (user.Contracts.Count > 0)
+                if (entity.Contracts.Count > 0)
                 {
-                    for (int i = user.Contracts.Count - 1; i >= 0; i--)
+                    for (int i = entity.Contracts.Count - 1; i >= 0; i--)
                     {
-                        if (string.IsNullOrEmpty(user.Contracts[i].Code))
+                        if (string.IsNullOrEmpty(entity.Contracts[i].Code))
                         {
-                            user.Contracts.RemoveAt(i);
+                            entity.Contracts.RemoveAt(i);
                         }
                     }
                 }
-                user.Contracts = user.Contracts.Count == 0 ? null : user.Contracts;
+                entity.Contracts = entity.Contracts.Count == 0 ? null : entity.Contracts;
             }
 
-            if (string.IsNullOrEmpty(user.Department))
+            if (string.IsNullOrEmpty(entity.Department))
             {
-                user.Department = string.Empty;
+                entity.Department = string.Empty;
             }
-            if (string.IsNullOrEmpty(user.Part))
+            if (string.IsNullOrEmpty(entity.Part))
             {
-                user.Part = string.Empty;
+                entity.Part = string.Empty;
             }
-            if (string.IsNullOrEmpty(user.Title))
+            if (string.IsNullOrEmpty(entity.Title))
             {
-                user.Title = string.Empty;
+                entity.Title = string.Empty;
             }
             #endregion
 
@@ -739,10 +740,10 @@ namespace erp.Controllers
                 #region Settings
                 Thread.CurrentThread.CurrentCulture = new CultureInfo("en-CA");
                 var now = DateTime.Now;
-                user.CreatedBy = login;
-                user.UpdatedBy = login;
-                user.CheckedBy = login;
-                user.ApprovedBy = login;
+                entity.CreatedBy = login;
+                entity.UpdatedBy = login;
+                entity.CheckedBy = login;
+                entity.ApprovedBy = login;
 
                 var settings = dbContext.Settings.Find(m => true).ToList();
                 // always have value
@@ -801,7 +802,7 @@ namespace erp.Controllers
                                         OrginalName = file.FileName
                                     };
                                     images.Add(currentImage);
-                                    user.Avatar = currentImage;
+                                    entity.Avatar = currentImage;
                                 }
                             }
                         }
@@ -824,7 +825,7 @@ namespace erp.Controllers
                                         OrginalName = file.FileName
                                     };
                                     images.Add(currentImage);
-                                    user.Cover = currentImage;
+                                    entity.Cover = currentImage;
                                 }
                             }
                         }
@@ -832,65 +833,65 @@ namespace erp.Controllers
                 }
                 #endregion
 
-                user.Code = sysCode;
-                user.Password = sysPassword;
-                user.AliasFullName = Utility.AliasConvert(user.FullName);
+                entity.Code = sysCode;
+                entity.Password = sysPassword;
+                entity.AliasFullName = Utility.AliasConvert(entity.FullName);
                 decimal totalSalary = 0;
-                if (user.Salaries != null && user.Salaries.Count > 0)
+                if (entity.Salaries != null && entity.Salaries.Count > 0)
                 {
-                    foreach (var salaryItem in user.Salaries)
+                    foreach (var salaryItem in entity.Salaries)
                     {
                         totalSalary += salaryItem.Money;
                     }
                 }
-                user.Salary = totalSalary;
-                dbContext.Employees.InsertOne(user);
+                entity.Salary = totalSalary;
+                dbContext.Employees.InsertOne(entity);
+                var newUserId = entity.Id;
 
-                var newUserId = user.Id;
-
+                var hisEntity = entity;
+                dbContext.EmployeeHistories.InsertOne(hisEntity);
                 #region Send mail to IT setup email
 
                 #endregion
 
                 #region Notification
                 var notificationImages = new List<Image>();
-                if (user.Avatar != null && !string.IsNullOrEmpty(user.Avatar.FileName))
+                if (entity.Avatar != null && !string.IsNullOrEmpty(entity.Avatar.FileName))
                 {
-                    notificationImages.Add(user.Avatar);
+                    notificationImages.Add(entity.Avatar);
                 }
-                if (user.Cover != null && !string.IsNullOrEmpty(user.Cover.FileName))
+                if (entity.Cover != null && !string.IsNullOrEmpty(entity.Cover.FileName))
                 {
-                    notificationImages.Add(user.Cover);
+                    notificationImages.Add(entity.Cover);
                 }
+
                 var notification = new Notification
                 {
                     Type = Constants.Notification.HR,
                     Title = Constants.Notification.CreateHR,
-                    Content = user.FullName,
-                    Link = "/hr/nhan-su/thong-tin/" + user.Id,
+                    Content = entity.FullName,
+                    Link = Constants.LinkHr.Main + "/" + Constants.LinkHr.Human + "/" + Constants.LinkHr.Information + "/" + entity.Id,
                     Images = notificationImages.Count > 0 ? notificationImages : null,
-                    UserId = string.Empty,
-                    CreatedBy = loginUserName
+                    UserId = entity.Id,
+                    CreatedBy = login
                 };
                 dbContext.Notifications.InsertOne(notification);
                 #endregion
 
                 #region Activities
                 var objectId = newUserId.ToString();
-                var objectName = user.UserName;
-
                 var activity = new TrackingUser
                 {
                     UserId = login,
                     Function = Constants.Collection.Employees,
                     Action = Constants.Action.Create,
-                    Value = objectId,
-                    Description = Constants.Action.Create + " " + Constants.Collection.Employees + " " + objectName,
+                    Value = entity.Id,
+                    Content = JsonConvert.SerializeObject(entity),
                 };
                 dbContext.TrackingUsers.InsertOne(activity);
                 #endregion
 
-                return Json(new { result = true, source = "create", id = user.Id, message = "Khởi tạo thành công" });
+                return Json(new { result = true, source = "create", id = entity.Id, message = "Khởi tạo thành công" });
             }
             catch (Exception ex)
             {
@@ -1004,10 +1005,26 @@ namespace erp.Controllers
             }
             entity.Salaries = currentSalaries;
 
+            // Compare change
+            var entityOtherChange = dbContext.EmployeeHistories.Find(m => m.EmployeeId == id).SortByDescending(m=>m.UpdatedOn).FirstOrDefault();
+            var variances = new List<Variance>();
+            if (entityOtherChange!= null && entityOtherChange.UpdatedOn > entity.UpdatedOn)
+            {
+                variances = entity.DetailedCompare(entityOtherChange);
+            }
+
+            var manager = new Employee();
+            if (!string.IsNullOrEmpty(entity.ManagerId))
+            {
+                manager = dbContext.Employees.Find(m => m.Id.Equals(entity.ManagerId)).FirstOrDefault();
+            }
+
             var viewModel = new EmployeeDataViewModel()
             {
                 Employee = entity,
-                Employees = employees
+                Variances = variances,
+                Employees = employees,
+                Manager = manager
             };
             return View(viewModel);
         }
@@ -1020,24 +1037,28 @@ namespace erp.Controllers
         [Route("nhan-su/cap-nhat/{id}")]
         public async Task<ActionResult> EditAsync(EmployeeDataViewModel viewModel)
         {
+            var entity = viewModel.Employee;
+
+            var userId = entity.Id;
             #region Authorization
             var login = User.Identity.Name;
             var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
-            bool right = Utility.IsRight(login, "nhan-su", (int)ERights.Edit);
-
-            // sys account override
+            // Check owner
+            if (entity.Id != login)
+            {
+                if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, "nhan-su", (int)ERights.Edit)))
+                {
+                    return RedirectToAction("AccessDenied", "Account");
+                }
+            }
+            var rightHr = Utility.IsRight(login, "nhan-su", (int)ERights.Edit);
+            // System
             if (loginUserName == Constants.System.account)
             {
-                right = true;
-            }
-
-            if (!right)
-            {
-                return RedirectToAction("AccessDenied", "Account");
+                rightHr = true;
             }
             #endregion
 
-            var entity = viewModel.Employee;
             #region Update missing field
             if (entity.Contracts != null)
             {
@@ -1150,92 +1171,349 @@ namespace erp.Controllers
                 entity.Salary = totalSalary;
                 #endregion
 
-                #region Update Data
-                var filter = Builders<Employee>.Filter.Eq(m => m.Id, entity.Id);
-                var update = Builders<Employee>.Update
-                    .Set(m => m.UpdatedBy, login)
-                    .Set(m => m.UpdatedOn, now)
-                    .Set(m => m.Workplaces, entity.Workplaces)
-                    .Set(m => m.IsTimeKeeper, entity.IsTimeKeeper)
-                    .Set(m => m.LeaveLevelYear, entity.LeaveLevelYear)
-                    .Set(m => m.LeaveDayAvailable, entity.LeaveDayAvailable)
-                    .Set(m => m.FullName, entity.FullName)
-                    .Set(m => m.FirstName, entity.FirstName)
-                    .Set(m => m.LastName, entity.LastName)
-                    .Set(m => m.AliasFullName, Utility.AliasConvert(entity.FullName))
-                    .Set(m => m.Birthday, entity.Birthday)
-                    .Set(m => m.Bornplace, entity.Bornplace)
-                    .Set(m => m.Gender, entity.Gender)
-                    .Set(m => m.Joinday, entity.Joinday)
-                    .Set(m => m.Contractday, entity.Contractday)
-                    .Set(m => m.Enable, entity.Enable)
-                    .Set(m => m.Leaveday, entity.Leaveday)
-                    .Set(m => m.LeaveReason, entity.LeaveReason)
-                    .Set(m => m.AddressResident, entity.AddressResident)
-                    .Set(m => m.AddressTemporary, entity.AddressTemporary)
-                    .Set(m => m.EmailPersonal, entity.EmailPersonal)
-                    .Set(m => m.Intro, entity.Intro)
-                    .Set(m => m.Part, entity.Part)
-                    .Set(m => m.Department, entity.Department)
-                    .Set(m => m.ManagerId, entity.ManagerId)
-                    .Set(m => m.Title, entity.Title)
-                    .Set(m => m.Tel, entity.Tel)
-                    .Set(m => m.Mobiles, entity.Mobiles)
-                    .Set(m => m.IsOnline, entity.IsOnline)
-                    .Set(m => m.IdentityCard, entity.IdentityCard)
-                    .Set(m => m.IdentityCardDate, entity.IdentityCardDate)
-                    .Set(m => m.IdentityCardPlace, entity.IdentityCardPlace)
-                    .Set(m => m.PassportEnable, entity.PassportEnable)
-                    .Set(m => m.Passport, entity.IdentityCard)
-                    .Set(m => m.PassportType, entity.PassportType)
-                    .Set(m => m.PassportCode, entity.PassportCode)
-                    .Set(m => m.PassportDate, entity.PassportDate)
-                    .Set(m => m.PassportExpireDate, entity.PassportExpireDate)
-                    .Set(m => m.PassportPlace, entity.PassportPlace)
-                    .Set(m => m.HouseHold, entity.HouseHold)
-                    .Set(m => m.HouseHoldOwner, entity.HouseHoldOwner)
-                    .Set(m => m.StatusMarital, entity.StatusMarital)
-                    .Set(m => m.Nation, entity.Nation)
-                    .Set(m => m.Religion, entity.Religion)
-                    .Set(m => m.Certificates, entity.Certificates)
-                    .Set(m => m.Cards, entity.Cards)
-                    .Set(m => m.Contracts, entity.Contracts)
-                    .Set(m => m.StorePapers, entity.StorePapers)
-                    .Set(m => m.Salaries, entity.Salaries)
-                    .Set(m => m.Salary, entity.Salary)
-                    // BHXH
-                    .Set(m => m.BhxhEnable, entity.BhxhEnable)
-                    .Set(m => m.BhxhStart, entity.BhxhStart)
-                    .Set(m => m.BhxhEnd, entity.BhxhEnd)
-                    .Set(m => m.BhxhBookNo, entity.BhxhBookNo)
-                    .Set(m => m.BhxhCode, entity.BhxhCode)
-                    .Set(m => m.BhxhStatus, entity.BhxhStatus)
-                    .Set(m => m.BhxhHospital, entity.BhxhHospital)
-                    .Set(m => m.BhxhLocation, entity.BhxhLocation)
-                    .Set(m => m.BhytCode, entity.BhytCode)
-                    .Set(m => m.BhytStart, entity.BhytStart)
-                    .Set(m => m.BhytEnd, entity.BhytEnd)
-                    .Set(m => m.BhxhHistories, entity.BhxhHistories)
-                    // FAMILY
-                    .Set(m => m.EmployeeFamilys, entity.EmployeeFamilys)
-                    // CONTRACT
-                    .Set(m => m.Contracts, entity.Contracts)
-                    .Set(m => m.EmployeeEducations, entity.EmployeeEducations);
-
+                entity.AliasFullName = Utility.AliasConvert(entity.FullName);
+                entity.UpdatedBy = login;
+                entity.UpdatedOn = now;
                 if (avatarImage != null && !string.IsNullOrEmpty(avatarImage.FileName))
                 {
-                    update = update.Set(m => m.Avatar, avatarImage);
+                    entity.Avatar = avatarImage;
                 }
-
                 if (coverImage != null && !string.IsNullOrEmpty(coverImage.FileName))
                 {
-                    update = update.Set(m => m.Cover, coverImage);
+                    entity.Cover = coverImage;
                 }
 
-                dbContext.Employees.UpdateOne(filter, update);
-                #endregion
+                #region Update Data
+                // Rule if user have right Nhan Su => direct
+                // If no. update temp. Then Nhan Su update.
+                var messageResult = "Cập nhật thành công";
+                var linkInformation = Constants.LinkHr.Main + "/" + Constants.LinkHr.Human + "/" + Constants.LinkHr.Information + "/" + entity.Id;
+                if (rightHr)
+                {
+                    var filter = Builders<Employee>.Filter.Eq(m => m.Id, entity.Id);
+                    var update = Builders<Employee>.Update
+                        .Set(m => m.UpdatedBy, login)
+                        .Set(m => m.UpdatedOn, now)
+                        .Set(m => m.Workplaces, entity.Workplaces)
+                        .Set(m => m.IsTimeKeeper, entity.IsTimeKeeper)
+                        .Set(m => m.LeaveLevelYear, entity.LeaveLevelYear)
+                        .Set(m => m.LeaveDayAvailable, entity.LeaveDayAvailable)
+                        .Set(m => m.FullName, entity.FullName)
+                        .Set(m => m.FirstName, entity.FirstName)
+                        .Set(m => m.LastName, entity.LastName)
+                        .Set(m => m.AliasFullName, entity.AliasFullName)
+                        .Set(m => m.Birthday, entity.Birthday)
+                        .Set(m => m.Bornplace, entity.Bornplace)
+                        .Set(m => m.Gender, entity.Gender)
+                        .Set(m => m.Joinday, entity.Joinday)
+                        .Set(m => m.Contractday, entity.Contractday)
+                        .Set(m => m.Enable, entity.Enable)
+                        .Set(m => m.Leaveday, entity.Leaveday)
+                        .Set(m => m.LeaveReason, entity.LeaveReason)
+                        .Set(m => m.AddressResident, entity.AddressResident)
+                        .Set(m => m.AddressTemporary, entity.AddressTemporary)
+                        .Set(m => m.EmailPersonal, entity.EmailPersonal)
+                        .Set(m => m.Intro, entity.Intro)
+                        .Set(m => m.Part, entity.Part)
+                        .Set(m => m.Department, entity.Department)
+                        .Set(m => m.ManagerId, entity.ManagerId)
+                        .Set(m => m.Title, entity.Title)
+                        .Set(m => m.Tel, entity.Tel)
+                        .Set(m => m.Mobiles, entity.Mobiles)
+                        .Set(m => m.IsOnline, entity.IsOnline)
+                        .Set(m => m.IdentityCard, entity.IdentityCard)
+                        .Set(m => m.IdentityCardDate, entity.IdentityCardDate)
+                        .Set(m => m.IdentityCardPlace, entity.IdentityCardPlace)
+                        .Set(m => m.PassportEnable, entity.PassportEnable)
+                        .Set(m => m.Passport, entity.IdentityCard)
+                        .Set(m => m.PassportType, entity.PassportType)
+                        .Set(m => m.PassportCode, entity.PassportCode)
+                        .Set(m => m.PassportDate, entity.PassportDate)
+                        .Set(m => m.PassportExpireDate, entity.PassportExpireDate)
+                        .Set(m => m.PassportPlace, entity.PassportPlace)
+                        .Set(m => m.HouseHold, entity.HouseHold)
+                        .Set(m => m.HouseHoldOwner, entity.HouseHoldOwner)
+                        .Set(m => m.StatusMarital, entity.StatusMarital)
+                        .Set(m => m.Nation, entity.Nation)
+                        .Set(m => m.Religion, entity.Religion)
+                        .Set(m => m.Certificates, entity.Certificates)
+                        .Set(m => m.Cards, entity.Cards)
+                        .Set(m => m.Contracts, entity.Contracts)
+                        .Set(m => m.StorePapers, entity.StorePapers)
+                        .Set(m => m.Salaries, entity.Salaries)
+                        .Set(m => m.Salary, entity.Salary)
+                        // BHXH
+                        .Set(m => m.BhxhEnable, entity.BhxhEnable)
+                        .Set(m => m.BhxhStart, entity.BhxhStart)
+                        .Set(m => m.BhxhEnd, entity.BhxhEnd)
+                        .Set(m => m.BhxhBookNo, entity.BhxhBookNo)
+                        .Set(m => m.BhxhCode, entity.BhxhCode)
+                        .Set(m => m.BhxhStatus, entity.BhxhStatus)
+                        .Set(m => m.BhxhHospital, entity.BhxhHospital)
+                        .Set(m => m.BhxhLocation, entity.BhxhLocation)
+                        .Set(m => m.BhytCode, entity.BhytCode)
+                        .Set(m => m.BhytStart, entity.BhytStart)
+                        .Set(m => m.BhytEnd, entity.BhytEnd)
+                        .Set(m => m.BhxhHistories, entity.BhxhHistories)
+                        // FAMILY
+                        .Set(m => m.EmployeeFamilys, entity.EmployeeFamilys)
+                        // CONTRACT
+                        .Set(m => m.Contracts, entity.Contracts)
+                        .Set(m => m.EmployeeEducations, entity.EmployeeEducations);
 
-                var userId = entity.Id;
+                    if (avatarImage != null && !string.IsNullOrEmpty(avatarImage.FileName))
+                    {
+                        update = update.Set(m => m.Avatar, avatarImage);
+                    }
+
+                    if (coverImage != null && !string.IsNullOrEmpty(coverImage.FileName))
+                    {
+                        update = update.Set(m => m.Cover, coverImage);
+                    }
+
+                    dbContext.Employees.UpdateOne(filter, update);
+                    dbContext.EmployeeHistories.InsertOne(entity);
+                    #region Send email to user changed
+                    var tos = new List<EmailAddress>
+                    {
+                        new EmailAddress { Name = entity.FullName, Address = entity.Email }
+                    };
+
+                    var webRoot = Environment.CurrentDirectory;
+                    var pathToFile = _env.WebRootPath
+                            + Path.DirectorySeparatorChar.ToString()
+                            + "Templates"
+                            + Path.DirectorySeparatorChar.ToString()
+                            + "EmailTemplate"
+                            + Path.DirectorySeparatorChar.ToString()
+                            + "HrChangeInformation.html";
+
+                    #region parameters
+                    //{0} : Subject
+                    //{1} : Người được thay đổi thông tin
+                    //{2} : Nhân sự thay dổi (ten - chuc vu - email)
+                    //{3} : Ngày thay đổi
+                    //{4} : Link chi tiết nhân sự
+                    //{5}: Website
+                    #endregion
+                    var subject = "[TRIBAT] Thay đổi thông tin nhân sự.";
+                    var requester = entity.FullName;
+                    var loginEntity = dbContext.Employees.Find(m => m.Id.Equals(login)).FirstOrDefault();
+                    var hrChanged = loginEntity.FullName;
+                    if (!string.IsNullOrEmpty(loginEntity.Title))
+                    {
+                        hrChanged += " - " + loginEntity.Title;
+                    }
+                    if (!string.IsNullOrEmpty(loginEntity.Email))
+                    {
+                        hrChanged += " - email: " + loginEntity.Email;
+                    }
+                    var linkDomain = Constants.System.domain;
+                    var fullLinkInformation = linkDomain + "/" + linkInformation;
+                    var bodyBuilder = new BodyBuilder();
+                    using (StreamReader SourceReader = System.IO.File.OpenText(pathToFile))
+                    {
+                        bodyBuilder.HtmlBody = SourceReader.ReadToEnd();
+                    }
+                    string messageBody = string.Format(bodyBuilder.HtmlBody,
+                        subject,
+                        requester,
+                        hrChanged,
+                        entity.UpdatedOn.ToString("dd/MM/yyyy"),
+                        fullLinkInformation,
+                        linkDomain
+                        );
+                    var emailMessage = new EmailMessage()
+                    {
+                        ToAddresses = tos,
+                        Subject = subject,
+                        BodyContent = messageBody
+                    };
+                    try
+                    {
+                        var emailFrom = Constants.System.emailErp;
+                        var emailFromName = Constants.System.emailErpName;
+                        var emailFromPwd = Constants.System.emailErpPwd;
+                        var message = new MimeMessage();
+                        message.To.AddRange(emailMessage.ToAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
+                        if (emailMessage.CCAddresses != null && emailMessage.CCAddresses.Count > 0)
+                        {
+                            message.Cc.AddRange(emailMessage.CCAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
+                        }
+                        if (emailMessage.FromAddresses == null || emailMessage.FromAddresses.Count == 0)
+                        {
+                            emailMessage.FromAddresses = new List<EmailAddress>
+                                {
+                                    new EmailAddress { Name = emailFromName, Address = emailFrom }
+                                };
+                        }
+                        message.From.AddRange(emailMessage.FromAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
+                        message.Subject = emailMessage.Subject;
+                        message.Body = new TextPart(TextFormat.Html)
+                        {
+                            Text = emailMessage.BodyContent
+                        };
+                        using (var emailClient = new MailKit.Net.Smtp.SmtpClient())
+                        {
+                            //The last parameter here is to use SSL (Which you should!)
+                            emailClient.Connect(emailFrom, 465, true);
+
+                            //Remove any OAuth functionality as we won't be using it. 
+                            emailClient.AuthenticationMechanisms.Remove("XOAUTH2");
+
+                            emailClient.Authenticate(emailFrom, emailFromPwd);
+
+                            emailClient.Send(message);
+                            emailClient.Disconnect(true);
+                            Console.WriteLine("The mail has been sent successfully !!");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                        // insert dd. Do later.
+                    }
+                    #endregion
+                }
+                else
+                {
+                    entity.EmployeeId = userId;
+                    entity.Id = null;
+                    dbContext.EmployeeHistories.InsertOne(entity);
+
+                    messageResult = "Thông tin đã được gửi và cập nhật bởi bộ phận Nhân sự.";
+                    #region Send email to Hr
+                    var tos = new List<EmailAddress>();
+                    var ccs = new List<EmailAddress>();
+                    var listHrRoles = dbContext.RoleUsers.Find(m => m.Role.Equals(Constants.Rights.NhanSu) && (m.Expired.Equals(null) || m.Expired > DateTime.Now)).ToList();
+                    if (listHrRoles != null && listHrRoles.Count > 0)
+                    {
+                        foreach (var item in listHrRoles)
+                        {
+                            if (item.Action == 3)
+                            {
+                                var fields = Builders<Employee>.Projection.Include(p => p.Email).Include(p => p.FullName);
+                                var emailEntity = dbContext.Employees.Find(m => m.Id.Equals(item.User)).Project<Employee>(fields).FirstOrDefault();
+                                if (emailEntity != null)
+                                {
+                                    tos.Add(new EmailAddress { Name = emailEntity.FullName, Address = emailEntity.Email });
+                                }
+                            }
+                            else if (item.Action >= 4)
+                            {
+                                var fields = Builders<Employee>.Projection.Include(p => p.Email).Include(p => p.FullName);
+                                var emailEntity = dbContext.Employees.Find(m => m.Id.Equals(item.User)).Project<Employee>(fields).FirstOrDefault();
+                                if (emailEntity != null)
+                                {
+                                    ccs.Add(new EmailAddress { Name = emailEntity.FullName, Address = emailEntity.Email });
+                                }
+                            }
+                        }
+                    }
+                    // Test
+                    tos = new List<EmailAddress>
+                    {
+                        new EmailAddress { Name = "Xuan", Address = "xuan.tm1988@gmail.com" }
+                    };
+                    ccs = new List<EmailAddress>{
+                        new EmailAddress { Name = "Xuan CC", Address = "xuantranm@gmail.com" }
+                    };
+                    // End Test
+
+                    var webRoot = Environment.CurrentDirectory;
+                    var pathToFile = _env.WebRootPath
+                            + Path.DirectorySeparatorChar.ToString()
+                            + "Templates"
+                            + Path.DirectorySeparatorChar.ToString()
+                            + "EmailTemplate"
+                            + Path.DirectorySeparatorChar.ToString()
+                            + "EmployeeChangeInformation.html";
+
+                    #region parameters
+                    //{0} : Subject
+                    //{1} : Đối tượng dc gửi
+                    //{2} : Người thay đổi thông tin - chức vụ
+                    //{3} : Ngày thay đổi
+                    //{4} : Link chi tiết nhân sự
+                    //{5}: Website
+                    #endregion
+                    var subject = "[TRIBAT] Thay đổi thông tin nhân sự.";
+                    var requester = "Bộ phận nhân sự.";
+                    var userTitle = entity.FullName;
+                    if (!string.IsNullOrEmpty(entity.Title))
+                    {
+                        userTitle += " - " + entity.Title;
+                    }
+                    var linkDomain = Constants.System.domain;
+                    var fullLinkInformation = linkDomain + "/" + linkInformation;
+                    var bodyBuilder = new BodyBuilder();
+                    using (StreamReader SourceReader = System.IO.File.OpenText(pathToFile))
+                    {
+                        bodyBuilder.HtmlBody = SourceReader.ReadToEnd();
+                    }
+                    string messageBody = string.Format(bodyBuilder.HtmlBody,
+                        subject,
+                        requester,
+                        userTitle,
+                        entity.UpdatedOn.ToString("dd/MM/yyyy"),
+                        fullLinkInformation,
+                        linkDomain
+                        );
+                    var emailMessage = new EmailMessage()
+                    {
+                        ToAddresses = tos,
+                        CCAddresses = ccs,
+                        Subject = subject,
+                        BodyContent = messageBody
+                    };
+                    try
+                    {
+                        var emailFrom = Constants.System.emailErp;
+                        var emailFromName = Constants.System.emailErpName;
+                        var emailFromPwd = Constants.System.emailErpPwd;
+                        var message = new MimeMessage();
+                        message.To.AddRange(emailMessage.ToAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
+                        if (emailMessage.CCAddresses != null && emailMessage.CCAddresses.Count > 0)
+                        {
+                            message.Cc.AddRange(emailMessage.CCAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
+                        }
+                        if (emailMessage.FromAddresses == null || emailMessage.FromAddresses.Count == 0)
+                        {
+                            emailMessage.FromAddresses = new List<EmailAddress>
+                                {
+                                    new EmailAddress { Name = emailFromName, Address = emailFrom }
+                                };
+                        }
+                        message.From.AddRange(emailMessage.FromAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
+                        message.Subject = emailMessage.Subject;
+                        message.Body = new TextPart(TextFormat.Html)
+                        {
+                            Text = emailMessage.BodyContent
+                        };
+                        using (var emailClient = new MailKit.Net.Smtp.SmtpClient())
+                        {
+                            //The last parameter here is to use SSL (Which you should!)
+                            emailClient.Connect(emailFrom, 465, true);
+
+                            //Remove any OAuth functionality as we won't be using it. 
+                            emailClient.AuthenticationMechanisms.Remove("XOAUTH2");
+
+                            emailClient.Authenticate(emailFrom, emailFromPwd);
+
+                            emailClient.Send(message);
+                            emailClient.Disconnect(true);
+                            Console.WriteLine("The mail has been sent successfully !!");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                        // insert dd. Do later.
+                    }
+                    #endregion
+                }
+
+                #endregion
 
                 #region Notification
                 var notificationImages = new List<Image>();
@@ -1247,19 +1525,21 @@ namespace erp.Controllers
                 {
                     notificationImages.Add(entity.Cover);
                 }
+                //var userData = new UserData {UserId = 0};
+                //var userDataString = JsonConvert.SerializeObject(userData);
+                //var userData = JsonConvert.DeserializeObject<UserData>(userDataString);
                 var notification = new Notification
                 {
                     Type = Constants.Notification.HR,
                     Title = Constants.Notification.UpdateHR,
                     Content = entity.FullName,
-                    Link = "/hr/nhan-su/thong-tin/" + entity.Id,
+                    Link = linkInformation,
                     Images = notificationImages.Count > 0 ? notificationImages : null,
-                    UserId = string.Empty,
-                    CreatedBy = loginUserName
+                    UserId = entity.Id,
+                    CreatedBy = login
                 };
                 dbContext.Notifications.InsertOne(notification);
                 #endregion
-
 
                 #region Activities
                 var activity = new TrackingUser
@@ -1267,16 +1547,17 @@ namespace erp.Controllers
                     UserId = userId,
                     Function = Constants.Collection.NhanViens,
                     Action = Constants.Action.Edit,
-                    Value = userId,
-                    Description = Constants.Action.Edit + " " + Constants.Collection.Employees + " " + entity.UserName
+                    Value = entity.Id,
+                    Content = JsonConvert.SerializeObject(entity)
                 };
                 dbContext.TrackingUsers.InsertOne(activity);
                 #endregion
-                return Json(new { result = true, source = "update", id = entity.Id, message = "Cập nhật thành công" });
+
+                return Json(new { result = true, source = "update", id = userId, message = messageResult });
             }
             catch (Exception ex)
             {
-                return Json(new { result = false, source = "update", id = entity.Id, message = ex.Message });
+                return Json(new { result = false, source = "update", id = userId, message = ex.Message });
             }
         }
 
@@ -1302,7 +1583,7 @@ namespace erp.Controllers
                         Function = Constants.Collection.Employees,
                         Action = Constants.Action.Delete,
                         Value = entity.UserName,
-                        Description = entity.UserName + Constants.Flag + entity.FullName
+                        Content = entity.UserName + Constants.Flag + entity.FullName
                     };
                     dbContext.TrackingUsers.InsertOne(activity);
                     #endregion
@@ -1320,12 +1601,11 @@ namespace erp.Controllers
             }
         }
 
-
         [Route(Constants.LinkHr.ChildrenReport)]
         public async Task<ActionResult> ChildrenReport()
         {
             // update true data
-            var employees = dbContext.Employees.Find(m=>true).ToList();
+            var employees = dbContext.Employees.Find(m => true).ToList();
             foreach (var employee in employees)
             {
                 if (employee.EmployeeFamilys != null)
@@ -1363,7 +1643,7 @@ namespace erp.Controllers
             return View(result);
         }
 
-        [Route(Constants.LinkHr.ChildrenReport+ "/"+ Constants.LinkHr.Export)]
+        [Route(Constants.LinkHr.ChildrenReport + "/" + Constants.LinkHr.Export)]
         public async Task<IActionResult> ChildrenReportExport(string fileName)
         {
             string sWebRootFolder = _env.WebRootPath;

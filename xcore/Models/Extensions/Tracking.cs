@@ -22,7 +22,7 @@ namespace Models
 
         public string Value { get; set; }
 
-        public string Description { get; set; }
+        public string Content { get; set; }
 
         public DateTime Created { get; set; } = DateTime.Now;
     }

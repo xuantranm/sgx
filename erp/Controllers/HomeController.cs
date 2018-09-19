@@ -27,6 +27,7 @@ using System.Security.Claims;
 using System.Threading;
 using MimeKit;
 using Services;
+using Common.Enums;
 
 namespace erp.Controllers
 {
@@ -44,8 +45,8 @@ namespace erp.Controllers
 
         public IConfiguration Configuration { get; }
 
-        public HomeController(IDistributedCache cache, 
-            IConfiguration configuration, 
+        public HomeController(IDistributedCache cache,
+            IConfiguration configuration,
             IHostingEnvironment env,
             IEmailSender emailSender,
             ISmsSender smsSender,
@@ -64,8 +65,9 @@ namespace erp.Controllers
             //var userAgent = Request.Headers["User-Agent"];
             //var ua = new UserAgent(userAgent);
 
-            var loginId = User.Identity.Name;
-            var userInformation = dbContext.Employees.Find(m => m.Id.Equals(loginId)).FirstOrDefault();
+            var login = User.Identity.Name;
+            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+            var userInformation = dbContext.Employees.Find(m => m.Id.Equals(login)).FirstOrDefault();
             if (userInformation == null)
             {
                 #region snippet1
@@ -75,8 +77,14 @@ namespace erp.Controllers
                 return RedirectToAction("login", "account");
             }
 
-            #region Right Management [ Role, RoleUser ]
+            #region Rights
+            var rightHr = false;
+            if (!string.IsNullOrEmpty(login))
+            {
+                rightHr = Utility.IsRight(login, Constants.Rights.HR, (int)ERights.View);
+            }
 
+            ViewData["rightHr"] = rightHr;
             #endregion
 
             int getItems = 10;
@@ -108,46 +116,91 @@ namespace erp.Controllers
 
             #region Notification Birthday
             ViewData["birthdayNoticeBefore"] = birthdayNoticeBefore;
-            var nextBirthdays = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Birthday > Constants.MinDate).ToEnumerable().Where(m => m.RemainingBirthDays < birthdayNoticeBefore).OrderBy(m=>m.RemainingBirthDays).ToList();
+            var nextBirthdays = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Birthday > Constants.MinDate).ToEnumerable().Where(m => m.RemainingBirthDays < birthdayNoticeBefore).OrderBy(m => m.RemainingBirthDays).ToList();
             #endregion
 
             //#region Notification Contract
             //var sortContract = Builders<Employee>.Sort.Ascending(m => m.).Descending(m => m.Code);
             //var birthdays = dbContext.Employees.Find(m => m.Enable.Equals(true)).Sort(sortBirthday).Limit(getItems).ToList();
             //#endregion
-
-            #region Notification
             var sortNotification = Builders<Notification>.Sort.Ascending(m => m.CreatedOn).Descending(m => m.CreatedOn);
-            var notificationSystems = await dbContext.Notifications.Find(m => m.Enable.Equals(true) && m.Type.Equals(1)).Sort(sortNotification).Limit(getItems).ToListAsync();
-            var notificationHRs = await dbContext.Notifications.Find(m => m.Enable.Equals(true) && m.Type.Equals(2)).Sort(sortNotification).Limit(getItems).ToListAsync();
-            var notificationExpires = await dbContext.Notifications.Find(m => m.Enable.Equals(true) && m.Type.Equals(3)).Sort(sortNotification).Limit(getItems).ToListAsync();
-            var notificationTaskBHXHs = await dbContext.Notifications.Find(m => m.Enable.Equals(true) && m.Type.Equals(4)).Sort(sortNotification).Limit(getItems).ToListAsync();
-            var notificationCompanies = await dbContext.Notifications.Find(m => m.Enable.Equals(true) && m.Type.Equals(5)).Sort(sortNotification).Limit(getItems).ToListAsync();
-            var notificationActions = await dbContext.NotificationActions.Find(m => m.UserId.Equals(loginId)).ToListAsync();
+            var builderNotication = Builders<Notification>.Filter;
+            var filterNotication = builderNotication.Eq(m => m.Enable, true);
+
+            #region Notification HR
+            var filterHr = filterNotication & builderNotication.Eq(m => m.Type, 2);
+            if (!rightHr)
+            {
+                filterHr = filterHr & builderNotication.Eq(m => m.UserId, login);
+            }
+            var notificationHRs = await dbContext.Notifications.Find(filterHr).Sort(sortNotification).Limit(getItems).ToListAsync();
+            #endregion
+
+            #region Notification Others
+            var filterSystem = filterNotication & builderNotication.Eq(m => m.Type, 1);
+            var notificationSystems = await dbContext.Notifications.Find(filterSystem).Sort(sortNotification).Limit(getItems).ToListAsync();
+
+            var filterExpires = filterNotication & builderNotication.Eq(m => m.Type, 3);
+            var notificationExpires = await dbContext.Notifications.Find(filterExpires).Sort(sortNotification).Limit(getItems).ToListAsync();
+
+            var filterTaskBhxh = filterNotication & builderNotication.Eq(m => m.Type, 4);
+            var notificationTaskBHXHs = await dbContext.Notifications.Find(filterTaskBhxh).Sort(sortNotification).Limit(getItems).ToListAsync();
+
+            var filterCompany = filterNotication & builderNotication.Eq(m => m.Type, 5);
+            var notificationCompanies = await dbContext.Notifications.Find(filterCompany).Sort(sortNotification).Limit(getItems).ToListAsync();
+
+            var notificationActions = await dbContext.NotificationActions.Find(m => m.UserId.Equals(login)).ToListAsync();
             #endregion
 
             #region Tracking Other User (check user activities,...)
             var sortTrackingOther = Builders<TrackingUser>.Sort.Descending(m => m.Created);
-            var trackingsOther = dbContext.TrackingUsers.Find(m => !m.UserId.Equals(loginId)).Sort(sortTrackingOther).Limit(getItems).ToList();
+            var trackingsOther = dbContext.TrackingUsers.Find(m => !m.UserId.Equals(login)).Sort(sortTrackingOther).Limit(getItems).ToList();
             #endregion
 
             #region My Trackings
             var sortTracking = Builders<TrackingUser>.Sort.Descending(m => m.Created);
-            var trackings = dbContext.TrackingUsers.Find(m => m.UserId.Equals(loginId)).Sort(sortTracking).Limit(getItems).ToList();
+            var trackings = dbContext.TrackingUsers.Find(m => m.UserId.Equals(login)).Sort(sortTracking).Limit(getItems).ToList();
             #endregion
 
-            #region News
+            #region Extends (trainning, recruit, news....)
             var sortNews = Builders<News>.Sort.Descending(m => m.CreatedDate);
             var news = dbContext.News.Find(m => m.Enable.Equals(true)).Sort(sortNews).Limit(getItems).ToList();
+
+            var listTrainningTypes = await dbContext.TrainningTypes.Find(m => m.Enable.Equals(true)).ToListAsync();
+            Random rnd = new Random();
+            int r = rnd.Next(listTrainningTypes.Count);
+            var sortTrainnings = Builders<Trainning>.Sort.Descending(m => m.CreatedOn);
+            // Random type result
+            var trainningType = listTrainningTypes[r].Alias;
+            var trainnings = dbContext.Trainnings.Find(m => m.Enable.Equals(true) && m.Type.Equals(trainningType)).Sort(sortTrainnings).Limit(5).ToList();
             #endregion
 
             #region Leave Manager
-            var leaves = await dbContext.Leaves.Find(m => m.ApproverId.Equals(loginId) && m.Status.Equals(0)).ToListAsync();
+            var leaves = await dbContext.Leaves.Find(m => m.ApproverId.Equals(login) && m.Status.Equals(0)).ToListAsync();
             #endregion
 
             #region Times Manager
-            var timeKeepers = await dbContext.EmployeeWorkTimeLogs.Find(m => m.ConfirmId.Equals(loginId) && m.Status.Equals(2)).ToListAsync();
+            var timeKeepers = await dbContext.EmployeeWorkTimeLogs.Find(m => m.ConfirmId.Equals(login) && m.Status.Equals(2)).ToListAsync();
             #endregion
+
+
+            #region My Activities
+            //public IList<Leave> MyLeaves { get; set; }
+            //public IList<EmployeeWorkTimeLog> MyWorkTimeLogs { get; set; }
+            var sortMyLeave = Builders<Leave>.Sort.Ascending(m => m.CreatedOn).Descending(m => m.CreatedOn);
+            var builderMyLeave = Builders<Leave>.Filter;
+            var filterMyLeave = builderMyLeave.Eq(m => m.Enable, true)
+                & builderMyLeave.Eq(m=>m.EmployeeId, login);
+            var myLeaves = await dbContext.Leaves.Find(filterMyLeave).Sort(sortMyLeave).Limit(5).ToListAsync();
+
+            var sortMyWorkTime = Builders<EmployeeWorkTimeLog>.Sort.Ascending(m => m.CreatedOn).Descending(m => m.CreatedOn);
+            var builderMyWorkTime = Builders<EmployeeWorkTimeLog>.Filter;
+            var filterMyWorkTime = builderMyWorkTime.Eq(m => m.Enable, true) & builderMyWorkTime.Ne(m => m.Status, 1)
+                & builderMyWorkTime.Eq(m => m.EmployeeId, login);
+            var myWorkTimes = await dbContext.EmployeeWorkTimeLogs.Find(filterMyWorkTime).Sort(sortMyWorkTime).Limit(5).ToListAsync();
+
+            #endregion
+
 
             var viewModel = new HomeErpViewModel()
             {
@@ -163,7 +216,12 @@ namespace erp.Controllers
                 News = news,
                 Birthdays = nextBirthdays,
                 Leaves = leaves,
-                TimeKeepers = timeKeepers
+                TimeKeepers = timeKeepers,
+                // My activities
+                MyLeaves = myLeaves,
+                MyWorkTimeLogs = myWorkTimes,
+                // Training
+                Trainnings = trainnings
             };
 
             return View(viewModel);

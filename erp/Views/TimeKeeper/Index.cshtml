@@ -1,14 +1,23 @@
 ﻿@using System;
-@using System.Globalization;
 @using Common.Utilities;
+@using Common.Enums;
+@using System.Globalization;
 @using ViewModels
 @model TimeKeeperViewModel
 
 @{
     Layout = "~/Views/Shared/_LayoutSocialFb.cshtml";
+    var login = User.Identity.Name;
+    var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+    var rightChamCong = false;
+    if (!string.IsNullOrEmpty(login))
+    {
+        rightChamCong = Utility.IsRight(login, Constants.Rights.ChamCong, (int)ERights.View);
+    }
 }
 
 <section>
+    <input type="hidden" id="hidUrlGetItem" value="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Item" />
     <div class="container">
         <div class="row justify-content-center align-items-center">
             <div class="col">
@@ -54,20 +63,24 @@
     <!--end of container-->
 </section>
 
-<form method="get" action="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Index">
+<form method="get" action="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Index" id="form-main">
     <div class="form-row mb-3">
-        <div class="col-md-6">
-            <label class="control-label">Nhân viên</label>
-            <select asp-for="employee" class="form-control form-control-lg js-select2-basic-single">
-                <option value="">Tất cả</option>
-                @{
-                    foreach (var item in Model.Employees)
-                    {
-                        <option value="@item.Id">@item.FullName [@item.Title]</option>
+        @if (rightChamCong)
+        {
+            <div class="col-md-6">
+                <label class="control-label">Nhân viên</label>
+                <select asp-for="employee" class="form-control form-control-lg js-select2-basic-single">
+                    <option value="">Tất cả</option>
+                    @{
+                        foreach (var item in Model.Employees)
+                        {
+                            <option value="@item.Id">@item.FullName [@item.Title]</option>
+                        }
                     }
-                }
-            </select>
-        </div>
+                </select>
+            </div>
+        }
+
         <div class="col-md-3 date-area">
             <label class="control-label">Tháng</label>
             <select asp-for="times" class="form-control form-control-lg js-select2-basic-single">
@@ -81,7 +94,7 @@
         </div>
         <div class="col-md-3">
             <label class="control-label"><small>Bấm nút hoặc Enter</small></label>
-            <button class="btn btn-info form-control" type="submit"><i class="icon-magnifying-glass"></i> Tìm kiếm</button>
+            <button class="btn btn-lg btn-info form-control" type="submit"><i class="icon-magnifying-glass"></i> Tìm kiếm</button>
         </div>
     </div>
 </form>
@@ -121,13 +134,13 @@
         <li class="list-group-item">
             <div class="d-flex justify-content-between">
                 <div><i class="icon-calculator mr-1"></i> Đi trễ: (phút)</div>
-                <span class="badge badge-light">@Math.Round(late, 0)</span>
+                <span class="badge badge-light">@Math.Round(TimeSpan.FromMilliseconds(late).TotalMinutes, 0)</span>
             </div>
         </li>
         <li class="list-group-item">
             <div class="d-flex justify-content-between">
                 <div><i class="icon-calculator mr-1"></i> Về sớm: (phút)</div>
-                <span class="badge badge-light">@Math.Round(early, 0)</span>
+                <span class="badge badge-light">@Math.Round(TimeSpan.FromMilliseconds(early).TotalMinutes, 0)</span>
             </div>
         </li>
     </ul>
@@ -163,7 +176,7 @@
                         <th scope="col">Ca làm việc</th>
                         <th scope="col">Đi trễ (phút)</th>
                         <th scope="col">Về sớm (phút)</th>
-                        <th scope="col">Giờ làm việc</th>
+                        <th scope="col">Ngày làm việc</th>
                         <th scope="col">Nơi chấm công</th>
                     </tr>
                 </thead>
@@ -175,7 +188,8 @@
                                 @{
                                     if (log.Status == 0)
                                     {
-                                        if (log.Date.Date == DateTime.Now.AddDays(-1).Date)
+                                        // Apply later: get db date allow [XacNhan]. Foreach fromAllow -> Now. If have sunday, leave ++;
+                                        if (log.Date.Date > DateTime.Now.AddDays(-7).Date)
                                         {
                                             <input type="button" class="btn btn-sm btn-danger" value="Xác nhận" data-toggle="modal" data-target="#requestTimeKeeperModal" data-id="@log.Id" />
                                         }
@@ -193,7 +207,12 @@
                                     }
                                     else
                                     {
-                                        <span class="badge badge-info">@Constants.TimeKeeper(log.Status)</span>
+                                        var statusBag = "badge-info";
+                                        if (log.Status == 4)
+                                        {
+                                            statusBag = "badge-pill";
+                                        }
+                                        <span class="badge @statusBag">@Constants.TimeKeeper(log.Status)</span>
                                     }
                                 }
                             </td>
@@ -209,7 +228,25 @@
                             <td>@log.Start.ToString(@"hh\:mm")-@log.End.ToString(@"hh\:mm")</td>
                             <td>@Math.Round(log.Late.TotalMinutes, 0)</td>
                             <td>@Math.Round(log.Early.TotalMinutes, 0)</td>
-                            <td>@Math.Round(log.WorkTime.TotalHours, 2)</td>
+                            <td>
+                                @{
+                                    if (log.Status == 3)
+                                    {
+                                        <span>1</span>
+                                    }
+                                    else
+                                    {
+                                        if (log.WorkDay == 0)
+                                        {
+                                            <span>@log.Workcode</span>
+                                        }
+                                        else
+                                        {
+                                            <span>@log.WorkDay</span>
+                                        }
+                                    }
+                                }
+                            </td>
                             <td>@log.WorkplaceCode</td>
                         </tr>
                     }
@@ -226,28 +263,44 @@ else
         Không có dữ liệu hoặc bạn thuộc danh sách không chấm công.
     </div>
 }
+
 <script id="tmplDataItem" type="text/x-jsrender">
-    <input type="hidden" name="Setting.Id" value="{{:id}}" class="form-control" />
-    <input type="hidden" name="Setting.Timestamp" value="{{:timestamp}}" class="form-control" />
+    <input type="hidden" name="EmployeeWorkTimeLog.Id" value="{{:id}}" />
     <div class="form-group">
-        <label class="control-label" for="Setting_Key">Key</label>
-        <input name="Setting.Key" value="{{:key}}" class="form-control" readonly />
-        <span asp-validation-for="Setting.Key" class="text-danger"></span>
+        <label class="control-label">Người xác nhận</label>
+        <select name="EmployeeWorkTimeLog.ConfirmId" class="form-control">
+            @{
+                foreach (var item in Model.Approves)
+                {
+                    var title = string.Empty;
+                    <option value="@item.Id">@item.Name</option>
+                }
+            }
+        </select>
+    </div>
+    <div class="from-group">
+        <label class="control-label">Chi tiết</label>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            Ngày <span class="badge badge-info">{{:date}}</span>
+        </div>
+        <div class="col-md-3 col-sm-6 col-xs-12">
+            Vào: <span class="badge badge-info">{{:in}}</span>
+        </div>
+        <div class="col-md-3 col-sm-6 col-xs-12">
+            Trễ: <span class="badge badge-info">{{:late}}</span>
+        </div>
+        <div class="col-md-3 col-sm-6 col-xs-12">
+            Ra: <span class="badge badge-info">{{:out}}</span>
+        </div>
+        <div class="col-md-3 col-sm-6 col-xs-12">
+            Sớm: <span class="badge badge-info">{{:early}}</span>
+        </div>
     </div>
     <div class="form-group">
-        <label class="control-label" for="Setting_Value">Value</label>
-        <input name="Setting.Value" value="{{:value}}" class="form-control" />
-        <span asp-validation-for="Setting.Value" class="text-danger"></span>
-    </div>
-    <div class="form-group">
-        <label class="control-label" for="Setting_Title">Title</label>
-        <input name="Setting.Title" value="{{:title}}" class="form-control" />
-        <span asp-validation-for="Setting.Title" class="text-danger"></span>
-    </div>
-    <div class="form-group">
-        <label class="control-label" for="Setting_Content">Content</label>
-        <textarea name="Setting.Content" value="{{:content}}" class="form-control"></textarea>
-        <span asp-validation-for="Setting.Content" class="text-danger"></span>
+        <label class="control-label">Lý do</label>
+        <textarea name="EmployeeWorkTimeLog.Reason" class="form-control js-auto-size">{{:reason}}</textarea>
     </div>
 </script>
 
@@ -256,38 +309,19 @@ else
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="editItemModalLabel">Xác nhận công</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Đóng">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form class="data-form" method="post" action="/fg/cham-cong/xac-nhan-cong/" enctype="multipart/form-data">
+            <form class="data-form" method="post" action="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Request" enctype="multipart/form-data">
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                 <span class="result"></span>
                 <div class="modal-body data-item-edit">
-                    <input type="hidden" name="manager" class="form-control" value="@Model.Employee" />
-                    <input type="hidden" name="Setting.Id" class="form-control" />
-                    <div class="form-group">
-                        <label class="control-label">Quản lý</label>
-                        <!-- Multi users, apply later -->
-                        <input name="Setting.Value" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Ngày</label>
-                        <input name="Setting.Value" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Thời gian thiếu</label>
-                        <input name="Setting.Value" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Lý do</label>
-                        <textarea name="Setting.Title" class="form-control"></textarea>
-                    </div>
                 </div>
 
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy và đóng</button>
-                    <button type="submit" class="btn btn-primary"><i class="icon-save"></i>&nbsp;Gửi</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fas fa-times"></i>Hủy và đóng</button>
+                    <button type="submit" class="btn btn-primary btn-submit-timekeeping"><i class="icon-save"></i>&nbsp;Gửi</button>
                 </div>
             </form>
         </div>

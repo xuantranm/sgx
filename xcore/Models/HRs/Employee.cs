@@ -15,6 +15,9 @@ namespace Models
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
 
+        // Use store history
+        public string EmployeeId { get; set; }
+
         [Display(Name = "Tên đăng nhập")]
         public string UserName { get; set; }
 

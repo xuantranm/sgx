@@ -5,7 +5,20 @@ namespace ViewModels
 {
     public class HomeErpViewModel
     {
-        // Notifcation from HR
+        #region My Activities
+        public IList<Leave> MyLeaves { get; set; }
+
+        public IList<EmployeeWorkTimeLog> MyWorkTimeLogs { get; set; }
+
+        #endregion
+
+        #region Extends (trainning, recruit, news....)
+        public IList<Trainning> Trainnings { get; set; }
+
+        public IList<News> News { get; set; }
+        #endregion
+
+        #region Notifcation from HR
         public IList<Employee> Birthdays { get; set; }
 
         public IList<Employee> ExpiresContract { get; set; }
@@ -22,15 +35,14 @@ namespace ViewModels
 
         public IList<NotificationAction> NotificationActions { get; set; }
 
+        #endregion
+
         public Employee UserInformation { get; set; }
 
         public IList<TrackingUser> Trackings { get; set; }
 
         // Load activities user
         public IList<TrackingUser> TrackingsOther { get; set; }
-
-        // Load news...
-        public IList<News> News { get; set; }
 
         public IList<Leave> Leaves { get; set; }
 

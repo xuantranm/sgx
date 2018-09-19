@@ -130,7 +130,7 @@ namespace erp.Controllers
                         Function = Constants.Collection.RoleUsers,
                         Action = Constants.Action.Create,
                         Value = entity.Role,
-                        Description = entity.User + Constants.Flag + entity.Role
+                        Content = entity.User + Constants.Flag + entity.Role
                     };
                     dbContext.TrackingUsers.InsertOne(activity);
                     #endregion
@@ -173,7 +173,7 @@ namespace erp.Controllers
                         Function = Constants.Collection.RoleUsers,
                         Action = Constants.Action.Edit,
                         Value = entity.Role,
-                        Description = entity.User + Constants.Flag + entity.Role
+                        Content = entity.User + Constants.Flag + entity.Role
                         //Link = "/stg/" + entity.Alias
                     };
                     dbContext.TrackingUsers.InsertOne(activity);
@@ -217,7 +217,7 @@ namespace erp.Controllers
                         Function = Constants.Collection.RoleUsers,
                         Action = Constants.Action.Disable,
                         Value = entity.Role,
-                        Description = entity.User + Constants.Flag + entity.Role
+                        Content = entity.User + Constants.Flag + entity.Role
                     };
                     dbContext.TrackingUsers.InsertOne(activity);
                     #endregion
@@ -259,7 +259,7 @@ namespace erp.Controllers
                         Function = Constants.Collection.RoleUsers,
                         Action = Constants.Action.Active,
                         Value = entity.Role,
-                        Description = entity.User + Constants.Flag + entity.Role
+                        Content = entity.User + Constants.Flag + entity.Role
                     };
                     dbContext.TrackingUsers.InsertOne(activity);
                     #endregion
@@ -297,7 +297,7 @@ namespace erp.Controllers
                         Function = Constants.Collection.RoleUsers,
                         Action = Constants.Action.Delete,
                         Value = entity.Role,
-                        Description = entity.User + Constants.Flag + entity.Role
+                        Content = entity.User + Constants.Flag + entity.Role
                     };
                     dbContext.TrackingUsers.InsertOne(activity);
                     #endregion

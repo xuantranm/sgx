@@ -10,16 +10,33 @@ namespace Common.Utilities
         public static class System
         {
             public const string account = "sysadmin";
+            public const string accountId = "5b4e9e8f4fbc4d13582de168";
             public const string department = "system";
             public const int expire = 30;
             public const bool enable = true;
-            public const string domain = "http://demo.tribat.vn:8090";
+            //public const string domain = "http://demo.tribat.vn:8090";
+            public const string domain = "https://localhost:44366";
             public const string login = "/account/login/";
+            public const string emailErp = "test-erp@tribat.vn";
+            public const string emailErpPwd = "Kh0ngbiet@123";
+            public const string emailErpName = "HCNS";
+
+            public const string emailHr = "test-erp@tribat.vn";
+            public const string emailNM = "test-erp@tribat.vn";
         }
 
         public static class Rights
         {
             public const string System = "system";
+            public const string HR = "hr";
+            public const string NhanSu = "nhan-su";
+            public const string HanhChanh = "hanh-chanh";
+            public const string Luong = "luong";
+            public const string ChamCong = "cham-cong";
+            public const string XinNghiPhepDum = "xin-nghi-phep-dum";
+
+            public const string NhaMay = "nha-may";
+            public const string TonSX = "ton-sx";
         }
 
         public static class ContactType
@@ -98,8 +115,13 @@ namespace Common.Utilities
             public const string Main = "fg";
             public const string Index = "cham-cong";
             public const string Manage = "quan-ly-cham-cong";
+            public const string Request = "yeu-cau-xac-nhan-cong";
+            public const string Aprrove = "xac-nhan-cham-cong";
+            public const string AprrovePost = "post-xac-nhan-cham-cong";
+            public const string Item = "chi-tiet-cham-cong";
             // API
             //public const string Approve = "duyet-phep";
+
         }
 
         public static class LinkSalary

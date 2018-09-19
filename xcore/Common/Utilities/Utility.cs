@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using Data;
 using MongoDB.Driver;
 using Models;
+using System.Reflection;
 //using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 
 namespace Common.Utilities
@@ -26,6 +27,11 @@ namespace Common.Utilities
         #region Rights
         public static bool IsRight(string userId, string role, int action)
         {
+            // check system
+            if (userId == Constants.System.accountId)
+            {
+                return true;
+            }
             #region Filter
             var builder = Builders<RoleUser>.Filter;
             var filter = builder.Eq(m => m.User, userId);
@@ -629,6 +635,29 @@ namespace Common.Utilities
             return new DateTime(year, month, 25);
         }
 
+        public static DateTime EndWorkingMonthByDate(DateTime? date)
+        {
+            var dateHere = DateTime.Now;
+            if (date.HasValue)
+            {
+                dateHere = date.Value;
+            }
+            // calculator date: 26 - > 25
+            // now: 25/08 => [from] times: -> 25/08
+            // now: 26/08 => [from] times: -> 25/09
+            // now: 01/09 => [from] times: -> 25/09
+            // now: 24/09 => [from] times: -> 25/09
+            var times = dateHere.Month + "-" + dateHere.Year;
+            if (dateHere.Day > 25)
+            {
+                var lastMonth = dateHere.AddMonths(-1);
+                times = lastMonth.Month + "-" + lastMonth.Year;
+            }
+            int month = Convert.ToInt32(times.Split("-")[0]);
+            int year = Convert.ToInt32(times.Split("-")[1]);
+            return new DateTime(year, month, 25);
+        }
+
         public static string TruncateLongString(this string str, int maxLength)
         {
             if (string.IsNullOrEmpty(str))
@@ -695,5 +724,114 @@ namespace Common.Utilities
             return year + month.ToString("D2") + "-" + 1.ToString("D4");
         }
         #endregion
+
+        public static IEnumerable<string> EnumeratePropertyDifferences<T>(this T obj1, T obj2)
+        {
+            PropertyInfo[] properties = typeof(T).GetProperties();
+            List<string> changes = new List<string>();
+
+            
+            return changes;
+        }
+
+        public static List<Variance> DetailedCompare<T>(this T obj1, T obj2)
+        {
+            PropertyInfo[] properties = typeof(T).GetProperties();
+            List<Variance> variances = new List<Variance>();
+
+            var outs = new List<string>{
+                    "Id",
+                    "EmployeeId",
+                    "Timestamp",
+                    "CreatedOn",
+                    "UpdatedOn",
+                    "CheckedOn",
+                    "ApprovedOn",
+                    "CreatedBy",
+                    "UpdatedBy",
+                    "CheckedBy",
+                    "ApprovedBy"};
+
+            foreach (PropertyInfo pi in properties)
+            {
+                // not compare field
+                if (!outs.Any(s => pi.Name.Contains(s)))
+                {
+                    object value1 = typeof(T).GetProperty(pi.Name).GetValue(obj1, null);
+                    object value2 = typeof(T).GetProperty(pi.Name).GetValue(obj2, null);
+                    if (value2 != null)
+                    {
+                        Type type = pi.PropertyType;
+                        if (type.Namespace == "System.Collections.Generic")
+                        {
+                            var a = (IList)value1;
+                            var b = (IList)value2;
+                            var i = 0;
+                            foreach (var item in a)
+                            {
+                                var otherItem = b[i];
+                                var newDiffe = item.ChildCompare(otherItem);
+                                i++;
+                            }
+                        }
+                        else
+                        {
+                            if (value1 != value2 && (value1 == null || !value1.Equals(value2)))
+                            {
+                                variances.Add(new Variance
+                                {
+                                    Prop = pi.Name,
+                                    ValA = value1,
+                                    ValB = value2
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+            return variances;
+        }
+
+        public static List<Variance> ChildCompare<T>(this T obj1, T obj2)
+        {
+            PropertyInfo[] properties = typeof(T).GetProperties();
+            List<Variance> variances = new List<Variance>();
+
+            var outs = new List<string>{
+                    "Id",
+                    "EmployeeId",
+                    "Timestamp",
+                    "CreatedOn",
+                    "UpdatedOn",
+                    "CheckedOn",
+                    "ApprovedOn",
+                    "CreatedBy",
+                    "UpdatedBy",
+                    "CheckedBy",
+                    "ApprovedBy"};
+
+            foreach (PropertyInfo pi in properties)
+            {
+                // not compare field
+                if (!outs.Any(s => pi.Name.Contains(s)))
+                {
+                    object value1 = typeof(T).GetProperty(pi.Name).GetValue(obj1, null);
+                    object value2 = typeof(T).GetProperty(pi.Name).GetValue(obj2, null);
+                    if (value2 != null)
+                    {
+                        if (value1 != value2 && (value1 == null || !value1.Equals(value2)))
+                        {
+                            variances.Add(new Variance
+                            {
+                                Prop = pi.Name,
+                                ValA = value1,
+                                ValB = value2
+                            });
+                        }
+                    }
+                }
+            }
+            return variances;
+        }
     }
 }

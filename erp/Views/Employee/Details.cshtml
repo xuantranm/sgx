@@ -5,6 +5,20 @@
 
 @{
     Layout = "~/Views/Shared/_LayoutSocialFb.cshtml";
+
+    var login = User.Identity.Name;
+    var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+    var rightSystem = false;
+    var rightHr = false;
+    var rightLuong = false;
+    var rightNhaMay = false;
+    if (!string.IsNullOrEmpty(login))
+    {
+        rightSystem = Utility.IsRight(login, Constants.Rights.System, (int)ERights.View);
+        rightHr = Utility.IsRight(login, Constants.Rights.HR, (int)ERights.View);
+        rightLuong = Utility.IsRight(login, Constants.Rights.Luong, (int)ERights.View);
+        rightNhaMay = Utility.IsRight(login, Constants.Rights.NhaMay, (int)ERights.View);
+    }
 }
 
 <div class="main-container">
@@ -36,7 +50,7 @@
                     <h1 class="h2">Thông tin</h1>
                 </div>
                 <div class="col-auto text-right">
-                    <a href="/hr/nhan-su/cap-nhat/@Model.Employee.Id" class="btn btn-success"><i class="icon icon-edit"></i>Chỉnh sửa</a>
+                    <a href="/hr/nhan-su/cap-nhat/@Model.Employee.Id" class="btn btn-success" data-toggle="tooltip" title="Bấm thay đổi thông tin tài khoản."><i class="icon icon-edit"></i>Chỉnh sửa</a>
                 </div>
             </div>
         </div>
@@ -50,13 +64,11 @@
                             <li class="nav-item">
                                 <a class="nav-link active" id="general-tab" data-toggle="tab" href="#general" role="tab" aria-controls="general" aria-selected="true">Thông tin</a>
                             </li>
-                            @{
-                                if (ViewBag.SalatyRight > (int)ERights.None)
-                                {
-                                    <li class="nav-item">
-                                        <a class="nav-link" id="salary-tab" data-toggle="tab" href="#salary" role="tab" aria-controls="salary" aria-selected="false">Lương & Thanh toán</a>
-                                    </li>
-                                }
+                            @if (rightLuong)
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" id="salary-tab" data-toggle="tab" href="#salary" role="tab" aria-controls="salary" aria-selected="false">Lương & Thanh toán</a>
+                                </li>
                             }
                         </ul>
                     </div>
@@ -1133,174 +1145,169 @@
                 </div>
             </div>
             <!--end of tab pane-->
+            @if (rightLuong)
+            {
+                <div class="tab-pane fade" id="salary" role="tabpanel" arialabelledby="salary-tab">
+                    <div class="container">
+                        @{
 
-            @{
-                if (ViewBag.SalatyRight > (int)ERights.None)
-                {
-                    <div class="tab-pane fade" id="salary" role="tabpanel" arialabelledby="salary-tab">
-                        <div class="container">
-                            @{
-
-                                if (ViewBag.SalatyRight >= (int)ERights.View)
-                                {
-                                    <div class="row">
-                                        <div class="col-sm-6 col-12">
-                                            <div class="form-group">
-                                                <i class="icon icon-target"></i>
-                                                <label class="control-label">Bậc lương</label><span class="badge badge-light">@Model.Employee.LevelSalary</span>
-                                            </div>
+                            if (ViewBag.SalatyRight >= (int)ERights.View)
+                            {
+                                <div class="row">
+                                    <div class="col-sm-6 col-12">
+                                        <div class="form-group">
+                                            <i class="icon icon-target"></i>
+                                            <label class="control-label">Bậc lương</label><span class="badge badge-light">@Model.Employee.LevelSalary</span>
                                         </div>
-                                        <div class="col-12">
-                                            <table class="table align-items-center">
-                                                <thead>
-                                                    <tr>
-                                                        <th scope="col">STT</th>
-                                                        <th scope="col">Nội dung lương</th>
-                                                        <th scope="col">Mức</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
+                                    </div>
+                                    <div class="col-12">
+                                        <table class="table align-items-center">
+                                            <thead>
+                                                <tr>
+                                                    <th scope="col">STT</th>
+                                                    <th scope="col">Nội dung lương</th>
+                                                    <th scope="col">Mức</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
 
-                                                    @{
-                                                        if (Model.Employee.Salaries != null)
+                                                @{
+                                                    if (Model.Employee.Salaries != null)
+                                                    {
+                                                        var salaries = Model.Employee.Salaries;
+                                                        var groups = (
+                                                                from p in salaries
+                                                                group p by p.Type into d
+                                                                select new
+                                                                {
+                                                                    dt = d.Key,
+                                                                    count = d.Count(),
+                                                                    items = d.ToList(),
+                                                                }
+                                                            ).ToList();
+
+                                                        foreach (var group in groups)
                                                         {
-                                                            var salaries = Model.Employee.Salaries;
-                                                            var groups = (
-                                                                    from p in salaries
-                                                                    group p by p.Type into d
-                                                                    select new
-                                                                    {
-                                                                        dt = d.Key,
-                                                                        count = d.Count(),
-                                                                        items = d.ToList(),
-                                                                    }
-                                                                ).ToList();
-
-                                                            foreach (var group in groups)
+                                                            if (!string.IsNullOrEmpty(group.dt))
                                                             {
-                                                                if (!string.IsNullOrEmpty(group.dt))
+                                                                <tr>
+                                                                    <td colspan="3">
+                                                                        <span class="text-muted">@group.dt</span>
+                                                                    </td>
+                                                                </tr>
+                                                            }
+                                                            foreach (var item in group.items)
+                                                            {
+                                                                @if (!string.IsNullOrEmpty(item.Title))
                                                                 {
                                                                     <tr>
-                                                                        <td colspan="3">
-                                                                            <span class="text-muted">@group.dt</span>
+                                                                        <td>
+                                                                            @item.Order
+                                                                        </td>
+                                                                        <td>
+                                                                            @item.Title
+                                                                        </td>
+                                                                        <td>
+                                                                            @string.Format("{0:n0}", item.Money)
                                                                         </td>
                                                                     </tr>
                                                                 }
-                                                                foreach (var item in group.items)
-                                                                {
-                                                                    @if (!string.IsNullOrEmpty(item.Title))
-                                                                    {
-                                                                        <tr>
-                                                                            <td>
-                                                                                @item.Order
-                                                                            </td>
-                                                                            <td>
-                                                                                @item.Title
-                                                                            </td>
-                                                                            <td>
-                                                                                @string.Format("{0:n0}", item.Money)
-                                                                            </td>
-                                                                        </tr>
-                                                                    }
-                                                                }
                                                             }
                                                         }
-                                                        else
-                                                        {
-                                                            <tr>
-                                                                <td colspan="3">
-                                                                    <small>
-                                                                        <i class="icon-info"></i>
-                                                                        Dữ liệu chưa cập nhật. Liên hệ quản lý hoặc trực tiếp phòng Hành chính nhân sự.
-                                                                        Xin lỗi về sự bất tiện này.
-                                                                    </small>
-                                                                </td>
-                                                            </tr>
-                                                        }
                                                     }
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                        <div class="col-12">
-                                            <div class="form-group">
-                                                <i class="icon icon-target"></i>
-                                                <label class="control-label">Ước tính lương tháng</label>
-                                                <span class="badge badge-info">@string.Format("{0:n0}", Model.Employee.Salary)</span>
-                                                <small>Thông tin này có giá trị tham khảo, tùy qui định của công ty.</small>
-                                            </div>
+                                                    else
+                                                    {
+                                                        <tr>
+                                                            <td colspan="3">
+                                                                <small>
+                                                                    <i class="icon-info"></i>
+                                                                    Dữ liệu chưa cập nhật. Liên hệ quản lý hoặc trực tiếp phòng Hành chính nhân sự.
+                                                                    Xin lỗi về sự bất tiện này.
+                                                                </small>
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="form-group">
+                                            <i class="icon icon-target"></i>
+                                            <label class="control-label">Ước tính lương tháng</label>
+                                            <span class="badge badge-info">@string.Format("{0:n0}", Model.Employee.Salary)</span>
+                                            <small>Thông tin này có giá trị tham khảo, tùy qui định của công ty.</small>
                                         </div>
                                     </div>
+                                </div>
 
-                                    <!--BANKS-->
-                                    <hr />
-                                    <div class="row mb-4">
-                                        <div class="col">
-                                            <h5>Thông tin nhận lương</h5>
-                                        </div>
-                                        <!--end of col-->
+                                <!--BANKS-->
+                                <hr />
+                                <div class="row mb-4">
+                                    <div class="col">
+                                        <h5>Thông tin nhận lương</h5>
                                     </div>
-                                    <div class="row">
+                                    <!--end of col-->
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-6 col-12">
+                                        <div class="form-group">
+                                            <i class="icon icon-hand"></i>
+                                            <label class="control-label">Hình thức nhận lương</label>
+                                            <input value="@Constants.SalaryPaymentMethod(Model.Employee.SalaryPayMethod)" type="text" readonly class="form-control-plaintext" />
+                                        </div>
+                                    </div>
+                                    <!--end of col-->
+                                </div>
+                                @if (Model.Employee.SalaryPayMethod == 1)
+                                {
+                                    <div class="row bank-method">
                                         <div class="col-sm-6 col-12">
                                             <div class="form-group">
                                                 <i class="icon icon-hand"></i>
-                                                <label class="control-label">Hình thức nhận lương</label>
-                                                <input value="@Constants.SalaryPaymentMethod(Model.Employee.SalaryPayMethod)" type="text" readonly class="form-control-plaintext" />
+                                                <label class="control-label">Tài khoản</label>
+                                                <input asp-for="Employee.EmployeeBank.BankAccount" type="text" readonly class="form-control-plaintext" />
                                             </div>
                                         </div>
-                                        <!--end of col-->
-                                    </div>
-                                    @if (Model.Employee.SalaryPayMethod == 1)
-                                    {
-                                        <div class="row bank-method">
-                                            <div class="col-sm-6 col-12">
-                                                <div class="form-group">
-                                                    <i class="icon icon-hand"></i>
-                                                    <label class="control-label">Tài khoản</label>
-                                                    <input asp-for="Employee.EmployeeBank.BankAccount" type="text" readonly class="form-control-plaintext" />
-                                                </div>
-                                            </div>
-                                            <div class="col-sm-6 col-12">
-                                                <div class="form-group">
-                                                    <i class="icon icon-hand"></i>
-                                                    <label class="control-label">Họ tên</label>
-                                                    <input asp-for="Employee.EmployeeBank.BankHolder" type="text" readonly class="form-control-plaintext" />
-                                                </div>
-                                            </div>
-                                            <div class="col-sm-6 col-12">
-                                                <div class="form-group">
-                                                    <label class="control-label">Ngân hàng</label>
-                                                    <input asp-for="Employee.EmployeeBank.BankName" type="text" readonly class="form-control-plaintext" />
-                                                </div>
-                                            </div>
-                                            <div class="col-sm-6 col-12">
-                                                <div class="form-group">
-                                                    <label class="control-label">Chi nhánh</label>
-                                                    <input asp-for="Employee.EmployeeBank.BankLocation" type="text" readonly class="form-control-plaintext" />
-                                                </div>
+                                        <div class="col-sm-6 col-12">
+                                            <div class="form-group">
+                                                <i class="icon icon-hand"></i>
+                                                <label class="control-label">Họ tên</label>
+                                                <input asp-for="Employee.EmployeeBank.BankHolder" type="text" readonly class="form-control-plaintext" />
                                             </div>
                                         </div>
-                                    }
-                                }
-                                else
-                                {
-                                    <div class="row">
-                                        <div class="col-12">
-                                            <i class="icon-lock"></i>Giới hạn!
-                                            <small>
-                                                Bạn chưa được gán quyền để truy cập nội dung này.
-                                            </small>
+                                        <div class="col-sm-6 col-12">
+                                            <div class="form-group">
+                                                <label class="control-label">Ngân hàng</label>
+                                                <input asp-for="Employee.EmployeeBank.BankName" type="text" readonly class="form-control-plaintext" />
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-6 col-12">
+                                            <div class="form-group">
+                                                <label class="control-label">Chi nhánh</label>
+                                                <input asp-for="Employee.EmployeeBank.BankLocation" type="text" readonly class="form-control-plaintext" />
+                                            </div>
                                         </div>
                                     </div>
                                 }
                             }
-                        </div>
-                        <!--end of container-->
+                            else
+                            {
+                                <div class="row">
+                                    <div class="col-12">
+                                        <i class="icon-lock"></i>Giới hạn!
+                                        <small>
+                                            Bạn chưa được gán quyền để truy cập nội dung này.
+                                        </small>
+                                    </div>
+                                </div>
+                            }
+                        }
                     </div>
-                    <!--end of tab pane-->
-                }
+                    <!--end of container-->
+                </div>
+                <!--end of tab pane-->
             }
-
-
         </div>
     </section>
     <!--end of section-->

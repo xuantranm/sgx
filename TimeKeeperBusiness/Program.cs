@@ -64,7 +64,7 @@ namespace TimeKeeperBusiness
             #region Setting
             // Get by date
             var mode = false;
-            var day = -7;
+            var day = -14;
             var setting = dbContext.Settings.Find(m => m.Key.Equals("schedulecoremode")).FirstOrDefault();
             if (setting != null && !string.IsNullOrEmpty(setting.Value))
             {
@@ -101,7 +101,7 @@ namespace TimeKeeperBusiness
                 var builder = Builders<AttLog>.Filter;
                 var filter = builder.Gte(m => m.Date, dateCrawled);
                 // Test
-                filter = filter & builder.Eq(m => m.EnrollNumber, "514");
+                filter = filter & builder.Eq(m => m.EnrollNumber, "259");
                 attlogVps = dbContext.X628CVPAttLogs.Find(filter).ToList();
                 if (attlogVps != null && attlogVps.Count > 0)
                 {
@@ -127,7 +127,7 @@ namespace TimeKeeperBusiness
 
             #region Settings
             var dateNewPolicy = new DateTime(2018, 9, 1);
-            decimal workingScheduleHour = 8;
+            double workingScheduleHour = 8;
             var lunch = TimeSpan.FromHours(1);
 
             var modeMail = true;
@@ -209,7 +209,7 @@ namespace TimeKeeperBusiness
                     var toDate = new DateTime(year, month, 26);
 
                     var workTime = new TimeSpan(0);
-                    decimal workDay = 0;
+                    double workDay = 0;
                     var late = new TimeSpan(0);
                     var early = new TimeSpan(0);
                     // 0: cần xác nhận công; 1: đủ ngày công ; 2: đã gửi xác nhận công, 3: đồng ý; 4: từ chối  
@@ -233,6 +233,7 @@ namespace TimeKeeperBusiness
                     var employeeId = string.Empty;
                     var email = string.Empty;
                     var fullName = string.Empty;
+                    var title = string.Empty;
                     var startWorkingScheduleTime = TimeSpan.FromHours(8);
                     var endWorkingScheduleTime = TimeSpan.FromHours(17);
                     var filterEmp = Builders<Employee>.Filter.ElemMatch(z => z.Workplaces, a => a.Fingerprint == enrollNumber);
@@ -254,6 +255,7 @@ namespace TimeKeeperBusiness
                         }
                         email = employee.Email;
                         fullName = employee.FullName;
+                        title = employee.Title;
                         linkFinger = linkSetting + employee.Id;
                     }
                     #endregion
@@ -264,7 +266,7 @@ namespace TimeKeeperBusiness
                     if (outLogTime > endWorkingScheduleTime) outLogTime = endWorkingScheduleTime;
 
                     workTime = (outLogTime - inLogTime) - lunch;
-                    workDay = Convert.ToDecimal(workTime.TotalHours) / workingScheduleHour;
+                    workDay = workTime.TotalHours / workingScheduleHour;
                     if (inLogTime > startWorkingScheduleTime)
                     {
                         late = inLogTime - startWorkingScheduleTime;
@@ -303,12 +305,12 @@ namespace TimeKeeperBusiness
                             statusEarly = 0;
                         }
                         status = 0;
-                        workDay = Convert.ToDecimal(workTime.TotalHours) / workingScheduleHour;
+                        workDay = workTime.TotalHours / workingScheduleHour;
                     }
                     #endregion
                     // Tính ngày, nếu trừ lương thì tính theo Status và số phút đi trễ,về sớm (Status, Status late| early and Late|Early.TotalMinutes)
                     // <4h : 0.5 day; > 5: 1 day
-                    workDay = workTime.TotalHours > 4 ? 1 : (decimal)0.5;
+                    workDay = workTime.TotalHours > 4 ? 1 : 0.5;
                     // Cap nhat trang thai tai thoi diem ap dung, thoi gian truoc trang thai ok
                     if (dateFinger < dateNewPolicy)
                     {
@@ -317,6 +319,8 @@ namespace TimeKeeperBusiness
                     var employeeWorkTimeLog = new EmployeeWorkTimeLog
                     {
                         EmployeeId = employeeId,
+                        EmployeeName = fullName,
+                        EmployeeTitle = title,
                         EnrollNumber = enrollNumber,
                         VerifyMode = records[0].VerifyMode,
                         InOutMode = records[0].InOutMode,
@@ -358,9 +362,9 @@ namespace TimeKeeperBusiness
                         {
                             if (employeeWorkTimeLogDb.Status == 0)
                             {
-                                var currentWorkTime = employeeWorkTimeLogDb.WorkTime.TotalMinutes;
-                                var currentLate = employeeWorkTimeLogDb.Late.TotalMinutes;
-                                var currentEarly = employeeWorkTimeLogDb.Early.TotalMinutes;
+                                var currentWorkTime = employeeWorkTimeLogDb.WorkTime.TotalMilliseconds;
+                                var currentLate = employeeWorkTimeLogDb.Late.TotalMilliseconds;
+                                var currentEarly = employeeWorkTimeLogDb.Early.TotalMilliseconds;
                                 var currentWorkDay = employeeWorkTimeLogDb.WorkDay;
 
                                 var builderUpdate = Builders<EmployeeWorkTimeLog>.Filter;
@@ -452,13 +456,16 @@ namespace TimeKeeperBusiness
                             };
                             try
                             {
+                                var emailFrom = Constants.System.emailErp;
+                                var emailFromName = Constants.System.emailErpName;
+                                var emailFromPwd = Constants.System.emailErpPwd;
                                 var message = new MimeMessage();
                                 message.To.AddRange(emailMessage.ToAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
                                 if (emailMessage.FromAddresses == null || emailMessage.FromAddresses.Count == 0)
                                 {
                                     emailMessage.FromAddresses = new List<EmailAddress>
                                 {
-                                    new EmailAddress { Name = "[TRIBAT-HCNS-Thử nghiệm] Hệ thống tự động", Address = "test-erp@tribat.vn" }
+                                    new EmailAddress { Name = emailFromName, Address = emailFrom }
                                 };
                                 }
                                 message.From.AddRange(emailMessage.FromAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
@@ -470,12 +477,12 @@ namespace TimeKeeperBusiness
                                 using (var emailClient = new MailKit.Net.Smtp.SmtpClient())
                                 {
                                     //The last parameter here is to use SSL (Which you should!)
-                                    emailClient.Connect("test-erp@tribat.vn", 465, true);
+                                    emailClient.Connect(emailFrom, 465, true);
 
                                     //Remove any OAuth functionality as we won't be using it. 
                                     emailClient.AuthenticationMechanisms.Remove("XOAUTH2");
 
-                                    emailClient.Authenticate("test-erp@tribat.vn", "Kh0ngbiet@123");
+                                    emailClient.Authenticate(emailFrom, emailFromPwd);
 
                                     emailClient.Send(message);
                                     emailClient.Disconnect(true);
@@ -499,8 +506,19 @@ namespace TimeKeeperBusiness
 
             #region Update missing Date, Leave date, apply allow late|early,...
             // Apply current month
-            var endDate = Utility.WorkingMonthToDate(string.Empty);
+            var endDate = Utility.WorkingMonthToDate(DateTime.Now.Month+"-"+DateTime.Now.Year);
             var startDate = endDate.AddMonths(-1).AddDays(1);
+            //// get sunday data
+            //List<DateTime> listSunday = new List<DateTime>();
+            //while (startDate <= endDate)
+            //{
+            //    if (startDate.DayOfWeek == DayOfWeek.Sunday)
+            //    {
+            //        listSunday.Add(startDate);
+            //    }
+            //    startDate = startDate.AddDays(1);
+            //}
+
             int yearCurrent = endDate.Year;
             int monthCurrent = endDate.Month;
             // For each employee have finger code
@@ -511,169 +529,164 @@ namespace TimeKeeperBusiness
             foreach (var employee in employees)
             {
                 var monthTimeInformation = dbContext.EmployeeWorkTimeMonthLogs.Find(m => m.EmployeeId.Equals(employee.Id) && m.Year.Equals(yearCurrent) && m.Month.Equals(monthCurrent)).FirstOrDefault();
-                var lateCountAllow = monthTimeInformation.LateCountAllow;
-                double lateCountAllowUsed = monthTimeInformation.LateCountAllowUsed;
-                int lateMinuteAllow = monthTimeInformation.LateMinuteAllow;
-                var earlyCountAllow = monthTimeInformation.LateCountAllow;
-                double earlyCountAllowUsed = monthTimeInformation.EarlyCountAllowUsed;
-                int earlyMinuteAllow = monthTimeInformation.EarlyMinuteAllow;
-                int noFingerDate = monthTimeInformation.NoFingerDate;
-
-                // get times data in current month (EmployeeWorkTimeLog)
-                var builder = Builders<EmployeeWorkTimeLog>.Filter;
-                var filter = builder.Eq(m => m.EmployeeId, employee.Id);
-                filter = filter & builder.Gt(m => m.Date, startDate.AddDays(-1)) & builder.Lt(m => m.Date, endDate.AddDays(1));
-                var timekeepings = dbContext.EmployeeWorkTimeLogs.Find(filter).ToList();
-
-                // get leaves data. remember remove sunday.
-                var builderLeaves = Builders<Leave>.Filter;
-                var filterLeaves = builderLeaves.Eq(m => m.EmployeeId, employee.Id);
-                filterLeaves = filterLeaves & builderLeaves.Gt(m => m.From, startDate) & builderLeaves.Lte(m => m.To, endDate);
-                var leaves = dbContext.Leaves.Find(filterLeaves).ToList();
-
-                // get sunday data
-                List<DateTime> list = new List<DateTime>();
-                while (startDate <= endDate)
+                if (monthTimeInformation != null)
                 {
-                    if (startDate.DayOfWeek == DayOfWeek.Sunday)
-                    {
-                        list.Add(startDate);
-                    }
-                    startDate = startDate.AddDays(1);
-                }
+                    var lateCountAllow = monthTimeInformation.LateCountAllow;
+                    double lateCountAllowUsed = monthTimeInformation.LateCountAllowUsed;
+                    int lateMinuteAllow = monthTimeInformation.LateMinuteAllow;
+                    var earlyCountAllow = monthTimeInformation.LateCountAllow;
+                    double earlyCountAllowUsed = monthTimeInformation.EarlyCountAllowUsed;
+                    int earlyMinuteAllow = monthTimeInformation.EarlyMinuteAllow;
+                    int noFingerDate = monthTimeInformation.NoFingerDate;
 
-                decimal sundayCount = 0;
-                decimal holidayCount = 0;
-                decimal leaveCount = 0;
-                decimal leaveNotApproveCount = 0;
-                decimal leaveAprovedCount = 0;
-                
-                for (DateTime date = DateTime.Now; date <= endDate; date = date.AddDays(1))
-                {
-                    var timekeeping = timekeepings.FirstOrDefault(item => item.Date == date);
-                    // if exist check allow late|early
-                    if (timekeeping != null)
+                    // get times data in current month (EmployeeWorkTimeLog)
+                    var builder = Builders<EmployeeWorkTimeLog>.Filter;
+                    var filter = builder.Eq(m => m.EmployeeId, employee.Id);
+                    filter = filter & builder.Gt(m => m.Date, startDate.AddDays(-1)) & builder.Lt(m => m.Date, endDate.AddDays(1));
+                    var timekeepings = dbContext.EmployeeWorkTimeLogs.Find(filter).ToList();
+
+                    // get leaves data. remember remove sunday.
+                    var builderLeaves = Builders<Leave>.Filter;
+                    var filterLeaves = builderLeaves.Eq(m => m.EmployeeId, employee.Id);
+                    filterLeaves = filterLeaves & builderLeaves.Gt(m => m.From, startDate) & builderLeaves.Lte(m => m.To, endDate);
+                    var leaves = dbContext.Leaves.Find(filterLeaves).ToList();
+
+                    decimal sundayCount = 0;
+                    decimal holidayCount = 0;
+                    decimal leaveCount = 0;
+                    decimal leaveNotApproveCount = 0;
+                    decimal leaveAprovedCount = 0;
+
+                    for (DateTime date = startDate; date <= DateTime.Now; date = date.AddDays(1))
                     {
-                        // Cần xác nhận công (status = 0);
-                        int status = timekeeping.Status;
-                        int statusLate = timekeeping.Status;
-                        int statusEarly = timekeeping.Status;
-                        if (status == 0)
+                        var timekeeping = timekeepings.FirstOrDefault(item => item.Date == date);
+                        // if exist check allow late|early
+                        if (timekeeping != null)
                         {
-                            if (statusLate == 0 && timekeeping.Late.TotalMinutes <= lateMinuteAllow)
+                            // Cần xác nhận công (status = 0);
+                            int status = timekeeping.Status;
+                            int statusLate = timekeeping.StatusLate;
+                            int statusEarly = timekeeping.StatusEarly;
+                            if (status == 0)
                             {
-                                if (lateCountAllowUsed <= lateCountAllow)
+                                if (statusLate == 0 && timekeeping.Late.TotalMinutes <= lateMinuteAllow)
                                 {
-                                    statusLate = 1;
-                                    if (statusEarly == 1)
+                                    if (lateCountAllowUsed <= lateCountAllow)
                                     {
-                                        status = 1;
+                                        statusLate = 1;
+                                        if (statusEarly == 1)
+                                        {
+                                            status = 1;
+                                        }
+                                        var filterUpdate = Builders<EmployeeWorkTimeLog>.Filter.Eq(m => m.Id, timekeeping.Id);
+                                        var update = Builders<EmployeeWorkTimeLog>.Update
+                                            .Set(m => m.StatusLate, statusLate)
+                                            .Set(m => m.Status, status)
+                                            .Set(m => m.UpdatedBy, Constants.System.account)
+                                            .Set(m => m.UpdatedOn, DateTime.Now);
+                                        dbContext.EmployeeWorkTimeLogs.UpdateOne(filterUpdate, update);
+                                        lateCountAllowUsed++;
                                     }
-                                    var filterUpdate = Builders<EmployeeWorkTimeLog>.Filter.Eq(m => m.Id, timekeeping.Id);
-                                    var update = Builders<EmployeeWorkTimeLog>.Update
-                                        .Set(m => m.StatusLate, statusLate)
-                                        .Set(m => m.Status, status)
-                                        .Set(m => m.UpdatedBy, Constants.System.account)
-                                        .Set(m => m.UpdatedOn, DateTime.Now);
-                                    dbContext.EmployeeWorkTimeLogs.UpdateOne(filterUpdate, update);
-                                    lateCountAllowUsed++;
+                                }
+                                if (statusEarly == 0 && timekeeping.Early.TotalMinutes <= earlyMinuteAllow)
+                                {
+                                    if (earlyCountAllowUsed <= earlyCountAllow)
+                                    {
+                                        statusEarly = 1;
+                                        if (statusLate == 1)
+                                        {
+                                            status = 1;
+                                        }
+                                        var filterUpdate = Builders<EmployeeWorkTimeLog>.Filter.Eq(m => m.Id, timekeeping.Id);
+                                        var update = Builders<EmployeeWorkTimeLog>.Update
+                                            .Set(m => m.StatusEarly, statusEarly)
+                                            .Set(m => m.Status, status)
+                                            .Set(m => m.UpdatedBy, Constants.System.account)
+                                            .Set(m => m.UpdatedOn, DateTime.Now);
+                                        dbContext.EmployeeWorkTimeLogs.UpdateOne(filterUpdate, update);
+                                        earlyCountAllowUsed++;
+                                    }
                                 }
                             }
-                            if (statusEarly == 0 && timekeeping.Early.TotalMinutes <= earlyMinuteAllow)
-                            {
-                                if (earlyCountAllowUsed <= earlyCountAllow)
-                                {
-                                    statusEarly = 1;
-                                    if (statusLate == 1)
-                                    {
-                                        status = 1;
-                                    }
-                                    var filterUpdate = Builders<EmployeeWorkTimeLog>.Filter.Eq(m => m.Id, timekeeping.Id);
-                                    var update = Builders<EmployeeWorkTimeLog>.Update
-                                        .Set(m => m.StatusEarly, statusEarly)
-                                        .Set(m => m.Status, status)
-                                        .Set(m => m.UpdatedBy, Constants.System.account)
-                                        .Set(m => m.UpdatedOn, DateTime.Now);
-                                    dbContext.EmployeeWorkTimeLogs.UpdateOne(filterUpdate, update);
-                                    earlyCountAllowUsed++;
-                                }
-                            }
-                        }
-                    }
-                    else
-                    {
-                        // Add missing data(leave,sunday,...)
-                        if (date.DayOfWeek == DayOfWeek.Sunday)
-                        {
-                            var employeeWorkTimeLog = new EmployeeWorkTimeLog
-                            {
-                                EmployeeId = employee.Id,
-                                Year = yearCurrent,
-                                Month = monthCurrent,
-                                Date = date
-                            };
-                            dbContext.EmployeeWorkTimeLogs.InsertOne(employeeWorkTimeLog);
-                            // Add Sunday
-                            sundayCount++;
                         }
                         else
                         {
-                            var existLeave = leaves.First(item => item.Status == 1 && item.From >= date && item.To <= date);
-                            if (existLeave != null)
+                            // Add missing data(leave,sunday,...)
+                            if (date.DayOfWeek == DayOfWeek.Sunday)
                             {
-                                // add leave
                                 var employeeWorkTimeLog = new EmployeeWorkTimeLog
                                 {
                                     EmployeeId = employee.Id,
                                     Year = yearCurrent,
                                     Month = monthCurrent,
                                     Date = date,
-                                    WorkTime = new TimeSpan(0, 0, 0),
-                                    InOutMode = "1"
+                                    Workcode = "Chủ nhật"
                                 };
                                 dbContext.EmployeeWorkTimeLogs.InsertOne(employeeWorkTimeLog);
-                                leaveCount++;
+                                // Add Sunday
+                                sundayCount++;
                             }
                             else
                             {
-                                // add missing date
-                                var employeeWorkTimeLog = new EmployeeWorkTimeLog
+                                var existLeave = leaves.FirstOrDefault(item => item.Status == 1 && item.From >= date && item.To <= date);
+                                if (existLeave != null)
                                 {
-                                    EmployeeId = employee.Id,
-                                    Year = yearCurrent,
-                                    Month = monthCurrent,
-                                    Date = date,
-                                    WorkTime = new TimeSpan(0,0,0),
-                                    StatusLate = 0,
-                                    StatusEarly = 0,
-                                    Status = 0
-                                };
-                                dbContext.EmployeeWorkTimeLogs.InsertOne(employeeWorkTimeLog);
-                                noFingerDate++;
+                                    // add leave
+                                    var employeeWorkTimeLog = new EmployeeWorkTimeLog
+                                    {
+                                        EmployeeId = employee.Id,
+                                        Year = yearCurrent,
+                                        Month = monthCurrent,
+                                        Date = date,
+                                        WorkTime = new TimeSpan(0, 0, 0),
+                                        InOutMode = "1",
+                                        Workcode = "Nghỉ"
+                                    };
+                                    dbContext.EmployeeWorkTimeLogs.InsertOne(employeeWorkTimeLog);
+                                    leaveCount++;
+                                }
+                                else
+                                {
+                                    // add missing date
+                                    var employeeWorkTimeLog = new EmployeeWorkTimeLog
+                                    {
+                                        EmployeeId = employee.Id,
+                                        Year = yearCurrent,
+                                        Month = monthCurrent,
+                                        Date = date,
+                                        WorkTime = new TimeSpan(0, 0, 0),
+                                        StatusLate = 0,
+                                        StatusEarly = 0,
+                                        Status = 0,
+                                        Workcode = "Không chấm công"
+                                    };
+                                    dbContext.EmployeeWorkTimeLogs.InsertOne(employeeWorkTimeLog);
+                                    noFingerDate++;
+                                }
                             }
                         }
                     }
+
+                    #region update Summarry
+                    var builderUpdateSum = Builders<EmployeeWorkTimeMonthLog>.Filter;
+                    //m => m.EnrollNumber.Equals(employeeWorkTimeLog.EnrollNumber) && m.Year.Equals(year) && m.Month.Equals(month)
+                    var filterUpdateSum = builderUpdateSum.Eq(m => m.EmployeeId, employee.Id);
+                    filterUpdateSum = filterUpdateSum & builderUpdateSum.Eq(m => m.Year, endDate.Year);
+                    filterUpdateSum = filterUpdateSum & builderUpdateSum.Eq(m => m.Month, endDate.Month);
+
+                    var updateSum = Builders<EmployeeWorkTimeMonthLog>.Update
+                        .Set(m => m.LateCountAllowUsed, (double)lateCountAllowUsed)
+                        .Set(m => m.EarlyCountAllowUsed, (double)earlyCountAllowUsed)
+                        .Set(m => m.Sunday, (double)sundayCount)
+                        .Set(m => m.Holiday, (double)holidayCount)
+                        .Set(m => m.LeaveDate, (double)leaveCount)
+                        .Set(m => m.LeaveDateApproved, (double)leaveAprovedCount)
+                        .Set(m => m.LeaveDateNotApprove, (double)leaveNotApproveCount)
+                        .Set(m => m.NoFingerDate, noFingerDate)
+                        .Set(m => m.LastUpdated, DateTime.Now);
+                    dbContext.EmployeeWorkTimeMonthLogs.UpdateOne(filterUpdateSum, updateSum);
+                    #endregion
                 }
-
-                #region update Summarry
-                var builderUpdateSum = Builders<EmployeeWorkTimeMonthLog>.Filter;
-                //m => m.EnrollNumber.Equals(employeeWorkTimeLog.EnrollNumber) && m.Year.Equals(year) && m.Month.Equals(month)
-                var filterUpdateSum = builderUpdateSum.Eq(m => m.EmployeeId, employee.Id);
-                filterUpdateSum = filterUpdateSum & builderUpdateSum.Eq(m => m.Year, endDate.Year);
-                filterUpdateSum = filterUpdateSum & builderUpdateSum.Eq(m => m.Month, endDate.Month);
-
-                var updateSum = Builders<EmployeeWorkTimeMonthLog>.Update
-                    .Set(m => m.LateCountAllowUsed, (double)lateCountAllowUsed)
-                    .Set(m => m.EarlyCountAllowUsed, (double)earlyCountAllowUsed)
-                    .Set(m => m.Sunday, (double)sundayCount)
-                    .Set(m => m.Holiday, (double)holidayCount)
-                    .Set(m => m.LeaveDate, (double)leaveCount)
-                    .Set(m => m.LeaveDateApproved, (double)leaveAprovedCount)
-                    .Set(m => m.LeaveDateNotApprove, (double)leaveNotApproveCount)
-                    .Set(m => m.NoFingerDate, noFingerDate)
-                    .Set(m => m.LastUpdated, DateTime.Now);
-                dbContext.EmployeeWorkTimeMonthLogs.UpdateOne(filterUpdateSum, updateSum);
-                #endregion
             }
             #endregion
 
@@ -688,9 +701,9 @@ namespace TimeKeeperBusiness
                 var filterUpdateSum = builderUpdateSum.Eq(m => m.Id, existSum.Id);
                 var updateSum = Builders<EmployeeWorkTimeMonthLog>.Update
                     .Inc(m => m.Workday, (double)employeeWorkTimeLog.WorkDay)
-                    .Inc(m => m.WorkTime, employeeWorkTimeLog.WorkTime.TotalMinutes)
-                    .Inc(m => m.Late, employeeWorkTimeLog.Late.TotalMinutes)
-                    .Inc(m => m.Early, employeeWorkTimeLog.Early.TotalMinutes)
+                    .Inc(m => m.WorkTime, employeeWorkTimeLog.WorkTime.TotalMilliseconds)
+                    .Inc(m => m.Late, employeeWorkTimeLog.Late.TotalMilliseconds)
+                    .Inc(m => m.Early, employeeWorkTimeLog.Early.TotalMilliseconds)
                     .Set(m => m.To, to)
                     .Set(m => m.LastUpdated, to);
                 dbContext.EmployeeWorkTimeMonthLogs.UpdateOne(filterUpdateSum, updateSum);
@@ -728,9 +741,9 @@ namespace TimeKeeperBusiness
                     Month = month,
                     Year = year,
                     Workday = (double)employeeWorkTimeLog.WorkDay,
-                    WorkTime = employeeWorkTimeLog.WorkTime.TotalMinutes,
-                    Late = employeeWorkTimeLog.Late.TotalMinutes,
-                    Early = employeeWorkTimeLog.Early.TotalMinutes,
+                    WorkTime = employeeWorkTimeLog.WorkTime.TotalMilliseconds,
+                    Late = employeeWorkTimeLog.Late.TotalMilliseconds,
+                    Early = employeeWorkTimeLog.Early.TotalMilliseconds,
                     LateCountAllow = lateCountAllow,
                     LateMinuteAllow = lateMinuteAllow,
                     LateCountAllowUsed = 0,
@@ -746,7 +759,7 @@ namespace TimeKeeperBusiness
             }
         }
 
-        private static void UpdateSummary2(MongoDBContext dbContext, DateTime to, int month, int year, EmployeeWorkTimeLog employeeWorkTimeLog, double currentWorkTime, double currentLate, double currentEarly, decimal currentWorkDay)
+        private static void UpdateSummary2(MongoDBContext dbContext, DateTime to, int month, int year, EmployeeWorkTimeLog employeeWorkTimeLog, double currentWorkTime, double currentLate, double currentEarly, double currentWorkDay)
         {
             var existSum = dbContext.EmployeeWorkTimeMonthLogs.Find(m => m.EnrollNumber.Equals(employeeWorkTimeLog.EnrollNumber) && m.Year.Equals(year) && m.Month.Equals(month)).FirstOrDefault();
             if (existSum != null)
@@ -754,17 +767,17 @@ namespace TimeKeeperBusiness
                 var builderUpdateSum = Builders<EmployeeWorkTimeMonthLog>.Filter;
                 var filterUpdateSum = builderUpdateSum.Eq(m => m.Id, existSum.Id);
                 var updateSumCurrent = Builders<EmployeeWorkTimeMonthLog>.Update
-                    .Inc(m => m.Workday, -(double)currentWorkDay)
+                    .Inc(m => m.Workday, -currentWorkDay)
                     .Inc(m => m.WorkTime, -currentWorkTime)
                     .Inc(m => m.Late, -currentLate)
                     .Inc(m => m.Early, -currentEarly);
                 dbContext.EmployeeWorkTimeMonthLogs.UpdateOne(filterUpdateSum, updateSumCurrent);
 
                 var updateSumNew = Builders<EmployeeWorkTimeMonthLog>.Update
-                    .Inc(m => m.Workday, (double)employeeWorkTimeLog.WorkDay)
-                    .Inc(m => m.WorkTime, employeeWorkTimeLog.WorkTime.TotalMinutes)
-                    .Inc(m => m.Late, employeeWorkTimeLog.Late.TotalMinutes)
-                    .Inc(m => m.Early, employeeWorkTimeLog.Early.TotalMinutes)
+                    .Inc(m => m.Workday, employeeWorkTimeLog.WorkDay)
+                    .Inc(m => m.WorkTime, employeeWorkTimeLog.WorkTime.TotalMilliseconds)
+                    .Inc(m => m.Late, employeeWorkTimeLog.Late.TotalMilliseconds)
+                    .Inc(m => m.Early, employeeWorkTimeLog.Early.TotalMilliseconds)
                     .Set(m => m.To, to)
                     .Set(m => m.LastUpdated, to);
                 dbContext.EmployeeWorkTimeMonthLogs.UpdateOne(filterUpdateSum, updateSumNew);

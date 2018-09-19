@@ -38,5 +38,16 @@ namespace ViewModels
 
         public string nl { get; set; }
         #endregion
+
+        #region Request
+        public IList<IdName> Approves { get; set; }
+        public EmployeeWorkTimeLog EmployeeWorkTimeLog { get; set; }
+        #endregion
+
+
+        #region Extensions
+        public int Approve { get; set; }
+        public IList<Trainning> ListTraining;
+        #endregion 
     }
 }

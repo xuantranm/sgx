@@ -35,23 +35,23 @@
                                 <form class="text-left col-lg-8 data-form" asp-action="Login" asp-route-returnurl="@ViewData["ReturnUrl"]" method="post">
                                     <div class="form-group">
                                         <label asp-for="UserName"></label>
-                                        <input asp-for="UserName" class="form-control form-control-lg" />
+                                        <input asp-for="UserName" class="form-control form-control-lg" data-toggle="tooltip" title="Nhập [tên đăng nhập]. Thông tin được gửi qua email công ty." />
                                     </div>
                                     <div class="form-group">
                                         <label asp-for="Password"></label>
-                                        <input asp-for="Password" class="form-control form-control-lg" />
+                                        <input asp-for="Password" class="form-control form-control-lg" data-toggle="tooltip" title="Nhập [mật khẩu]. Thông tin được gửi qua email công ty."/>
                                         <small>
-                                            <a asp-action="ForgotPassword">Quên mật khẩu?</a>
+                                            <a asp-action="ForgotPassword" data-toggle="tooltip" title="Bấm vô nếu bạn quên mật khẩu.">Quên mật khẩu?</a>
                                         </small>
                                     </div>
                                     <div>
                                         <div class="custom-control custom-checkbox align-items-center">
-                                            <input type="checkbox" class="custom-control-input" value="true" name="RememberMe" checked id="check-remember">
+                                            <input type="checkbox" class="custom-control-input" value="true" name="RememberMe" checked id="check-remember" data-toggle="tooltip" title="Đánh dấu để trình duyệt nhớ cho lần đăng nhập sau.">
                                             <label class="custom-control-label text-small" for="check-remember">Nhớ tài khoản</label>
                                         </div>
                                     </div>
                                     <div class="text-center mt-3">
-                                        <input type="submit" class="btn btn-lg btn-primary" value="Đăng nhập" />
+                                        <input type="submit" class="btn btn-lg btn-primary" value="Đăng nhập" data-toggle="tooltip" title="Bấm [Đăng nhập] để truy cập hệ thống."/>
                                     </div>
                                     <div class="row">
                                         <div class="col-12">
@@ -67,12 +67,12 @@
                             <a asp-action="Register" asp-route-returnurl="@ViewData["ReturnUrl"]">Đăng ký tài khoản mới?</a>
                         </span>
                         <span class="text-small">
-                            <a href="/tk/quen-mat-khau/" alt="Quên mật khẩu">Quên mật khẩu?</a>
+                            <a href="/tk/quen-mat-khau/" alt="Quên mật khẩu" data-toggle="tooltip" title="Bấm vô nếu bạn quên mật khẩu.">Quên mật khẩu?</a>
                         </span>
                     </div>
                     <div class="text-center">
                         <span class="text-small">
-                            <a href="/@Constants.LinkDocument.Main/@Constants.LinkDocument.GettingStarted" alt="Hướng dẫn sử dụng" target="_blank">Hướng dẫn sử dụng</a>
+                            <a href="/@Constants.LinkDocument.Main/@Constants.LinkDocument.GettingStarted" alt="Hướng dẫn sử dụng" target="_blank" data-toggle="tooltip" title="Bấm vô để mở hướng dẫn chi tiết bằng hình ảnh.">Hướng dẫn sử dụng</a>
                         </span>
                     </div>
                 </div>

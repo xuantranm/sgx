@@ -746,6 +746,9 @@
     <Content Update="Views\Shared\_LayoutDocument.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
+    <Content Update="Views\TimeKeeper\Approve.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
     <Content Update="Views\TimeKeeper\Manage.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>

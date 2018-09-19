@@ -195,6 +195,9 @@ namespace Data
             }
         }
 
+        // Store all change employee
+        // Get newest by [UpdatedOn]
+        // Check chance base current Employee vs newest history.
         public IMongoCollection<Employee> EmployeeHistories
         {
             get

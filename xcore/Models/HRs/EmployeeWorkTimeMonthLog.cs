@@ -23,10 +23,11 @@ namespace Models
 
         public int Month { get; set; } = DateTime.Now.Month;
 
+        // Update normal. If want get no approve, use employeeworktime records.
         public double Workday { get; set; }
 
         public double WorkTime { get; set; }
-        
+
         public double Late { get; set; }
 
         public double Early { get; set; }
@@ -65,6 +66,7 @@ namespace Models
 
         public double LeaveDateApproved { get; set; }
 
+        public int NoFingerDate { get; set; } = 0;
         // Rule from 26
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime From { get; set; }

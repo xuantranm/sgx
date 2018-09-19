@@ -29,6 +29,8 @@ namespace Models
         [Required]
         public string EmployeeName { get; set; }
 
+        public string EmployeeTitle { get; set; }
+
         // 1 cấp xác nhận (trường hợp 2 cấp. ;2.Id)
         // Format 1.Id
         public string ApproverId { get; set; }

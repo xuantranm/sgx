@@ -66,14 +66,15 @@
         var login = User.Identity.Name;
         var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
         var rightSystem = false;
+        var rightHr = false;
+        var rightLuong = false;
+        var rightNhaMay = false;
         if (!string.IsNullOrEmpty(login))
         {
             rightSystem = Utility.IsRight(login, Constants.Rights.System, (int)ERights.View);
-        }
-        // override if system account
-        if (loginUserName == Constants.System.account)
-        {
-            rightSystem = true;
+            rightHr = Utility.IsRight(login, Constants.Rights.HR, (int)ERights.View);
+            rightLuong = Utility.IsRight(login, Constants.Rights.Luong, (int)ERights.View);
+            rightNhaMay = Utility.IsRight(login, Constants.Rights.NhaMay, (int)ERights.View);
         }
     }
 
@@ -101,29 +102,29 @@
                                 <a href="/" class="nav-link">Trang chủ</a>
                             </li>
                             @if (rightSystem)
-                                {
-                                    <li class="nav-item dropdown">
-                                        <a class="nav-link dropdown-toggle" href="#" id="pagesDropdown" role="button" data-toggle="dropdown">Administrator</a>
-                                        <div class="dropdown-menu" aria-labelledby="pagesDropdown">
-                                            <a class="dropdown-item" href="/r-u/phan-quyen/">
-                                                <span class="h6 mb-0">Phân quyền</span>
-                                                <p class="text-small text-muted">Configuration information system</p>
-                                            </a>
-                                            <div class="dropdown-divider"></div>
+                            {
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" id="pagesDropdown" role="button" data-toggle="dropdown">Administrator</a>
+                                    <div class="dropdown-menu" aria-labelledby="pagesDropdown">
+                                        <a class="dropdown-item" href="/r-u/phan-quyen/">
+                                            <span class="h6 mb-0">Phân quyền</span>
+                                            <p class="text-small text-muted">Configuration information system</p>
+                                        </a>
+                                        <div class="dropdown-divider"></div>
 
-                                            <a class="dropdown-item" href="/st/cai-dat/">
-                                                <span class="h6 mb-0">Cài đặt</span>
-                                                <p class="text-small text-muted">Configuration information system</p>
-                                            </a>
-                                            <div class="dropdown-divider"></div>
+                                        <a class="dropdown-item" href="/st/cai-dat/">
+                                            <span class="h6 mb-0">Cài đặt</span>
+                                            <p class="text-small text-muted">Configuration information system</p>
+                                        </a>
+                                        <div class="dropdown-divider"></div>
 
-                                            <a class="dropdown-item" href="/text/">
-                                                <span class="h6 mb-0">Nội dung</span>
-                                                <p class="text-small text-muted">Multi languages display control</p>
-                                            </a>
-                                        </div>
-                                    </li>
-                                }
+                                        <a class="dropdown-item" href="/text/">
+                                            <span class="h6 mb-0">Nội dung</span>
+                                            <p class="text-small text-muted">Multi languages display control</p>
+                                        </a>
+                                    </div>
+                                </li>
+                            }
                             <li class="nav-item dropdown d-none">
                                 <a class="nav-link dropdown-toggle" href="#" id="componentsDropdown" role="button" data-toggle="dropdown">Hướng dẫn</a>
                                 <div class="dropdown-menu" aria-labelledby="componentsDropdown">
@@ -131,23 +132,45 @@
                                     <a class="dropdown-item" href="/tai-lieu/hanh-chinh">Hành chính</a>
                                 </div>
                             </li>
+                            <li class="nav-item">
+                                <a href="/@Constants.LinkHr.Main/@Constants.LinkHr.Human/@Constants.LinkHr.Information/@login" class="nav-link" data-toggle="tooltip" title="Bấm vô để xem thông tin tài khoản."><i class="fas fa-user-shield"></i> Thông tin</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="/@Constants.LinkLeave.Main/@Constants.LinkLeave.Index" class="nav-link" data-toggle="tooltip" title="Bấm vô tạo nghỉ phép, lịch sử nghỉ phép."><i class="far fa-calendar"></i> Nghỉ phép</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Index" class="nav-link" data-toggle="tooltip" title="Bấm vô xem lịch sử chấm công, xác nhận công."><i class="fas fa-fingerprint"></i> Chấm công</a>
+                            </li>
+                            <li class="nav-item">
+                                <span data-toggle="modal" data-target="#pwdModal">
+                                    <a href="javascript:;" class="nav-link" title="Bấm thay đổi mật khẩu." data-toggle="tooltip">
+                                        <i class="fas fa-key"></i> Thay đổi mật khẩu
+                                    </a>
+                                </span>
+                            </li>
+                            <li class="nav-item">
+                                <form asp-area="" asp-controller="Account" asp-action="Logout" method="post" class="navbar-right logout-form">
+                                    <button type="submit" class="btn btn-link nav-link" style="margin-top: 2px;" data-toggle="tooltip" title="Bấm vô để thoát tài khoản."><i class="fas fa-sign-out-alt"></i> Đăng xuất</button>
+                                </form>
+                            </li>
                         </ul>
                         <form class="form-inline col p-0 pl-md-2 pr-md-3 d-none">
                             <input class="form-control w-100 common-search" type="search" placeholder="Tìm kiếm" aria-label="Tìm kiếm" onsearch="OnSearch(this)" />
                         </form>
 
-                        <ul class="navbar-nav" id="ownerInfo">
+                        <ul class="navbar-nav d-none" id="ownerInfo">
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle dropdown-toggle-no-arrow p-lg-0" href="/" id="dropdown01" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     <img alt="Thông tin nhân viên" src="http://via.placeholder.com/36x36" class="avatar avatar-xs" />
                                     <span class="badge badge-danger">8</span>
                                 </a>
                                 <div class="dropdown-menu dropdown-menu-sm" aria-labelledby="dropdown01">
-                                    <a class="dropdown-item" href="/notifications">Thông báo <span class="badge badge-danger">8</span></a>
-                                    <a class="dropdown-item" href="/nhan-su/nhan-vien/thong-tin/">Thông tin</a>
+                                    <a class="dropdown-item d-none" href="/notifications">Thông báo <span class="badge badge-danger">8</span></a>
+                                    <a class="dropdown-item" href="/@Constants.LinkHr.Main/@Constants.LinkHr.Human/@Constants.LinkHr.Information/@login">Thông tin</a>
                                     <div class="dropdown-divider"></div>
-                                    <a class="dropdown-item" href="/cai-dat">Cài đặt</a>
-                                    <a class="dropdown-item" href="#">Nhóm</a>
+                                    <a class="dropdown-item d-none" href="/cai-dat">Cài đặt</a>
+                                    <a class="dropdown-item d-none" href="#">Nhóm</a>
+
                                     <form asp-area="" asp-controller="Account" asp-action="Logout" method="post" class="navbar-right logout-form">
                                         <button type="submit" class="btn btn-link dropdown-item">Đăng xuất</button>
                                     </form>
@@ -159,12 +182,12 @@
                         </ul>
                         <script id="tmplOwnerInfo" type="text/x-jsrender">
                             <a class="nav-link dropdown-toggle dropdown-toggle-no-arrow p-lg-0" href="/@Constants.LinkHr.Main/@Constants.LinkHr.Human/@Constants.LinkHr.Information/{{:ownerInformation.id}}" id="dropdown01" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <img alt="{{:ownerInformation.fullName}}" src="{{:ownerInformation.cover.path}}{{:ownerInformation.cover.fileName}}" class="avatar avatar-xs" />
+                                <img alt="{{:ownerInformation.fullName}}" src="{{:ownerInformation.avatar.path}}{{:ownerInformation.avatar.fileName}}" class="avatar avatar-xs" />
                                 <span class="badge badge-danger">{{:notificationCount}}</span>
                             </a>
                             <div class="dropdown-menu dropdown-menu-sm" aria-labelledby="dropdown01">
-                                <a class="dropdown-item" href="/thong-bao">Thông báo <span class="badge badge-danger">{{:notificationCount}}</span></a>
-                                <a class="dropdown-item" href="/@Constants.LinkHr.Main/@Constants.LinkHr.Human/@Constants.LinkHr.Information/">Thông tin</a>
+                                <a class="dropdown-item d-none" href="/thong-bao">Thông báo <span class="badge badge-danger">{{:notificationCount}}</span></a>
+                                <a class="dropdown-item" href="/@Constants.LinkHr.Main/@Constants.LinkHr.Human/@Constants.LinkHr.Information/@login">Thông tin</a>
                                 <div class="dropdown-divider"></div>
                                 <form action="/account/logout" method="post" class="navbar-right logout-form">
                                     <button type="submit" class="btn btn-link dropdown-item">Đăng xuất</button>
@@ -192,7 +215,7 @@
                                 <img alt="Đang cập nhật" src="http://via.placeholder.com/354x167" class="bg-image" />
                             </div>
                             <div class="card-body">
-                                <a href="/hr/nhan-su/thong-tin/">
+                                <a href="/@Constants.LinkHr.Main/@Constants.LinkHr.Human/@Constants.LinkHr.Information">
                                     <img alt="Đang cập nhật" src="http://via.placeholder.com/120x120" class="avatar avatar-lg" />
                                 </a>
                                 <div class="my-3">
@@ -215,12 +238,12 @@
                                 <img alt="{{:fullName}}" src="{{:cover.path}}{{:cover.fileName}}" class="bg-image" />
                             </div>
                             <div class="card-body">
-                                <a href="/hr/nhan-su/thong-tin/{{:id}}">
+                                <a href="/@Constants.LinkHr.Main/@Constants.LinkHr.Human/@Constants.LinkHr.Information/{{:id}}">
                                     <img alt="{{:fullName}}" src="{{:avatar.path}}{{:avatar.fileName}}" class="avatar avatar-lg" />
                                 </a>
                                 <div class="my-3">
                                     <div class="mb-2">
-                                        <h5 class="mb-0"><a href="/hr/nhan-su/thong-tin/{{:id}}" alt="{{:fullName}}">{{:fullName}}</a></h5>
+                                        <h5 class="mb-0"><a href="/@Constants.LinkHr.Main/@Constants.LinkHr.Human/@Constants.LinkHr.Information/{{:id}}" alt="{{:fullName}}">{{:fullName}}</a></h5>
                                         <span class="text-muted">{{:title}} {{:function}}</span>
                                     </div>
                                     <span class="text-small text-muted"><i class="icon-location"></i> {{:addressResident}}</span>
@@ -245,14 +268,17 @@
                                 @*<a href="#">Tất cả &rsaquo;</a>*@
                             </div>
                             <div class="card-body collapse show" id="card-body">
-                                <a class="list-group-item d-flex justify-content-between" href="/@Constants.LinkHr.Main/@Constants.LinkHr.Human">
-                                    <div>
-                                        <span>Hồ sơ nhân sự</span>
-                                    </div>
-                                    <div>
-                                        <i class="icon-chevron-right"></i>
-                                    </div>
-                                </a>
+                                @if (rightHr)
+                                {
+                                    <a class="list-group-item d-flex justify-content-between" href="/@Constants.LinkHr.Main/@Constants.LinkHr.Human">
+                                        <div>
+                                            <span>Hồ sơ nhân sự</span>
+                                        </div>
+                                        <div>
+                                            <i class="icon-chevron-right"></i>
+                                        </div>
+                                    </a>
+                                }
                                 <a class="list-group-item d-flex justify-content-between" href="/@Constants.LinkLeave.Main/@Constants.LinkLeave.Index">
                                     <div>
                                         <span>Nghỉ phép</span>
@@ -269,30 +295,45 @@
                                         <i class="icon-chevron-right"></i>
                                     </div>
                                 </a>
-                                <a class="list-group-item d-flex justify-content-between" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Index">
-                                    <div>
-                                        <span>Lương</span>
-                                    </div>
-                                    <div>
-                                        <i class="icon-chevron-right"></i>
-                                    </div>
-                                </a>
-                                <a class="list-group-item d-flex justify-content-between" href="/@Constants.LinkEvaluate.Main/@Constants.LinkEvaluate.Index">
-                                    <div>
-                                        <span>Đánh giá</span>
-                                    </div>
-                                    <div>
-                                        <i class="icon-chevron-right"></i>
-                                    </div>
-                                </a>
-                                <a class="list-group-item d-flex justify-content-between" href="/@Constants.LinkRecruitment.Main/@Constants.LinkRecruitment.Index">
-                                    <div>
-                                        <span>Tuyển dụng</span>
-                                    </div>
-                                    <div>
-                                        <i class="icon-chevron-right"></i>
-                                    </div>
-                                </a>
+                                @if (rightLuong)
+                                {
+                                    <a class="list-group-item d-flex justify-content-between" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Index">
+                                        <div>
+                                            <span>Lương</span>
+                                        </div>
+                                        <div>
+                                            <i class="icon-chevron-right"></i>
+                                        </div>
+                                    </a>
+                                }
+                                @if (rightHr)
+                                {
+                                    <a class="list-group-item d-flex justify-content-between" href="/@Constants.LinkEvaluate.Main/@Constants.LinkEvaluate.Index">
+                                        <div>
+                                            <span>Đánh giá</span>
+                                        </div>
+                                        <div>
+                                            <i class="icon-chevron-right"></i>
+                                        </div>
+                                    </a>
+                                    <a class="list-group-item d-flex justify-content-between" href="/@Constants.LinkRecruitment.Main/@Constants.LinkRecruitment.Index">
+                                        <div>
+                                            <span>Tuyển dụng</span>
+                                        </div>
+                                        <div>
+                                            <i class="icon-chevron-right"></i>
+                                        </div>
+                                    </a>
+
+                                    <a class="list-group-item d-flex justify-content-between" href="/@Constants.LinkSurvey.Main/@Constants.LinkSurvey.Index">
+                                        <div>
+                                            <span>Khảo sát</span>
+                                        </div>
+                                        <div>
+                                            <i class="icon-chevron-right"></i>
+                                        </div>
+                                    </a>
+                                }
                                 <a class="list-group-item d-flex justify-content-between" href="/@Constants.LinkTraining.Main/@Constants.LinkTraining.Index">
                                     <div>
                                         <span>Đào tạo</span>
@@ -301,15 +342,7 @@
                                         <i class="icon-chevron-right"></i>
                                     </div>
                                 </a>
-                                <a class="list-group-item d-flex justify-content-between" href="/@Constants.LinkSurvey.Main/@Constants.LinkSurvey.Index">
-                                    <div>
-                                        <span>Khảo sát</span>
-                                    </div>
-                                    <div>
-                                        <i class="icon-chevron-right"></i>
-                                    </div>
-                                </a>
-                                <a class="list-group-item d-flex justify-content-between" href="/@Constants.LinkNotication.Main/@Constants.LinkNotication.Index">
+                                <a class="list-group-item d-flex justify-content-between d-none" href="/@Constants.LinkNotication.Main/@Constants.LinkNotication.Index">
                                     <div>
                                         <span>Thông báo</span>
                                     </div>
@@ -318,31 +351,34 @@
                                     </div>
                                 </a>
 
-                                <!-- NHA MAY -->
-                                <a class="list-group-item d-flex justify-content-between" href="/@Constants.LinkFactory.Main/@Constants.LinkFactory.TonSx">
-                                    <div>
-                                        <span>Tồn sản xuất</span>
-                                    </div>
-                                    <div>
-                                        <i class="icon-chevron-right"></i>
-                                    </div>
-                                </a>
-                                <a class="list-group-item d-flex justify-content-between" href="/@Constants.LinkFactory.Main/@Constants.LinkFactory.VanHanh">
-                                    <div>
-                                        <span>Vận hành</span>
-                                    </div>
-                                    <div>
-                                        <i class="icon-chevron-right"></i>
-                                    </div>
-                                </a>
-                                <a class="list-group-item d-flex justify-content-between" href="/@Constants.LinkFactory.Main/@Constants.LinkFactory.PhieuInCa">
-                                    <div>
-                                        <span>Phiếu in ca</span>
-                                    </div>
-                                    <div>
-                                        <i class="icon-chevron-right"></i>
-                                    </div>
-                                </a>
+                                @if (rightNhaMay)
+                                {
+                                    <!-- NHA MAY -->
+                                    <a class="list-group-item d-flex justify-content-between" href="/@Constants.LinkFactory.Main/@Constants.LinkFactory.TonSx">
+                                        <div>
+                                            <span>Tồn sản xuất</span>
+                                        </div>
+                                        <div>
+                                            <i class="icon-chevron-right"></i>
+                                        </div>
+                                    </a>
+                                    <a class="list-group-item d-flex justify-content-between" href="/@Constants.LinkFactory.Main/@Constants.LinkFactory.VanHanh">
+                                        <div>
+                                            <span>Vận hành</span>
+                                        </div>
+                                        <div>
+                                            <i class="icon-chevron-right"></i>
+                                        </div>
+                                    </a>
+                                    <a class="list-group-item d-flex justify-content-between" href="/@Constants.LinkFactory.Main/@Constants.LinkFactory.PhieuInCa">
+                                        <div>
+                                            <span>Phiếu in ca</span>
+                                        </div>
+                                        <div>
+                                            <i class="icon-chevron-right"></i>
+                                        </div>
+                                    </a>
+                                }
                             </div>
                         </div>
                         <!-- end card -->

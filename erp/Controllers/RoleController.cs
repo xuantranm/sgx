@@ -86,7 +86,7 @@ namespace erp.Controllers
                         Function = Constants.Collection.Roles,
                         Action = Constants.Action.Create,
                         Value = entity.Alias,
-                        Description = entity.Alias + Constants.Flag + entity.Description
+                        Content = entity.Alias + Constants.Flag + entity.Description
                     };
                     dbContext.TrackingUsers.InsertOne(activity);
                     #endregion
@@ -133,7 +133,7 @@ namespace erp.Controllers
                         Function = Constants.Collection.Roles,
                         Action = Constants.Action.Edit,
                         Value = entity.Alias,
-                        Description = entity.Alias + Constants.Flag + entity.Description,
+                        Content = entity.Alias + Constants.Flag + entity.Description,
                         //Link = "/stg/" + entity.Alias
                     };
                     dbContext.TrackingUsers.InsertOne(activity);
@@ -177,7 +177,7 @@ namespace erp.Controllers
                         Function = Constants.Collection.Roles,
                         Action = Constants.Action.Disable,
                         Value = entity.Alias,
-                        Description = entity.Alias + Constants.Flag + entity.Description
+                        Content = entity.Alias + Constants.Flag + entity.Description
                     };
                     dbContext.TrackingUsers.InsertOne(activity);
                     #endregion
@@ -219,7 +219,7 @@ namespace erp.Controllers
                         Function = Constants.Collection.Roles,
                         Action = Constants.Action.Active,
                         Value = entity.Alias,
-                        Description = entity.Alias + Constants.Flag + entity.Description
+                        Content = entity.Alias + Constants.Flag + entity.Description
                     };
                     dbContext.TrackingUsers.InsertOne(activity);
                     #endregion
@@ -257,7 +257,7 @@ namespace erp.Controllers
                         Function = Constants.Collection.Roles,
                         Action = Constants.Action.Delete,
                         Value = entity.Alias,
-                        Description = entity.Alias + Constants.Flag + entity.Description
+                        Content = entity.Alias + Constants.Flag + entity.Description
                     };
                     dbContext.TrackingUsers.InsertOne(activity);
                     #endregion

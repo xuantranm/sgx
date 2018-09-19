@@ -308,7 +308,7 @@ namespace erp.Controllers
                         Function = "Đào tạo",
                         Action = Constants.Action.Create,
                         Value = entity.Alias,
-                        Description = entity.Alias + Constants.Flag + entity.Type
+                        Content = entity.Alias + Constants.Flag + entity.Type
                     };
                     dbContext.TrackingUsers.InsertOne(activity);
                     #endregion
@@ -345,7 +345,7 @@ namespace erp.Controllers
                         Function = "Đào tạo",
                         Action = Constants.Action.Edit,
                         Value = entity.Name,
-                        Description = entity.Name + Constants.Flag + entity.Type,
+                        Content = entity.Name + Constants.Flag + entity.Type,
                     };
                     dbContext.TrackingUsers.InsertOne(activity);
                     #endregion
@@ -387,7 +387,7 @@ namespace erp.Controllers
                         Function = "Đào tạo",
                         Action = Constants.Action.Disable,
                         Value = entity.Name,
-                        Description = entity.Name + Constants.Flag + entity.Type
+                        Content = entity.Name + Constants.Flag + entity.Type
                     };
                     dbContext.TrackingUsers.InsertOne(activity);
                     #endregion
@@ -427,7 +427,7 @@ namespace erp.Controllers
                         Function = "Đào tạo",
                         Action = Constants.Action.Active,
                         Value = entity.Name,
-                        Description = entity.Name + Constants.Flag + entity.Type
+                        Content = entity.Name + Constants.Flag + entity.Type
                     };
                     dbContext.TrackingUsers.InsertOne(activity);
                     #endregion
@@ -465,7 +465,7 @@ namespace erp.Controllers
                         Function = "Đào tạo",
                         Action = Constants.Action.Delete,
                         Value = entity.Name,
-                        Description = entity.Name + Constants.Flag + entity.Type
+                        Content = entity.Name + Constants.Flag + entity.Type
                     };
                     dbContext.TrackingUsers.InsertOne(activity);
                     #endregion

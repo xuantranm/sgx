@@ -75,7 +75,7 @@ namespace erp.Controllers
             }
 
             var isRight = false;
-            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, "nghi-phep", (int)ERights.View)))
+            if (loginUserName == Constants.System.account ? true : Utility.IsRight(login, "nghi-phep", (int)ERights.View))
             {
                 isRight = true;
             }
@@ -277,6 +277,7 @@ namespace erp.Controllers
 
             entity.SecureCode = Helper.HashedPassword(Guid.NewGuid().ToString("N").Substring(0, 12));
             entity.EmployeeName = employee.FullName;
+            entity.EmployeeTitle = employee.Title;
             entity.Status = 0;
             entity.CreatedBy = login;
             entity.UpdatedBy = login;
@@ -343,6 +344,10 @@ namespace erp.Controllers
             #endregion
             var subject = "[TRIBAT] Xác nhận nghỉ phép.";
             var requester = employee.FullName;
+            if (!string.IsNullOrEmpty(employee.Title))
+            {
+                requester += " - " + employee.Title;
+            }
             if (entity.EmployeeId != login)
             {
                 requester += " ( người tạo " + userInformation.FullName + " , chức vụ " + userInformation.Title + ")";
@@ -382,13 +387,16 @@ namespace erp.Controllers
             };
             try
             {
+                var emailFrom = Constants.System.emailErp;
+                var emailFromName = Constants.System.emailErpName;
+                var emailFromPwd = Constants.System.emailErpPwd;
                 var message = new MimeMessage();
                 message.To.AddRange(emailMessage.ToAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
                 if (emailMessage.FromAddresses == null || emailMessage.FromAddresses.Count == 0)
                 {
                     emailMessage.FromAddresses = new List<EmailAddress>
                                 {
-                                    new EmailAddress { Name = "[TRIBAT-HCNS-Thử nghiệm] Hệ thống tự động", Address = "test-erp@tribat.vn" }
+                                    new EmailAddress { Name = emailFromName, Address = emailFrom }
                                 };
                 }
                 message.From.AddRange(emailMessage.FromAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
@@ -400,12 +408,12 @@ namespace erp.Controllers
                 using (var emailClient = new MailKit.Net.Smtp.SmtpClient())
                 {
                     //The last parameter here is to use SSL (Which you should!)
-                    emailClient.Connect("test-erp@tribat.vn", 465, true);
+                    emailClient.Connect(emailFrom, 465, true);
 
                     //Remove any OAuth functionality as we won't be using it. 
                     emailClient.AuthenticationMechanisms.Remove("XOAUTH2");
 
-                    emailClient.Authenticate("test-erp@tribat.vn", "Kh0ngbiet@123");
+                    emailClient.Authenticate(emailFrom, emailFromPwd);
 
                     emailClient.Send(message);
                     emailClient.Disconnect(true);
@@ -440,7 +448,7 @@ namespace erp.Controllers
             viewModel.ListTraining = listTraining;
             #endregion
 
-            if (leave.SecureCode != secure && leave.Status == 1)
+            if (leave.SecureCode != secure && leave.Status != 0)
             {
                 ViewData["Status"] = "Rất tiếc! Dữ liệu đã được cập nhật hoặc thông tin không tồn tại trên hệ thống.";
 
@@ -452,6 +460,7 @@ namespace erp.Controllers
             #region Update status
             var filter = Builders<Leave>.Filter.Eq(m => m.Id, id);
             var update = Builders<Leave>.Update
+                .Set(m => m.SecureCode, Helper.HashedPassword(Guid.NewGuid().ToString("N").Substring(0, 12)))
                 .Set(m => m.Status, approve)
                 .Set(m => m.ApprovedBy, leave.ApproverId);
 
@@ -469,7 +478,7 @@ namespace erp.Controllers
                     var builderLeaveEmployee = Builders<LeaveEmployee>.Filter;
                     var filterLeaveEmployee = builderLeaveEmployee.Eq(m => m.EmployeeId, leave.EmployeeId)
                                             & builderLeaveEmployee.Eq(x => x.LeaveTypeId, leave.TypeId);
-                    var updateLeaveEmployee = Builders<LeaveEmployee>.Update.Inc(m => m.Number, -(leave.Number));
+                    var updateLeaveEmployee = Builders<LeaveEmployee>.Update.Inc(m => m.Number, leave.Number);
                     dbContext.LeaveEmployees.UpdateOne(filterLeaveEmployee, updateLeaveEmployee);
                 }
                 // Phep khac,...
@@ -645,11 +654,9 @@ namespace erp.Controllers
             viewModel.ListTraining = listTraining;
             #endregion
 
-            if (leave.SecureCode != secure && leave.Status == 1)
+            if (leave.SecureCode != secure && leave.Status != 0)
             {
-                ViewData["Status"] = "Rất tiếc! Dữ liệu đã được cập nhật hoặc thông tin không tồn tại trên hệ thống.";
-
-                return View(viewModel);
+                return Json(new { result = true, message = "Rất tiếc! Dữ liệu đã được cập nhật hoặc thông tin không tồn tại trên hệ thống." });
             }
 
             viewModel.Leave = leave;
@@ -657,6 +664,7 @@ namespace erp.Controllers
             #region Update status
             var filter = Builders<Leave>.Filter.Eq(m => m.Id, id);
             var update = Builders<Leave>.Update
+                .Set(m => m.SecureCode, Helper.HashedPassword(Guid.NewGuid().ToString("N").Substring(0, 12)))
                 .Set(m => m.Status, approve)
                 .Set(m => m.ApprovedBy, leave.ApproverId);
 
@@ -674,7 +682,7 @@ namespace erp.Controllers
                     var builderLeaveEmployee = Builders<LeaveEmployee>.Filter;
                     var filterLeaveEmployee = builderLeaveEmployee.Eq(m => m.EmployeeId, leave.EmployeeId)
                                             & builderLeaveEmployee.Eq(x => x.LeaveTypeId, leave.TypeId);
-                    var updateLeaveEmployee = Builders<LeaveEmployee>.Update.Inc(m => m.Number, -(leave.Number));
+                    var updateLeaveEmployee = Builders<LeaveEmployee>.Update.Inc(m => m.Number, leave.Number);
                     dbContext.LeaveEmployees.UpdateOne(filterLeaveEmployee, updateLeaveEmployee);
                 }
                 // Phep khac,...
@@ -786,6 +794,9 @@ namespace erp.Controllers
             };
             try
             {
+                var emailFrom = Constants.System.emailErp;
+                var emailFromName = Constants.System.emailErpName;
+                var emailFromPwd = Constants.System.emailErpPwd;
                 var message = new MimeMessage();
                 message.To.AddRange(emailMessage.ToAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
                 if (emailMessage.CCAddresses != null && emailMessage.CCAddresses.Count > 0)
@@ -796,7 +807,7 @@ namespace erp.Controllers
                 {
                     emailMessage.FromAddresses = new List<EmailAddress>
                                 {
-                                    new EmailAddress { Name = "[TRIBAT-HCNS-Thử nghiệm] Hệ thống tự động", Address = "test-erp@tribat.vn" }
+                                    new EmailAddress { Name = emailFromName, Address = emailFrom }
                                 };
                 }
                 message.From.AddRange(emailMessage.FromAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
@@ -808,12 +819,12 @@ namespace erp.Controllers
                 using (var emailClient = new MailKit.Net.Smtp.SmtpClient())
                 {
                     //The last parameter here is to use SSL (Which you should!)
-                    emailClient.Connect("test-erp@tribat.vn", 465, true);
+                    emailClient.Connect(emailFrom, 465, true);
 
                     //Remove any OAuth functionality as we won't be using it. 
                     emailClient.AuthenticationMechanisms.Remove("XOAUTH2");
 
-                    emailClient.Authenticate("test-erp@tribat.vn", "Kh0ngbiet@123");
+                    emailClient.Authenticate(emailFrom, emailFromPwd);
 
                     emailClient.Send(message);
                     emailClient.Disconnect(true);

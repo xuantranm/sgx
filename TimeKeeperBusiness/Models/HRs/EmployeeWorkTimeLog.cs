@@ -15,6 +15,10 @@ namespace Models
 
         public string EmployeeId { get; set; }
 
+        public string EmployeeName { get; set; }
+
+        public string EmployeeTitle { get; set; }
+
         public string EnrollNumber { get; set; }
 
         public int Year { get; set; } = DateTime.Now.Year;
@@ -38,8 +42,7 @@ namespace Models
 
         public TimeSpan WorkTime { get; set; }
 
-        [BsonRepresentation(BsonType.Decimal128)]
-        public decimal WorkDay { get; set; } = 0;
+        public double WorkDay { get; set; } = 0;
 
         public TimeSpan Late { get; set; }
 
@@ -76,6 +79,8 @@ namespace Models
 
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime? RequestDate { get; set; }
+
+        public string Reason { get; set; }
 
         public string ConfirmId { get; set; }
 

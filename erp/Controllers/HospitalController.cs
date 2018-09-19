@@ -80,7 +80,7 @@ namespace erp.Controllers
                         Function = Constants.Collection.BHYTHospitals,
                         Action = Constants.Action.Create,
                         Value = entity.Code,
-                        Description = entity.Code + Constants.Flag + entity.Name
+                        Content = entity.Code + Constants.Flag + entity.Name
                     };
                     dbContext.TrackingUsers.InsertOne(activity);
                     #endregion
@@ -118,7 +118,7 @@ namespace erp.Controllers
                         Function = Constants.Collection.BHYTHospitals,
                         Action = Constants.Action.Edit,
                         Value = entity.Code,
-                        Description = entity.Code + Constants.Flag + entity.Name,
+                        Content = entity.Code + Constants.Flag + entity.Name,
                         //Link = "/stg/" + entity.Key
                     };
                     dbContext.TrackingUsers.InsertOne(activity);
@@ -162,7 +162,7 @@ namespace erp.Controllers
                         Function = Constants.Collection.BHYTHospitals,
                         Action = Constants.Action.Disable,
                         Value = entity.Code,
-                        Description = entity.Code + Constants.Flag + entity.Name
+                        Content = entity.Code + Constants.Flag + entity.Name
                     };
                     dbContext.TrackingUsers.InsertOne(activity);
                     #endregion
@@ -204,7 +204,7 @@ namespace erp.Controllers
                         Function = Constants.Collection.BHYTHospitals,
                         Action = Constants.Action.Active,
                         Value = entity.Code,
-                        Description = entity.Code + Constants.Flag + entity.Name
+                        Content = entity.Code + Constants.Flag + entity.Name
                     };
                     dbContext.TrackingUsers.InsertOne(activity);
                     #endregion
@@ -242,7 +242,7 @@ namespace erp.Controllers
                         Function = Constants.Collection.BHYTHospitals,
                         Action = Constants.Action.Delete,
                         Value = entity.Code,
-                        Description = entity.Code + Constants.Flag + entity.Name
+                        Content = entity.Code + Constants.Flag + entity.Name
                     };
                     dbContext.TrackingUsers.InsertOne(activity);
                     #endregion

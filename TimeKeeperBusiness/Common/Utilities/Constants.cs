@@ -13,8 +13,15 @@ namespace Common.Utilities
             public const string department = "system";
             public const int expire = 30;
             public const bool enable = true;
-            public const string domain = "http://demo.tribat.vn:8090";
+            //public const string domain = "http://demo.tribat.vn:8090";
+            public const string domain = "https://localhost:44366";
             public const string login = "/account/login/";
+            public const string emailErp = "test-erp@tribat.vn";
+            public const string emailErpPwd = "Kh0ngbiet@123";
+            public const string emailErpName = "HCNS";
+
+            public const string emailHr = "test-erp@tribat.vn";
+            public const string emailNM = "test-erp@tribat.vn";
         }
 
         public static class ContactType

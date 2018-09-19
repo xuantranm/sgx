@@ -473,7 +473,7 @@ namespace erp.Controllers
                     Function = Constants.Collection.FactoryTonSx,
                     Action = Constants.Action.Create,
                     Value = s,
-                    Description = Constants.Action.Create,
+                    Content = Constants.Action.Create,
                 };
                 dbContext.TrackingUsers.InsertOne(activity);
                 #endregion
@@ -598,7 +598,7 @@ namespace erp.Controllers
                     Function = Constants.Collection.FactoryTonSx,
                     Action = Constants.Action.Edit,
                     Value = s,
-                    Description = Constants.Action.Edit,
+                    Content = Constants.Action.Edit,
                 };
                 dbContext.TrackingUsers.InsertOne(activity);
                 #endregion
@@ -1001,7 +1001,7 @@ namespace erp.Controllers
                     Function = Constants.Collection.FactoryVanHanh,
                     Action = Constants.Action.Create,
                     Value = s,
-                    Description = Constants.Action.Create,
+                    Content = Constants.Action.Create,
                 };
                 await dbContext.TrackingUsers.InsertOneAsync(activity);
                 #endregion
@@ -1132,7 +1132,7 @@ namespace erp.Controllers
                     Function = Constants.Collection.FactoryVanHanh,
                     Action = Constants.Action.Edit,
                     Value = s,
-                    Description = Constants.Action.Edit,
+                    Content = Constants.Action.Edit,
                 };
                 dbContext.TrackingUsers.InsertOne(activity);
                 #endregion
@@ -1398,7 +1398,7 @@ namespace erp.Controllers
                     Function = Constants.Collection.FactoryDanhGia,
                     Action = Constants.Action.Create,
                     Value = s,
-                    Description = Constants.Action.Create,
+                    Content = Constants.Action.Create,
                 };
                 await dbContext.TrackingUsers.InsertOneAsync(activity);
                 #endregion
@@ -1519,7 +1519,7 @@ namespace erp.Controllers
                     Function = Constants.Collection.FactoryDinhMuc,
                     Action = Constants.Action.Create,
                     Value = s,
-                    Description = Constants.Action.Create,
+                    Content = Constants.Action.Create,
                 };
                 await dbContext.TrackingUsers.InsertOneAsync(activity);
                 #endregion

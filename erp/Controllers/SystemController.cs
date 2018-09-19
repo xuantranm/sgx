@@ -1080,7 +1080,7 @@ namespace erp.Controllers
                                     Function = Constants.Collection.Stores,
                                     Action = "create",
                                     Value = product.Code,
-                                    Description = "create" + " " + Constants.Collection.Stores + " " + product.Code,
+                                    Content = "create" + " " + Constants.Collection.Stores + " " + product.Code,
                                     Created = DateTime.Now,
                                     Link = "/hang-hoa/chi-tiet/" + product.Code
                                 };
@@ -1281,7 +1281,7 @@ namespace erp.Controllers
                     Action = "create",
                     Value = entity.Id,
 
-                    Description = "create " + entity.Code + " with content: " + entity.Seo,
+                    Content = "create " + entity.Code + " with content: " + entity.Seo,
                     Created = now,
                     Link = "/text/create/" + entity.Id
                 };
@@ -1325,7 +1325,7 @@ namespace erp.Controllers
                     Function = Constants.Collection.Texts,
                     Action = "edit",
                     Value = entity.Id,
-                    Description = "Update setting key: " + entity.Code.ToString() + " with content: " + entity.Content,
+                    Content = "Update setting key: " + entity.Code.ToString() + " with content: " + entity.Content,
                     Created = now,
                     Link = "/setting/details/" + entity.Id
                 };
@@ -1368,7 +1368,7 @@ namespace erp.Controllers
                     Function = Constants.Collection.Texts,
                     Action = "delete",
                     Value = entity.Id,
-                    Description = "delete setting " + entity.Key,
+                    Content = "delete setting " + entity.Key,
                     Created = now,
                     Link = "/not-found"
                 };

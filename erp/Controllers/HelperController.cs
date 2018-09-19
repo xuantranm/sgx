@@ -128,6 +128,9 @@ namespace erp.Controllers
                     Path = "/images/placeholder/",
                     FileName = "120x120.png"
                 };
+            }
+            if (owner.Cover == null)
+            {
                 owner.Cover = new Image
                 {
                     Path = "/images/placeholder/",
