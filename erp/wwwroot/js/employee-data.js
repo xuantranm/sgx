@@ -403,6 +403,15 @@
         //grab all form data  
         var formData = new FormData($(this)[0]);
 
+        // loading button
+        $('#btn-save-submit').prop('disabled', true);
+        $('input', $('.data-form')).prop('disabled', true);
+        $('select', $('.data-form')).prop('disabled', true);
+        $('textarea', $('.data-form')).prop('disabled', true);
+
+        var loadingText = '<i class="fas fa-spinner"></i> đang xử lý...';
+        $('#btn-save-submit').html(loadingText);
+
         //console.log(formData);
         var $this = $(this);
         //var frmValues = $this.serialize();
@@ -418,12 +427,15 @@
                 if (data.result === true) {
                     $('#resultModal').modal();
                     $('#modalnotice').html($.templates("#tmplModalNotice").render(data));
+                    resetForm();
                 }
                 else {
                     if (data.error === "user") {
+                        resetForm();
                         $('input[name="Employee.UserName"]').focus();
                     }
                     if (data.error === "email") {
+                        resetForm();
                         $('input[name="Employee.Email"]').focus();
                     }
                     toastr.error(data.message);
@@ -435,6 +447,14 @@
         event.preventDefault();
     });
 });
+
+function resetForm() {
+    $('#btn-save-submit').prop('disabled', false);
+    $('input', $('.data-form')).prop('disabled', false);
+    $('select', $('.data-form')).prop('disabled', false);
+    $('textarea', $('.data-form')).prop('disabled', false);
+    $('#btn-save-submit').html($('#btn-save-submit').data('original-text'));
+}
 
 function setValue() {
     $('.datepicker').each(function (i, obj) {

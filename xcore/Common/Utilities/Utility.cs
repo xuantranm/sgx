@@ -761,29 +761,32 @@ namespace Common.Utilities
                     object value2 = typeof(T).GetProperty(pi.Name).GetValue(obj2, null);
                     if (value2 != null)
                     {
-                        Type type = pi.PropertyType;
-                        if (type.Namespace == "System.Collections.Generic")
+                        if (value2 != "")
                         {
-                            var a = (IList)value1;
-                            var b = (IList)value2;
-                            var i = 0;
-                            foreach (var item in a)
+                            Type type = pi.PropertyType;
+                            if (type.Namespace == "System.Collections.Generic")
                             {
-                                var otherItem = b[i];
-                                var newDiffe = item.ChildCompare(otherItem);
-                                i++;
-                            }
-                        }
-                        else
-                        {
-                            if (value1 != value2 && (value1 == null || !value1.Equals(value2)))
-                            {
-                                variances.Add(new Variance
+                                var a = (IList)value1;
+                                var b = (IList)value2;
+                                var i = 0;
+                                foreach (var item in a)
                                 {
-                                    Prop = pi.Name,
-                                    ValA = value1,
-                                    ValB = value2
-                                });
+                                    var otherItem = b[i];
+                                    var newDiffe = item.ChildCompare(otherItem);
+                                    i++;
+                                }
+                            }
+                            else
+                            {
+                                if (value1 != value2 && (value1 == null || !value1.Equals(value2)))
+                                {
+                                    variances.Add(new Variance
+                                    {
+                                        Prop = pi.Name,
+                                        ValA = value1,
+                                        ValB = value2
+                                    });
+                                }
                             }
                         }
                     }

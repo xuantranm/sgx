@@ -34,7 +34,7 @@
         event.preventDefault();
         var formData = new FormData($(this)[0]);
         // loading button
-        $('#btnSubmitLeave').prop('disabled', true);
+        $('#btn-save-submit').prop('disabled', true);
         $('input', $('.data-form')).prop('disabled', true);
         $('select', $('.data-form')).prop('disabled', true);
         $('textarea', $('.data-form')).prop('disabled', true);

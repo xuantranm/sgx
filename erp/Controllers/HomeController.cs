@@ -131,7 +131,7 @@ namespace erp.Controllers
             var filterHr = filterNotication & builderNotication.Eq(m => m.Type, 2);
             if (!rightHr)
             {
-                filterHr = filterHr & builderNotication.Eq(m => m.UserId, login);
+                filterHr = filterHr & builderNotication.Eq(m => m.UserId, login) & builderNotication.Ne(m=>m.CreatedBy, login);
             }
             var notificationHRs = await dbContext.Notifications.Find(filterHr).Sort(sortNotification).Limit(getItems).ToListAsync();
             #endregion

@@ -43,11 +43,11 @@
                     <div class="col-6">
                         <div class="form-group">
                             <i class="icon icon-select-arrows"></i>
-                            <label class="control-label">Bộ phận</label>
-                            <select id="part" class="form-control form-control-lg">
+                            <label class="control-label">Phòng/ban</label>
+                            <select id="department" class="form-control form-control-lg">
                                 <option value="">Tất cả</option>
                                 @{
-                                    foreach (var item in ViewBag.Parts)
+                                    foreach (var item in ViewBag.Departments)
                                     {
                                         <option value="@item.Name">@item.Name</option>
                                     }
@@ -58,11 +58,11 @@
                     <div class="col-6">
                         <div class="form-group">
                             <i class="icon icon-select-arrows"></i>
-                            <label class="control-label">Phòng/ban</label>
-                            <select id="department" class="form-control form-control-lg">
+                            <label class="control-label">Bộ phận</label>
+                            <select id="part" class="form-control form-control-lg">
                                 <option value="">Tất cả</option>
                                 @{
-                                    foreach (var item in ViewBag.Departments)
+                                    foreach (var item in ViewBag.Parts)
                                     {
                                         <option value="@item.Name">@item.Name</option>
                                     }
@@ -92,21 +92,19 @@
                         <div class="form-group">
                             <i class="icon icon-user"></i>
                             <label class="control-label">Người dùng</label>
-                            <select asp-for="RoleUser.User" id="user" class="form-control form-control-lg">
+                            <select asp-for="RoleUser.User" id="userddl" class="form-control form-control-lg js-select2-basic-single">
                                 <option value="" selected>Tất cả</option>
                                 @{
                                     foreach (var item in Model.Employees)
                                     {
-                                        <option value="@item.Id">@item.FullName</option>
+                                        <option value="@item.Id">@item.FullName [@item.Title]</option>
                                     }
                                 }
                             </select>
-                            <input type="hidden" asp-for="RoleUser.FullName"/>
+                            <input type="hidden" asp-for="RoleUser.FullName" />
 
                             <script id="employeesTmpl" type="text/x-jsrender">
-                                <select name="RoleUser.User" id="user" class="form-control form-control-lg">
-                                    <option value="{{:id}}">{{:fullName}}</option>
-                                </select>
+                                <option value="{{:id}}">{{:fullName}} [{{:title}}]</option>
                             </script>
                         </div>
                     </div>
@@ -277,7 +275,8 @@
 </script>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-
-    <script src="~/js/role-user-data.js"></script>
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+        <script src="~/js/role-user-data.js?@DateTime.Now.Ticks"></script>
+    }
 }

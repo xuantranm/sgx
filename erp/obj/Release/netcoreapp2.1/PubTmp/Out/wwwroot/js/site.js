@@ -179,7 +179,6 @@ function formSubmit() {
 } 
 
 function loadCommonData() {
-    //var tmpl = $.templates("#activityTmpl");
     $.ajax({
         type: "GET",
         url: "/helper/ErpCommon",
@@ -193,7 +192,6 @@ function loadCommonData() {
             }
             else {
                 if (data.length !== 0) {
-                    console.log(data);
                     $('.card-info').html($.templates("#tmplCardInfo").render(data.userInformation));
                     $('#ownerInfo li').html($.templates("#tmplOwnerInfo").render(data));
                 }

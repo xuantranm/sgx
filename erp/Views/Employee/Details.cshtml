@@ -497,51 +497,53 @@
                                 <div class="col-12 col-md-8 order-md-1">
                                     <div class="row">
                                         <!-- CMND -->
-                                        <div class="col-12">
-                                            <div class="form-group">
-                                                <label asp-for="Employee.IdentityCard" class="control-label"></label>
-                                                @if (!string.IsNullOrEmpty(Model.Employee.IdentityCard))
-                                                {
-                                                    <p>@Model.Employee.IdentityCard</p>
-                                                }
-                                                else
-                                                {
-                                                    <small><i class="icon-info"></i>@Constants.MissTitle</small>
-                                                }
+                                        @if (!string.IsNullOrEmpty(Model.Employee.IdentityCard))
+                                        {
+                                            <div class="col-12">
+                                                <div class="form-group">
+                                                    <label asp-for="Employee.IdentityCard" class="control-label"></label>
+                                                    @if (!string.IsNullOrEmpty(Model.Employee.IdentityCard))
+                                                    {
+                                                        <p>@Model.Employee.IdentityCard</p>
+                                                    }
+                                                    else
+                                                    {
+                                                        <small><i class="icon-info"></i>@Constants.MissTitle</small>
+                                                    }
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div class="col-6">
-                                            <div class="form-group">
-                                                <label asp-for="Employee.IdentityCardDate" class="control-label"></label>
-                                                @{
-                                                    var identityCardDate = Model.Employee.IdentityCardDate.HasValue && Model.Employee.IdentityCardDate.Value.Year > 1900 ? Model.Employee.IdentityCardDate.Value.ToString("dd/MM/yyyy") : string.Empty;
-                                                }
-                                                @if (!string.IsNullOrEmpty(identityCardDate))
-                                                {
-                                                    <p>@identityCardDate</p>
-                                                }
-                                                else
-                                                {
-                                                    <small><i class="icon-info"></i>@Constants.MissTitle</small>
-                                                }
+                                            <div class="col-6">
+                                                <div class="form-group">
+                                                    <label asp-for="Employee.IdentityCardDate" class="control-label"></label>
+                                                    @{
+                                                        var identityCardDate = Model.Employee.IdentityCardDate.HasValue && Model.Employee.IdentityCardDate.Value.Year > 1900 ? Model.Employee.IdentityCardDate.Value.ToString("dd/MM/yyyy") : string.Empty;
+                                                    }
+                                                    @if (!string.IsNullOrEmpty(identityCardDate))
+                                                    {
+                                                        <p>@identityCardDate</p>
+                                                    }
+                                                    else
+                                                    {
+                                                        <small><i class="icon-info"></i>@Constants.MissTitle</small>
+                                                    }
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div class="col-6">
-                                            <div class="form-group">
-                                                <label asp-for="Employee.IdentityCardPlace" class="control-label"></label>
-                                                @if (!string.IsNullOrEmpty(Model.Employee.IdentityCardPlace))
-                                                {
-                                                    <p>@Model.Employee.IdentityCardPlace</p>
-                                                }
-                                                else
-                                                {
-                                                    <small><i class="icon-info"></i>@Constants.MissTitle</small>
-                                                }
+                                            <div class="col-6">
+                                                <div class="form-group">
+                                                    <label asp-for="Employee.IdentityCardPlace" class="control-label"></label>
+                                                    @if (!string.IsNullOrEmpty(Model.Employee.IdentityCardPlace))
+                                                    {
+                                                        <p>@Model.Employee.IdentityCardPlace</p>
+                                                    }
+                                                    else
+                                                    {
+                                                        <small><i class="icon-info"></i>@Constants.MissTitle</small>
+                                                    }
+                                                </div>
                                             </div>
-                                        </div>
-
-                                        <!-- HO KHAU -->
-                                        <hr />
+                                            <!-- HO KHAU -->
+                                            <hr />
+                                        }
                                         <div class="col-12">
                                             <div class="form-group">
                                                 <label asp-for="Employee.HouseHold" class="control-label"></label>
@@ -569,92 +571,96 @@
                                             </div>
                                         </div>
 
-                                        <!-- PASSPORT -->
-                                        <hr />
-                                        <div class="col-12">
-                                            <div class="form-group">
-                                                <label asp-for="Employee.Passport" class="control-label"></label>
-                                                @if (!string.IsNullOrEmpty(Model.Employee.Passport))
-                                                {
-                                                    <p>@Model.Employee.Passport</p>
-                                                }
-                                                else
-                                                {
-                                                    <small><i class="icon-info"></i>@Constants.MissTitle</small>
-                                                }
+                                        @if (!string.IsNullOrEmpty(Model.Employee.Passport))
+                                        {
+                                            <!-- PASSPORT -->
+                                            <hr />
+                                            <div class="col-12">
+                                                <div class="form-group">
+                                                    <label asp-for="Employee.Passport" class="control-label"></label>
+                                                    @if (!string.IsNullOrEmpty(Model.Employee.Passport))
+                                                    {
+                                                        <p>@Model.Employee.Passport</p>
+                                                    }
+                                                    else
+                                                    {
+                                                        <small><i class="icon-info"></i>@Constants.MissTitle</small>
+                                                    }
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div class="col-6">
-                                            <div class="form-group">
-                                                <label asp-for="Employee.PassportType" class="control-label"></label>
-                                                @if (!string.IsNullOrEmpty(Model.Employee.PassportType))
-                                                {
-                                                    <p>@Model.Employee.PassportType</p>
-                                                }
-                                                else
-                                                {
-                                                    <small><i class="icon-info"></i>@Constants.MissTitle</small>
-                                                }
+                                            <div class="col-6">
+                                                <div class="form-group">
+                                                    <label asp-for="Employee.PassportType" class="control-label"></label>
+                                                    @if (!string.IsNullOrEmpty(Model.Employee.PassportType))
+                                                    {
+                                                        <p>@Model.Employee.PassportType</p>
+                                                    }
+                                                    else
+                                                    {
+                                                        <small><i class="icon-info"></i>@Constants.MissTitle</small>
+                                                    }
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div class="col-6">
-                                            <div class="form-group">
-                                                <label asp-for="Employee.PassportCode" class="control-label"></label>
-                                                @if (!string.IsNullOrEmpty(Model.Employee.PassportCode))
-                                                {
-                                                    <p>@Model.Employee.PassportCode</p>
-                                                }
-                                                else
-                                                {
-                                                    <small><i class="icon-info"></i>@Constants.MissTitle</small>
-                                                }
+                                            <div class="col-6">
+                                                <div class="form-group">
+                                                    <label asp-for="Employee.PassportCode" class="control-label"></label>
+                                                    @if (!string.IsNullOrEmpty(Model.Employee.PassportCode))
+                                                    {
+                                                        <p>@Model.Employee.PassportCode</p>
+                                                    }
+                                                    else
+                                                    {
+                                                        <small><i class="icon-info"></i>@Constants.MissTitle</small>
+                                                    }
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div class="col-6">
-                                            <div class="form-group">
-                                                <label asp-for="Employee.PassportDate" class="control-label"></label>
-                                                @{
-                                                    var passportDate = Model.Employee.PassportDate.HasValue ? Model.Employee.PassportDate.Value.ToString("dd/MM/yyyy") : string.Empty;
-                                                }
-                                                @if (!string.IsNullOrEmpty(passportDate))
-                                                {
-                                                    <p>@passportDate</p>
-                                                }
-                                                else
-                                                {
-                                                    <small><i class="icon-info"></i>@Constants.MissTitle</small>
-                                                }
+                                            <div class="col-6">
+                                                <div class="form-group">
+                                                    <label asp-for="Employee.PassportDate" class="control-label"></label>
+                                                    @{
+                                                        var passportDate = Model.Employee.PassportDate.HasValue ? Model.Employee.PassportDate.Value.ToString("dd/MM/yyyy") : string.Empty;
+                                                    }
+                                                    @if (!string.IsNullOrEmpty(passportDate))
+                                                    {
+                                                        <p>@passportDate</p>
+                                                    }
+                                                    else
+                                                    {
+                                                        <small><i class="icon-info"></i>@Constants.MissTitle</small>
+                                                    }
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div class="col-6">
-                                            <div class="form-group">
-                                                <label asp-for="Employee.PassportExpireDate" class="control-label"></label>
-                                                @{
-                                                    var passportExpireDate = Model.Employee.PassportExpireDate.HasValue ? Model.Employee.PassportExpireDate.Value.ToString("dd/MM/yyyy") : string.Empty;
-                                                }
-                                                @if (!string.IsNullOrEmpty(passportExpireDate))
-                                                {
-                                                    <p>@passportExpireDate</p>
-                                                }
-                                                else
-                                                {
-                                                    <small><i class="icon-info"></i>@Constants.MissTitle</small>
-                                                }
+                                            <div class="col-6">
+                                                <div class="form-group">
+                                                    <label asp-for="Employee.PassportExpireDate" class="control-label"></label>
+                                                    @{
+                                                        var passportExpireDate = Model.Employee.PassportExpireDate.HasValue ? Model.Employee.PassportExpireDate.Value.ToString("dd/MM/yyyy") : string.Empty;
+                                                    }
+                                                    @if (!string.IsNullOrEmpty(passportExpireDate))
+                                                    {
+                                                        <p>@passportExpireDate</p>
+                                                    }
+                                                    else
+                                                    {
+                                                        <small><i class="icon-info"></i>@Constants.MissTitle</small>
+                                                    }
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div class="col-12">
-                                            <div class="form-group">
-                                                <label asp-for="Employee.PassportPlace" class="control-label"></label>
-                                                @if (!string.IsNullOrEmpty(Model.Employee.PassportPlace))
-                                                {
-                                                    <p>@Model.Employee.PassportPlace</p>
-                                                }
-                                                else
-                                                {
-                                                    <small><i class="icon-info"></i>@Constants.MissTitle</small>
-                                                }
+                                            <div class="col-12">
+                                                <div class="form-group">
+                                                    <label asp-for="Employee.PassportPlace" class="control-label"></label>
+                                                    @if (!string.IsNullOrEmpty(Model.Employee.PassportPlace))
+                                                    {
+                                                        <p>@Model.Employee.PassportPlace</p>
+                                                    }
+                                                    else
+                                                    {
+                                                        <small><i class="icon-info"></i>@Constants.MissTitle</small>
+                                                    }
+                                                </div>
                                             </div>
-                                        </div>
+                                        }
+
                                     </div>
                                 </div>
                             </div>
@@ -679,7 +685,7 @@
                                         <div class="col-12">
                                             <div class="form-group">
                                                 <label asp-for="Employee.BhxhBookNo" class="control-label"></label>
-                                                M @if (!string.IsNullOrEmpty(Model.Employee.BhxhBookNo))
+                                                @if (!string.IsNullOrEmpty(Model.Employee.BhxhBookNo))
                                                 {
                                                     <p>@Model.Employee.BhxhBookNo</p>
                                                 }
@@ -885,28 +891,31 @@
                                     {
                                         foreach (var item in Model.Employee.Certificates)
                                         {
-                                            <div class="col-12 nodeCertificate node">
-                                                <div class="row bd-example">
-                                                    <div class="col-6">
-                                                        <div class="form-group">
-                                                            <label class="control-label">Học vấn</label>
-                                                            <input value="@item.Type" type="text" readonly class="form-control-plaintext" />
+                                            if (!string.IsNullOrEmpty(item.Type) || !string.IsNullOrEmpty(item.Location))
+                                            {
+                                                <div class="col-12 nodeCertificate node">
+                                                    <div class="row bd-example">
+                                                        <div class="col-6">
+                                                            <div class="form-group">
+                                                                <label class="control-label">Học vấn</label>
+                                                                <input value="@item.Type" type="text" readonly class="form-control-plaintext" />
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                    <div class="col-12">
-                                                        <div class="form-group">
-                                                            <label class="control-label">Nơi cấp</label>
-                                                            <p>@item.Location</p>
+                                                        <div class="col-12">
+                                                            <div class="form-group">
+                                                                <label class="control-label">Nơi cấp</label>
+                                                                <p>@item.Location</p>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                    <div class="col-12">
-                                                        <div class="form-group">
-                                                            <label class="control-label">Nội dung</label>
-                                                            <p>@item.Description</p>
+                                                        <div class="col-12">
+                                                            <div class="form-group">
+                                                                <label class="control-label">Nội dung</label>
+                                                                <p>@item.Description</p>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </div>
+                                            }
                                         }
                                     }
                                     else
@@ -993,19 +1002,19 @@
                                                         <div class="col-sm-6 col-xs-12">
                                                             <div class="form-group">
                                                                 <label class="control-label">Loại hợp đồng</label>
-                                                                <input value="@contract.TypeName" type="text" readonly class="form-control-plaintext" />
+                                                                <p><span>@contract.TypeName</span></p>
                                                             </div>
                                                         </div>
                                                         <div class="col-sm-6 col-xs-12">
                                                             <div class="form-group">
                                                                 <label class="control-label">Số hợp đồng</label>
-                                                                <input value="@contract.Code" type="text" readonly class="form-control-plaintext" />
+                                                                <p><span>@contract.Code</span></p>
                                                             </div>
                                                         </div>
                                                         <div class="col-sm-6 col-xs-12">
                                                             <div class="form-group">
                                                                 <label class="control-label">PLHĐ</label>
-                                                                <input value="@contract.PLHD" type="text" readonly class="form-control-plaintext" />
+                                                                <p><span>@contract.PLHD</span></p>
                                                             </div>
                                                         </div>
                                                         @if (contract.Type == "HĐ KHÔNG XÁC ĐỊNH THỜI HẠN")
@@ -1013,7 +1022,7 @@
                                                             <div class="col-sm-6 col-xs-12">
                                                                 <div class="form-group">
                                                                     <label class="control-label">Phụ lục điều chỉnh lương</label>
-                                                                    <input value="@contract.PhuLucDieuChinhLuong" type="text" readonly class="form-control-plaintext" />
+                                                                    <p><span>@contract.PhuLucDieuChinhLuong</span></p>
                                                                 </div>
                                                             </div>
                                                         }
@@ -1022,7 +1031,7 @@
                                                             <div class="col-sm-6 col-xs-12">
                                                                 <div class="form-group">
                                                                     <label class="control-label">Ghi chú</label>
-                                                                    <input value="@contract.Description" type="text" readonly class="form-control-plaintext" />
+                                                                    <p><span>@contract.Description</span></p>
                                                                 </div>
                                                             </div>
                                                         }
@@ -1032,7 +1041,7 @@
                                                                 @{
                                                                     var startContract = contract.Start.HasValue && contract.Start.Value.Year > 1900 ? contract.Start.Value.ToString("dd/MM/yyyy") : string.Empty;
                                                                 }
-                                                                <input value="@startContract" type="text" readonly class="form-control-plaintext" />
+                                                                <p><span>@startContract</span></p>
                                                             </div>
                                                         </div>
                                                         <div class="col-sm-6 col-xs-12">
@@ -1041,7 +1050,7 @@
                                                                 @{
                                                                     var endContract = contract.End.HasValue && contract.End.Value.Year > 1900 ? contract.End.Value.ToString("dd/MM/yyyy") : string.Empty;
                                                                 }
-                                                                <input value="@endContract" type="text" readonly class="form-control-plaintext" />
+                                                                <p><span>@endContract</span></p>
                                                             </div>
                                                         </div>
                                                     </div>

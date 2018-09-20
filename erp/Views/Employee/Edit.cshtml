@@ -24,7 +24,6 @@
     {
         readonlyMode = false;
     }
-
 }
 
 <div class="main-container">
@@ -53,25 +52,6 @@
                     <h1 class="h2">Chỉnh sửa thông tin</h1>
                 </div>
             </div>
-            @{
-                if (Model.Variances != null && Model.Variances.Count > 0)
-                {
-                    <div class="row">
-                        <div class="col-xs-12">
-                            <span>Thông tin thay đổi</span>
-                        </div>
-                        @foreach (var change in Model.Variances)
-                        {
-                            <div class="col-xs-4">
-                                <label asp-for="Employee.Bornplace" class="control-label"></label>
-                            </div>
-                            <div class="col-xs-8">
-                                @change.ValA <i class="fas fa-arrow-right"></i> @change.ValB
-                            </div>
-                        }
-                    </div>
-                }
-            }
         </div>
     </section>
     <section class="flush-with-above space-0">
@@ -103,6 +83,7 @@
                 <div class="tab-pane fade show active" id="general" role="tabpanel" aria-labelledby="general-tab">
                     <input asp-for="Employee.Id" type="hidden" />
                     <input asp-for="Employee.Code" type="hidden" />
+                    <input asp-for="Employee.Email" type="hidden" />
                     <input name="checkUserName" type="hidden" value="@Model.Employee.UserName" />
                     <input name="checkEMail" type="hidden" value="@Model.Employee.Email" />
                     <div class="container">
@@ -174,6 +155,7 @@
                                             @if (readonlyMode)
                                             {
                                                 <p><span>@Model.Employee.FullName</span></p>
+                                                <input asp-for="Employee.FullName" type="hidden" />
                                             }
                                             else
                                             {
@@ -309,7 +291,7 @@
                                                         <button class="btn btn-sm btn-add-department" type="button" data-toggle="modal" data-target="#newDepartment" title="Tạo mới Phòng/ban">+</button>
                                                     </div>
                                                 </div>
-                                            }
+                                                                }
                                         </div>
                                     </div>
                                     <div class="col-6">
@@ -338,7 +320,7 @@
                                                         <button class="btn btn-sm btn-add-part" type="button" data-toggle="modal" data-target="#newPart" title="Tạo mới Bộ phận">+</button>
                                                     </div>
                                                 </div>
-                                            }
+                                                                }
                                         </div>
                                     </div>
                                     <div class="col-6">
@@ -367,7 +349,7 @@
                                                         <button class="btn btn-sm btn-add-title" type="button" data-toggle="modal" data-target="#newTitle" title="Tạo mới Công việc">+</button>
                                                     </div>
                                                 </div>
-                                            }
+                                                                }
                                         </div>
                                     </div>
                                     <div class="col-6">
@@ -389,7 +371,7 @@
                                                         </span>
                                                     </p>
                                                 }
-                                                
+
                                             }
                                             else
                                             {
@@ -402,7 +384,7 @@
                                                         }
                                                     }
                                                 </select>
-                                            }
+                                                        }
 
                                             <input type="hidden" value="@Model.Employee.ManagerId" id="hidManagerId" />
                                             <script id="tmplManagePeople" type="text/x-jsrender">
@@ -470,10 +452,33 @@
                                                         }
                                                     }
                                                 </select>
-                                            }
+                                                        }
                                         </div>
                                     </div>
-                                    @{
+                                    @if (readonlyMode)
+                                    {
+                                        if (Model.Employee.Workplaces != null && Model.Employee.Workplaces.Count > 0)
+                                        {
+                                            foreach (var workplace in Model.Employee.Workplaces)
+                                            {
+                                                <div class="col-6 nodeWorkplace node">
+                                                    <div class="form-group">
+                                                        <span class="badge badge-primary">@workplace.Name</span>
+                                                        <i class="icon icon-fingerprint"></i>
+                                                        @if (!string.IsNullOrEmpty(workplace.Fingerprint))
+                                                        {
+                                                            <label class="control-label">Mã chấm công</label>
+                                                            <span class="badge badge-info">@workplace.Fingerprint</span>
+                                                            <label class="control-label">Thời gian làm việc</label>
+                                                            <span class="badge badge-info">@workplace.WorkingScheduleTime</span>
+                                                        }
+                                                    </div>
+                                                </div>
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
                                         if (Model.Employee.Workplaces != null && Model.Employee.Workplaces.Count > 0)
                                         {
                                             i = 0;
@@ -512,11 +517,10 @@
                                                     <input type="hidden" name="Employee.Workplaces[@i].Code" value="@workplace.Code" />
                                                     <input type="hidden" name="Employee.Workplaces[@i].Name" value="@workplace.Name" />
                                                 </div>
-                                                i++;
-                                            }
-                                        }
-                                    }
-
+                                                                            i++;
+                                                                        }
+                                                                    }
+                                                                }
                                     <script id="tmplWorkplace" type="text/x-jsrender">
                                         <div class="col-6 nodeWorkplace node">
                                             <div class="form-group">
@@ -564,14 +568,19 @@
 
                                                         @if (readonlyMode)
                                                         {
-
+                                                            if (Model.Employee.IsTimeKeeper)
+                                                            {
+                                                                <input type="checkbox" class="custom-control-input" checked id="check-timekeeper" disabled>
+                                                            }
+                                                            else
+                                                            {
+                                                                <input type="checkbox" class="custom-control-input" id="check-timekeeper" disabled>
+                                                            }
                                                         }
                                                         else
                                                         {
-
-
+                                                            <input type="checkbox" class="custom-control-input" @checkTimeKeeper id="check-timekeeper">
                                                         }
-                                                        <input type="checkbox" class="custom-control-input" @checkTimeKeeper id="check-timekeeper">
                                                         <label class="custom-control-label text-small" for="check-timekeeper">
                                                             Không tính thời gian làm việc
                                                         </label>
@@ -586,18 +595,16 @@
                                                     <label asp-for="Employee.LeaveLevelYear" class="control-label"></label>
                                                     @if (readonlyMode)
                                                     {
-
+                                                        <p><span>@Model.Employee.LeaveLevelYear</span></p>
                                                     }
                                                     else
                                                     {
-
-
+                                                        <select asp-for="Employee.LeaveLevelYear" class="form-control form-control-lg">
+                                                            <option value="12">12 ngày</option>
+                                                            <option value="14">14 ngày</option>
+                                                            <option value="16">16 ngày</option>
+                                                        </select>
                                                     }
-                                                    <select asp-for="Employee.LeaveLevelYear" class="form-control form-control-lg">
-                                                        <option value="12">12 ngày</option>
-                                                        <option value="14">14 ngày</option>
-                                                        <option value="16">16 ngày</option>
-                                                    </select>
                                                     <span asp-validation-for="Employee.LeaveLevelYear" class="text-danger"></span>
                                                 </div>
                                             </div>
@@ -679,8 +686,7 @@
                                             <textarea asp-for="Employee.LeaveReason" class="form-control form-control-lg"></textarea>
                                         </div>
                                     </div>
-                                }
-
+                                                }
                                 <div class="col-12">
                                     <div class="form-group">
                                         <label asp-for="Employee.Bornplace" class="control-label"></label>
@@ -892,69 +898,139 @@
 
                                 <div class="enableBhxh col-12 @dnone">
                                     <div class="row">
-                                        <div class="col-6">
-                                            <div class="form-group">
-                                                <label asp-for="Employee.BhxhBookNo" class="control-label"></label>
-                                                <input asp-for="Employee.BhxhBookNo" class="form-control form-control-lg" />
-                                                <span asp-validation-for="Employee.BhxhBookNo" class="text-danger"></span>
-                                            </div>
-                                        </div>
-                                        <div class="col-6">
-                                            <div class="form-group">
-                                                <label asp-for="Employee.BhxhCode" class="control-label"></label>
-                                                <input asp-for="Employee.BhxhCode" class="form-control form-control-lg" />
-                                                <span asp-validation-for="Employee.BhxhCode" class="text-danger"></span>
-                                            </div>
-                                        </div>
-                                        <div class="col-6">
-                                            <div class="form-group">
-                                                <label asp-for="Employee.BhxhStart" class="control-label"></label>
-                                                @{
-                                                    if (Model.Employee.BhxhStart.HasValue)
+                                        @if (readonlyMode)
+                                        {
+                                            <div class="col-12">
+                                                <div class="form-group">
+                                                    <label asp-for="Employee.BhxhBookNo" class="control-label"></label>
+                                                    @if (!string.IsNullOrEmpty(Model.Employee.BhxhBookNo))
                                                     {
-                                                        <input class="form-control form-control-lg datepicker datepicker-lg" value="@Model.Employee.BhxhStart.Value.ToString("dd/MM/yyyy")" />
+                                                        <p>@Model.Employee.BhxhBookNo</p>
                                                     }
                                                     else
                                                     {
-                                                        <input class="form-control form-control-lg datepicker datepicker-lg" />
+                                                        <small><i class="icon-info"></i>@Constants.MissTitle</small>
                                                     }
-                                                }
-                                                <input type="hidden" name="Employee.BhxhStart" class="form-control form-control-lg hidedatepicker" value="@Model.Employee.BhxhStart" />
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div class="col-6">
-                                            <div class="form-group">
-                                                <label asp-for="Employee.BhxhEnd" class="control-label"></label>
-                                                @{
-                                                    if (Model.Employee.BhxhEnd.HasValue)
+                                            <div class="col-12">
+                                                <div class="form-group">
+                                                    <label asp-for="Employee.BhxhCode" class="control-label"></label>
+                                                    @if (!string.IsNullOrEmpty(Model.Employee.BhxhCode))
                                                     {
-                                                        <input class="form-control form-control-lg datepicker datepicker-lg" value="@Model.Employee.BhxhEnd.Value.ToString("dd/MM/yyyy")" />
+                                                        <p>@Model.Employee.BhxhCode</p>
                                                     }
                                                     else
                                                     {
-                                                        <input class="form-control form-control-lg datepicker datepicker-lg" />
+                                                        <small><i class="icon-info"></i>@Constants.MissTitle</small>
                                                     }
-                                                }
-                                                <input type="hidden" name="Employee.BhxhEnd" value="@Model.Employee.BhxhEnd" class="form-control form-control-lg hidedatepicker" />
+                                                </div>
                                             </div>
-                                        </div>
-                                        @*<div class="col-6">
-            <div class="form-group">
-                <label asp-for="Employee.BhxhDependecy" class="control-label"></label>
-                <input asp-for="Employee.BhxhDependecy" class="form-control form-control-lg" />
-                <span asp-validation-for="Employee.BhxhDependecy" class="text-danger"></span>
-            </div>
-        </div>*@
-                                        <div class="col-6">
-                                            <div class="form-group">
-                                                <label asp-for="Employee.BhxhStatus" class="control-label"></label>
-                                                <select asp-for="Employee.BhxhStatus" class="form-control form-control-lg">
-                                                    <option value="Đang đóng">Đang đóng</option>
-                                                    <option value="Chưa đóng">Chưa đóng</option>
-                                                </select>
-                                                <span asp-validation-for="Employee.BhxhStatus" class="text-danger"></span>
+                                            <div class="col-6">
+                                                <div class="form-group">
+                                                    <label asp-for="Employee.BhxhStart" class="control-label"></label>
+                                                    @{
+                                                        var bhxhStart = Model.Employee.BhxhStart.HasValue ? Model.Employee.BhxhStart.Value.ToString("dd/MM/yyyy") : string.Empty;
+                                                    }
+                                                    @if (!string.IsNullOrEmpty(bhxhStart))
+                                                    {
+                                                        <p>@bhxhStart</p>
+                                                    }
+                                                    else
+                                                    {
+                                                        <small><i class="icon-info"></i>@Constants.MissTitle</small>
+                                                    }
+                                                </div>
                                             </div>
-                                        </div>
+                                            <div class="col-6">
+                                                <div class="form-group">
+                                                    <label asp-for="Employee.BhxhEnd" class="control-label"></label>
+                                                    @{
+                                                        var bhxhEnd = Model.Employee.BhxhEnd.HasValue ? Model.Employee.BhxhEnd.Value.ToString("dd/MM/yyyy") : string.Empty;
+                                                    }
+                                                    @if (!string.IsNullOrEmpty(bhxhEnd))
+                                                    {
+                                                        <p>@bhxhEnd</p>
+                                                    }
+                                                    else
+                                                    {
+                                                        <small><i class="icon-info"></i>@Constants.MissTitle</small>
+                                                    }
+                                                </div>
+                                            </div>
+                                            <div class="col-12">
+                                                <div class="form-group">
+                                                    <label asp-for="Employee.BhxhStatus" class="control-label"></label>
+                                                    @if (!string.IsNullOrEmpty(Model.Employee.BhxhStatus))
+                                                    {
+                                                        <p>@Model.Employee.BhxhStatus</p>
+                                                    }
+                                                    else
+                                                    {
+                                                        <small><i class="icon-info"></i>@Constants.MissTitle</small>
+                                                    }
+                                                </div>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="col-6">
+                                                <div class="form-group">
+                                                    <label asp-for="Employee.BhxhBookNo" class="control-label"></label>
+                                                    <input asp-for="Employee.BhxhBookNo" class="form-control form-control-lg" />
+                                                    <span asp-validation-for="Employee.BhxhBookNo" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="form-group">
+                                                    <label asp-for="Employee.BhxhCode" class="control-label"></label>
+                                                    <input asp-for="Employee.BhxhCode" class="form-control form-control-lg" />
+                                                    <span asp-validation-for="Employee.BhxhCode" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="form-group">
+                                                    <label asp-for="Employee.BhxhStart" class="control-label"></label>
+                                                    @{
+                                                        if (Model.Employee.BhxhStart.HasValue)
+                                                        {
+                                                            <input class="form-control form-control-lg datepicker datepicker-lg" value="@Model.Employee.BhxhStart.Value.ToString("dd/MM/yyyy")" />
+                                                        }
+                                                        else
+                                                        {
+                                                            <input class="form-control form-control-lg datepicker datepicker-lg" />
+                                                        }
+                                                    }
+                                                    <input type="hidden" name="Employee.BhxhStart" class="form-control form-control-lg hidedatepicker" value="@Model.Employee.BhxhStart" />
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="form-group">
+                                                    <label asp-for="Employee.BhxhEnd" class="control-label"></label>
+                                                    @{
+                                                        if (Model.Employee.BhxhEnd.HasValue)
+                                                        {
+                                                            <input class="form-control form-control-lg datepicker datepicker-lg" value="@Model.Employee.BhxhEnd.Value.ToString("dd/MM/yyyy")" />
+                                                        }
+                                                        else
+                                                        {
+                                                            <input class="form-control form-control-lg datepicker datepicker-lg" />
+                                                        }
+                                                    }
+                                                    <input type="hidden" name="Employee.BhxhEnd" value="@Model.Employee.BhxhEnd" class="form-control form-control-lg hidedatepicker" />
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="form-group">
+                                                    <label asp-for="Employee.BhxhStatus" class="control-label"></label>
+                                                    <select asp-for="Employee.BhxhStatus" class="form-control form-control-lg">
+                                                        <option value="Đang đóng">Đang đóng</option>
+                                                        <option value="Chưa đóng">Chưa đóng</option>
+                                                    </select>
+                                                    <span asp-validation-for="Employee.BhxhStatus" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                        }
                                         <div class="col-12">
                                             <div class="form-group">
                                                 <label asp-for="Employee.BhxhHospital" class="control-label"></label>
@@ -977,52 +1053,117 @@
                                             </div>
                                         </div>
 
-                                        <div class="col-12">
-                                            <div class="form-group">
-                                                <label asp-for="Employee.BhytCode" class="control-label"></label>
-                                                <input asp-for="Employee.BhytCode" class="form-control form-control-lg" />
-                                                <span asp-validation-for="Employee.BhytCode" class="text-danger"></span>
-                                            </div>
-                                        </div>
-                                        <div class="col-6">
-                                            <div class="form-group">
-                                                <label asp-for="Employee.BhytStart" class="control-label"></label>
-                                                @{
-                                                    if (Model.Employee.BhytStart.HasValue)
+                                        @if (readonlyMode)
+                                        {
+                                            <div class="col-12">
+                                                <div class="form-group">
+                                                    <label asp-for="Employee.BhytCode" class="control-label"></label>
+                                                    @if (!string.IsNullOrEmpty(Model.Employee.BhytCode))
                                                     {
-                                                        <input class="form-control form-control-lg datepicker datepicker-lg" value="@Model.Employee.BhytStart.Value.ToString("dd/MM/yyyy")" />
+                                                        <p>@Model.Employee.BhytCode</p>
                                                     }
                                                     else
                                                     {
-                                                        <input class="form-control form-control-lg datepicker datepicker-lg" />
+                                                        <small><i class="icon-info"></i>@Constants.MissTitle</small>
                                                     }
-                                                }
-                                                <input type="hidden" name="Employee.BhytStart" value="@Model.Employee.BhytStart" class="form-control form-control-lg hidedatepicker" />
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div class="col-6">
-                                            <div class="form-group">
-                                                <label asp-for="Employee.BhytEnd" class="control-label"></label>
-                                                @{
-                                                    if (Model.Employee.BhytEnd.HasValue)
+                                            <div class="col-6">
+                                                <div class="form-group">
+                                                    <label asp-for="Employee.BhytStart" class="control-label"></label>
+                                                    @{
+                                                        var bhytStart = Model.Employee.BhytStart.HasValue && Model.Employee.BhytStart.Value.Year > 1900 ? Model.Employee.BhytStart.Value.ToString("dd/MM/yyyy") : string.Empty;
+                                                    }
+                                                    @if (!string.IsNullOrEmpty(bhytStart))
                                                     {
-                                                        <input class="form-control form-control-lg datepicker datepicker-lg" value="@Model.Employee.BhytEnd.Value.ToString("dd/MM/yyyy")" />
+                                                        <p>@bhytStart</p>
                                                     }
                                                     else
                                                     {
-                                                        <input class="form-control form-control-lg datepicker datepicker-lg" />
+                                                        <small><i class="icon-info"></i>@Constants.MissTitle</small>
                                                     }
-                                                }
-                                                <input type="hidden" name="Employee.BhytEnd" value="@Model.Employee.BhytEnd" class="form-control form-control-lg hidedatepicker" />
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div class="col-12">
-                                            <div class="form-group">
-                                                <label asp-for="Employee.BhxhLocation" class="control-label"></label>
-                                                <input asp-for="Employee.BhxhLocation" class="form-control form-control-lg" />
-                                                <span asp-validation-for="Employee.BhxhLocation" class="text-danger"></span>
+                                            <div class="col-6">
+                                                <div class="form-group">
+                                                    <label asp-for="Employee.BhytEnd" class="control-label"></label>
+                                                    @{
+                                                        var bhytEnd = Model.Employee.BhytEnd.HasValue && Model.Employee.BhytEnd.Value.Year > 1900 ? Model.Employee.BhytEnd.Value.ToString("dd/MM/yyyy") : string.Empty;
+                                                    }
+                                                    @if (!string.IsNullOrEmpty(bhytEnd))
+                                                    {
+                                                        <p>@bhytEnd</p>
+                                                    }
+                                                    else
+                                                    {
+                                                        <small><i class="icon-info"></i>@Constants.MissTitle</small>
+                                                    }
+                                                </div>
                                             </div>
-                                        </div>
+                                            <div class="col-12">
+                                                <div class="form-group">
+                                                    <label asp-for="Employee.BhxhLocation" class="control-label"></label>
+                                                    @if (!string.IsNullOrEmpty(Model.Employee.BhxhLocation))
+                                                    {
+                                                        <p>@Model.Employee.BhxhLocation</p>
+                                                    }
+                                                    else
+                                                    {
+                                                        <small><i class="icon-info"></i>@Constants.MissTitle</small>
+                                                    }
+                                                </div>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="col-12">
+                                                <div class="form-group">
+                                                    <label asp-for="Employee.BhytCode" class="control-label"></label>
+                                                    <input asp-for="Employee.BhytCode" class="form-control form-control-lg" />
+                                                    <span asp-validation-for="Employee.BhytCode" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="form-group">
+                                                    <label asp-for="Employee.BhytStart" class="control-label"></label>
+                                                    @{
+                                                        if (Model.Employee.BhytStart.HasValue)
+                                                        {
+                                                            <input class="form-control form-control-lg datepicker datepicker-lg" value="@Model.Employee.BhytStart.Value.ToString("dd/MM/yyyy")" />
+                                                        }
+                                                        else
+                                                        {
+                                                            <input class="form-control form-control-lg datepicker datepicker-lg" />
+                                                        }
+                                                    }
+                                                    <input type="hidden" name="Employee.BhytStart" value="@Model.Employee.BhytStart" class="form-control form-control-lg hidedatepicker" />
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="form-group">
+                                                    <label asp-for="Employee.BhytEnd" class="control-label"></label>
+                                                    @{
+                                                        if (Model.Employee.BhytEnd.HasValue)
+                                                        {
+                                                            <input class="form-control form-control-lg datepicker datepicker-lg" value="@Model.Employee.BhytEnd.Value.ToString("dd/MM/yyyy")" />
+                                                        }
+                                                        else
+                                                        {
+                                                            <input class="form-control form-control-lg datepicker datepicker-lg" />
+                                                        }
+                                                    }
+                                                    <input type="hidden" name="Employee.BhytEnd" value="@Model.Employee.BhytEnd" class="form-control form-control-lg hidedatepicker" />
+                                                </div>
+                                            </div>
+                                            <div class="col-12">
+                                                <div class="form-group">
+                                                    <label asp-for="Employee.BhxhLocation" class="control-label"></label>
+                                                    <input asp-for="Employee.BhxhLocation" class="form-control form-control-lg" />
+                                                    <span asp-validation-for="Employee.BhxhLocation" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                        }
+
 
                                         @if (!readonlyMode)
                                         {
@@ -1173,33 +1314,36 @@
                                         i = 0;
                                         foreach (var item in Model.Employee.Certificates)
                                         {
-                                            <div class="col-12 nodeCertificate node">
-                                                <div class="row bd-example">
-                                                    <div class="col-6">
-                                                        <div class="form-group">
-                                                            <label class="control-label">Học vấn</label>
-                                                            <input asp-for="Employee.Certificates[i].Type" class="form-control form-control-lg" />
+                                            if (!string.IsNullOrEmpty(item.Type) || !string.IsNullOrEmpty(item.Location))
+                                            {
+                                                <div class="col-12 nodeCertificate node">
+                                                    <div class="row bd-example">
+                                                        <div class="col-6">
+                                                            <div class="form-group">
+                                                                <label class="control-label">Học vấn</label>
+                                                                <input asp-for="Employee.Certificates[i].Type" class="form-control form-control-lg" />
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-12">
+                                                            <div class="form-group">
+                                                                <label class="control-label">Nơi cấp</label>
+                                                                <input asp-for="Employee.Certificates[i].Location" class="form-control form-control-lg" />
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-12">
+                                                            <div class="form-group">
+                                                                <label class="control-label">Mô tả</label>
+                                                                <textarea asp-for="Employee.Certificates[i].Description" class="form-control form-control-lg js-auto-size"></textarea>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-12">
+                                                            <button type="button" class="btn btn-danger btn-sm remove-item"><i class="glyphicon-remove"></i>Xóa</button>
                                                         </div>
                                                     </div>
-                                                    <div class="col-12">
-                                                        <div class="form-group">
-                                                            <label class="control-label">Nơi cấp</label>
-                                                            <input asp-for="Employee.Certificates[i].Location" class="form-control form-control-lg" />
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-12">
-                                                        <div class="form-group">
-                                                            <label class="control-label">Mô tả</label>
-                                                            <textarea asp-for="Employee.Certificates[i].Description" class="form-control form-control-lg js-auto-size"></textarea>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-12">
-                                                        <button type="button" class="btn btn-danger btn-sm remove-item"><i class="glyphicon-remove"></i>Xóa</button>
-                                                    </div>
+                                                    <input type="hidden" class="codeCertificate" value="@i" />
                                                 </div>
-                                                <input type="hidden" class="codeCertificate" value="@i" />
-                                            </div>
-                                            i++;
+                                                i++;
+                                            }
                                         }
                                     }
                                 }
@@ -1351,7 +1495,79 @@
                                 <!--end of col-->
                             </div>
                             <div class="row">
-                                @{
+                                @if (readonlyMode)
+                                {
+                                    if (Model.Employee.Contracts != null && Model.Employee.Contracts.Count > 0)
+                                    {
+                                        foreach (var contract in Model.Employee.Contracts)
+                                        {
+                                            if (!string.IsNullOrEmpty(contract.Code))
+                                            {
+                                                <div class="col-12 nodeContract node">
+                                                    <div class="bd-example">
+                                                        <div class="col-sm-6 col-xs-12">
+                                                            <div class="form-group">
+                                                                <label class="control-label">Loại hợp đồng</label>
+                                                                <p><span>@contract.TypeName</span></p>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-sm-6 col-xs-12">
+                                                            <div class="form-group">
+                                                                <label class="control-label">Số hợp đồng</label>
+                                                                <p><span>@contract.Code</span></p>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-sm-6 col-xs-12">
+                                                            <div class="form-group">
+                                                                <label class="control-label">PLHĐ</label>
+                                                                <p><span>@contract.PLHD</span></p>
+                                                            </div>
+                                                        </div>
+                                                        @if (contract.Type == "HĐ KHÔNG XÁC ĐỊNH THỜI HẠN")
+                                                        {
+                                                            <div class="col-sm-6 col-xs-12">
+                                                                <div class="form-group">
+                                                                    <label class="control-label">Phụ lục điều chỉnh lương</label>
+                                                                    <p><span>@contract.PhuLucDieuChinhLuong</span></p>
+                                                                </div>
+                                                            </div>
+                                                        }
+                                                        @if (!string.IsNullOrEmpty(contract.Description))
+                                                        {
+                                                            <div class="col-sm-6 col-xs-12">
+                                                                <div class="form-group">
+                                                                    <label class="control-label">Ghi chú</label>
+                                                                    <p><span>@contract.Description</span></p>
+                                                                </div>
+                                                            </div>
+                                                        }
+                                                        <div class="col-sm-6 col-xs-12">
+                                                            <div class="form-group">
+                                                                <label class="control-label">Ngày hiệu lực</label>
+                                                                @{
+                                                                    var startContract = contract.Start.HasValue && contract.Start.Value.Year > 1900 ? contract.Start.Value.ToString("dd/MM/yyyy") : string.Empty;
+                                                                }
+                                                                <p><span>@startContract</span></p>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-sm-6 col-xs-12">
+                                                            <div class="form-group">
+                                                                <label class="control-label">Ngày hết hiệu lực</label>
+                                                                @{
+                                                                    var endContract = contract.End.HasValue && contract.End.Value.Year > 1900 ? contract.End.Value.ToString("dd/MM/yyyy") : string.Empty;
+                                                                }
+                                                                <p><span>@endContract</span></p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            }
+
+                                        }
+                                    }
+                                }
+                                else
+                                {
                                     if (Model.Employee.Contracts != null && Model.Employee.Contracts.Count > 0)
                                     {
                                         i = 0;
@@ -1360,7 +1576,7 @@
                                             if (!string.IsNullOrEmpty(contract.Code))
                                             {
                                                 <div class="col-12 nodeContract node">
-                                                    <div class="bd-example">
+                                                    <div class="row bd-example">
                                                         <div class="col-sm-6 col-xs-12">
                                                             <div class="form-group">
                                                                 <label class="control-label">Loại hợp đồng</label>
@@ -1441,13 +1657,12 @@
                                             }
                                         }
                                     }
-                                }
-
-                                <div class="col-12 p-1 more-contract">
-                                    <div class="form-group">
-                                        <button class="btn btn-secondary btn-sm addContract" type="button"><i class="icon icon-add-user"></i> Thêm hợp đồng</button>
+                                    <div class="col-12 p-1 more-contract">
+                                        <div class="form-group">
+                                            <button class="btn btn-secondary btn-sm addContract" type="button"><i class="icon icon-add-user"></i> Thêm hợp đồng</button>
+                                        </div>
                                     </div>
-                                </div>
+                                }
 
                                 <script id="tmplContract" type="text/x-jsrender">
                                     <div class="col-12 nodeContract node">
@@ -1512,7 +1727,6 @@
                                     </div>
                                 </script>
                             </div>
-                            <hr />
 
                             <!-- SO LUONG BAN LUU -->
                             <hr />
@@ -1523,7 +1737,34 @@
                                 <!--end of col-->
                             </div>
                             <div class="row">
-                                @{
+                                @if (readonlyMode)
+                                {
+                                    if (Model.Employee.StorePapers != null && Model.Employee.StorePapers.Count > 0)
+                                    {
+                                        foreach (var item in Model.Employee.StorePapers)
+                                        {
+                                            <div class="col-12 nodeStorePaper node">
+                                                <div class="row bd-example">
+                                                    <div class="col-sm-6 col-xs-12">
+                                                        <div class="form-group">
+                                                            <label class="control-label">Loại bảng lưu</label>
+                                                            <input value="@item.Type" type="text" readonly class="form-control-plaintext" />
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-sm-6 col-xs-12">
+                                                        <div class="form-group">
+                                                            <label class="control-label">Số lượng</label>
+                                                            <input value="@item.Count" type="text" readonly class="form-control-plaintext" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    }
+                                }
+                                else
+                                {
+
                                     if (Model.Employee.StorePapers != null && Model.Employee.StorePapers.Count > 0)
                                     {
                                         i = 0;
@@ -1552,37 +1793,37 @@
                                             i++;
                                         }
                                     }
+                                    <div class="col-12 p-1 more-storepaper">
+                                        <div class="form-group">
+                                            <button class="btn btn-secondary btn-sm addStorePaper" type="button"><i class="icon icon-add-to-list"></i> Thêm loại bảng lưu</button>
+                                        </div>
+                                    </div>
                                 }
 
-                                <div class="col-12 p-1 more-storepaper">
-                                    <div class="form-group">
-                                        <button class="btn btn-secondary btn-sm addStorePaper" type="button"><i class="icon icon-add-to-list"></i> Thêm loại bảng lưu</button>
-                                    </div>
-                                </div>
+                            </div>
 
-                                <script id="tmplStorePaper" type="text/x-jsrender">
-                                    <div class="col-12 nodeStorePaper node">
-                                        <div class="row bd-example">
-                                            <div class="col-sm-6 col-xs-12">
-                                                <div class="form-group">
-                                                    <label class="control-label">Loại bảng lưu</label>
-                                                    <input name="Employee.StorePapers[{{:code}}].Type" class="form-control form-control-lg" />
-                                                </div>
-                                            </div>
-                                            <div class="col-sm-6 col-xs-12">
-                                                <div class="form-group">
-                                                    <label class="control-label">Số lượng</label>
-                                                    <input name="Employee.StorePapers[{{:code}}].Count" class="form-control form-control-lg" />
-                                                </div>
-                                            </div>
-                                            <div class="col-12">
-                                                <button type="button" class="btn btn-danger btn-sm remove-item"><i class="glyphicon-remove"></i>Xóa</button>
+                            <script id="tmplStorePaper" type="text/x-jsrender">
+                                <div class="col-12 nodeStorePaper node">
+                                    <div class="row bd-example">
+                                        <div class="col-sm-6 col-xs-12">
+                                            <div class="form-group">
+                                                <label class="control-label">Loại bảng lưu</label>
+                                                <input name="Employee.StorePapers[{{:code}}].Type" class="form-control form-control-lg" />
                                             </div>
                                         </div>
-                                        <input type="hidden" class="codeStorePaper" value="{{:code}}" />
+                                        <div class="col-sm-6 col-xs-12">
+                                            <div class="form-group">
+                                                <label class="control-label">Số lượng</label>
+                                                <input name="Employee.StorePapers[{{:code}}].Count" class="form-control form-control-lg" />
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <button type="button" class="btn btn-danger btn-sm remove-item"><i class="glyphicon-remove"></i>Xóa</button>
+                                        </div>
                                     </div>
-                                </script>
-                            </div>
+                                    <input type="hidden" class="codeStorePaper" value="{{:code}}" />
+                                </div>
+                            </script>
 
                             <!-- DAO TAO -->
                             <hr />
@@ -1997,7 +2238,7 @@
         <div class="row">
             <div class="col-12 col-md-8">
                 <div class="form-group">
-                    <button class="btn btn-success btn-lg btn-block btn-submit" type="submit" data-toggle="tooltip" title="Bấm lưu thay đổi thông tin tài khoản." disabled><i class="icon icon-save"></i> Lưu</button>
+                    <button class="btn btn-success btn-lg btn-block btn-submit" id="btn-save-submit" type="submit" data-toggle="tooltip" title="Bấm lưu thay đổi thông tin tài khoản." disabled><i class="icon icon-save"></i> Lưu</button>
                 </div>
             </div>
         </div>

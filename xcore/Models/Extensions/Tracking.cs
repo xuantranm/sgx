@@ -14,6 +14,7 @@ namespace Models
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
 
+        // Người dùng login
         public string UserId { get; set; }
 
         public string Function { get; set; }

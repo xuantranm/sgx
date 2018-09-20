@@ -71,8 +71,8 @@ namespace erp.Controllers
             var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
             ViewData["LoginUserName"] = loginUserName;
 
-            var userInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
-            if (userInformation == null)
+            var loginInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
+            if (loginInformation == null)
             {
                 #region snippet1
                 await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
@@ -203,8 +203,8 @@ namespace erp.Controllers
             var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
             ViewData["LoginUserName"] = loginUserName;
 
-            var userInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
-            if (userInformation == null)
+            var loginInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
+            if (loginInformation == null)
             {
                 #region snippet1
                 await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
@@ -486,8 +486,8 @@ namespace erp.Controllers
             var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
             ViewData["LoginUserName"] = loginUserName;
 
-            var userInformation = dbContext.Employees.Find(m => m.Id.Equals(login)).FirstOrDefault();
-            if (userInformation == null)
+            var loginInformation = dbContext.Employees.Find(m => m.Id.Equals(login)).FirstOrDefault();
+            if (loginInformation == null)
             {
                 #region snippet1
                 HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
@@ -680,8 +680,17 @@ namespace erp.Controllers
             #region Authorization
             var login = User.Identity.Name;
             var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
-            bool right = Utility.IsRight(login, "nhan-su", (int)ERights.Add);
+            var loginInformation = dbContext.Employees.Find(m => m.Id.Equals(login)).FirstOrDefault();
+            if (loginInformation == null)
+            {
+                #region snippet1
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                #endregion
 
+                return RedirectToAction("login", "account");
+            }
+
+            bool right = Utility.IsRight(login, "nhan-su", (int)ERights.Add);
             // sys account override
             if (loginUserName == Constants.System.account)
             {
@@ -872,26 +881,26 @@ namespace erp.Controllers
                     Content = entity.FullName,
                     Link = Constants.LinkHr.Main + "/" + Constants.LinkHr.Human + "/" + Constants.LinkHr.Information + "/" + entity.Id,
                     Images = notificationImages.Count > 0 ? notificationImages : null,
-                    UserId = entity.Id,
-                    CreatedBy = login
+                    UserId = newUserId,
+                    CreatedBy = login,
+                    CreatedByName = loginInformation.FullName
                 };
                 dbContext.Notifications.InsertOne(notification);
                 #endregion
 
                 #region Activities
-                var objectId = newUserId.ToString();
                 var activity = new TrackingUser
                 {
                     UserId = login,
                     Function = Constants.Collection.Employees,
                     Action = Constants.Action.Create,
-                    Value = entity.Id,
+                    Value = newUserId,
                     Content = JsonConvert.SerializeObject(entity),
                 };
                 dbContext.TrackingUsers.InsertOne(activity);
                 #endregion
 
-                return Json(new { result = true, source = "create", id = entity.Id, message = "Khởi tạo thành công" });
+                return Json(new { result = true, source = "create", id = newUserId, message = "Khởi tạo thành công" });
             }
             catch (Exception ex)
             {
@@ -906,7 +915,7 @@ namespace erp.Controllers
             #region Authorization
             var login = User.Identity.Name;
             var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
-
+            var rightHr = false;
             // Check owner
             if (id != login)
             {
@@ -914,6 +923,7 @@ namespace erp.Controllers
                 {
                     return RedirectToAction("AccessDenied", "Account");
                 }
+                rightHr = true;
             }
 
             #region Check salary right
@@ -1005,13 +1015,23 @@ namespace erp.Controllers
             }
             entity.Salaries = currentSalaries;
 
-            // Compare change
-            var entityOtherChange = dbContext.EmployeeHistories.Find(m => m.EmployeeId == id).SortByDescending(m=>m.UpdatedOn).FirstOrDefault();
-            var variances = new List<Variance>();
-            if (entityOtherChange!= null && entityOtherChange.UpdatedOn > entity.UpdatedOn)
+            // Use compare field by field
+            var employeeChance = new Employee();
+            if (rightHr)
             {
-                variances = entity.DetailedCompare(entityOtherChange);
+                var entityOtherChange = dbContext.EmployeeHistories.Find(m => m.EmployeeId.Equals(id)).SortByDescending(m => m.UpdatedOn).FirstOrDefault();
+                if (entityOtherChange != null && entityOtherChange.UpdatedOn > entity.UpdatedOn)
+                {
+                    employeeChance = entityOtherChange;
+                }
             }
+            #region Compare change. No use this
+            //var variances = new List<Variance>();
+            //if (entityOtherChange!= null && entityOtherChange.UpdatedOn > entity.UpdatedOn)
+            //{
+            //    variances = entity.DetailedCompare(entityOtherChange);
+            //}
+            #endregion
 
             var manager = new Employee();
             if (!string.IsNullOrEmpty(entity.ManagerId))
@@ -1022,7 +1042,7 @@ namespace erp.Controllers
             var viewModel = new EmployeeDataViewModel()
             {
                 Employee = entity,
-                Variances = variances,
+                EmployeeChance = employeeChance,
                 Employees = employees,
                 Manager = manager
             };
@@ -1038,11 +1058,21 @@ namespace erp.Controllers
         public async Task<ActionResult> EditAsync(EmployeeDataViewModel viewModel)
         {
             var entity = viewModel.Employee;
-
             var userId = entity.Id;
+
             #region Authorization
             var login = User.Identity.Name;
             var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+            var loginInformation = dbContext.Employees.Find(m => m.Id.Equals(login)).FirstOrDefault();
+            if (loginInformation == null)
+            {
+                #region snippet1
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                #endregion
+
+                return RedirectToAction("login", "account");
+            }
+
             // Check owner
             if (entity.Id != login)
             {
@@ -1272,6 +1302,8 @@ namespace erp.Controllers
                     }
 
                     dbContext.Employees.UpdateOne(filter, update);
+                    entity.EmployeeId = userId;
+                    entity.Id = null;
                     dbContext.EmployeeHistories.InsertOne(entity);
                     #region Send email to user changed
                     var tos = new List<EmailAddress>
@@ -1298,15 +1330,14 @@ namespace erp.Controllers
                     #endregion
                     var subject = "[TRIBAT] Thay đổi thông tin nhân sự.";
                     var requester = entity.FullName;
-                    var loginEntity = dbContext.Employees.Find(m => m.Id.Equals(login)).FirstOrDefault();
-                    var hrChanged = loginEntity.FullName;
-                    if (!string.IsNullOrEmpty(loginEntity.Title))
+                    var hrChanged = loginInformation.FullName;
+                    if (!string.IsNullOrEmpty(loginInformation.Title))
                     {
-                        hrChanged += " - " + loginEntity.Title;
+                        hrChanged += " - " + loginInformation.Title;
                     }
-                    if (!string.IsNullOrEmpty(loginEntity.Email))
+                    if (!string.IsNullOrEmpty(loginInformation.Email))
                     {
-                        hrChanged += " - email: " + loginEntity.Email;
+                        hrChanged += " - email: " + loginInformation.Email;
                     }
                     var linkDomain = Constants.System.domain;
                     var fullLinkInformation = linkDomain + "/" + linkInformation;
@@ -1411,13 +1442,15 @@ namespace erp.Controllers
                         }
                     }
                     // Test
-                    tos = new List<EmailAddress>
-                    {
-                        new EmailAddress { Name = "Xuan", Address = "xuan.tm1988@gmail.com" }
-                    };
-                    ccs = new List<EmailAddress>{
-                        new EmailAddress { Name = "Xuan CC", Address = "xuantranm@gmail.com" }
-                    };
+
+                    //tos = new List<EmailAddress>
+                    //{
+                    //    new EmailAddress { Name = "Xuan", Address = "xuan.tm1988@gmail.com" }
+                    //};
+                    //ccs = new List<EmailAddress>{
+                    //    new EmailAddress { Name = "Xuan CC", Address = "xuantranm@gmail.com" }
+                    //};
+
                     // End Test
 
                     var webRoot = Environment.CurrentDirectory;
@@ -1535,8 +1568,9 @@ namespace erp.Controllers
                     Content = entity.FullName,
                     Link = linkInformation,
                     Images = notificationImages.Count > 0 ? notificationImages : null,
-                    UserId = entity.Id,
-                    CreatedBy = login
+                    UserId = userId,
+                    CreatedBy = login,
+                    CreatedByName = loginInformation.FullName
                 };
                 dbContext.Notifications.InsertOne(notification);
                 #endregion
@@ -1544,10 +1578,10 @@ namespace erp.Controllers
                 #region Activities
                 var activity = new TrackingUser
                 {
-                    UserId = userId,
+                    UserId = login,
                     Function = Constants.Collection.NhanViens,
                     Action = Constants.Action.Edit,
-                    Value = entity.Id,
+                    Value = userId,
                     Content = JsonConvert.SerializeObject(entity)
                 };
                 dbContext.TrackingUsers.InsertOne(activity);

@@ -234,7 +234,7 @@ namespace erp.Controllers
                 filter = filter & builder.Eq(m => m.Title, title);
             }
             var employees = dbContext.Employees.Find(filter).ToList();
-            var hdtvs = dbContext.Employees.Find(m => m.Part.Equals("HĐTV")).ToList();
+            var hdtvs = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Part.Equals("HĐTV")).ToList();
             foreach(var hdtv in hdtvs)
             {
                 employees.Add(hdtv);

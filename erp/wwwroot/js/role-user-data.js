@@ -1,6 +1,11 @@
 ﻿$(function () {
     loadEmployees();
-    
+
+    $('.js-select2-basic-single').select2(
+        {
+            theme: "bootstrap"
+        });
+
     $('#part').on('change', function () {
         loadEmployees();
     });
@@ -74,25 +79,26 @@
     });
 });
 
+
 function loadEmployees() {
-    var tmplEmployees = $.templates("#employeesTmpl"); // Get compiled template
+    var tmplManagerPeople = $.templates("#employeesTmpl");
     $.ajax({
         url: '/api/employee-filter',
         type: 'GET',
         data: {
-            part: $('#part').val(),
             department: $('#department').val(),
-            title: $('#title').val()
+            part: $('#part').val(),
+            //title: $('select[name="Employee.Title"]').val()
         },
         datatype: 'json',
         contentType: 'application/json; charset=utf-8',
         success: function (data) {
+            //console.log(data);
             if (data.length !== 0) {
                 if (data.length > 0) {
-                    var htmlEmployees = tmplEmployees.render(data);      // Render template using data - as HTML string
-                    $("#user").html(htmlEmployees);
-                    $('input[name="RoleUser.FullName"]').val($("#user option:selected").text());
-                    //$("#user").prepend($('<option value="" selected>Tất cả</option>'));
+                    var htmlEmployees = tmplManagerPeople.render(data);
+                    $("#userddl").html(htmlEmployees);
+                    $("#userddl").prepend($('<option value="" selected>Chọn</option>'));
                 }
             }
         }

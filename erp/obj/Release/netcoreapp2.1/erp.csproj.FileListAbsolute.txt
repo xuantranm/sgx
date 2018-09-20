@@ -140,3 +140,4 @@ C:\Projects\Tribat\sourcecode\erp\obj\Release\netcoreapp2.1\Razor\Views\Shared\_
 C:\Projects\Tribat\sourcecode\erp\obj\Release\netcoreapp2.1\Razor\Views\Survey\Index.g.cshtml.cs
 C:\Projects\Tribat\sourcecode\erp\obj\Release\netcoreapp2.1\Razor\Views\Employee\ChildrenReport.g.cshtml.cs
 C:\Projects\Tribat\sourcecode\erp\obj\Release\netcoreapp2.1\Razor\Views\Factory\PhieuInCa.g.cshtml.cs
+C:\Projects\Tribat\sourcecode\erp\obj\Release\netcoreapp2.1\Razor\Views\TimeKeeper\Approve.g.cshtml.cs

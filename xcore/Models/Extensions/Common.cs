@@ -27,6 +27,7 @@ namespace Models
 
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime ApprovedOn { get; set; } = DateTime.Now;
+
         public string CreatedBy { get; set; } = string.Empty;
         public string UpdatedBy { get; set; } = string.Empty;
         public string CheckedBy { get; set; } = string.Empty;

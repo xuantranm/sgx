@@ -9,7 +9,7 @@ namespace ViewModels
     {
         public Employee Employee { get; set; }
 
-        public IList<Variance> Variances { get; set; }
+        public Employee EmployeeChance { get; set; }
         // data display
         public IList<Employee> Employees { get; set; }
 
