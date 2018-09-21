@@ -20,4 +20,3 @@ C:\Projects\Tribat\sourcecode\TimeKeeperBusiness\bin\Debug\MailKit.dll
 C:\Projects\Tribat\sourcecode\TimeKeeperBusiness\bin\Debug\MimeKit.dll
 C:\Projects\Tribat\sourcecode\TimeKeeperBusiness\bin\Debug\MailKit.xml
 C:\Projects\Tribat\sourcecode\TimeKeeperBusiness\bin\Debug\MimeKit.xml
-C:\Projects\Tribat\sourcecode\TimeKeeperBusiness\obj\Debug\TimeKeeperBusiness.csprojAssemblyReference.cache

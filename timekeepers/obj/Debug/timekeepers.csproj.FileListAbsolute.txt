@@ -10,4 +10,3 @@ C:\Projects\Tribat\sourcecode\timekeepers\obj\Debug\timekeepers.csproj.CoreCompi
 C:\Projects\Tribat\sourcecode\timekeepers\obj\Debug\timekeepers.csproj.CopyComplete
 C:\Projects\Tribat\sourcecode\timekeepers\obj\Debug\timekeepers.exe
 C:\Projects\Tribat\sourcecode\timekeepers\obj\Debug\timekeepers.pdb
-C:\Projects\Tribat\sourcecode\timekeepers\obj\Debug\timekeepers.csprojAssemblyReference.cache

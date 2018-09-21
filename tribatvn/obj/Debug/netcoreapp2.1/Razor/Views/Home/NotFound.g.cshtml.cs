@@ -117,7 +117,7 @@ using Helpers;
             WriteLiteral("</a>\r\n                </div>\r\n                <!--end of col-->\r\n                <div class=\"col-12 col-md-6 col-lg-6\">\r\n                    ");
             EndContext();
             BeginContext(1006, 99, false);
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("img", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagOnly, "de8a72dbb96a4dd9a4a1db11f122c85c", async() => {
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("img", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagOnly, "db71658a76b94fc7a2c3198d4d5db673", async() => {
             }
             );
             __Microsoft_AspNetCore_Mvc_Razor_TagHelpers_UrlResolutionTagHelper = CreateTagHelper<global::Microsoft.AspNetCore.Mvc.Razor.TagHelpers.UrlResolutionTagHelper>();
