@@ -164,4 +164,4 @@ tribatvn/bin/
 tribatvn/obj/
 *.json
 *.cache
-erp/bin/Debug/netcoreapp2.1/
+netcoreapp2.1/
