@@ -97,10 +97,6 @@ csx
 AppPackages/
 
 # Others
-sql/
-*.Cache
-ClientBin/
-[Ss]tyle[Cc]op.*
 ~$*
 *~
 *.dbmdl
@@ -160,7 +156,6 @@ backup
 .vs/tribatvn/
 erp/bin/*
 erp/obj/*
-tribatvn/bin/
-tribatvn/obj/
+tribatvn/bin/*
+tribatvn/obj/*
 *.json
-*.cache
