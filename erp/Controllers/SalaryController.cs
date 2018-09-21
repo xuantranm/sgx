@@ -61,6 +61,41 @@ namespace erp.Controllers
             return View(viewModel);
         }
 
+        //[Route(Constants.LinkSalary.ThangBangLuong)]
+        public async Task<IActionResult> Level()
+        {
+            #region Authorization
+            var login = User.Identity.Name;
+            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+            ViewData["LoginUserName"] = loginUserName;
+
+            var loginInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
+            if (loginInformation == null)
+            {
+                #region snippet1
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                #endregion
+                return RedirectToAction("login", "account");
+            }
+
+            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, "nhan-su", (int)ERights.View)))
+            {
+                return RedirectToAction("AccessDenied", "Account");
+            }
+
+            #endregion
+
+            var viewModel = new ThangBangLuongViewModel
+            {
+                SalaryMucLuongVung = await dbContext.SalaryMucLuongVungs.Find(m => m.Enable.Equals(true)).FirstOrDefaultAsync(),
+                SalaryThangBangLuongs = await dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true) & m.Law.Equals(false)).ToListAsync(),
+                SalaryThangBangLuongLaws = await dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true)& m.Law.Equals(true)).ToListAsync(),
+                SalaryThangBangPhuCapPhucLois = await dbContext.SalaryThangBangPhuCapPhucLois.Find(m => m.Enable.Equals(true)).ToListAsync()
+            };
+
+            return View(viewModel);
+        }
+
         [Route(Constants.LinkSalary.ThangBangLuong)]
         public async Task<IActionResult> ThangBangLuong()
         {
@@ -88,7 +123,8 @@ namespace erp.Controllers
             var viewModel = new ThangBangLuongViewModel
             {
                 SalaryMucLuongVung = await dbContext.SalaryMucLuongVungs.Find(m => m.Enable.Equals(true)).FirstOrDefaultAsync(),
-                SalaryThangBangLuongs = await dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true)).ToListAsync(),
+                SalaryThangBangLuongs = await dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true) & m.Law.Equals(false)).ToListAsync(),
+                SalaryThangBangLuongLaws = await dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true) & m.Law.Equals(true)).ToListAsync(),
                 SalaryThangBangPhuCapPhucLois = await dbContext.SalaryThangBangPhuCapPhucLois.Find(m => m.Enable.Equals(true)).ToListAsync()
             };
 
@@ -1097,14 +1133,22 @@ namespace erp.Controllers
         // Base on ThangBangLuong. Do later
         private void InitChucDanhCongViec()
         {
-            //dbContext.ChucDanhCongViecs.DeleteMany(new BsonDocument());
-
-            //dbContext.ChucDanhCongViecs.InsertOne(new ChucDanhCongViec()
-            //{
-            //    Name = "",
-            //    Code= "",
-            //    Type = ""
-            //});
+            dbContext.ChucDanhCongViecs.DeleteMany(new BsonDocument());
+            var listTemp = dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true) && m.Law.Equals(true)).ToList();
+            foreach(var item in listTemp)
+            {
+                if (!(dbContext.ChucDanhCongViecs.CountDocuments(m=>m.Code.Equals(item.MaSo)) > 0)){
+                    dbContext.ChucDanhCongViecs.InsertOne(new ChucDanhCongViec()
+                    {
+                        Name = item.Name,
+                        Alias = item.NameAlias,
+                        Code = item.MaSo,
+                        Type = item.TypeRole,
+                        TypeAlias = item.TypeRoleAlias,
+                        TypeCode = item.TypeRoleCode
+                    });
+                }
+            }
         }
 
         #endregion

@@ -9,6 +9,8 @@ namespace ViewModels
     {
         public SalaryMucLuongVung SalaryMucLuongVung { get; set; }
 
+        public IList<SalaryThangBangLuong> SalaryThangBangLuongLaws { get; set; }
+
         public IList<SalaryThangBangLuong> SalaryThangBangLuongs { get; set; }
 
         public IList<SalaryThangBangPhuCapPhucLoi> SalaryThangBangPhuCapPhucLois { get; set; }

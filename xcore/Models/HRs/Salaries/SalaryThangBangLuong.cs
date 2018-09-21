@@ -40,9 +40,6 @@ namespace Models
 
         public decimal MucLuong { get; set; }
 
-
-
-
         public string NameAlias { get; set; }
 
         public string TypeRoleAlias { get; set; }

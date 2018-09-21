@@ -291,7 +291,7 @@ WriteAttributeValue("", 2263, Model.Employee.Id, 2263, 18, false);
             WriteLiteral("            <!--end of col-->\r\n        </div>\r\n        <!--end of row-->\r\n    </div>\r\n    <!--end of container-->\r\n</section>\r\n\r\n");
             EndContext();
             BeginContext(3061, 1518, false);
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("form", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "e9e91e733d2f44e68110eea5ed0d5765", async() => {
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("form", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "eb491d0b3b354db3b3606d9208cc3f3b", async() => {
                 BeginContext(3168, 35, true);
                 WriteLiteral("\r\n    <div class=\"form-row mb-3\">\r\n");
                 EndContext();
@@ -305,12 +305,12 @@ WriteAttributeValue("", 2263, Model.Employee.Id, 2263, 18, false);
                 WriteLiteral("            <div class=\"col-md-6\">\r\n                <label class=\"control-label\">Nhân viên</label>\r\n                ");
                 EndContext();
                 BeginContext(3359, 425, false);
-                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("select", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "0f1f866dc1da411aa5eb6461cae9ec62", async() => {
+                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("select", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "aef6dd905910487491ecf2dcf4eee379", async() => {
                     BeginContext(3447, 22, true);
                     WriteLiteral("\r\n                    ");
                     EndContext();
                     BeginContext(3469, 32, false);
-                    __tagHelperExecutionContext = __tagHelperScopeManager.Begin("option", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "4390d11c57984ae3b559d5d08b121b0c", async() => {
+                    __tagHelperExecutionContext = __tagHelperScopeManager.Begin("option", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "cfec2a1185c14ee9930eefa6f04d3bfa", async() => {
                         BeginContext(3486, 6, true);
                         WriteLiteral("Tất cả");
                         EndContext();
@@ -342,7 +342,7 @@ WriteAttributeValue("", 2263, Model.Employee.Id, 2263, 18, false);
                     WriteLiteral("                            ");
                     EndContext();
                     BeginContext(3645, 62, false);
-                    __tagHelperExecutionContext = __tagHelperScopeManager.Begin("option", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "bc0f09a44f5b4510949ea93a8ea50998", async() => {
+                    __tagHelperExecutionContext = __tagHelperScopeManager.Begin("option", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "cbd0a814b83a4583966840b47e938972", async() => {
                         BeginContext(3671, 13, false);
 #line 77 "C:\Projects\Tribat\sourcecode\erp\Views\TimeKeeper\Index.cshtml"
                                                 Write(item.FullName);
@@ -427,7 +427,7 @@ __Microsoft_AspNetCore_Mvc_TagHelpers_SelectTagHelper.For = ModelExpressionProvi
                 WriteLiteral("\r\n        <div class=\"col-md-3 date-area\">\r\n            <label class=\"control-label\">Tháng</label>\r\n            ");
                 EndContext();
                 BeginContext(3929, 349, false);
-                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("select", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "f9783189a1b04337a8ed347fb8a8f51e", async() => {
+                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("select", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "56735a66c78d4d97b0a3aae8aa35c383", async() => {
                     BeginContext(4014, 2, true);
                     WriteLiteral("\r\n");
                     EndContext();
@@ -442,7 +442,7 @@ __Microsoft_AspNetCore_Mvc_TagHelpers_SelectTagHelper.For = ModelExpressionProvi
                     WriteLiteral("                        ");
                     EndContext();
                     BeginContext(4143, 70, false);
-                    __tagHelperExecutionContext = __tagHelperScopeManager.Begin("option", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "7dd161e1a7034cbc88d4ecc3a003b38b", async() => {
+                    __tagHelperExecutionContext = __tagHelperScopeManager.Begin("option", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "af97c232b2eb4ea098417cebdc340ace", async() => {
                         BeginContext(4183, 10, false);
 #line 90 "C:\Projects\Tribat\sourcecode\erp\Views\TimeKeeper\Index.cshtml"
                                                           Write(item.Month);
@@ -685,12 +685,12 @@ AddHtmlAttributeValue("", 3120, Constants.LinkTimeKeeper.Index, 3120, 31, false)
         ");
             EndContext();
             BeginContext(6912, 334, false);
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("form", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "2e56bdd1a59541759432b3c211035cf3", async() => {
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("form", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "1f56d7ba3eb041a79a3304b1bc27930b", async() => {
                 BeginContext(6952, 144, true);
                 WriteLiteral("\r\n            <span class=\"mr-2 text-muted text-small text-nowrap\">Sắp xếp:</span>\r\n            <select class=\"custom-select\">\r\n                ");
                 EndContext();
                 BeginContext(7096, 50, false);
-                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("option", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "b7eff7b1c038444fbd7f9d1fba9067a8", async() => {
+                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("option", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "88b9cd26ffc143d08bbc6720da4f7a94", async() => {
                     BeginContext(7129, 8, true);
                     WriteLiteral("Mới nhất");
                     EndContext();
@@ -715,7 +715,7 @@ AddHtmlAttributeValue("", 3120, Constants.LinkTimeKeeper.Index, 3120, 31, false)
                 WriteLiteral("\r\n                ");
                 EndContext();
                 BeginContext(7164, 42, false);
-                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("option", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "44cdd754004d4db58919698e494e902a", async() => {
+                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("option", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "d9f23bc73d3b43739c7c02644d6ff43f", async() => {
                     BeginContext(7187, 10, true);
                     WriteLiteral("Trạng thái");
                     EndContext();
@@ -1082,7 +1082,7 @@ else
             WriteLiteral("                    ");
             EndContext();
             BeginContext(12684, 44, false);
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("option", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "25805378f1984638a3009270c361da3e", async() => {
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("option", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "41db57c553734eb6819e2a377eab9e67", async() => {
                 BeginContext(12710, 9, false);
 #line 276 "C:\Projects\Tribat\sourcecode\erp\Views\TimeKeeper\Index.cshtml"
                                         Write(item.Name);
@@ -1162,12 +1162,12 @@ else
             ");
             EndContext();
             BeginContext(14349, 718, false);
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("form", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "57bbf3a20cb8460ea9c4eefe554e8abd", async() => {
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("form", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "897085d149244c31a74a9097cbf628af", async() => {
                 BeginContext(14492, 18, true);
                 WriteLiteral("\r\n                ");
                 EndContext();
                 BeginContext(14510, 66, false);
-                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("div", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "7c8e88d856284f009ced8a36623eea94", async() => {
+                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("div", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "520854afeca3443c89ca920512ed330f", async() => {
                 }
                 );
                 __Microsoft_AspNetCore_Mvc_TagHelpers_ValidationSummaryTagHelper = CreateTagHelper<global::Microsoft.AspNetCore.Mvc.TagHelpers.ValidationSummaryTagHelper>();
@@ -1248,7 +1248,7 @@ AddHtmlAttributeValue("", 14427, Constants.LinkTimeKeeper.Request, 14427, 33, fa
                 WriteLiteral("        ");
                 EndContext();
                 BeginContext(15212, 85, false);
-                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("script", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "46c32f912798492fb2e956f4d82c47f1", async() => {
+                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("script", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "fce806067113496894c93cdd77b7f0cb", async() => {
                 }
                 );
                 __Microsoft_AspNetCore_Mvc_Razor_TagHelpers_UrlResolutionTagHelper = CreateTagHelper<global::Microsoft.AspNetCore.Mvc.Razor.TagHelpers.UrlResolutionTagHelper>();
