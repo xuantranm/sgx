@@ -158,11 +158,9 @@ backup
 *.cache
 *.config
 .vs/tribatvn/
-erp/bin/
-erp/obj/
+erp/bin/*
+erp/obj/*
 tribatvn/bin/
 tribatvn/obj/
 *.json
 *.cache
-erp/bin/Debug/netcoreapp2.1/
-erp/obj/Debug/netcoreapp2.1/
