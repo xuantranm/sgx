@@ -128,9 +128,10 @@ namespace Common.Utilities
         {
             public const string Main = "sl";
             public const string Index = "bang-luong";
-            public const string Manage = "quan-ly-cham-cong";
-            // API
-            //public const string Approve = "duyet-phep";
+
+            public const string UpdateData = "cap-nhat-du-lieu";
+            public const string ThangBangLuong = "thang-bang-luong";
+            public const string Export = "xuat-tai-lieu";
         }
 
         public static class LinkTraining

@@ -839,6 +839,7 @@ namespace erp.Controllers
 
             return Json(new { result = true, message = "Cám ơn đã xác nhận, kết quả đang gửi cho người liên quan." });
         }
+
         #region Sub Data
         [HttpPost]
         [Route(Constants.LinkLeave.CalculatorDate)]

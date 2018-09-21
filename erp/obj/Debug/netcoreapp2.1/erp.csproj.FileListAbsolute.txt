@@ -141,3 +141,4 @@ C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\Shared\_La
 C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\Employee\ChildrenReport.g.cshtml.cs
 C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\Factory\PhieuInCa.g.cshtml.cs
 C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\TimeKeeper\Approve.g.cshtml.cs
+C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\Salary\ThangBangLuong.g.cshtml.cs

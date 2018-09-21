@@ -131,6 +131,59 @@ namespace Data
         #endregion
 
         #region HRs
+
+        #region SALARIES
+        public IMongoCollection<SalaryMucLuongVung> SalaryMucLuongVungs
+        {
+            get
+            {
+                return _database.GetCollection<SalaryMucLuongVung>("SalaryMucLuongVungs");
+            }
+        }
+
+        public IMongoCollection<SalaryFeeLaw> SalaryFeeLaws
+        {
+            get
+            {
+                return _database.GetCollection<SalaryFeeLaw>("SalaryFeeLaws");
+            }
+        }
+
+        public IMongoCollection<SalaryThangBangLuong> SalaryThangBangLuongs
+        {
+            get
+            {
+                return _database.GetCollection<SalaryThangBangLuong>("SalaryThangBangLuongs");
+            }
+        }
+
+        // Danh sách phụ cấp - phúc lợi
+        public IMongoCollection<SalaryPhuCapPhucLoi> SalaryPhuCapPhucLois
+        {
+            get
+            {
+                return _database.GetCollection<SalaryPhuCapPhucLoi>("SalaryPhuCapPhucLois");
+            }
+        }
+
+        // Danh sách phụ cấp - phúc lợi theo từng vị trí
+        public IMongoCollection<SalaryThangBangPhuCapPhucLoi> SalaryThangBangPhuCapPhucLois
+        {
+            get
+            {
+                return _database.GetCollection<SalaryThangBangPhuCapPhucLoi>("SalaryThangBangPhuCapPhucLois");
+            }
+        }
+
+        public IMongoCollection<ChucDanhCongViec> ChucDanhCongViecs
+        {
+            get
+            {
+                return _database.GetCollection<ChucDanhCongViec>("ChucDanhCongViecs");
+            }
+        }
+        #endregion
+
         public IMongoCollection<TrainningType> TrainningTypes
         {
             get

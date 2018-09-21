@@ -9,9 +9,6 @@ namespace ViewModels
     {
         public Employee Employee { get; set; }
 
-        // information search box
-        public SalarySearch Search { get; set; }
-
         public bool RightRequest { get; set; } = false;
     }
 }
