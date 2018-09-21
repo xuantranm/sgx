@@ -6,8 +6,6 @@ C:\Projects\Tribat\sourcecode\timekeepers\bin\Debug\MongoDB.Driver.dll
 C:\Projects\Tribat\sourcecode\timekeepers\bin\Debug\MongoDB.Bson.xml
 C:\Projects\Tribat\sourcecode\timekeepers\bin\Debug\MongoDB.Driver.xml
 C:\Projects\Tribat\sourcecode\timekeepers\bin\Debug\Interop.zkemkeeper.dll
-C:\Projects\Tribat\sourcecode\timekeepers\obj\Debug\Interop.zkemkeeper.dll
-C:\Projects\Tribat\sourcecode\timekeepers\obj\Debug\timekeepers.csproj.ResolveComReference.cache
 C:\Projects\Tribat\sourcecode\timekeepers\obj\Debug\timekeepers.csproj.CoreCompileInputs.cache
 C:\Projects\Tribat\sourcecode\timekeepers\obj\Debug\timekeepers.csproj.CopyComplete
 C:\Projects\Tribat\sourcecode\timekeepers\obj\Debug\timekeepers.exe

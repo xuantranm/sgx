@@ -1,0 +1,8 @@
+﻿1. Run as administrator: Auto-install_sdk
+	If fail copy sdk into windows/system32
+	Run again.
+2. Add Interop.zkemkeeper.dll in folder dll.
+3. Build ok, but run fail, error COM...
+	Fix: right solution choose Build > Platform target select "Any CPU".
+
+	
