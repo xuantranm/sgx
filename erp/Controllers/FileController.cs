@@ -2693,7 +2693,7 @@ namespace erp.Controllers
                                         ViTri = vitri,
                                         Bac = lv,
                                         HeSo = hesobac,
-                                        MucLuong = money,
+                                        MucLuong = Math.Round(money, 0),
                                         ViTriCode = vitriFullCode,
                                         ViTriAlias = vitriAlias,
                                         Law = false,

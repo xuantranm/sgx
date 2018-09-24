@@ -167,7 +167,7 @@
                     <form action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.UpdateThangBangLuongReal" method="post" class="data-form">
                         <div class="d-flex align-items-center">
                             <div class="mr-2">
-                                <button class="btn btn-info btn-list d-none" data-toggle="tooltip" title="Bấm trở về thang bảng lương.">
+                                <button type="button" class="btn btn-info btn-list-real d-none" data-toggle="tooltip" title="Bấm trở về thang bảng lương.">
                                     <i class="icon icon-back"></i>Trở về
                                 </button>
                                 <button type="submit" class="btn btn-danger btnSubmitThangBangLuongReal" data-toggle="tooltip" title="Bấm cập nhật thang bảng lương."><i class="icon-save"></i>&nbsp;Cập nhật thang bảng lương</button>
@@ -184,16 +184,21 @@
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-12">
+                            <div class="col-12 mb-3">
                                 <b>
                                     II/ HỆ THỐNG THANG LƯƠNG:
                                 </b>
                                 (ĐVT:  đồng)
                             </div>
+                            @*<div class="col-12 mb-3">
+                                <button type="button" style="cursor:pointer" class="btn btn-link new-vi-tri-btn">
+                                    <i class="icon-add-to-list mr-1"></i> Tạo vị trí mới
+                                </button>
+                            </div>*@
                             @{
                                 var levelMaxEditReal = 10;
                                 <div class="col-12 table-responsive-sm">
-                                    <table class="table table-responsive-sm table-bordered">
+                                    <table class="table table-responsive-sm table-bordered table-salary-level">
                                         <tr style="background-color:yellow!important">
                                             <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>STT</th>
                                             <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>VỊ TRÍ</th>
@@ -220,13 +225,15 @@
                                                         </td>
                                                         <td nowrap>@group.ViTri</td>
                                                         <td>
-                                                            <!-- Update base He So vs Money from bac 1; from bac 1 => calculator up to 10 -->
-                                                            <input value="@group.Salaries[0].HeSo" name="SalaryThangBangLuongs[@editCode].HeSo" class="form-control heso-@editCode" style="width:70px;"/>
+                                                            <input type="hidden" value="@editCode" class="editCode" />
+                                                            <!-- Update base VITRICODE He So vs Money from bac 1; from bac 1 => calculator up to 10 -->
+                                                            <input value="@group.Salaries[0].HeSo" name="SalaryThangBangLuongs[@editCode].HeSo" class="form-control heso-@editCode" style="width:70px;" />
                                                             <input type="hidden" class="codeHeSo" value="@editCode" />
-                                                            <input type="hidden" name="SalaryThangBangLuongs[@editCode].Id" value="@group.Salaries[0].Id" class="id-@editCode"/>
+                                                            <input type="hidden" name="SalaryThangBangLuongs[@editCode].ViTriCode" value="@group.Salaries[0].ViTriCode" class="vitricode-@editCode" />
+                                                            <input type="hidden" name="SalaryThangBangLuongs[@editCode].Id" value="@group.Salaries[0].Id" class="id-@editCode" />
                                                         </td>
                                                         <td>
-                                                            <input value="@Math.Round(group.Salaries[0].MucLuong, 0)" name="SalaryThangBangLuongs[@editCode].MucLuong" class="form-control mucluong-@editCode" />
+                                                            <input value="@Math.Round(group.Salaries[0].MucLuong, 0)" name="SalaryThangBangLuongs[@editCode].MucLuong" class="form-control mucluong-@editCode mucluongthamkhao" />
                                                             <input type="hidden" class="codeMucLuong" value="@editCode" />
                                                         </td>
                                                         @{
@@ -234,7 +241,7 @@
                                                             {
                                                                 foreach (var item in group.Salaries.OrderBy(m => m.Bac))
                                                                 {
-                                                                    <td class="mucluong-@item.Id" style="vertical-align:middle">@String.Format("{0:#,###,###}", item.MucLuong)</td>
+                                                                    <td class="mucluongresult-@item.Id" style="vertical-align:middle">@String.Format("{0:#,###,###}", item.MucLuong)</td>
                                                                 }
                                                             }
                                                             else
@@ -244,7 +251,7 @@
                                                                 {
                                                                     if (item.Bac == iMissing)
                                                                     {
-                                                                        <td class="mucluong-@item.Id" style="vertical-align:middle">@String.Format("{0:#,###,###}", item.MucLuong)</td>
+                                                                        <td class="mucluongresult-@item.Id" style="vertical-align:middle">@String.Format("{0:#,###,###}", item.MucLuong)</td>
                                                                     }
                                                                     else
                                                                     {
@@ -255,9 +262,35 @@
                                                             }
                                                         }
                                                     </tr>
-                                                                sTTReal++;
-                                                                editCode++;
+                                                    sTTReal++;
+                                                    editCode++;
+                                                }
+                                                    <tr>
+                                                        <td style="background-color:white">
+                                                            @sTTReal
+                                                        </td>
+                                                        <td nowrap>
+                                                            <input name="SalaryThangBangLuongs[@editCode].ViTri" class="form-control" />
+                                                        </td>
+                                                        <td>
+                                                            <input type="hidden" value="@editCode" class="editCode" />
+                                                            <input value="1" name="SalaryThangBangLuongs[@editCode].HeSo" class="form-control heso-@editCode" style="width:70px;" />
+                                                            <input type="hidden" value="new" class="id-@editCode" />
+                                                            <input type="hidden" class="codeHeSo" value="@editCode" />
+                                                        </td>
+                                                        <td>
+                                                            <input value="@Model.SalaryMucLuongVung.ToiThieuVungDoanhNghiepApDung" name="SalaryThangBangLuongs[@editCode].MucLuong" class="form-control mucluong-@editCode mucluongthamkhao" />
+                                                            <input type="hidden" class="codeMucLuong" value="@editCode" />
+                                                        </td>
+                                                        @{
+                                                            decimal value = Model.SalaryMucLuongVung.ToiThieuVungDoanhNghiepApDung;
+                                                            for (var ibac = 1; ibac<= levelMaxReal; ibac++)
+                                                            {
+                                                                value = value * 1;
+                                                                <td class="mucluongresult-new-@ibac" style="vertical-align:middle">@String.Format("{0:#,###,###}", value)</td>
                                                             }
+                                                        }
+                                                    </tr>
                                             }
                                         </tbody>
                                     </table>

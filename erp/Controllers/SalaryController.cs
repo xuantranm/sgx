@@ -95,6 +95,139 @@ namespace erp.Controllers
             return View(viewModel);
         }
 
+        [HttpPost]
+        [Route(Constants.LinkSalary.UpdateThangBangLuongReal)]
+        public async Task<IActionResult> UpdateThangBangLuongReal(ThangBangLuongViewModel viewModel)
+        {
+            #region Authorization
+            var login = User.Identity.Name;
+            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+            ViewData["LoginUserName"] = loginUserName;
+
+            var loginInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
+            if (loginInformation == null)
+            {
+                #region snippet1
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                #endregion
+                return RedirectToAction("login", "account");
+            }
+
+            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, "nhan-su", (int)ERights.View)))
+            {
+                return RedirectToAction("AccessDenied", "Account");
+            }
+
+            #endregion
+
+            try
+            {
+                var now = DateTime.Now;
+
+                #region ToiThieuVung
+                var salaryMucLuongVung = viewModel.SalaryMucLuongVung;
+                var builderSalaryMucLuongVung = Builders<SalaryMucLuongVung>.Filter;
+                var filterSalaryMucLuongVung = builderSalaryMucLuongVung.Eq(m => m.Id, salaryMucLuongVung.Id);
+                var updateSalaryMucLuongVung = Builders<SalaryMucLuongVung>.Update
+                    //.Set(m => m.ToiThieuVungQuiDinh, salaryMucLuongVung.ToiThieuVungQuiDinh)
+                    .Set(m => m.ToiThieuVungDoanhNghiepApDung, salaryMucLuongVung.ToiThieuVungDoanhNghiepApDung)
+                    .Set(m => m.UpdatedOn, now);
+                dbContext.SalaryMucLuongVungs.UpdateOne(filterSalaryMucLuongVung, updateSalaryMucLuongVung);
+                #endregion
+
+                #region SalaryThangBangLuongReal
+                decimal salaryMin = salaryMucLuongVung.ToiThieuVungDoanhNghiepApDung;
+                var salaryThangBangLuongs = viewModel.SalaryThangBangLuongs;
+                var groups = (from a in salaryThangBangLuongs
+                              group a by new
+                              {
+                                  a.ViTriCode
+                              }
+                                                    into b
+                              select new
+                              {
+                                  b.Key.ViTriCode,
+                                  Salaries = b.ToList(),
+                              }).ToList();
+
+                foreach (var group in groups)
+                {
+                    // default each vi tri have 1 salary. if no use minSalary
+                    var salaryDeclareTax = group.Salaries[0].MucLuong;
+                    if (salaryDeclareTax == 0)
+                    {
+                        salaryDeclareTax = salaryMin;
+                    }
+
+                    foreach (var level in group.Salaries)
+                    {
+                        if (!string.IsNullOrEmpty(level.Id))
+                        {
+                            // Update
+                            if (level.Bac > 1)
+                            {
+                                salaryDeclareTax = level.HeSo * salaryDeclareTax;
+                            }
+                            var builderSalaryThangBangLuong = Builders<SalaryThangBangLuong>.Filter;
+                            var filterSalaryThangBangLuong = builderSalaryThangBangLuong.Eq(m => m.Id, level.Id);
+                            var updateSalaryThangBangLuong = Builders<SalaryThangBangLuong>.Update
+                                .Set(m => m.MucLuong, salaryDeclareTax)
+                                .Set(m => m.HeSo, level.HeSo)
+                                .Set(m => m.UpdatedOn, now);
+                            dbContext.SalaryThangBangLuongs.UpdateOne(filterSalaryThangBangLuong, updateSalaryThangBangLuong);
+                        }
+                        else
+                        {
+                            // Insert
+                            var vitri = level.ViTri;
+                            string vitriLastCode = dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true) & m.FlagReal.Equals(true)).SortByDescending(m => m.ViTriCode).FirstOrDefault().ViTriCode;
+                            int newCode = Convert.ToInt32(vitriLastCode.Split('-')[1]) + 1;
+                            if (!string.IsNullOrEmpty(vitri))
+                            {
+                                var vitriFullCode = Constants.System.viTriCodeTBLuong + newCode.ToString("0000");
+                                var hesobac = level.HeSo;
+                                var money = level.MucLuong;
+                                if (money == 0)
+                                {
+                                    money = salaryMin;
+                                }
+                                var vitriAlias = Utility.AliasConvert(vitri);
+                                var exist = dbContext.SalaryThangBangLuongs.CountDocuments(m => m.ViTriAlias.Equals(vitriAlias) & m.FlagReal.Equals(true));
+                                if (exist == 0)
+                                {
+                                    for (int lv = 1; lv <= 10; lv++)
+                                    {
+                                        if (lv > 1)
+                                        {
+                                            money = hesobac * money;
+                                        }
+                                        dbContext.SalaryThangBangLuongs.InsertOne(new SalaryThangBangLuong()
+                                        {
+                                            ViTri = vitri,
+                                            Bac = lv,
+                                            HeSo = hesobac,
+                                            MucLuong = money,
+                                            ViTriCode = vitriFullCode,
+                                            ViTriAlias = vitriAlias,
+                                            Law = false,
+                                            FlagReal = true
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                #endregion
+
+                return Json(new { result = true, source = "update", message = "Thành công" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { result = false, source = "update", id = string.Empty, message = ex.Message });
+            }
+        }
+
         [Route(Constants.LinkSalary.ThangBangLuongLaw)]
         public async Task<IActionResult> ThangBangLuongLaw()
         {
@@ -257,7 +390,7 @@ namespace erp.Controllers
         public IActionResult CalculatorThangBangLuongLaw(decimal money, decimal heso, string id)
         {
             var list = new List<IdMoney>();
-            decimal salaryMin = dbContext.SalaryMucLuongVungs.Find(m=>m.Enable.Equals(true)).First().ToiThieuVungDoanhNghiepApDung; // use reset
+            decimal salaryMin = dbContext.SalaryMucLuongVungs.Find(m => m.Enable.Equals(true)).First().ToiThieuVungDoanhNghiepApDung; // use reset
             if (money > 0)
             {
                 salaryMin = money;
@@ -294,7 +427,7 @@ namespace erp.Controllers
                         Rate = heso
                     });
                     var levels = dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true) & m.Law.Equals(true) & m.MaSo.Equals(maso)).ToList();
-                    
+
                     foreach (var level in levels)
                     {
                         if (level.Bac > bac)
@@ -349,18 +482,20 @@ namespace erp.Controllers
         [Route(Constants.LinkSalary.CalculatorThangBangLuongReal)]
         public IActionResult CalculatorThangBangLuongReal(string id, decimal heso, decimal money)
         {
-            if (heso != 0 || money != 0)
+            var list = new List<IdMoney>();
+            decimal salaryMin = dbContext.SalaryMucLuongVungs.Find(m => m.Enable.Equals(true)).First().ToiThieuVungDoanhNghiepApDung; // use reset
+            // Use update min
+            var salaryMinApDung = salaryMin;
+            if (money > 0)
             {
-                var list = new List<IdMoney>();
-                decimal salaryMin = dbContext.SalaryMucLuongVungs.Find(m => m.Enable.Equals(true)).First().ToiThieuVungDoanhNghiepApDung; // use reset
-                if (money > 0)
-                {
-                    salaryMin = money;
-                }
+                salaryMin = money;
+            }
 
-                // if id null: calculator all.
-                // else: get information by id=> calculator from [Bac] and return by group.
-                if (!string.IsNullOrEmpty(id))
+            // if id null: calculator all.
+            // else: get information by id=> calculator from [Bac] and return by group.
+            if (!string.IsNullOrEmpty(id))
+            {
+                if (id != "new")
                 {
                     var currentLevel = dbContext.SalaryThangBangLuongs.Find(m => m.Id.Equals(id)).FirstOrDefault();
                     if (currentLevel != null)
@@ -372,7 +507,7 @@ namespace erp.Controllers
                             heso = currentLevel.HeSo;
                         }
                         // Rule bac 1 =  muc tham chieu
-                        var salaryDeclareTax = Math.Round(salaryMin, 0); 
+                        var salaryDeclareTax = Math.Round(salaryMin, 0);
                         if (bac > 1)
                         {
                             var previousBac = bac - 1;
@@ -408,42 +543,65 @@ namespace erp.Controllers
                 }
                 else
                 {
-                    // Ap dung nếu hệ số bậc là 1 + Muc Luong is min.
-                    var levels = dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true) & m.FlagReal.Equals(true) & m.Bac.Equals(1) & m.HeSo.Equals(1) & m.MucLuong.Equals(salaryMin)).ToList();
-
-                    // group by VITRI
-                    var groups = (from s in levels
-                                  group s by new
-                                  {
-                                      s.ViTriCode
-                                  }
-                                                        into l
-                                  select new
-                                  {
-                                      l.Key.ViTriCode,
-                                      Salaries = l.ToList(),
-                                  }).ToList();
-
-                    foreach (var group in groups)
+                    heso = heso == 0 ? 1 : heso;
+                    var salaryDeclareTax = Math.Round(salaryMin, 0);
+                    list.Add(new IdMoney
                     {
-                        // reset salaryDeclareTax;
-                        var salaryDeclareTax = salaryMin;
-                        foreach (var level in group.Salaries)
+                        Id = "new-1",
+                        Money = salaryDeclareTax,
+                        Rate = heso
+                    });
+                    for (var i=2; i<=10; i++)
+                    {
+                        salaryDeclareTax = Math.Round(heso * salaryDeclareTax, 0);
+                        list.Add(new IdMoney
                         {
-                            salaryDeclareTax = level.HeSo * salaryDeclareTax;
-                            list.Add(new IdMoney
-                            {
-                                Id = level.Id,
-                                Money = salaryDeclareTax,
-                                Rate = level.HeSo
-                            });
-                        }
+                            Id = "new-"+ i,
+                            Money = salaryDeclareTax,
+                            Rate = heso
+                        });
                     }
                 }
-                return Json(new { result = true, list });
             }
+            else
+            {
+                // Ap dung nếu hệ số bậc là 1 + Muc Luong is min.
+                var levels = dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true) & m.FlagReal.Equals(true) & m.Bac.Equals(1) & m.MucLuong.Equals(salaryMinApDung)).ToList();
 
-            return Json(new { result = false });
+                // group by VITRI
+                var groups = (from s in levels
+                              group s by new
+                              {
+                                  s.ViTriCode
+                              }
+                                                    into l
+                              select new
+                              {
+                                  l.Key.ViTriCode,
+                                  Salaries = l.ToList(),
+                              }).ToList();
+
+                foreach (var group in groups)
+                {
+                    // reset salaryDeclareTax;
+                    var salaryDeclareTax = salaryMin;
+                    foreach (var level in group.Salaries)
+                    {
+                        //Rule level 1 = muc
+                        if (level.Bac > 1)
+                        {
+                            salaryDeclareTax = level.HeSo * salaryDeclareTax;
+                        }
+                        list.Add(new IdMoney
+                        {
+                            Id = level.Id,
+                            Money = salaryDeclareTax,
+                            Rate = level.HeSo
+                        });
+                    }
+                }
+            }
+            return Json(new { result = true, list });
         }
 
         [Route(Constants.LinkSalary.UpdateData)]
@@ -464,9 +622,9 @@ namespace erp.Controllers
             dbContext.SalaryMucLuongVungs.DeleteMany(new BsonDocument());
             dbContext.SalaryMucLuongVungs.InsertOne(new SalaryMucLuongVung()
             {
-                ToiThieuVungQuiDinh =  3980000,
+                ToiThieuVungQuiDinh = 3980000,
                 TiLeMucDoanhNghiepApDung = (decimal)1.07,
-                ToiThieuVungDoanhNghiepApDung = 3980000*(decimal)1.07
+                ToiThieuVungDoanhNghiepApDung = 3980000 * (decimal)1.07
             });
         }
 
@@ -484,7 +642,7 @@ namespace erp.Controllers
 
         private void InitThangBangLuong()
         {
-            dbContext.SalaryThangBangLuongs.DeleteMany(mbox=>mbox.FlagReal.Equals(false));
+            dbContext.SalaryThangBangLuongs.DeleteMany(mbox => mbox.FlagReal.Equals(false));
             // default muc luong = toi thieu, HR update later.
             decimal salaryMin = 3980000 * (decimal)1.07; // use reset
             decimal salaryDeclareTax = salaryMin;
@@ -970,7 +1128,7 @@ namespace erp.Controllers
                 Order = i,
                 Name = textInfo.ToTitleCase(name.ToLower()),
                 NameAlias = Utility.AliasConvert(name),
-                Code = type.ToString("00") +"-"+ i.ToString("000"),
+                Code = type.ToString("00") + "-" + i.ToString("000"),
             });
             i++;
             name = "TRÁCH NHIỆM";
@@ -1010,7 +1168,7 @@ namespace erp.Controllers
             #region Phuc Loi
             type = 2; // phuc-loi
             i = 1;
-            
+
             name = "XĂNG";
             dbContext.SalaryPhuCapPhucLois.InsertOne(new SalaryPhuCapPhucLoi()
             {
@@ -1448,9 +1606,10 @@ namespace erp.Controllers
         {
             dbContext.ChucDanhCongViecs.DeleteMany(new BsonDocument());
             var listTemp = dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true) && m.Law.Equals(true)).ToList();
-            foreach(var item in listTemp)
+            foreach (var item in listTemp)
             {
-                if (!(dbContext.ChucDanhCongViecs.CountDocuments(m=>m.Code.Equals(item.MaSo)) > 0)){
+                if (!(dbContext.ChucDanhCongViecs.CountDocuments(m => m.Code.Equals(item.MaSo)) > 0))
+                {
                     dbContext.ChucDanhCongViecs.InsertOne(new ChucDanhCongViec()
                     {
                         Name = item.Name,

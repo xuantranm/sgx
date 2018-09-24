@@ -71,10 +71,16 @@ function registerAutoNumeric() {
         enableMucLuongReal($(obj).val());
     });
 
-    //$('.toithieuvungdoanhnghiepapdung').on('keyup', function () {
-    //    var money = $(this).val();
-    //    calculatorThangLuongMucToiThieu(money, 0, '');
-    //});
+    $('.toithieuvungdoanhnghiepapdung').on('keyup', function () {
+        var money = $(this).val();
+        //update diem tham khao
+        $('.mucluongthamkhao').each(function (index, currentElement) {
+            if (parseInt($(currentElement).val().replace(/,/g, '')) < parseInt(money.replace(/,/g, ''))) {
+                $(currentElement).val(money);
+            }
+        });
+        calculatorThangLuong('', 0, money);
+    });
 }
 
 function enableHeSoReal(code) {
@@ -114,7 +120,7 @@ function calculatorThangLuong(id, heso, money) {
         .done(function (data) {
             if (data.result === true) {
                 $.each(data.list, function (index, value) {
-                    $('.mucluong-' + value.id).html(accounting.formatNumber(value.money));
+                    $('.mucluongresult-' + value.id).html(accounting.formatNumber(value.money));
                 });
             }
         });
