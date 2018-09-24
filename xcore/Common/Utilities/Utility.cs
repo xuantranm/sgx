@@ -24,6 +24,24 @@ namespace Common.Utilities
         {
         }
 
+        #region Salaries
+        public static string GetChucDanhCongViec(string code)
+        {
+            #region Filter
+            var builder = Builders<ChucDanhCongViec>.Filter;
+            var filter = builder.Eq(m => m.Code, code);
+            #endregion
+
+            var item = dbContext.ChucDanhCongViecs.Find(filter).FirstOrDefault();
+            if (item == null)
+            {
+                return string.Empty;
+            }
+            return item.Name;
+        }
+
+        #endregion
+
         #region Rights
         public static bool IsRight(string userId, string role, int action)
         {

@@ -14,5 +14,7 @@ namespace ViewModels
         public IList<SalaryThangBangLuong> SalaryThangBangLuongs { get; set; }
 
         public IList<SalaryThangBangPhuCapPhucLoi> SalaryThangBangPhuCapPhucLois { get; set; }
+
+        public IList<SalaryThangBangPhuCapPhucLoi> SalaryThangBangPhuCapPhucLoisReal { get; set; }
     }
 }

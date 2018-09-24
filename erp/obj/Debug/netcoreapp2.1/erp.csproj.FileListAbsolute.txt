@@ -115,7 +115,6 @@ C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\RoleUser\C
 C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\RoleUser\Index.g.cshtml.cs
 C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\Role\Index.g.cshtml.cs
 C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\Salary\Index.g.cshtml.cs
-C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\Salary\Level.g.cshtml.cs
 C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\Salary\ThangBangLuong.g.cshtml.cs
 C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\Setting\Index.g.cshtml.cs
 C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\Shared\Error.g.cshtml.cs
@@ -143,3 +142,5 @@ C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\erp.Views.pdb
 C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\erp.csproj.CopyComplete
 C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\erp.dll
 C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\erp.pdb
+C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\File\ThangLuong.g.cshtml.cs
+C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\Salary\ThangBangLuongLaw.g.cshtml.cs

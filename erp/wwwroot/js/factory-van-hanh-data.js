@@ -64,7 +64,7 @@
                 }
             })
             .fail(function () {
-                toastr.error(data.message)
+                toastr.error(data.message);
             });
         event.preventDefault();
     });
@@ -215,7 +215,7 @@ function calculatorTongThoiGianBocHang() {
     var slNhanCong = Number(slnhancongAutoNumeric.getNumericString());
     var second = calculatorHmsToSecond($('#Entity_ThoiGianBocHang').val() + ":00");
     var resultSecond = second * slNhanCong;
-    var display = secondToHHMM(resultSecond)
+    var display = secondToHHMM(resultSecond);
     $('#Entity_TongThoiGianBocHang').val(resultSecond);
     $('.TongThoiGianBocHang').text(display);
 }
@@ -224,7 +224,7 @@ function calculatorTongThoiGianDongGoi() {
     var slNhanCong = Number(slnhancongAutoNumeric.getNumericString());
     var second = $('#ThoiGianLamViec_second').val();
     var resultSecond = second * slNhanCong;
-    var display = secondToHHMM(resultSecond)
+    var display = secondToHHMM(resultSecond);
     $('#Entity_TongThoiGianDongGoi').val(resultSecond);
     $('.TongThoiGianDongGoi').text(display);
 }
@@ -233,7 +233,7 @@ function calculatorTongThoiGianCVKhac() {
     var slNhanCong = Number(slnhancongAutoNumeric.getNumericString());
     var second = calculatorHmsToSecond($('#Entity_ThoiGianCVKhac').val() + ":00");
     var resultSecond = second * slNhanCong;
-    var display = secondToHHMM(resultSecond)
+    var display = secondToHHMM(resultSecond);
     $('#Entity_TongThoiGianCVKhac').val(resultSecond);
     $('.TongThoiGianCVKhac').text(display);
 }
@@ -242,7 +242,7 @@ function calculatorTongThoiGianDayMoBat() {
     var slNhanCong = Number(slnhancongAutoNumeric.getNumericString());
     var second = calculatorHmsToSecond($('#Entity_ThoiGianDayMoBat').val() + ":00");
     var resultSecond = second * slNhanCong;
-    var display = secondToHHMM(resultSecond)
+    var display = secondToHHMM(resultSecond);
     $('#Entity_TongThoiGianDayMoBat').val(resultSecond);
     $('.TongThoiGianDayMoBat').text(display);
 }

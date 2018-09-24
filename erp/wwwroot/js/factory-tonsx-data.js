@@ -33,8 +33,7 @@
                     tondaungayAutoNumeric.set(entity.tonCuoiNgay);
                     updateTonCuoiNgay();
                 }
-            })
-        //$('input[name="Entity.Unit"]').val($(this).val().split('-').pop(-1));
+            });
     });
 
     $('.btn-save-product').on('click', function () {

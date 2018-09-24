@@ -740,6 +740,9 @@
     <Content Update="Views\Role\Index.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
+    <Content Update="Views\Salary\ThangBangLuongLaw.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
     <Content Update="Views\Shared\_LayoutData.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>

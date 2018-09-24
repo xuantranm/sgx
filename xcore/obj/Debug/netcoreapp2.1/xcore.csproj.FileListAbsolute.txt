@@ -6,3 +6,4 @@ C:\Projects\Tribat\sourcecode\xcore\obj\Debug\netcoreapp2.1\xcore.AssemblyInfoIn
 C:\Projects\Tribat\sourcecode\xcore\obj\Debug\netcoreapp2.1\xcore.AssemblyInfo.cs
 C:\Projects\Tribat\sourcecode\xcore\obj\Debug\netcoreapp2.1\xcore.dll
 C:\Projects\Tribat\sourcecode\xcore\obj\Debug\netcoreapp2.1\xcore.pdb
+C:\Projects\Tribat\sourcecode\xcore\obj\Debug\netcoreapp2.1\xcore.csprojAssemblyReference.cache

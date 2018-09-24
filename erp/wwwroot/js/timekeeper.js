@@ -63,7 +63,7 @@
                 }
             })
             .fail(function () {
-                toastr.error("Error.")
+                toastr.error("Error.");
             });
     });
 });

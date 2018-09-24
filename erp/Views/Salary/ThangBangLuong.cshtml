@@ -4,111 +4,284 @@
 @{
     Layout = "~/Views/Shared/_LayoutSocialFb.cshtml";
     var login = User.Identity.Name;
+    var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+    var rightSalaryReal = false;
+    //var rightHr = false;
+    //var rightLuong = false;
+    //var rightNhaMay = false;
+    if (!string.IsNullOrEmpty(login))
+    {
+        rightSalaryReal = true;
+        //rightHr = Utility.IsRight(login, Constants.Rights.HR, (int)ERights.View);
+        //rightLuong = Utility.IsRight(login, Constants.Rights.Luong, (int)ERights.View);
+        //rightNhaMay = Utility.IsRight(login, Constants.Rights.NhaMay, (int)ERights.View);
+    }
 }
 
-<div class="card">
-    <div class="card-body">
-        <a asp-action="Create"><i class="icon-add-to-list mr-1"></i> Tạo thang lương vị trí mới</a>
-    </div>
-</div>
-
-<div class="card card-sm">
-    <div class="export-area">
-        <a class="ce ko" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.ThangBangLuong/@Constants.LinkSalary.Export" data-toggle="tooltip" title="Xuất ra tài liệu file excel.">
-            <i class="fas fa-download"></i> Xuất excel
-        </a>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-12">
-        <b>I/ MỨC LƯƠNG TỐI THIỂU VÙNG:</b> <b>@String.Format("{0:#,###,###}", Model.SalaryMucLuongVung.ToiThieuVungQuiDinh)</b> đồng/tháng
-    </div>
-    <div class="col-12">
-        Mức lương tối thiểu mà doanh nghiệp đang áp dụng: <b>@String.Format("{0:#,###,###}", Model.SalaryMucLuongVung.ToiThieuVungDoanhNghiepApDung)</b> đồng/tháng
-    </div>
-</div>
-<div class="row">
-    <div class="col-12">
-        <b>
-            II/ HỆ THỐNG THANG LƯƠNG:
-        </b>
-        (ĐVT:  đồng)
-    </div>
-
-
-    @{
-        var typeRoles = (from p in Model.SalaryThangBangLuongLaws
-                         group p by new
-                         {
-                             p.TypeRole
-                         }
-                        into d
-                         select new
-                         {
-                             TypeRoleName = d.Key.TypeRole,
-                             Salaries = d.ToList(),
-                         }).ToList();
-        var i = 1;
-        foreach (var typeRole in typeRoles)
-        {
-        <div class="col-12">
-            <b>@i-@typeRole.TypeRoleName</b>
+<div class="main-container">
+    <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="/">Trang chủ</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">Thang bảng lương</li>
+                    </ol>
+                </div>
+            </div>
         </div>
-        <div class="col-12 table-responsive">
-            <table class="table table-sm table-bordered table-striped table-hover">
-                <thead>
-                    <tr>
-                        <th>CHỨC DANH CÔNG VIỆC</th>
-                        <th>MÃ SỐ</th>
-                        <th colspan="10">BẬC/ HỆ SỐ/ MỨC LƯƠNG</th>
-                    </tr>
-                </thead>
-                @{
-                        var groupChucVu = (from s in typeRole.Salaries
-                                            group s by new
-                                            {
-                                            s.Name,
-                                            s.MaSo
-                                            }
-                                            into l
-                                            select new
-                                            {
-                                            Name = l.Key.Name,
-                                            MaSo = l.Key.MaSo,
-                                            CountLevel = l.Count(),
-                                            Levels = l.ToList(),
-                                            }).ToList();
+    </nav>
 
-
-                var x = 1;
-                foreach (var bacLuong in groupChucVu)
-                {
-                    <thead>
-                        
-                        <tr>
-                            <th></th>
-                            <th></th>
-                            @for (var level = 1; i <= 10; level++)
+    <section class="flush-with-above space-0">
+        <div class="bg-white">
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <ul class="nav nav-tabs" id="myTab" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.ThangBangLuongLaw">BẢNG LƯƠNG-THANG LƯƠNG</a>
+                            </li>
+                            @if (rightSalaryReal)
                             {
-                            <th>@level</th>
+                                <li class="nav-item">
+                                    <a class="nav-link active" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.ThangBangLuong">THỰC TẾ DOANH NGHIỆP</a>
+                                </li>
                             }
-                        </tr>
-                    </thead>
-
-                }
-
-
-                }
-            </table>
+                        </ul>
+                    </div>
+                </div>
+            </div>
         </div>
-        i++;
-        }
-    }
+    </section>
+
+    <!-- MAIN -->
+    <section class="flush-with-above height-80 d-block">
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="real" role="tabpanel" aria-labelledby="real-tab">
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <button class="btn btn-success btn-edit-real" data-toggle="tooltip" title="Bấm thay đổi thang bảng lương.">
+                            <i class="icon icon-edit"></i>Chỉnh sửa
+                        </button>
+                        <a class="btn btn-info d-none" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.ThangBangLuong/@Constants.LinkSalary.Export" data-toggle="tooltip" title="Xuất ra tài liệu file excel.">
+                            <i class="fas fa-download"></i> Xuất excel
+                        </a>
+                    </div>
+                </div>
+
+                <div class="mode-read-real">
+                    <div class="row mb-3">
+                        <div class="col-12 d-none">
+                            <b>I/ MỨC LƯƠNG TỐI THIỂU VÙNG:</b> <b>@String.Format("{0:#,###,###}", Model.SalaryMucLuongVung.ToiThieuVungQuiDinh)</b> đồng/tháng
+                        </div>
+                        <div class="col-12">
+                            Mức lương tối thiểu mà doanh nghiệp đang áp dụng: <b>@String.Format("{0:#,###,###}", Model.SalaryMucLuongVung.ToiThieuVungDoanhNghiepApDung)</b> đồng/tháng
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <b>
+                                II/ HỆ THỐNG THANG LƯƠNG:
+                            </b>
+                            (ĐVT:  đồng)
+                        </div>
+                        @{
+                            var levelMaxReal = 10;
+                            <div class="col-12 table-responsive-sm">
+                                <table class="table table-responsive-sm table-bordered">
+                                    <tr style="background-color:yellow!important">
+                                        <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>STT</th>
+                                        <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>VỊ TRÍ</th>
+                                        <td colspan="@levelMaxReal" style="text-align:center;font-weight:bold">BẬC LƯƠNG</td>
+                                        <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>HỆ SỐ</th>
+                                        <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>ĐIỂM THAM KHẢO</th>
+                                    </tr>
+                                    <tr style="background-color:yellow!important">
+                                        @for (var ilevel = 1; ilevel <= levelMaxReal; ilevel++)
+                                        {
+                                            <td style="text-align:center; color:red">@ilevel</td>
+                                        }
+                                    </tr>
+                                    <tbody>
+                                        @{
+                                            var sTTReal = 1;
+                                            var groupsReal = (from s in Model.SalaryThangBangLuongs
+                                                              group s by new
+                                                              {
+                                                                  s.ViTri
+                                                              }
+                                            into l
+                                                              select new
+                                                              {
+                                                                  ViTri = l.Key.ViTri,
+                                                                  Salaries = l.ToList(),
+                                                              }).ToList();
+                                            foreach (var group in groupsReal)
+                                            {
+                                        <tr>
+                                            <td style="background-color:white">
+                                                @sTTReal
+                                            </td>
+                                            <td nowrap>@group.ViTri</td>
+                                            @{
+                                                if (group.Salaries.Count >= levelMaxReal)
+                                                {
+                                                    foreach (var item in group.Salaries.OrderBy(m => m.Bac))
+                                                    {
+                                            <td>@String.Format("{0:#,###,###}", item.MucLuong)</td>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    var iMissing = 1;
+                                                    foreach (var item in group.Salaries.OrderBy(m => m.Bac))
+                                                    {
+                                                        if (item.Bac == iMissing)
+                                                        {
+                                                        <td>@String.Format("{0:#,###,###}", item.MucLuong)</td>
+                                                        }
+                                                        else
+                                                        {
+                                                            <td></td>
+                                                        }
+                                                        iMissing++;
+                                                    }
+                                                }
+                                            }
+                                            <td>@group.Salaries[0].HeSo</td>
+                                            <td>@String.Format("{0:#,###,###}", group.Salaries[0].MucLuong)</td>
+                                        </tr>
+                                                sTTReal++;
+                                            }
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="mode-edit-real d-none">
+                    <form action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.UpdateThangBangLuongReal" method="post" class="data-form">
+                        <div class="d-flex align-items-center">
+                            <div class="mr-2">
+                                <button class="btn btn-info btn-list d-none" data-toggle="tooltip" title="Bấm trở về thang bảng lương.">
+                                    <i class="icon icon-back"></i>Trở về
+                                </button>
+                                <button type="submit" class="btn btn-danger btnSubmitThangBangLuongReal" data-toggle="tooltip" title="Bấm cập nhật thang bảng lương."><i class="icon-save"></i>&nbsp;Cập nhật thang bảng lương</button>
+                            </div>
+                        </div>
+
+                        <input type="hidden" id="hidCalculatorThangBangLuongReal" value="/@Constants.LinkSalary.Main/@Constants.LinkSalary.CalculatorThangBangLuongReal" />
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                Mức lương tối thiểu mà doanh nghiệp đang áp dụng (đồng/tháng):
+                                <input class="form-control form-control-lg toithieuvungdoanhnghiepapdung" name="SalaryMucLuongVung.ToiThieuVungDoanhNghiepApDung" value="@Model.SalaryMucLuongVung.ToiThieuVungDoanhNghiepApDung"/>
+                                <input type="hidden" name="SalaryMucLuongVung.ToiThieuVungQuiDinh" value="@Model.SalaryMucLuongVung.ToiThieuVungQuiDinh"/>
+                                <input type="hidden" name="SalaryMucLuongVung.Id" value="@Model.SalaryMucLuongVung.Id"/>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12">
+                                <b>
+                                    II/ HỆ THỐNG THANG LƯƠNG:
+                                </b>
+                                (ĐVT:  đồng)
+                            </div>
+                            @{
+                                var levelMaxEditReal = 10;
+                                <div class="col-12 table-responsive-sm">
+                                    <table class="table table-responsive-sm table-bordered">
+                                        <tr style="background-color:yellow!important">
+                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>STT</th>
+                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>VỊ TRÍ</th>
+                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>HỆ SỐ</th>
+                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>ĐIỂM THAM KHẢO</th>
+                                            <td colspan="@levelMaxEditReal" style="text-align:center;font-weight:bold">BẬC LƯƠNG</td>
+                                        </tr>
+                                        <tr style="background-color:yellow!important">
+                                            @for (var ilevel = 1; ilevel <= levelMaxEditReal; ilevel++)
+                                            {
+                                                <td style="text-align:center; color:red">@ilevel</td>
+                                            }
+                                        </tr>
+                                        <tbody>
+                                            @{
+                                                sTTReal = 1;
+                                                int editCode = 0;
+                                                // base VI TRI
+                                                foreach (var group in groupsReal)
+                                                {
+                                                    <tr>
+                                                        <td style="background-color:white">
+                                                            @sTTReal
+                                                        </td>
+                                                        <td nowrap>@group.ViTri</td>
+                                                        <td>
+                                                            <!-- Update base He So vs Money from bac 1; from bac 1 => calculator up to 10 -->
+                                                            <input value="@group.Salaries[0].HeSo" name="SalaryThangBangLuongs[@editCode].HeSo" class="form-control heso-@editCode" style="width:70px;"/>
+                                                            <input type="hidden" class="codeHeSo" value="@editCode" />
+                                                            <input type="hidden" name="SalaryThangBangLuongs[@editCode].Id" value="@group.Salaries[0].Id" class="id-@editCode"/>
+                                                        </td>
+                                                        <td>
+                                                            <input value="@Math.Round(group.Salaries[0].MucLuong, 0)" name="SalaryThangBangLuongs[@editCode].MucLuong" class="form-control mucluong-@editCode" />
+                                                            <input type="hidden" class="codeMucLuong" value="@editCode" />
+                                                        </td>
+                                                        @{
+                                                            if (group.Salaries.Count >= levelMaxReal)
+                                                            {
+                                                                foreach (var item in group.Salaries.OrderBy(m => m.Bac))
+                                                                {
+                                                                    <td class="mucluong-@item.Id" style="vertical-align:middle">@String.Format("{0:#,###,###}", item.MucLuong)</td>
+                                                                }
+                                                            }
+                                                            else
+                                                            {
+                                                                var iMissing = 1;
+                                                                foreach (var item in group.Salaries.OrderBy(m => m.Bac))
+                                                                {
+                                                                    if (item.Bac == iMissing)
+                                                                    {
+                                                                        <td class="mucluong-@item.Id" style="vertical-align:middle">@String.Format("{0:#,###,###}", item.MucLuong)</td>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <td>0</td>
+                                                                    }
+                                                                    iMissing++;
+                                                                }
+                                                            }
+                                                        }
+                                                    </tr>
+                                                                sTTReal++;
+                                                                editCode++;
+                                                            }
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="d-flex align-items-center">
+                            <div class="mr-2">
+                                <button class="btn btn-info btn-list d-none" data-toggle="tooltip" title="Bấm trở về thang bảng lương.">
+                                    <i class="icon icon-back"></i>Trở về
+                                </button>
+                                <button type="submit" class="btn btn-danger btnSubmitThangBangLuongReal" data-toggle="tooltip" title="Bấm cập nhật thang bảng lương."><i class="icon-save"></i>&nbsp;Cập nhật thang bảng lương</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
 </div>
 
 @section scripts {
-    <script type="text/javascript" src="~/js/thang-bang-luong.js?@DateTime.Now.Ticks"></script>
+    <script type="text/javascript" src="~/js/thang-bang-luong-real.js?@DateTime.Now.Ticks"></script>
 }
 
 

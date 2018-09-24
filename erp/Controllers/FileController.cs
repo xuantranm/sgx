@@ -2591,6 +2591,146 @@ namespace erp.Controllers
             return View();
         }
 
+        [Route("/tai-lieu/thang-luong/")]
+        public IActionResult ThangLuong()
+        {
+            return View();
+        }
+
+        [Route("/tai-lieu/thang-luong/import")]
+        [HttpPost]
+        public ActionResult ThangLuongImport()
+        {
+            // Cause file luong error format. break into multi file.
+            var date = DateTime.Now;
+            IFormFile file = Request.Form.Files[0];
+            string folderName = Constants.Storage.Factories;
+            string webRootPath = _env.WebRootPath;
+            string newPath = Path.Combine(webRootPath, folderName);
+            if (!Directory.Exists(newPath))
+            {
+                Directory.CreateDirectory(newPath);
+            }
+            if (file.Length > 0)
+            {
+                string sFileExtension = Path.GetExtension(file.FileName).ToLower();
+                string fullPath = Path.Combine(newPath, file.FileName);
+                using (var stream = new FileStream(fullPath, FileMode.Create))
+                {
+                    file.CopyTo(stream);
+                    stream.Position = 0;
+                    int headerCal = 0;
+                    ISheet sheet0;
+                    //ISheet sheet1;
+                    //ISheet sheet2;
+                    //ISheet sheet3;
+                    if (sFileExtension == ".xls")
+                    {
+                        HSSFWorkbook hssfwb = new HSSFWorkbook(stream); //This will read the Excel 97-2000 formats  
+                        sheet0 = hssfwb.GetSheetAt(0);
+                        //sheet1 = hssfwb.GetSheetAt(1);
+                        //sheet2 = hssfwb.GetSheetAt(2);
+                        //sheet3 = hssfwb.GetSheetAt(3);
+                    }
+                    else
+                    {
+                        XSSFWorkbook hssfwb = new XSSFWorkbook(stream); //This will read 2007 Excel format  
+                        sheet0 = hssfwb.GetSheetAt(0);
+                        //sheet1 = hssfwb.GetSheetAt(1);
+                        //sheet2 = hssfwb.GetSheetAt(2);
+                        //sheet3 = hssfwb.GetSheetAt(3);
+                    }
+
+                    #region Read & Insert Data
+
+                    #region Sheet 0: Thang Bang Luong
+                    dbContext.SalaryThangBangLuongs.DeleteMany(m => m.FlagReal.Equals(true));
+                    // Get min salary
+                    var salaryMucLuongVung = dbContext.SalaryMucLuongVungs.Find(m => m.Enable.Equals(true)).FirstOrDefault();
+                    decimal salaryMin = 0;
+                    if (salaryMucLuongVung != null)
+                    {
+                        salaryMin = salaryMucLuongVung.ToiThieuVungDoanhNghiepApDung;
+                    }
+                    headerCal = 4;
+                    int viTriCode = 1;
+                    for (int i = headerCal; i <= sheet0.LastRowNum; i++)
+                    {
+                        IRow row = sheet0.GetRow(i);
+                        if (row == null) continue;
+                        if (row.Cells.All(d => d.CellType == CellType.Blank)) continue;
+                        if (row.Cells.All(d => d.CellType == CellType.Error)) continue;
+                        if (row.Cells.All(d => d.CellType == CellType.Unknown)) continue;
+
+                        var vitri = GetFormattedCellValue(row.GetCell(1));
+                        if (!string.IsNullOrEmpty(vitri))
+                        {
+                            var vitriFullCode = Constants.System.viTriCodeTBLuong + viTriCode.ToString("0000");
+                            var hesobac = (decimal)GetNumbericCellValue(row.GetCell(13));
+                            // Min default each VITRI
+                            var money = (decimal)GetNumbericCellValue(row.GetCell(14));
+                            if (money == 0)
+                            {
+                                money = salaryMin;
+                            }
+                            else
+                            {
+                                money = money * 1000;
+                            }
+                            var vitriAlias = Utility.AliasConvert(vitri);
+
+                            var exist = dbContext.SalaryThangBangLuongs.CountDocuments(m => m.ViTriAlias.Equals(vitriAlias) & m.FlagReal.Equals(true));
+                            if (exist == 0)
+                            {
+                                for (int lv = 1; lv <= 10; lv++)
+                                {
+                                    if (lv > 1)
+                                    {
+                                        money = hesobac * money;
+                                    }
+                                    dbContext.SalaryThangBangLuongs.InsertOne(new SalaryThangBangLuong()
+                                    {
+                                        ViTri = vitri,
+                                        Bac = lv,
+                                        HeSo = hesobac,
+                                        MucLuong = money,
+                                        ViTriCode = vitriFullCode,
+                                        ViTriAlias = vitriAlias,
+                                        Law = false,
+                                        FlagReal = true
+                                    });
+                                }
+                                viTriCode++;
+                            }
+                        }
+                    }
+                    #endregion
+
+                    #region Sheet 1 Luong VP 
+                    ////dbContext.FactoryDanhGiaXCGs.DeleteMany(m => true);
+                    //headerCal = 4;
+                    //var chungloaixe = string.Empty;
+                    //for (int i = headerCal; i <= sheet1.LastRowNum; i++)
+                    //{
+                    //    IRow row = sheet0.GetRow(i);
+                    //    if (row == null) continue;
+                    //    if (row.Cells.All(d => d.CellType == CellType.Blank)) continue;
+                    //    if (row.Cells.All(d => d.CellType == CellType.Error)) continue;
+                    //    if (row.Cells.All(d => d.CellType == CellType.Unknown)) continue;
+
+                    //    var tempchungloaixe = GetFormattedCellValue(row.GetCell(0));
+                    //    // Do continute...
+                    //}
+                    #endregion
+
+                    // Sheet ....
+
+                    #endregion
+                }
+            }
+            return Json(new { url = "/" });
+        }
+
         #region Reference code
         //[Route("/tai-lieu/nhan-vien/import/")]
         //public ActionResult NhanVienImport()

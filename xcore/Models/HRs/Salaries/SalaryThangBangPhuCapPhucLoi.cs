@@ -38,6 +38,8 @@ namespace Models
         // muc luong theo luat VN, false theo cong ty
         public bool Law { get; set; } = true;
 
+        public bool FlagReal = false;
+
         public bool Enable { get; set; } = true;
 
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]

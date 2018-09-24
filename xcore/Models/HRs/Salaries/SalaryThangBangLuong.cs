@@ -5,6 +5,12 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Models
 {
+    /// <summary>
+    /// 2 type: [bao co thue] vs [Thuc Te]
+    /// 1. BAO CAO THUE: Law:true. Base MaSo (Name)
+    /// 2. THUC TE: Law:false. Base ViTri. (Future update VITRI thuộc MaSo)
+    /// </summary>
+
     // Moi chuc vu cong viec, 1 bac luong 1 record.
     // Tạo mới bac luong: foreach chuc vu, tao theo 1 record cho bac luong do.
     // Truy suat simple hơn de chung.
@@ -33,12 +39,17 @@ namespace Models
         [Display(Name = "Bảng lương theo chức danh")]
         public string TypeRole { get; set; }
 
-        // 1->8 (current). upto ....
+        // 1->10 (current). upto .... Do later
         public int Bac { get; set; }
 
         public decimal HeSo { get; set; }
 
         public decimal MucLuong { get; set; }
+
+        // My auto generate
+        public string ViTriCode { get; set; }
+
+        public string ViTriAlias { get; set; }
 
         public string NameAlias { get; set; }
 
@@ -49,6 +60,9 @@ namespace Models
 
         // muc luong theo luat VN, false theo cong ty
         public bool Law { get; set; } = true;
+
+        // Thuc te - true;
+        public bool FlagReal { get; set; } = false;
 
         public bool Enable { get; set; } = true;
 

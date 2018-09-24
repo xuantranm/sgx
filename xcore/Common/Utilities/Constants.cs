@@ -23,6 +23,8 @@ namespace Common.Utilities
 
             public const string emailHr = "test-erp@tribat.vn";
             public const string emailNM = "test-erp@tribat.vn";
+
+            public const string viTriCodeTBLuong = "S-";
         }
 
         public static class Rights
@@ -130,7 +132,12 @@ namespace Common.Utilities
             public const string Index = "bang-luong";
 
             public const string UpdateData = "cap-nhat-du-lieu";
-            public const string ThangBangLuong = "thang-bang-luong";
+            public const string ThangBangLuong = "thang-bang-luong-doanh-nghiep";
+            public const string ThangBangLuongLaw = "thang-bang-luong";
+            public const string CalculatorThangBangLuongLaw = "tinh-toan-thang-bang-luong-law";
+            public const string CalculatorThangBangLuongReal = "tinh-toan-thang-bang-luong-real";
+            public const string UpdateThangBangLuongLaw = "cap-nhat-thang-bang-luong-law";
+            public const string UpdateThangBangLuongReal = "cap-nhat-thang-bang-luong-real";
             public const string Export = "xuat-tai-lieu";
         }
 
@@ -314,6 +321,8 @@ namespace Common.Utilities
 
         public static class Collection
         {
+            public const string SalaryThangBangLuong = "SalaryThangBangLuong";
+
             public const string Settings = "Settings";
             public const string Texts = "Texts";
             public const string Links = "Links";
