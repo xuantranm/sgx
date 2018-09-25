@@ -144,3 +144,5 @@ C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\erp.dll
 C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\erp.pdb
 C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\File\ThangLuong.g.cshtml.cs
 C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\Salary\ThangBangLuongLaw.g.cshtml.cs
+C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\File\LuongNhanVien.g.cshtml.cs
+C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\Salary\BangLuongList.g.cshtml.cs

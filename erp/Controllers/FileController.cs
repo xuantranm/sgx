@@ -165,7 +165,7 @@ namespace erp.Controllers
 
                 IRow row = sheet.CreateRow(0);
 
-                
+
 
                 row.CreateCell(0).SetCellValue("ID");
                 row.CreateCell(1).SetCellValue("Name");
@@ -1913,7 +1913,7 @@ namespace erp.Controllers
                         var xe = GetFormattedCellValue(row.GetCell(3));
                         var loaixe = GetFormattedCellValue(row.GetCell(4));
                         var nvl = GetFormattedCellValue(row.GetCell(5));
-                        
+
 
                         if (!string.IsNullOrEmpty(ca))
                         {
@@ -1996,7 +1996,7 @@ namespace erp.Controllers
                             dbContext.FactoryProducts.InsertOne(newProduct);
                             productId = newProduct.Id;
                         }
-                        
+
                         var lot = GetFormattedCellValue(row.GetCell(4));
                         decimal tondaungay = 0;
                         if (!string.IsNullOrEmpty(GetFormattedCellValue(row.GetCell(5))))
@@ -2086,7 +2086,7 @@ namespace erp.Controllers
                         dbContext.FactoryProducts.UpdateOne(filterUpdateProduct, updateProduct);
 
                         var aliasUnit = Utility.AliasConvert(group.Unit);
-                        if (dbContext.Units.CountDocuments(m =>m.Type.Equals(Constants.UnitType.Factory) & m.Alias.Equals(aliasUnit)) == 0)
+                        if (dbContext.Units.CountDocuments(m => m.Type.Equals(Constants.UnitType.Factory) & m.Alias.Equals(aliasUnit)) == 0)
                         {
                             dbContext.Units.InsertOne(new Unit
                             {
@@ -2294,7 +2294,7 @@ namespace erp.Controllers
                     #endregion
                 }
             }
-            return Json(new { url = "/"+ Constants.LinkFactory.Main + "/" + Constants.LinkFactory.TonSx });
+            return Json(new { url = "/" + Constants.LinkFactory.Main + "/" + Constants.LinkFactory.TonSx });
         }
 
         [Route("/tai-lieu/nha-may/thong-ke/tuan")]
@@ -2403,7 +2403,8 @@ namespace erp.Controllers
                         if (row.Cells.All(d => d.CellType == CellType.Unknown)) continue;
 
                         var tempchungloaixe = GetFormattedCellValue(row.GetCell(0));
-                        if (!string.IsNullOrEmpty(tempchungloaixe)){
+                        if (!string.IsNullOrEmpty(tempchungloaixe))
+                        {
                             chungloaixe = tempchungloaixe;
                         }
                         var congviec = GetFormattedCellValue(row.GetCell(1));
@@ -2412,7 +2413,7 @@ namespace erp.Controllers
                             var thoigianlamviec = DateTime.FromOADate(row.GetCell(2).NumericCellValue).TimeOfDay;
                             decimal chuyen = (decimal)GetNumbericCellValue(row.GetCell(3));
                             decimal oil = (decimal)GetNumbericCellValue(row.GetCell(4));
-                           
+
                             var congdoanvanhanh = new DanhGiaXCGCongDoanVanHanh
                             {
                                 TrongSoDanhGia = (decimal)GetNumbericCellValue(row.GetCell(5)),
@@ -2725,6 +2726,392 @@ namespace erp.Controllers
 
                     // Sheet ....
 
+                    #endregion
+                }
+            }
+            return Json(new { url = "/" });
+        }
+
+        [Route("/tai-lieu/luong-nhan-vien/")]
+        public IActionResult LuongNhanVien()
+        {
+            return View();
+        }
+
+        [Route("/tai-lieu/luong-nhan-vien/import")]
+        [HttpPost]
+        public ActionResult LuongNhanVienImport()
+        {
+            // Cause file luong error format. break into multi file.
+            var date = DateTime.Now;
+            IFormFile file = Request.Form.Files[0];
+            string folderName = Constants.Storage.Factories;
+            string webRootPath = _env.WebRootPath;
+            string newPath = Path.Combine(webRootPath, folderName);
+            if (!Directory.Exists(newPath))
+            {
+                Directory.CreateDirectory(newPath);
+            }
+            if (file.Length > 0)
+            {
+                string sFileExtension = Path.GetExtension(file.FileName).ToLower();
+                string fullPath = Path.Combine(newPath, file.FileName);
+                using (var stream = new FileStream(fullPath, FileMode.Create))
+                {
+                    file.CopyTo(stream);
+                    stream.Position = 0;
+                    int headerCal = 0;
+                    ISheet sheet0;
+                    //ISheet sheet1;
+                    //ISheet sheet2;
+                    //ISheet sheet3;
+                    if (sFileExtension == ".xls")
+                    {
+                        HSSFWorkbook hssfwb = new HSSFWorkbook(stream); //This will read the Excel 97-2000 formats  
+                        sheet0 = hssfwb.GetSheetAt(0);
+                        //sheet1 = hssfwb.GetSheetAt(1);
+                        //sheet2 = hssfwb.GetSheetAt(2);
+                        //sheet3 = hssfwb.GetSheetAt(3);
+                    }
+                    else
+                    {
+                        XSSFWorkbook hssfwb = new XSSFWorkbook(stream); //This will read 2007 Excel format  
+                        sheet0 = hssfwb.GetSheetAt(0);
+                        //sheet1 = hssfwb.GetSheetAt(1);
+                        //sheet2 = hssfwb.GetSheetAt(2);
+                        //sheet3 = hssfwb.GetSheetAt(3);
+                    }
+
+                    #region Sheet 0: Luong Nhan Vien
+                    // Cap nhat thang bang luong cho nhan vien
+                    dbContext.SalaryThangBacLuongEmployees.DeleteMany(m => m.FlagReal.Equals(true));
+                    // Cap nhat phuc lơi cho nhan vien
+                    dbContext.SalaryThangBangPhuCapPhucLois.DeleteMany(m => m.FlagReal.Equals(true));
+                    // Du lieu lương tháng 8
+                    dbContext.SalaryEmployeeMonths.DeleteMany(m => m.FlagReal.Equals(true));
+
+                    headerCal = 7;
+                    var location = string.Empty;
+                    var groupChucDanh = string.Empty;
+                    int year = 2018;
+                    int month = 8;
+                    var codePc = string.Empty;
+                    var namePc = string.Empty;
+                    decimal moneyPc = 0;
+                    for (int i = headerCal; i <= sheet0.LastRowNum; i++)
+                    {
+                        IRow row = sheet0.GetRow(i);
+                        if (row == null) continue;
+                        if (row.Cells.All(d => d.CellType == CellType.Blank)) continue;
+                        if (row.Cells.All(d => d.CellType == CellType.Error)) continue;
+                        if (row.Cells.All(d => d.CellType == CellType.Unknown)) continue;
+
+                        var locationTemp = GetFormattedCellValue(row.GetCell(1));
+                        var groupChucDanhTemp = GetFormattedCellValue(row.GetCell(2));
+                        if (string.IsNullOrEmpty(locationTemp) && string.IsNullOrEmpty(groupChucDanhTemp))
+                        {
+                            continue;
+                        }
+
+                        var maNV = GetFormattedCellValue(row.GetCell(1)).Trim();
+                        var fullName = GetFormattedCellValue(row.GetCell(2)).Trim();
+                        var chucVu = GetFormattedCellValue(row.GetCell(3)).Trim();
+                        if (!string.IsNullOrEmpty(chucVu))
+                        {
+                            var chucVuCode = string.Empty;
+                            var joinDate = GetDateCellValue(row.GetCell(4));
+                            var employeeId = string.Empty;
+                            if (!string.IsNullOrEmpty(fullName))
+                            {
+                                var emp = dbContext.Employees.Find(m => m.FullName.Equals(fullName)).FirstOrDefault();
+                                if (emp != null)
+                                {
+                                    employeeId = emp.Id;
+                                    // data missing
+                                    //joinDate = emp.Joinday;
+                                }
+                            }
+                            var dateSpan = DateTimeSpan.CompareDates(joinDate, DateTime.Now);
+                            var bac = Convert.ToInt32(GetNumbericCellValue(row.GetCell(5)));
+                            var luongCB = GetNumbericCellValue(row.GetCell(9)) * 1000;
+                            if (!string.IsNullOrEmpty(chucVu))
+                            {
+                                var vitriEntity = dbContext.SalaryThangBangLuongs.Find(m => m.FlagReal.Equals(true) & m.ViTri.Equals(chucVu) & m.Bac.Equals(bac)).FirstOrDefault();
+                                if (vitriEntity != null)
+                                {
+                                    chucVuCode = vitriEntity.ViTriCode;
+                                    luongCB = (double)vitriEntity.MucLuong;
+                                }
+                            }
+                            var nangNhoc = GetNumbericCellValue(row.GetCell(10)) * 1000;
+                            var trachNhiem = GetNumbericCellValue(row.GetCell(11)) * 1000;
+                            var thamNiem = GetNumbericCellValue(row.GetCell(12)) * 1000;
+                            if (thamNiem == 0)
+                            {
+                                //IF(ThamNienLamViecYear>=3,LuongCanBan*(0.03+(ThamNienLamViecYear-3)*0.01),0)
+                                if (dateSpan.Years >= 3)
+                                {
+                                    thamNiem = luongCB * (0.03 + (dateSpan.Years - 3) * 0.01);
+                                }
+                            }
+                            var thuHut = GetNumbericCellValue(row.GetCell(13)) * 1000;
+                            var Xang = GetNumbericCellValue(row.GetCell(14)) * 1000;
+                            var DienThoai = GetNumbericCellValue(row.GetCell(15)) * 1000;
+                            var Com = GetNumbericCellValue(row.GetCell(16)) * 1000;
+                            var KiemNhiem = GetNumbericCellValue(row.GetCell(17)) * 1000;
+                            var BHYTDacBiet = GetNumbericCellValue(row.GetCell(18)) * 1000;
+                            var viTriCanNhieuNamKinhNghiem = GetNumbericCellValue(row.GetCell(19)) * 1000;
+                            var viTriDacThu = GetNumbericCellValue(row.GetCell(20)) * 1000;
+                            var luongCanBanBaoGomPhuCap = luongCB + nangNhoc + trachNhiem + thamNiem + thuHut + Xang + DienThoai + Com + KiemNhiem + BHYTDacBiet + viTriCanNhieuNamKinhNghiem + viTriDacThu;
+                            var ngayConglamViec = GetNumbericCellValue(row.GetCell(22));
+                            var ngayNghiPhepHuongLuong = GetNumbericCellValue(row.GetCell(23));
+                            var ngayNghiLeTetHuongLuong = GetNumbericCellValue(row.GetCell(24));
+                            var congCNGio = GetNumbericCellValue(row.GetCell(25));
+                            var congTangCaNgayThuongGio = GetNumbericCellValue(row.GetCell(26));
+                            var congLeTet = GetNumbericCellValue(row.GetCell(27));
+                            var congTacXa = GetNumbericCellValue(row.GetCell(28));
+                            var mucDatTrongThang = GetNumbericCellValue(row.GetCell(29));
+                            var luongTheoDoanhThuDoanhSo = GetNumbericCellValue(row.GetCell(30)) * 1000;
+                            var tongBunBoc = GetNumbericCellValue(row.GetCell(31));
+                            var thanhTienBunBoc = GetNumbericCellValue(row.GetCell(32)) * 1000;
+                            var luongKhac = GetNumbericCellValue(row.GetCell(33)) * 1000;
+                            var thiDua = GetNumbericCellValue(row.GetCell(34)) * 1000;
+                            var hoTroNgoaiLuong = GetNumbericCellValue(row.GetCell(35)) * 1000;
+                            var tongThuNhap = GetNumbericCellValue(row.GetCell(36)) * 1000;
+                            var bHXHBHYT = GetNumbericCellValue(row.GetCell(37)) * 1000;
+                            var luongThamGiaBHXH = GetNumbericCellValue(row.GetCell(38)) * 1000;
+                            var tamUng = GetNumbericCellValue(row.GetCell(39)) * 1000;
+                            var thuongLeTet = GetNumbericCellValue(row.GetCell(40)) * 1000;
+                            var thucLanh = GetNumbericCellValue(row.GetCell(41)) * 1000;
+                            if (thucLanh == 0)
+                            {
+                                // calculator later.
+                                thucLanh = 0;
+                            }
+                            #region SalaryEmployeeMonth
+                            dbContext.SalaryEmployeeMonths.InsertOne(new SalaryEmployeeMonth()
+                            {
+                                Year = year,
+                                Month = month,
+                                EmployeeId = employeeId,
+                                MaNhanVien = maNV,
+                                FullName = fullName,
+                                NoiLamViec = location,
+                                PhongBan = groupChucDanh,
+                                ChucVu = chucVu,
+                                // base chucvu
+                                ViTriCode = chucVuCode,
+                                ThamNienLamViec = joinDate,
+                                ThamNienYear = dateSpan.Years,
+                                ThamNienMonth = dateSpan.Months,
+                                ThamNienDay = dateSpan.Days,
+                                Bac = (int)bac,
+                                LuongCanBan = (decimal)luongCB,
+                                #region Phu Cap
+                                NangNhocDocHai = (decimal)nangNhoc,
+                                TrachNhiem = (decimal)trachNhiem,
+                                ThamNien = (decimal)thamNiem,
+                                ThuHut = (decimal)thuHut,
+                                #endregion
+                                #region PHUC LOI KHAC
+                                Xang = (decimal)Xang,
+                                DienThoai = (decimal)DienThoai,
+                                Com = (decimal)Com,
+                                NhaO = 0,
+                                KiemNhiem = (decimal)KiemNhiem,
+                                BhytDacBiet = (decimal)BHYTDacBiet,
+                                ViTriCanKnNhieuNam = (decimal)viTriCanNhieuNamKinhNghiem,
+                                ViTriDacThu = (decimal)viTriDacThu,
+                                #endregion
+                                LuongCoBanBaoGomPhuCap = (decimal)luongCanBanBaoGomPhuCap,
+                                NgayCongLamViec = (decimal)ngayConglamViec,
+                                NgayNghiPhepHuongLuong = (decimal)ngayNghiPhepHuongLuong,
+                                NgayNghiLeTetHuongLuong = (decimal)ngayNghiLeTetHuongLuong,
+                                CongCNGio = (decimal)congCNGio,
+                                CongTangCaNgayThuongGio = (decimal)congTangCaNgayThuongGio,
+                                CongLeTet = (decimal)congLeTet,
+                                CongTacXa = (decimal)congTacXa,
+                                MucDatTrongThang = (decimal)mucDatTrongThang,
+                                LuongTheoDoanhThuDoanhSo = (decimal)luongTheoDoanhThuDoanhSo,
+                                TongBunBoc = (decimal)tongBunBoc,
+                                ThanhTienBunBoc = (decimal)thanhTienBunBoc,
+                                LuongKhac = (decimal)luongKhac,
+                                ThiDua = (decimal)thiDua,
+                                HoTroNgoaiLuong = (decimal)hoTroNgoaiLuong,
+                                TongThuNhap = (decimal)tongThuNhap,
+                                BHXHBHYT = (decimal)bHXHBHYT,
+                                LuongThamGiaBHXH = (decimal)luongThamGiaBHXH,
+                                TamUng = (decimal)tamUng,
+                                ThuongLeTet = (decimal)thuongLeTet,
+                                ThucLanh = (decimal)thucLanh,
+                                Luong30Ngay = false
+                            });
+                            #endregion
+
+                            // First Time
+                            #region SalaryThangBacLuongEmployee
+                            dbContext.SalaryThangBacLuongEmployees.InsertOne(new SalaryThangBacLuongEmployee()
+                            {
+                                EmployeeId = employeeId,
+                                ViTriCode = chucVuCode,
+                                Bac = bac
+                            });
+                            #endregion
+
+                            #region SalaryThangBangPhuCapPhucLoiEmployee
+                            codePc = "01-001";
+                            namePc = "Nặng Nhọc Độc Hại";
+                            moneyPc = (decimal)nangNhoc;
+                            dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
+                            {
+                                EmployeeId = employeeId,
+                                Code = codePc,
+                                Name = namePc,
+                                ViTri = chucVuCode,
+                                Money = moneyPc,
+                                Law = false,
+                                FlagReal = true
+                            });
+
+                            codePc = "01-002";
+                            namePc = "Trách nhiệm";
+                            moneyPc = (decimal)trachNhiem;
+                            dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
+                            {
+                                EmployeeId = employeeId,
+                                Code = codePc,
+                                Name = namePc,
+                                ViTri = chucVuCode,
+                                Money = moneyPc,
+                                Law = false,
+                                FlagReal = true
+                            });
+
+                            codePc = "01-004";
+                            namePc = "Thu Hút";
+                            moneyPc = (decimal)thuHut;
+                            dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
+                            {
+                                EmployeeId = employeeId,
+                                Code = codePc,
+                                Name = namePc,
+                                ViTri = chucVuCode,
+                                Money = moneyPc,
+                                Law = false,
+                                FlagReal = true
+                            });
+
+                            codePc = "02-001";
+                            namePc = "Xăng";
+                            moneyPc = (decimal)Xang;
+                            dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
+                            {
+                                EmployeeId = employeeId,
+                                Code = codePc,
+                                Name = namePc,
+                                ViTri = chucVuCode,
+                                Money = moneyPc,
+                                Law = false,
+                                FlagReal = true
+                            });
+
+                            codePc = "02-002";
+                            namePc = "Điện thoại";
+                            moneyPc = (decimal)Xang;
+                            dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
+                            {
+                                EmployeeId = employeeId,
+                                Code = codePc,
+                                Name = namePc,
+                                ViTri = chucVuCode,
+                                Money = moneyPc,
+                                Law = false,
+                                FlagReal = true
+                            });
+
+                            codePc = "02-003";
+                            namePc = "Cơm";
+                            moneyPc = (decimal)Com;
+                            dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
+                            {
+                                EmployeeId = employeeId,
+                                Code = codePc,
+                                Name = namePc,
+                                ViTri = chucVuCode,
+                                Money = moneyPc,
+                                Law = false,
+                                FlagReal = true
+                            });
+
+                            codePc = "02-004";
+                            namePc = "Kiêm nhiệm";
+                            moneyPc = (decimal)KiemNhiem;
+                            dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
+                            {
+                                EmployeeId = employeeId,
+                                Code = codePc,
+                                Name = namePc,
+                                ViTri = chucVuCode,
+                                Money = moneyPc,
+                                Law = false,
+                                FlagReal = true
+                            });
+
+                            codePc = "02-005";
+                            namePc = "Bhyt Đặc Biệt";
+                            moneyPc = (decimal)BHYTDacBiet;
+                            dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
+                            {
+                                EmployeeId = employeeId,
+                                Code = codePc,
+                                Name = namePc,
+                                ViTri = chucVuCode,
+                                Money = moneyPc,
+                                Law = false,
+                                FlagReal = true
+                            });
+
+                            codePc = "02-006";
+                            namePc = "Vị Trí Cần Kn Nhiều Năm";
+                            moneyPc = (decimal)viTriCanNhieuNamKinhNghiem;
+                            dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
+                            {
+                                EmployeeId = employeeId,
+                                Code = codePc,
+                                Name = namePc,
+                                ViTri = chucVuCode,
+                                Money = moneyPc,
+                                Law = false,
+                                FlagReal = true
+                            });
+
+                            codePc = "02-007";
+                            namePc = "Vị Trí Đặc Thù";
+                            moneyPc = (decimal)viTriDacThu;
+                            dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
+                            {
+                                EmployeeId = employeeId,
+                                Code = codePc,
+                                Name = namePc,
+                                ViTri = chucVuCode,
+                                Money = moneyPc,
+                                Law = false,
+                                FlagReal = true
+                            });
+                            #endregion
+                        }
+                        else
+                        {
+                            if (!string.IsNullOrEmpty(locationTemp))
+                            {
+                                location = locationTemp;
+                            }
+                            if (!string.IsNullOrEmpty(groupChucDanhTemp))
+                            {
+                                groupChucDanh = groupChucDanhTemp;
+                            }
+                        }
+                    }
                     #endregion
                 }
             }

@@ -48,6 +48,7 @@ namespace erp.Controllers
             _logger = logger;
         }
 
+        // The luong cua nhan vien
         [Route(Constants.LinkSalary.Index)]
         public IActionResult Index()
         {
@@ -59,6 +60,78 @@ namespace erp.Controllers
                 Employee = employee
             };
             return View(viewModel);
+        }
+
+        [Route(Constants.LinkSalary.BangLuongList)]
+        public async Task<IActionResult> BangLuongList()
+        {
+            #region Authorization
+            var login = User.Identity.Name;
+            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+            ViewData["LoginUserName"] = loginUserName;
+
+            var loginInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
+            if (loginInformation == null)
+            {
+                #region snippet1
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                #endregion
+                return RedirectToAction("login", "account");
+            }
+
+            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, "nhan-su", (int)ERights.View)))
+            {
+                return RedirectToAction("AccessDenied", "Account");
+            }
+
+            #endregion
+
+            var viewModel = new BangLuongViewModel
+            {
+                SalaryEmployeeMonths = await dbContext.SalaryEmployeeMonths.Find(m => m.Enable.Equals(true) & m.FlagReal.Equals(true)).ToListAsync(),
+                SalaryMucLuongVung = await dbContext.SalaryMucLuongVungs.Find(m => m.Enable.Equals(true)).FirstOrDefaultAsync(),
+                SalaryThangBangLuongs = await dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true) & m.FlagReal.Equals(true) & m.Law.Equals(false)).ToListAsync(),
+                SalaryThangBangPhuCapPhucLoisReal = await dbContext.SalaryThangBangPhuCapPhucLois.Find(m => m.Enable.Equals(true) & m.FlagReal.Equals(false)).ToListAsync()
+            };
+
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        [Route(Constants.LinkSalary.UpdateBangLuongList)]
+        public async Task<IActionResult> UpdateBangLuongList(BangLuongViewModel viewModel)
+        {
+            #region Authorization
+            var login = User.Identity.Name;
+            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+            ViewData["LoginUserName"] = loginUserName;
+
+            var loginInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
+            if (loginInformation == null)
+            {
+                #region snippet1
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                #endregion
+                return RedirectToAction("login", "account");
+            }
+
+            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, "nhan-su", (int)ERights.View)))
+            {
+                return RedirectToAction("AccessDenied", "Account");
+            }
+
+            #endregion
+
+            try
+            {
+                var now = DateTime.Now;
+
+                return Json(new { result = true, source = "update", message = "Thành công" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { result = false, source = "update", id = string.Empty, message = ex.Message });
+            }
         }
 
         [Route(Constants.LinkSalary.ThangBangLuong)]
@@ -1258,7 +1331,7 @@ namespace erp.Controllers
 
         private void InitSalaryThangBangPhuCapPhucLoi()
         {
-            dbContext.SalaryThangBangPhuCapPhucLois.DeleteMany(new BsonDocument());
+            dbContext.SalaryThangBangPhuCapPhucLois.DeleteMany(m =>m.FlagReal.Equals(false));
             #region TGD
             // Trach nhiem 01-002
             dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()

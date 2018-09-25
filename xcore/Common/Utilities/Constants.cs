@@ -131,6 +131,9 @@ namespace Common.Utilities
             public const string Main = "sl";
             public const string Index = "bang-luong";
 
+            public const string BangLuongList = "danh-sach-luong-nhan-vien";
+            public const string UpdateBangLuongList = "cap-nhat-danh-sach-luong-nhan-vien";
+
             public const string UpdateData = "cap-nhat-du-lieu";
             public const string ThangBangLuong = "thang-bang-luong-doanh-nghiep";
             public const string ThangBangLuongLaw = "thang-bang-luong";

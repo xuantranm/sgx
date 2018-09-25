@@ -157,6 +157,24 @@ namespace Data
             }
         }
 
+        // Thang Bac Luong của nhân viên
+        public IMongoCollection<SalaryThangBacLuongEmployee> SalaryThangBacLuongEmployees
+        {
+            get
+            {
+                return _database.GetCollection<SalaryThangBacLuongEmployee>("SalaryThangBacLuongEmployees");
+            }
+        }
+
+        // Lương từng tháng của nhân viên
+        public IMongoCollection<SalaryEmployeeMonth> SalaryEmployeeMonths
+        {
+            get
+            {
+                return _database.GetCollection<SalaryEmployeeMonth>("SalaryEmployeeMonths");
+            }
+        }
+
         // Danh sách phụ cấp - phúc lợi
         public IMongoCollection<SalaryPhuCapPhucLoi> SalaryPhuCapPhucLois
         {

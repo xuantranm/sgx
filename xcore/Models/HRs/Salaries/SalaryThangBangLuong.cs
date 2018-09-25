@@ -33,6 +33,7 @@ namespace Models
         [Display(Name = "Chức danh công việc")]
         public string Name { get; set; }
 
+        // Bao cao thue, ap dung vo tung nhan vien sau.
         [Display(Name = "Mã số")]
         public string MaSo { get; set; }
 
@@ -42,8 +43,10 @@ namespace Models
         // 1->10 (current). upto .... Do later
         public int Bac { get; set; }
 
+        [BsonRepresentation(BsonType.Decimal128)]
         public decimal HeSo { get; set; }
 
+        [BsonRepresentation(BsonType.Decimal128)]
         public decimal MucLuong { get; set; }
 
         // My auto generate

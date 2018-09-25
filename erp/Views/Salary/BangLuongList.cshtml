@@ -1,0 +1,375 @@
+﻿@using Common.Utilities;
+@using ViewModels;
+@model BangLuongViewModel
+@{
+    Layout = "~/Views/Shared/_LayoutSocialFb.cshtml";
+    var login = User.Identity.Name;
+    var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+    var rightSalaryReal = false;
+    //var rightHr = false;
+    //var rightLuong = false;
+    //var rightNhaMay = false;
+    if (!string.IsNullOrEmpty(login))
+    {
+        rightSalaryReal = true;
+        //rightHr = Utility.IsRight(login, Constants.Rights.HR, (int)ERights.View);
+        //rightLuong = Utility.IsRight(login, Constants.Rights.Luong, (int)ERights.View);
+        //rightNhaMay = Utility.IsRight(login, Constants.Rights.NhaMay, (int)ERights.View);
+    }
+}
+
+<div class="main-container">
+    <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="/">Trang chủ</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">Bảng lương</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="flush-with-above space-0">
+        <div class="bg-white">
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <ul class="nav nav-tabs" id="myTab" role="tablist">
+                            <!-- First demo. bang luong real -->
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.BangLuongList">BẢNG LƯƠNG</a>
+                            </li>
+                            @if (rightSalaryReal)
+                            {
+                                <li class="nav-item d-none">
+                                    <a class="nav-link active" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.BangLuongList">THỰC TẾ DOANH NGHIỆP</a>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MAIN -->
+    <section class="flush-with-above height-80 d-block">
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="real" role="tabpanel" aria-labelledby="real-tab">
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <button class="btn btn-success btn-edit-real" data-toggle="tooltip" title="Bấm thay đổi bảng lương.">
+                            <i class="icon icon-edit"></i>Chỉnh sửa
+                        </button>
+                        <a class="btn btn-info d-none" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.ThangBangLuong/@Constants.LinkSalary.Export" data-toggle="tooltip" title="Xuất ra tài liệu file excel.">
+                            <i class="fas fa-download"></i> Xuất excel
+                        </a>
+                    </div>
+                </div>
+
+                <div class="mode-read-real">
+                    <div class="row mb-3">
+                        <div class="col-12 d-none">
+                            <b>I/ MỨC LƯƠNG TỐI THIỂU VÙNG:</b> <b>@String.Format("{0:#,###,###}", Model.SalaryMucLuongVung.ToiThieuVungQuiDinh)</b> đồng/tháng
+                        </div>
+                        <div class="col-12">
+                            Mức lương tối thiểu mà doanh nghiệp đang áp dụng: <b>@String.Format("{0:#,###,###}", Model.SalaryMucLuongVung.ToiThieuVungDoanhNghiepApDung)</b> đồng/tháng
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <b>
+                                II/ BẢNG LƯƠNG:
+                            </b>
+                            (ĐVT:  đồng)
+                        </div>
+                        @{
+                            <div class="col-12 table-responsive-sm">
+                                <table class="table table-responsive-sm table-bordered">
+                                    <tr style="background-color:yellow!important">
+                                        <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>STT</th>
+                                        <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>Mã NV</th>
+                                        <th rowspan="2" style="vertical-align:middle;text-align:center;font-weight:bold" nowrap>Họ và tên</th>
+                                        <th rowspan="2" style="vertical-align:middle;text-align:center;font-weight:bold" nowrap>Chức vụ</th>
+                                        <th rowspan="2" style="vertical-align:middle;font-weight:bold">Thâm niên làm việc</th>
+                                        <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>Bậc</th>
+                                        <td colspan="3" style="text-align:center;font-weight:bold">Thâm niên</td>
+                                        <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>Lương CB</th>
+                                        <td colspan="4" style="vertical-align:middle;font-weight:bold" nowrap>PHỤ CẤP (P2)</td>
+                                        <td colspan="7" style="vertical-align:middle;font-weight:bold" nowrap>PHÚC LỢI KHÁC (P2)</td>
+                                        <th rowspan="2" style="vertical-align:middle;font-weight:bold">
+                                            <div class="rotate">Lương cơ bản (tháng) bao gồm phụ cấp</div>
+                                        </th>
+                                        <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>
+                                            <div class="rotate">
+                                                Ngày công làm việc
+                                            </div>
+                                        </th>
+                                        <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>
+                                            <div class="rotate">
+                                                Ngày nghỉ phép hưởng lương
+                                            </div>
+                                        </th>
+                                        <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>
+                                            <div class="rotate">
+                                                Ngày nghỉ Lễ Tết hưởng lương
+                                            </div>
+                                        </th>
+                                        <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>
+                                            <div class="rotate">
+                                                Công CN (giờ)
+                                            </div>
+                                        </th>
+                                        <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>
+                                            <div class="rotate">
+                                                Công tăng ca ngày thường (giờ)
+                                            </div>
+                                        </th>
+                                        <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>
+                                            <div class="rotate">
+                                                Công lễ tết
+                                            </div>
+                                        </th>
+                                        <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>
+                                            <div class="rotate">
+                                                Công tác xa
+                                            </div>
+                                        </th>
+                                        <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>
+                                            <div class="rotate">
+                                                Mức đạt trong tháng
+                                            </div>
+                                        </th>
+                                        <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>
+                                            <div class="rotate">
+                                                Lương theo doanh thu doanh số
+                                            </div>
+                                        </th>
+                                        <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>
+                                            <div class="rotate">
+                                                Tổng bùn bốc
+                                            </div>
+                                        </th>
+                                        <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>
+                                            <div class="rotate">
+                                                Thành tiền bốc bùn
+                                            </div>
+                                        </th>
+                                        <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>
+                                            <div class="rotate">
+                                                Lương khác
+                                            </div>
+                                        </th>
+                                        <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>
+                                            <div class="rotate">
+                                                Thi đua
+                                            </div>
+                                        </th>
+                                        <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>
+                                            <div class="rotate">
+                                                Hỗ trợ ngoài lương
+                                            </div>
+                                        </th>
+                                        <th rowspan="2" style="vertical-align:middle;font-weight:bold">Tổng thu nhập</th>
+                                        <th rowspan="2" style="vertical-align:middle;font-weight:bold">BHXH BHYT</th>
+                                        <th rowspan="2" style="vertical-align:middle;font-weight:bold">Lương tham gia BHXH</th>
+                                        <th rowspan="2" style="vertical-align:middle;font-weight:bold">Tạm ứng</th>
+                                        <th rowspan="2" style="vertical-align:middle;font-weight:bold">Thực lãnh</th>
+                                    </tr>
+                                    <tr style="background-color:yellow!important">
+                                        <td style="text-align:center; color:red">Năm</td>
+                                        <td style="text-align:center; color:red">Tháng</td>
+                                        <td style="text-align:center; color:red">Ngày</td>
+                                        <td style="text-align:center; color:red">
+                                            <div class="rotate">
+                                                NẶNG NHỌC ĐỘC HẠI
+                                            </div>
+                                        </td>
+                                        <td style="text-align:center; color:red">
+                                            <div class="rotate">TRÁCH NHIỆM</div>
+                                        </td>
+                                        <td style="text-align:center; color:red">
+                                            <div class="rotate">THÂM NIÊN</div>
+                                        </td>
+                                        <td style="text-align:center; color:red">
+                                            <div class="rotate">THU HÚT</div>
+                                        </td>
+
+                                        <td style="text-align:center; color:red">
+                                            <div class="rotate">XĂNG</div>
+                                        </td>
+                                        <td style="text-align:center; color:red">
+                                            <div class="rotate">ĐIỆN THOẠI</div>
+                                        </td>
+                                        <td style="text-align:center; color:red">
+                                            <div class="rotate">CƠM</div>
+                                        </td>
+                                        <td style="text-align:center; color:red">
+                                            <div class="rotate">Kiêm nhiệm</div>
+                                        </td>
+                                        <td style="text-align:center; color:red">
+                                            <div class="rotate">BHYT ĐẶC BIỆT</div>
+                                        </td>
+                                        <td style="text-align:center; color:red">
+                                            <div class="rotate">VỊ TRÍ CẦN KN NHIỀU NĂM</div>
+                                        </td>
+                                        <td style="text-align:center; color:red">
+                                            <div class="rotate">Vị trí đặc thù</div>
+                                        </td>
+                                    </tr>
+                                    <tbody>
+                                        @{
+                                            var i = 1;
+                                            foreach (var item in Model.SalaryEmployeeMonths)
+                                            {
+                                        <tr>
+                                            <td>
+                                                @i
+                                            </td>
+                                            <td>
+                                                @item.MaNhanVien
+                                            </td>
+                                            <td nowrap>
+                                                @item.FullName
+                                            </td>
+                                            <td nowrap>
+                                                @item.ChucVu
+                                            </td>
+                                            <td>
+                                                @item.ThamNienLamViec.ToString("dd/MM/yyyy")
+                                            </td>
+                                            <td>
+                                                @item.Bac
+                                            </td>
+                                            <td>
+                                                @item.ThamNienYear
+                                            </td>
+                                            <td>
+                                                @item.ThamNienMonth
+                                            </td>
+                                            <td>
+                                                @item.ThamNienDay
+                                            </td>
+                                            <td>
+                                                @String.Format("{0:#,###,###}", item.LuongCanBan)
+                                            </td>
+                                            <td>
+                                                @String.Format("{0:#,###,###}", item.NangNhocDocHai)
+                                            </td>
+                                            <td>
+                                                @String.Format("{0:#,###,###}", item.TrachNhiem)
+                                            </td>
+                                            <td>
+                                                @String.Format("{0:#,###,###}", item.ThamNien)
+                                            </td>
+                                            <td>
+                                                @String.Format("{0:#,###,###}", item.ThuHut)
+                                            </td>
+                                            <td>
+                                                @String.Format("{0:#,###,###}", item.Xang)
+                                            </td>
+                                            <td>
+                                                @String.Format("{0:#,###,###}", item.DienThoai)
+                                            </td>
+                                            <td>
+                                                @String.Format("{0:#,###,###}", item.Com)
+                                            </td>
+                                            <td>
+                                                @String.Format("{0:#,###,###}", item.KiemNhiem)
+                                            </td>
+                                            <td>
+                                                @String.Format("{0:#,###,###}", item.BhytDacBiet)
+                                            </td>
+                                            <td>
+                                                @String.Format("{0:#,###,###}", item.ViTriCanKnNhieuNam)
+                                            </td>
+                                            <td>
+                                                @String.Format("{0:#,###,###}", item.ViTriDacThu)
+                                            </td>
+                                            <td>
+                                                @String.Format("{0:#,###,###}", item.LuongCoBanBaoGomPhuCap)
+                                            </td>
+                                            <td>
+                                                @String.Format("{0:#,###,###}", item.NgayCongLamViec)
+                                            </td>
+                                            <td>
+                                                @String.Format("{0:#,###,###}", item.NgayNghiLeTetHuongLuong)
+                                            </td>
+                                            <td>
+                                                @String.Format("{0:#,###,###}", item.CongCNGio)
+                                            </td>
+                                            <td>
+                                                @String.Format("{0:#,###,###}", item.CongTangCaNgayThuongGio)
+                                            </td>
+                                            <td>
+                                                @String.Format("{0:#,###,###}", item.CongLeTet)
+                                            </td>
+                                            <td>
+                                                @String.Format("{0:#,###,###}", item.CongTacXa)
+                                            </td>
+                                            <td>
+                                                @String.Format("{0:#,###,###}", item.CongCNGio)
+                                            </td>
+                                            <td>
+                                                @String.Format("{0:#,###,###}", item.MucDatTrongThang)
+                                            </td>
+                                            <td>
+                                                @String.Format("{0:#,###,###}", item.LuongTheoDoanhThuDoanhSo)
+                                            </td>
+                                            <td>
+                                                @String.Format("{0:#,###,###}", item.TongBunBoc)
+                                            </td>
+                                            <td>
+                                                @String.Format("{0:#,###,###}", item.ThanhTienBunBoc)
+                                            </td>
+                                            <td>
+                                                @String.Format("{0:#,###,###}", item.LuongKhac)
+                                            </td>
+                                            <td>
+                                                @String.Format("{0:#,###,###}", item.ThiDua)
+                                            </td>
+                                            <td>
+                                                @String.Format("{0:#,###,###}", item.HoTroNgoaiLuong)
+                                            </td>
+                                            <td>
+                                                @String.Format("{0:#,###,###}", item.TongThuNhap)
+                                            </td>
+                                            <td>
+                                                @String.Format("{0:#,###,###}", item.BHXHBHYT)
+                                            </td>
+                                            <td>
+                                                @String.Format("{0:#,###,###}", item.LuongThamGiaBHXH)
+                                            </td>
+                                            <td>
+                                                @String.Format("{0:#,###,###}", item.TamUng)
+                                            </td>
+                                            <td>
+                                                @String.Format("{0:#,###,###}", item.ThucLanh)
+                                            </td>
+
+                                        </tr>
+                                                i++;
+                                            }
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+@section scripts {
+    <script type="text/javascript" src="~/js/bang-luong.js?@DateTime.Now.Ticks"></script>
+}
+
+
+

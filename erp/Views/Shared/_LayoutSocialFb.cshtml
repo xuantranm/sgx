@@ -125,6 +125,22 @@
                                     </div>
                                 </li>
                             }
+                            @if (rightLuong)
+                            {
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" id="pagesDropdown" role="button" data-toggle="dropdown">Lương</a>
+                                    <div class="dropdown-menu" aria-labelledby="pagesDropdown">
+                                        <a class="dropdown-item" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.ThangBangLuongLaw">
+                                            <span class="h6 mb-0">Thang Bảng Lương</span>
+                                        </a>
+                                        <div class="dropdown-divider"></div>
+
+                                        <a class="dropdown-item" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.BangLuongList">
+                                            <span class="h6 mb-0">Bảng Lương</span>
+                                        </a>
+                                    </div>
+                                </li>
+                            }
                             <li class="nav-item dropdown d-none">
                                 <a class="nav-link dropdown-toggle" href="#" id="componentsDropdown" role="button" data-toggle="dropdown">Hướng dẫn</a>
                                 <div class="dropdown-menu" aria-labelledby="componentsDropdown">
@@ -209,7 +225,7 @@
         <section class="space-sm">
             <div class="container">
                 <div class="row">
-                    <div class="col-12 col-md-4 mb-4 mb-md-0">
+                    <div class="col-12 col-md-4 mb-4 mb-md-0 left-menu">
                         <div class="card card-profile-large text-center card-info">
                             <div class="card-header">
                                 <img alt="Đang cập nhật" src="http://via.placeholder.com/354x167" class="bg-image" />

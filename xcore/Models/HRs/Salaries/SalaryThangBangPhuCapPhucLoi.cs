@@ -19,20 +19,28 @@ namespace Models
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
 
+        // Link SalaryPhuCapPhuLoi
         [Display(Name = "Mã phụ cấp")]
         public string Code { get; set; }
 
         [Display(Name = "Tên phụ cấp")]
         public string Name { get; set; }
 
-        // Update In Future
-        [Display(Name = "Vị trí")]
-        public string ViTri { get; set; }
-
+        // Theo bao cao thue, se ap dung cho tung nhan vien. FlagReal true | false.
+        // Rule discuss later
         [Display(Name = "Mã số")]
         public string MaSo { get; set; }
 
+        #region Phuc Loi theo vi tri, nhan vien
+        public string EmployeeId { get; set; }
+
+        // Update In Future
+        [Display(Name = "Vị trí")]
+        public string ViTri { get; set; }
+        #endregion
+
         [Display(Name = "Số tiền")]
+        [BsonRepresentation(BsonType.Decimal128)]
         public decimal Money { get; set; }
 
         // muc luong theo luat VN, false theo cong ty
