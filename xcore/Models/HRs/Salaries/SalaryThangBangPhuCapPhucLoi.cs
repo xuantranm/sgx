@@ -19,6 +19,10 @@ namespace Models
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
 
+        public int Year { get; set; }
+
+        public int Month { get; set; }
+
         // Link SalaryPhuCapPhuLoi
         [Display(Name = "Mã phụ cấp")]
         public string Code { get; set; }
@@ -26,8 +30,8 @@ namespace Models
         [Display(Name = "Tên phụ cấp")]
         public string Name { get; set; }
 
-        // Theo bao cao thue, se ap dung cho tung nhan vien. FlagReal true | false.
-        // Rule discuss later
+        // Ma so không dùng song song với employeeID,
+        // bao cao thuế: dựa vào bảng employee => lấy SalaryMaSoChucDanhCongViec => lấy phụ cấp, trợ cấp.
         [Display(Name = "Mã số")]
         public string MaSo { get; set; }
 
@@ -44,6 +48,7 @@ namespace Models
         public decimal Money { get; set; }
 
         // muc luong theo luat VN, false theo cong ty
+        // muc luong thuc te = false
         public bool Law { get; set; } = true;
 
         public bool FlagReal = false;

@@ -13,15 +13,31 @@ namespace Common.Utilities
             public const string department = "system";
             public const int expire = 30;
             public const bool enable = true;
-            //public const string domain = "http://demo.tribat.vn:8090";
-            public const string domain = "https://localhost:44366";
+            public const string domain = "http://erp.tribat.vn:8090";
+            //public const string domain = "https://localhost:44366";
             public const string login = "/account/login/";
             public const string emailErp = "test-erp@tribat.vn";
             public const string emailErpPwd = "Kh0ngbiet@123";
             public const string emailErpName = "HCNS";
 
-            public const string emailHr = "test-erp@tribat.vn";
+            public const string emailHr = "app.hcns@tribat.vn";
+            public const string emailHrPwd = "Tr1b@t";
+            public const string emailHrName = "APP.HCNS";
             public const string emailNM = "test-erp@tribat.vn";
+        }
+
+        public static class LinkTimeKeeper
+        {
+            public const string Main = "fg";
+            public const string Index = "cham-cong";
+            public const string Manage = "quan-ly-cham-cong";
+            public const string Request = "yeu-cau-xac-nhan-cong";
+            public const string Aprrove = "xac-nhan-cham-cong";
+            public const string AprrovePost = "post-xac-nhan-cham-cong";
+            public const string Item = "chi-tiet-cham-cong";
+            // API
+            //public const string Approve = "duyet-phep";
+
         }
 
         public static class ContactType

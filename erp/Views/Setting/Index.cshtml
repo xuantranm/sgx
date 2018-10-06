@@ -138,7 +138,8 @@
         <input type="hidden" name="Setting.Timestamp" value="{{:timestamp}}" class="form-control" />
         <div class="form-group">
             <label class="control-label">Loại</label>
-            <select name="Setting.Type" value="{{:type}}" class="form-control">
+            <input type="hidden" class="hide-type" value="{{:type}}"/>
+            <select name="Setting.Type" class="form-control setting-type">
                 <option value="hcns">Hành chính nhân sự</option>
                 <option value="factory">Nhà máy</option>
                 <option value="system">System</option>
@@ -158,11 +159,12 @@
         </div>
         <div class="form-group">
             <label class="control-label">Mô tả</label>
-            <textarea name="Setting.Content" value="{{:content}}" class="form-control"></textarea>
+            <textarea name="Setting.Content" class="form-control js-auto-size">{{:content}}</textarea>
         </div>
         <div class="form-group">
             <label class="control-label">Dữ liệu</label>
-            <select name="Setting.NoDelete" value="{{:noDelete}}" class="form-control">
+            <input type="hidden" class="hide-no-delete" value="{{:noDelete}}" />
+            <select name="Setting.NoDelete" class="form-control setting-no-delete">
                 <option value="false">Xóa được</option>
                 <option value="true">Không xóa được</option>
             </select>
@@ -296,6 +298,6 @@ else
 }
 
 @section scripts {
-    <script type="text/javascript" src="~/js/setting.js"></script>
+    <script type="text/javascript" src="~/js/setting.js?@DateTime.Now.Ticks"></script>
 }
 

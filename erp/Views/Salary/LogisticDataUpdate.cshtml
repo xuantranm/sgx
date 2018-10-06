@@ -1,0 +1,222 @@
+﻿@using Common.Utilities;
+@using ViewModels;
+@model BangLuongViewModel
+@{
+    Layout = "~/Views/Shared/_LayoutSocialFb.cshtml";
+    var login = User.Identity.Name;
+    var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+}
+
+<div class="main-container">
+    <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="/">Trang chủ</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">Dữ liệu logistic</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="flush-with-above space-0">
+        <div class="bg-white">
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <ul class="nav nav-tabs" id="myTab" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.BangLuongReal">BẢNG LƯƠNG</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Setting/@Constants.LinkSalary.Update">THAM SỐ</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.SaleKPIs/@Constants.LinkSalary.Update">KINH DOANH</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link active" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.LogisticDatas/@Constants.LinkSalary.Update">LOGISTICS</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Credits/@Constants.LinkSalary.Update">VAY & TẠM ỨNG</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.ThangBangLuongReal/@Constants.LinkSalary.Update">THANG LƯƠNG</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="flush-with-above height-80 d-block">
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="law" role="tabpanel" aria-labelledby="law-tab">
+                <form action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.LogisticDatas/@Constants.LinkSalary.Update" method="post" class="data-form">
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <button type="button" class="btn btn-success btn-edit d-none" data-toggle="tooltip" title="Bấm thay đổi dữ liệu.">
+                                <i class="icon icon-edit"></i>Chỉnh sửa
+                            </button>
+
+                            <button type="submit" class="btn btn-primary btn-submit" data-toggle="tooltip" title="Bấm để cập nhật dữ liệu.">
+                                <i class="icon icon-save"></i>Lưu thay đổi
+                            </button>
+                            <button type="button" class="btn btn-success btn-back d-none" data-toggle="tooltip" title="Bấm để trở về.">
+                                <i class="icon icon-back"></i>Trở về
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        @{
+                            <div class="col-12 table-responsive-sm">
+                                <table class="table table-responsive-sm table-bordered table-salary-level">
+                                    <tr style="background-color:yellow!important">
+                                        <th rowspan="3" style="vertical-align:middle;font-weight:bold" nowrap>STT</th>
+                                        <th rowspan="3" style="vertical-align:middle;font-weight:bold" nowrap>Mã NV</th>
+                                        <th rowspan="3" style="vertical-align:middle;font-weight:bold" nowrap>Họ và tên</th>
+                                        <th rowspan="3" style="vertical-align:middle;font-weight:bold" nowrap>Chức vụ</th>
+                                        <th rowspan="3" style="vertical-align:middle;font-weight:bold" nowrap>Doanh thu</th>
+                                        <th rowspan="3" style="vertical-align:middle;font-weight:bold" nowrap>Lương theo doanh số / doanh thu</th>
+                                        <td colspan="5">TP.HCM Xe nhỏ 1.7 tấn</td>
+                                        <td colspan="5">TP.HCM Xe lớn ben và 8 tấn</td>
+                                        <td colspan="5">BÌNH DƯƠNG Xe nhỏ</td>
+                                        <td colspan="5">BÌNH DƯƠNG Xe lớn</td>
+                                        <td colspan="5">BIÊN HÒA Xe nhỏ</td>
+                                        <td colspan="5">BIÊN HÒA Xe lớn</td>
+                                        <td colspan="2">Vũng Tàu</td>
+                                        <td colspan="2">Bình Thuận</td>
+                                        <td>Cần Thơ</td>
+                                        <td>Vĩnh Long</td>
+                                        <td colspan="2">Long An</td>
+                                        <td colspan="2">Tiền Giang</td>
+                                        <td colspan="2">Đồng Nai</td>
+                                        <th rowspan="3" style="vertical-align:middle;font-weight:bold" nowrap>Tổng số chuyến</th>
+                                        <th rowspan="3" style="vertical-align:middle;font-weight:bold" nowrap>Tiền chuyến</th>
+                                        <th rowspan="3" style="vertical-align:middle;font-weight:bold" nowrap>Công tác xa</th>
+                                        <th rowspan="3" style="vertical-align:middle;font-weight:bold" nowrap>Khối lượng bùn</th>
+                                        <th rowspan="3" style="vertical-align:middle;font-weight:bold" nowrap>Tiền/tấn</th>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="5">trợ cấp</td>
+                                        <td colspan="5">trợ cấp</td>
+                                        <td colspan="5">trợ cấp</td>
+                                        <td colspan="5">trợ cấp</td>
+                                        <td colspan="5">trợ cấp</td>
+                                        <td colspan="5">trợ cấp</td>
+                                        <td>xe nhỏ</td>
+                                        <td>xe lớn</td>
+                                        <td>xe nhỏ</td>
+                                        <td>xe lớn</td>
+                                        <td>xe lớn</td>
+                                        <td>xe lớn</td>
+                                        <td>xe nhỏ</td>
+                                        <td>xe lớn</td>
+                                        <td>xe nhỏ</td>
+                                        <td>xe lớn</td>
+                                        <td>xe nhỏ</td>
+                                        <td>xe lớn</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Chuyến 1</td>
+                                        <td>Chuyến 2</td>
+                                        <td>Chuyến 3</td>
+                                        <td>Chuyến 4</td>
+                                        <td>Chuyến 5</td>
+                                        <td>Chuyến 1</td>
+                                        <td>Chuyến 2</td>
+                                        <td>Chuyến 3</td>
+                                        <td>Chuyến 4</td>
+                                        <td>Chuyến 5</td>
+                                        <td>Chuyến 1</td>
+                                        <td>Chuyến 2</td>
+                                        <td>Chuyến 3</td>
+                                        <td>Chuyến 4</td>
+                                        <td>Chuyến 5</td>
+                                        <td>Chuyến 1</td>
+                                        <td>Chuyến 2</td>
+                                        <td>Chuyến 3</td>
+                                        <td>Chuyến 4</td>
+                                        <td>Chuyến 5</td>
+                                        <td>Chuyến 1</td>
+                                        <td>Chuyến 2</td>
+                                        <td>Chuyến 3</td>
+                                        <td>Chuyến 4</td>
+                                        <td>Chuyến 5</td>
+                                        <td>Chuyến 1</td>
+                                        <td>Chuyến 2</td>
+                                        <td>Chuyến 3</td>
+                                        <td>Chuyến 4</td>
+                                        <td>Chuyến 5</td>
+                                        <td>VT</td>
+                                        <td>VT</td>
+                                        <td>BT</td>
+                                        <td>BT</td>
+                                        <td>CT</td>
+                                        <td>VL</td>
+                                        <td>LA</td>
+                                        <td>LA</td>
+                                        <td>TG</td>
+                                        <td>TG</td>
+                                        <td>ĐN</td>
+                                        <td>ĐN</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="6">ĐƠN GIÁ CHUYẾN XE</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="6">HỖ TRỢ CÔNG TÁC XA</td>
+                                        <td></td>
+                                    </tr>
+                                    <tbody>
+                                        @{
+                                            int i = 1;
+                                            int iEntity = 0;
+                                            foreach (var item in Model.SalaryLogisticDatas)
+                                            {
+                                                <tr class="tr-@iEntity" data-id="@item.Id">
+                                                    <td>
+                                                        @i
+                                                        <input type="hidden" asp-for="SalaryLogisticDatas[iEntity].Id" />
+                                                    </td>
+                                                    <td>@item.FullName</td>
+                                                    <td>@item.MaNhanVien</td>
+                                                    <td>@item.ChucVu</td>
+                                                    <td>
+                                                        <input value="@Math.Round(Model.SalaryLogisticDatas[iEntity].DoanhThu/1000, 0)" name="SalaryLogisticDatas[@iEntity].DoanhThu" class="form-control width100 numeric doanhthu-@iEntity" data-id="danhthu-@iEntity" />
+                                                    </td>
+                                                    <td>
+                                                        <span class="luongtheodoanhthudoanhso-@iEntity">@String.Format("{0:#,###,###}", item.LuongTheoDoanhThuDoanhSo)</span>
+                                                    </td>
+                                                    <td>
+                                                        <input value="@Math.Round(Model.SalaryLogisticDatas[iEntity].LuongTheoDoanhThuDoanhSo/1000, 0)" name="SalaryLogisticDatas[@iEntity].LuongTheoDoanhThuDoanhSo" class="form-control width100 numeric luongtheodoanhthudoanhso-@iEntity" data-id="luongtheodoanhthudoanhso-@iEntity" />
+                                                    </td>
+                                                </tr>
+                                                i++;
+                                                iEntity++;
+                                            }
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+</div>
+
+@section scripts {
+    <script type="text/javascript" src="~/js/salary-setting.js?@DateTime.Now.Ticks"></script>
+}
+
+
+

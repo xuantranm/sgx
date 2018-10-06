@@ -19,5 +19,10 @@ namespace Services
         {
             throw new NotImplementedException();
         }
+
+        public System.Threading.Tasks.Task SendEmailWelcomeAsync(EmailMessage emailMessage)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

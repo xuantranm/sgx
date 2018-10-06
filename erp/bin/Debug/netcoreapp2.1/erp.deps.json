@@ -1,7 +1,7 @@
 {
   "runtimeTarget": {
     "name": ".NETCoreApp,Version=v2.1",
-    "signature": "aece5fa578b742457034761da8ae638be4613efc"
+    "signature": "79be5f0ee079420875427234e5af67b88d6059b8"
   },
   "compilationOptions": {
     "defines": [
@@ -24,13 +24,13 @@
     ".NETCoreApp,Version=v2.1": {
       "erp/1.0.0": {
         "dependencies": {
-          "DotNetCore.NPOI": "1.2.0",
+          "DotNetCore.NPOI": "1.2.1",
           "EPPlus.Core": "1.5.4",
-          "MailKit": "2.0.4",
+          "MailKit": "2.0.6",
           "MaxMind.GeoIP2": "3.0.0",
           "Microsoft.AspNetCore.App": "2.1.1",
           "Microsoft.NETCore.App": "2.1.0",
-          "Microsoft.VisualStudio.Web.CodeGeneration.Design": "2.1.0",
+          "Microsoft.VisualStudio.Web.CodeGeneration.Design": "2.1.4",
           "MongoDB.Driver": "2.7.0",
           "xcore": "1.0.0"
         },
@@ -70,60 +70,60 @@
           "lib/netstandard1.3/DnsClient.dll": {}
         }
       },
-      "DotNetCore.NPOI/1.2.0": {
+      "DotNetCore.NPOI/1.2.1": {
         "dependencies": {
-          "DotNetCore.NPOI.Core": "1.2.0",
-          "DotNetCore.NPOI.OpenXml4Net": "1.2.0",
-          "DotNetCore.NPOI.OpenXmlFormats": "1.2.0"
+          "DotNetCore.NPOI.Core": "1.2.1",
+          "DotNetCore.NPOI.OpenXml4Net": "1.2.1",
+          "DotNetCore.NPOI.OpenXmlFormats": "1.2.1"
         },
         "runtime": {
           "lib/netstandard2.0/NPOI.OOXML.dll": {
-            "assemblyVersion": "1.2.0.0",
-            "fileVersion": "1.2.0.0"
+            "assemblyVersion": "1.2.1.0",
+            "fileVersion": "1.2.1.0"
           }
         },
         "compile": {
           "lib/netstandard2.0/NPOI.OOXML.dll": {}
         }
       },
-      "DotNetCore.NPOI.Core/1.2.0": {
+      "DotNetCore.NPOI.Core/1.2.1": {
         "dependencies": {
-          "SharpZipLib": "1.0.0-rc1",
+          "SharpZipLib": "1.0.0",
           "System.Drawing.Common": "4.5.0",
           "System.Text.Encoding.CodePages": "4.5.0"
         },
         "runtime": {
           "lib/netstandard2.0/NPOI.dll": {
-            "assemblyVersion": "1.2.0.0",
-            "fileVersion": "1.2.0.0"
+            "assemblyVersion": "1.2.1.0",
+            "fileVersion": "1.2.1.0"
           }
         },
         "compile": {
           "lib/netstandard2.0/NPOI.dll": {}
         }
       },
-      "DotNetCore.NPOI.OpenXml4Net/1.2.0": {
+      "DotNetCore.NPOI.OpenXml4Net/1.2.1": {
         "dependencies": {
-          "DotNetCore.NPOI.Core": "1.2.0"
+          "DotNetCore.NPOI.Core": "1.2.1"
         },
         "runtime": {
           "lib/netstandard2.0/NPOI.OpenXml4Net.dll": {
-            "assemblyVersion": "1.2.0.0",
-            "fileVersion": "1.2.0.0"
+            "assemblyVersion": "1.2.1.0",
+            "fileVersion": "1.2.1.0"
           }
         },
         "compile": {
           "lib/netstandard2.0/NPOI.OpenXml4Net.dll": {}
         }
       },
-      "DotNetCore.NPOI.OpenXmlFormats/1.2.0": {
+      "DotNetCore.NPOI.OpenXmlFormats/1.2.1": {
         "dependencies": {
-          "DotNetCore.NPOI.OpenXml4Net": "1.2.0"
+          "DotNetCore.NPOI.OpenXml4Net": "1.2.1"
         },
         "runtime": {
           "lib/netstandard2.0/NPOI.OpenXmlFormats.dll": {
-            "assemblyVersion": "1.2.0.0",
-            "fileVersion": "1.2.0.0"
+            "assemblyVersion": "1.2.1.0",
+            "fileVersion": "1.2.1.0"
           }
         },
         "compile": {
@@ -156,9 +156,9 @@
           "lib/netstandard2.0/EPPlus.Core.dll": {}
         }
       },
-      "MailKit/2.0.4": {
+      "MailKit/2.0.6": {
         "dependencies": {
-          "MimeKit": "2.0.4",
+          "MimeKit": "2.0.6",
           "NETStandard.Library": "2.0.3",
           "Portable.BouncyCastle": "1.8.2",
           "System.Data.Common": "4.3.0",
@@ -174,7 +174,7 @@
         "runtime": {
           "lib/netstandard2.0/MailKit.dll": {
             "assemblyVersion": "2.0.0.0",
-            "fileVersion": "2.0.4.0"
+            "fileVersion": "2.0.6.0"
           }
         },
         "compile": {
@@ -542,120 +542,120 @@
       },
       "Microsoft.NETCore.Platforms/2.1.0": {},
       "Microsoft.NETCore.Targets/2.1.0": {},
-      "Microsoft.VisualStudio.Web.CodeGeneration/2.1.0": {
+      "Microsoft.VisualStudio.Web.CodeGeneration/2.1.4": {
         "dependencies": {
           "Microsoft.Extensions.DependencyInjection": "2.1.1",
-          "Microsoft.VisualStudio.Web.CodeGeneration.EntityFrameworkCore": "2.1.0"
+          "Microsoft.VisualStudio.Web.CodeGeneration.EntityFrameworkCore": "2.1.4"
         },
         "runtime": {
           "lib/netstandard2.0/Microsoft.VisualStudio.Web.CodeGeneration.dll": {
-            "assemblyVersion": "2.1.0.0",
-            "fileVersion": "2.1.0.18136"
+            "assemblyVersion": "2.1.4.0",
+            "fileVersion": "2.1.4.18226"
           }
         },
         "compile": {
           "lib/netstandard2.0/Microsoft.VisualStudio.Web.CodeGeneration.dll": {}
         }
       },
-      "Microsoft.VisualStudio.Web.CodeGeneration.Contracts/2.1.0": {
+      "Microsoft.VisualStudio.Web.CodeGeneration.Contracts/2.1.4": {
         "dependencies": {
           "Newtonsoft.Json": "11.0.2"
         },
         "runtime": {
           "lib/netstandard2.0/Microsoft.VisualStudio.Web.CodeGeneration.Contracts.dll": {
-            "assemblyVersion": "2.1.0.0",
-            "fileVersion": "2.1.0.18136"
+            "assemblyVersion": "2.1.4.0",
+            "fileVersion": "2.1.4.18226"
           }
         },
         "compile": {
           "lib/netstandard2.0/Microsoft.VisualStudio.Web.CodeGeneration.Contracts.dll": {}
         }
       },
-      "Microsoft.VisualStudio.Web.CodeGeneration.Core/2.1.0": {
+      "Microsoft.VisualStudio.Web.CodeGeneration.Core/2.1.4": {
         "dependencies": {
           "Microsoft.Extensions.DependencyInjection": "2.1.1",
-          "Microsoft.VisualStudio.Web.CodeGeneration.Templating": "2.1.0",
+          "Microsoft.VisualStudio.Web.CodeGeneration.Templating": "2.1.4",
           "Newtonsoft.Json": "11.0.2"
         },
         "runtime": {
           "lib/netstandard2.0/Microsoft.VisualStudio.Web.CodeGeneration.Core.dll": {
-            "assemblyVersion": "2.1.0.0",
-            "fileVersion": "2.1.0.18136"
+            "assemblyVersion": "2.1.4.0",
+            "fileVersion": "2.1.4.18226"
           }
         },
         "compile": {
           "lib/netstandard2.0/Microsoft.VisualStudio.Web.CodeGeneration.Core.dll": {}
         }
       },
-      "Microsoft.VisualStudio.Web.CodeGeneration.Design/2.1.0": {
+      "Microsoft.VisualStudio.Web.CodeGeneration.Design/2.1.4": {
         "dependencies": {
-          "Microsoft.VisualStudio.Web.CodeGenerators.Mvc": "2.1.0"
+          "Microsoft.VisualStudio.Web.CodeGenerators.Mvc": "2.1.4"
         },
         "runtime": {
           "lib/netstandard2.0/dotnet-aspnet-codegenerator-design.dll": {
-            "assemblyVersion": "2.1.0.0",
-            "fileVersion": "2.1.0.18136"
+            "assemblyVersion": "2.1.4.0",
+            "fileVersion": "2.1.4.18226"
           }
         },
         "compile": {
           "lib/netstandard2.0/dotnet-aspnet-codegenerator-design.dll": {}
         }
       },
-      "Microsoft.VisualStudio.Web.CodeGeneration.EntityFrameworkCore/2.1.0": {
+      "Microsoft.VisualStudio.Web.CodeGeneration.EntityFrameworkCore/2.1.4": {
         "dependencies": {
-          "Microsoft.VisualStudio.Web.CodeGeneration.Core": "2.1.0"
+          "Microsoft.VisualStudio.Web.CodeGeneration.Core": "2.1.4"
         },
         "runtime": {
           "lib/netstandard2.0/Microsoft.VisualStudio.Web.CodeGeneration.EntityFrameworkCore.dll": {
-            "assemblyVersion": "2.1.0.0",
-            "fileVersion": "2.1.0.18136"
+            "assemblyVersion": "2.1.4.0",
+            "fileVersion": "2.1.4.18226"
           }
         },
         "compile": {
           "lib/netstandard2.0/Microsoft.VisualStudio.Web.CodeGeneration.EntityFrameworkCore.dll": {}
         }
       },
-      "Microsoft.VisualStudio.Web.CodeGeneration.Templating/2.1.0": {
+      "Microsoft.VisualStudio.Web.CodeGeneration.Templating/2.1.4": {
         "dependencies": {
           "Microsoft.AspNetCore.Razor.Language": "2.1.1",
           "Microsoft.CodeAnalysis.CSharp": "2.8.0",
-          "Microsoft.VisualStudio.Web.CodeGeneration.Utils": "2.1.0"
+          "Microsoft.VisualStudio.Web.CodeGeneration.Utils": "2.1.4"
         },
         "runtime": {
           "lib/netstandard2.0/Microsoft.VisualStudio.Web.CodeGeneration.Templating.dll": {
-            "assemblyVersion": "2.1.0.0",
-            "fileVersion": "2.1.0.18136"
+            "assemblyVersion": "2.1.4.0",
+            "fileVersion": "2.1.4.18226"
           }
         },
         "compile": {
           "lib/netstandard2.0/Microsoft.VisualStudio.Web.CodeGeneration.Templating.dll": {}
         }
       },
-      "Microsoft.VisualStudio.Web.CodeGeneration.Utils/2.1.0": {
+      "Microsoft.VisualStudio.Web.CodeGeneration.Utils/2.1.4": {
         "dependencies": {
           "Microsoft.CodeAnalysis.CSharp.Workspaces": "2.8.0",
-          "Microsoft.VisualStudio.Web.CodeGeneration.Contracts": "2.1.0",
+          "Microsoft.VisualStudio.Web.CodeGeneration.Contracts": "2.1.4",
           "Newtonsoft.Json": "11.0.2",
-          "NuGet.Frameworks": "4.7.0-rtm.5148"
+          "NuGet.Frameworks": "4.7.0"
         },
         "runtime": {
           "lib/netstandard2.0/Microsoft.VisualStudio.Web.CodeGeneration.Utils.dll": {
-            "assemblyVersion": "2.1.0.0",
-            "fileVersion": "2.1.0.18136"
+            "assemblyVersion": "2.1.4.0",
+            "fileVersion": "2.1.4.18226"
           }
         },
         "compile": {
           "lib/netstandard2.0/Microsoft.VisualStudio.Web.CodeGeneration.Utils.dll": {}
         }
       },
-      "Microsoft.VisualStudio.Web.CodeGenerators.Mvc/2.1.0": {
+      "Microsoft.VisualStudio.Web.CodeGenerators.Mvc/2.1.4": {
         "dependencies": {
-          "Microsoft.VisualStudio.Web.CodeGeneration": "2.1.0"
+          "Microsoft.VisualStudio.Web.CodeGeneration": "2.1.4"
         },
         "runtime": {
           "lib/netstandard2.0/Microsoft.VisualStudio.Web.CodeGenerators.Mvc.dll": {
-            "assemblyVersion": "2.1.0.0",
-            "fileVersion": "2.1.0.18136"
+            "assemblyVersion": "2.1.4.0",
+            "fileVersion": "2.1.4.18226"
           }
         },
         "compile": {
@@ -688,7 +688,7 @@
           }
         }
       },
-      "MimeKit/2.0.4": {
+      "MimeKit/2.0.6": {
         "dependencies": {
           "NETStandard.Library": "2.0.3",
           "Portable.BouncyCastle": "1.8.2",
@@ -704,7 +704,7 @@
         "runtime": {
           "lib/netstandard2.0/MimeKit.dll": {
             "assemblyVersion": "2.0.0.0",
-            "fileVersion": "2.0.4.0"
+            "fileVersion": "2.0.6.0"
           }
         },
         "compile": {
@@ -773,7 +773,7 @@
           "Microsoft.NETCore.Platforms": "2.1.0"
         }
       },
-      "NuGet.Frameworks/4.7.0-rtm.5148": {
+      "NuGet.Frameworks/4.7.0": {
         "dependencies": {
           "NETStandard.Library": "2.0.3"
         },
@@ -804,11 +804,11 @@
           "Microsoft.NETCore.Targets": "2.1.0"
         }
       },
-      "SharpZipLib/1.0.0-rc1": {
+      "SharpZipLib/1.0.0": {
         "runtime": {
           "lib/netstandard2.0/ICSharpCode.SharpZipLib.dll": {
-            "assemblyVersion": "1.0.0.3",
-            "fileVersion": "1.0.0.3"
+            "assemblyVersion": "1.0.0.999",
+            "fileVersion": "1.0.0.999"
           }
         },
         "compile": {
@@ -1278,8 +1278,8 @@
       },
       "xcore/1.0.0": {
         "dependencies": {
-          "DotNetCore.NPOI": "1.2.0",
-          "MailKit": "2.0.4",
+          "DotNetCore.NPOI": "1.2.1",
+          "MailKit": "2.0.6",
           "MaxMind.GeoIP2": "3.0.0",
           "Microsoft.AspNetCore.Mvc.ViewFeatures": "2.1.2",
           "MongoDB.Driver": "2.7.0"
@@ -4157,33 +4157,33 @@
       "path": "dnsclient/1.0.7",
       "hashPath": "dnsclient.1.0.7.nupkg.sha512"
     },
-    "DotNetCore.NPOI/1.2.0": {
+    "DotNetCore.NPOI/1.2.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-I84WUzaFpXX50fFrmKfaBtE9DLQC1KdpaN3nAaqTN6xTf+HLIThBsY8k+wSvvcpBQheOHCvNyW3Gr8aJ0Zue2g==",
-      "path": "dotnetcore.npoi/1.2.0",
-      "hashPath": "dotnetcore.npoi.1.2.0.nupkg.sha512"
+      "sha512": "sha512-5M2x2mt+JOTByhzSH6PtcDOepZswmb6Uu2rjiOx5l3lKc7AP9kbmhN7WLKakGVSNhnOMgXbFXulIRRflPeNb/g==",
+      "path": "dotnetcore.npoi/1.2.1",
+      "hashPath": "dotnetcore.npoi.1.2.1.nupkg.sha512"
     },
-    "DotNetCore.NPOI.Core/1.2.0": {
+    "DotNetCore.NPOI.Core/1.2.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-91/JZ50lWIxlEvI0CO72rF2CLhBRcjKrk/dOYNLoLyiV/pVsO1OUhM7aS7ZGwjagooRAB2l7XFVhB6AiEGjnvQ==",
-      "path": "dotnetcore.npoi.core/1.2.0",
-      "hashPath": "dotnetcore.npoi.core.1.2.0.nupkg.sha512"
+      "sha512": "sha512-K8hlUP5yCxCK2JNROBBGAM50EtRshBe+RglFrrJkrbygR3o1HsruvHk6NlEFI+pYV9brDVqRc8xsYz5ZfeLfgQ==",
+      "path": "dotnetcore.npoi.core/1.2.1",
+      "hashPath": "dotnetcore.npoi.core.1.2.1.nupkg.sha512"
     },
-    "DotNetCore.NPOI.OpenXml4Net/1.2.0": {
+    "DotNetCore.NPOI.OpenXml4Net/1.2.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-LwuzesHHxUdDq0thoQumXLyPZ8hEgTG/zAaxk8HUxRob1CYzyhINZ/7jXH3JlySBRBqqbHOBpgewKfIw/FHfGg==",
-      "path": "dotnetcore.npoi.openxml4net/1.2.0",
-      "hashPath": "dotnetcore.npoi.openxml4net.1.2.0.nupkg.sha512"
+      "sha512": "sha512-LxHszYfzPwg+ibE70gR7HrLlOtMHhWWEXLOTcW6KkwyJJ9eisCfrSkfbGvJnvfQHxmL9RXfZ+KV+B0/OeZ7kmw==",
+      "path": "dotnetcore.npoi.openxml4net/1.2.1",
+      "hashPath": "dotnetcore.npoi.openxml4net.1.2.1.nupkg.sha512"
     },
-    "DotNetCore.NPOI.OpenXmlFormats/1.2.0": {
+    "DotNetCore.NPOI.OpenXmlFormats/1.2.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-qf0qbqxn8aKdeRSQOU0ojJyyu5c0XZqLSW7fyaAW7wJ/Rphg/ykSS/MaGIJNrd6EQSoPYy1+3wZUmLlEFsTh1g==",
-      "path": "dotnetcore.npoi.openxmlformats/1.2.0",
-      "hashPath": "dotnetcore.npoi.openxmlformats.1.2.0.nupkg.sha512"
+      "sha512": "sha512-bim3nwQ5b/6bAoWa7DhHTYwz9w5dmMDwqn27LgcE8Sa/eYh672BOfT6SaKFuxQT1+X0Au3WhTwH1RgO/4aTNtg==",
+      "path": "dotnetcore.npoi.openxmlformats/1.2.1",
+      "hashPath": "dotnetcore.npoi.openxmlformats.1.2.1.nupkg.sha512"
     },
     "EPPlus.Core/1.5.4": {
       "type": "package",
@@ -4192,12 +4192,12 @@
       "path": "epplus.core/1.5.4",
       "hashPath": "epplus.core.1.5.4.nupkg.sha512"
     },
-    "MailKit/2.0.4": {
+    "MailKit/2.0.6": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-iKPXiwSYN+WnAPULg8Ss+S8EVU793YtQpxT0bR+IVYy4Feq61lrZmkZhROm7luVjvF4UlaBmQXZlnbrEp07kMA==",
-      "path": "mailkit/2.0.4",
-      "hashPath": "mailkit.2.0.4.nupkg.sha512"
+      "sha512": "sha512-xO7c8jHlbN15CoEKvIOkED6fN3W0hzUghXeh8GX8C8tSVA1mhPQnPwm7xIH7GbxkZt/IaLnvc9sVuFGxVR+yRw==",
+      "path": "mailkit/2.0.6",
+      "hashPath": "mailkit.2.0.6.nupkg.sha512"
     },
     "MaxMind.Db/2.4.0": {
       "type": "package",
@@ -4318,61 +4318,61 @@
       "path": "microsoft.netcore.targets/2.1.0",
       "hashPath": "microsoft.netcore.targets.2.1.0.nupkg.sha512"
     },
-    "Microsoft.VisualStudio.Web.CodeGeneration/2.1.0": {
+    "Microsoft.VisualStudio.Web.CodeGeneration/2.1.4": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-B2q4Tkdss3MYTNWZVyKyTk7byFBX8ibMeuCTQAwpBRri4d+BhrR3F5dqlrbivGQia2fyG08D36JcoK6aLPDHvQ==",
-      "path": "microsoft.visualstudio.web.codegeneration/2.1.0",
-      "hashPath": "microsoft.visualstudio.web.codegeneration.2.1.0.nupkg.sha512"
+      "sha512": "sha512-pRyGF/8FWK+JGHH1ILwBGChTS+Gbo/oEKEOBnOSvwfUO1FmrSIYzF2+oMZCv8J1viGopXtZeIqbi3xLjdroR+A==",
+      "path": "microsoft.visualstudio.web.codegeneration/2.1.4",
+      "hashPath": "microsoft.visualstudio.web.codegeneration.2.1.4.nupkg.sha512"
     },
-    "Microsoft.VisualStudio.Web.CodeGeneration.Contracts/2.1.0": {
+    "Microsoft.VisualStudio.Web.CodeGeneration.Contracts/2.1.4": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-idqIUvQM6h4xcbaRItgiwVvQXUFHxzpmNvjSO/7f7r/SCTl9jjYkNYxqEoE/QatVXeRkeleJXHzCVEewMsNyCQ==",
-      "path": "microsoft.visualstudio.web.codegeneration.contracts/2.1.0",
-      "hashPath": "microsoft.visualstudio.web.codegeneration.contracts.2.1.0.nupkg.sha512"
+      "sha512": "sha512-eRwMmal/ed9hDXIV0BoTuchMaX/N52U91UotVUOeNdYp0uplh33A52dhr3DiaeilHjc08gX+lFOwR/VLNxUMnA==",
+      "path": "microsoft.visualstudio.web.codegeneration.contracts/2.1.4",
+      "hashPath": "microsoft.visualstudio.web.codegeneration.contracts.2.1.4.nupkg.sha512"
     },
-    "Microsoft.VisualStudio.Web.CodeGeneration.Core/2.1.0": {
+    "Microsoft.VisualStudio.Web.CodeGeneration.Core/2.1.4": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-4GFtD7AH5YuSGZImqjjZtEmAwqoJvPkfV8uWCUA/TpIYmmVVTDhD8yfn1eBi0asMyzXlmKuqI83wDMtcZv+GsQ==",
-      "path": "microsoft.visualstudio.web.codegeneration.core/2.1.0",
-      "hashPath": "microsoft.visualstudio.web.codegeneration.core.2.1.0.nupkg.sha512"
+      "sha512": "sha512-f1d9gK4xdrHzjU2j4CGIL6JNvHWJUbKnZRmEhP/NRRSut29KhClPcALcV6R/nJ48QvECnu+Wwfy+hUJMa1uddg==",
+      "path": "microsoft.visualstudio.web.codegeneration.core/2.1.4",
+      "hashPath": "microsoft.visualstudio.web.codegeneration.core.2.1.4.nupkg.sha512"
     },
-    "Microsoft.VisualStudio.Web.CodeGeneration.Design/2.1.0": {
+    "Microsoft.VisualStudio.Web.CodeGeneration.Design/2.1.4": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-qSCImt6I49fRsWo7n8Bnfso7hznONWWwnWHrtWTTTdsDtdbref7OekawRvUCE/wCwpuRXQ+8VxWhkUuWUTLjZA==",
-      "path": "microsoft.visualstudio.web.codegeneration.design/2.1.0",
-      "hashPath": "microsoft.visualstudio.web.codegeneration.design.2.1.0.nupkg.sha512"
+      "sha512": "sha512-qHnioaphp0iIQO6+FtHCLMRKABq7IOvApKmQ5/YELrY56yg/rtiT4DeXDUNpsBRmJEuTHP5mcYAXUXs7Pn7Arg==",
+      "path": "microsoft.visualstudio.web.codegeneration.design/2.1.4",
+      "hashPath": "microsoft.visualstudio.web.codegeneration.design.2.1.4.nupkg.sha512"
     },
-    "Microsoft.VisualStudio.Web.CodeGeneration.EntityFrameworkCore/2.1.0": {
+    "Microsoft.VisualStudio.Web.CodeGeneration.EntityFrameworkCore/2.1.4": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-XM13O6S39l+aMsreBqeuK1OYDHh/bLDjKnutmu1SqS/w/d3H5doc5xyQNth6rdXaTglkF8FQLYDdBh55w2X09g==",
-      "path": "microsoft.visualstudio.web.codegeneration.entityframeworkcore/2.1.0",
-      "hashPath": "microsoft.visualstudio.web.codegeneration.entityframeworkcore.2.1.0.nupkg.sha512"
+      "sha512": "sha512-EbNTVZ5lohK0C1EcnvJIjGzi3sqfzFbeqyUk4jkH/bq55uyUtObUrkao/ddFEQ9IgjXWAqy9BqKNVLEJ/kuBuw==",
+      "path": "microsoft.visualstudio.web.codegeneration.entityframeworkcore/2.1.4",
+      "hashPath": "microsoft.visualstudio.web.codegeneration.entityframeworkcore.2.1.4.nupkg.sha512"
     },
-    "Microsoft.VisualStudio.Web.CodeGeneration.Templating/2.1.0": {
+    "Microsoft.VisualStudio.Web.CodeGeneration.Templating/2.1.4": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-Pb/dF3bCmu702v14kaDay4AUntZgxOrvuwb6pYJHwTZNB/BGrgvedztNjO5QN6z8V4piCxji9p9T4L78ZmhKFw==",
-      "path": "microsoft.visualstudio.web.codegeneration.templating/2.1.0",
-      "hashPath": "microsoft.visualstudio.web.codegeneration.templating.2.1.0.nupkg.sha512"
+      "sha512": "sha512-vy4sxmI9bgAc9PTd0f8re0h9Fq9DbltT0TCc5ZppH3rq/w22K1R23hzd0NA+TvM+kkzSiy6/mgzLlIylFqg1LQ==",
+      "path": "microsoft.visualstudio.web.codegeneration.templating/2.1.4",
+      "hashPath": "microsoft.visualstudio.web.codegeneration.templating.2.1.4.nupkg.sha512"
     },
-    "Microsoft.VisualStudio.Web.CodeGeneration.Utils/2.1.0": {
+    "Microsoft.VisualStudio.Web.CodeGeneration.Utils/2.1.4": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-CBCIDRceHcFjs8EgKg+7+lVn+VAvKsRfeL61T8MHMd5dIAcM6Ng3HRyMaIP6dbGnG/aymcAs4FLw7SWh5NoGBg==",
-      "path": "microsoft.visualstudio.web.codegeneration.utils/2.1.0",
-      "hashPath": "microsoft.visualstudio.web.codegeneration.utils.2.1.0.nupkg.sha512"
+      "sha512": "sha512-mODOWROfc7yeroPiU/MBQdVLYTV69GJTX0LY7Wlu2F5pjsvzKbqQRE1uzgLPeGYt5IHK5sV9Qq9JnsEeH6B8Vg==",
+      "path": "microsoft.visualstudio.web.codegeneration.utils/2.1.4",
+      "hashPath": "microsoft.visualstudio.web.codegeneration.utils.2.1.4.nupkg.sha512"
     },
-    "Microsoft.VisualStudio.Web.CodeGenerators.Mvc/2.1.0": {
+    "Microsoft.VisualStudio.Web.CodeGenerators.Mvc/2.1.4": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-0tGGsxD12hPNZZnLN5h6jFu+7SSU9C5qPTushWGDuyNftSTd3CFJ2diWXBSxXzZ6efSwydp91MRifSVfQ4D36w==",
-      "path": "microsoft.visualstudio.web.codegenerators.mvc/2.1.0",
-      "hashPath": "microsoft.visualstudio.web.codegenerators.mvc.2.1.0.nupkg.sha512"
+      "sha512": "sha512-3sAjNCBzP3ENcOfcHdrpKNioyDeO9lgjTtkB9pDhV9fwGpICyvcNUXIz1sbGiYgaxT6/oQ1F8TMYB8ejUKARFg==",
+      "path": "microsoft.visualstudio.web.codegenerators.mvc/2.1.4",
+      "hashPath": "microsoft.visualstudio.web.codegenerators.mvc.2.1.4.nupkg.sha512"
     },
     "Microsoft.Win32.Primitives/4.3.0": {
       "type": "package",
@@ -4388,12 +4388,12 @@
       "path": "microsoft.win32.systemevents/4.5.0",
       "hashPath": "microsoft.win32.systemevents.4.5.0.nupkg.sha512"
     },
-    "MimeKit/2.0.4": {
+    "MimeKit/2.0.6": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-3PjQWuiquP9XJxGqKLen2Pvj1sTdLwRR/jENQBc72Fb2TI3HO8nA8z6CKuh7OeRGgRIohRmmC3qGc1stY4hR+Q==",
-      "path": "mimekit/2.0.4",
-      "hashPath": "mimekit.2.0.4.nupkg.sha512"
+      "sha512": "sha512-gf06pNxMut1Re9cLJe66MOOwoswCiYGdsvyAYDjIuVrAe++uskr+R2dm5uPxUp8BT76p3yTP65Lx5wKloiOaRA==",
+      "path": "mimekit/2.0.6",
+      "hashPath": "mimekit.2.0.6.nupkg.sha512"
     },
     "MongoDB.Bson/2.7.0": {
       "type": "package",
@@ -4423,12 +4423,12 @@
       "path": "netstandard.library/2.0.3",
       "hashPath": "netstandard.library.2.0.3.nupkg.sha512"
     },
-    "NuGet.Frameworks/4.7.0-rtm.5148": {
+    "NuGet.Frameworks/4.7.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-hmWi7oVNV397Luu7CQwCs/Ctxld+sMLUw9uxRBqVODpvDx1y0M+63sBe4Fh5n0urHRRsIlT/++FNj/UVZLz/Tw==",
-      "path": "nuget.frameworks/4.7.0-rtm.5148",
-      "hashPath": "nuget.frameworks.4.7.0-rtm.5148.nupkg.sha512"
+      "sha512": "sha512-/VaEPsEgj3p5YPLLxbYc6rB8gYIPf+8wCWOAlAe3l/SP0DXcefZ58uJer1ToBKIpwbPN5LkgTXtvilze5UJoYQ==",
+      "path": "nuget.frameworks/4.7.0",
+      "hashPath": "nuget.frameworks.4.7.0.nupkg.sha512"
     },
     "Portable.BouncyCastle/1.8.2": {
       "type": "package",
@@ -4444,12 +4444,12 @@
       "path": "runtime.native.system.net.security/4.3.0",
       "hashPath": "runtime.native.system.net.security.4.3.0.nupkg.sha512"
     },
-    "SharpZipLib/1.0.0-rc1": {
+    "SharpZipLib/1.0.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-1ggoes7vEnHQvwINcuY0VDpSx4BnJKOjoslFVQjP0nSfio2RsOOfVT1loZ1iLC8w7bFTnjVazSBVM2JyOWsflQ==",
-      "path": "sharpziplib/1.0.0-rc1",
-      "hashPath": "sharpziplib.1.0.0-rc1.nupkg.sha512"
+      "sha512": "sha512-38egGevtPMQn/6olZZUteKUC7+BD47LdCGKo9Vyj17+HWDwiqPXsyJu55q9WSybhwVKwt0q2FLhiuJjZfQpsHw==",
+      "path": "sharpziplib/1.0.0",
+      "hashPath": "sharpziplib.1.0.0.nupkg.sha512"
     },
     "System.ComponentModel/4.0.1": {
       "type": "package",

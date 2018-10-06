@@ -143,7 +143,13 @@ namespace Common.Utilities
 
         public static string EmailConvert(string text)
         {
-            text = NonUnicode(text).ToLower().Trim();
+            if (string.IsNullOrEmpty(text)) return string.Empty;
+
+            text = text.ToLower();
+            RegexOptions options = RegexOptions.None;
+            Regex regex = new Regex("[ ]{2,}", options);
+            text = regex.Replace(text, " ");
+            text = NonUnicode(text);
             var inputs = text.Split(new string[] { " ", "-" },
                             StringSplitOptions.RemoveEmptyEntries).ToList();
             var last = inputs.Last();
@@ -340,7 +346,7 @@ namespace Common.Utilities
         {
             if (string.IsNullOrEmpty(text)) return string.Empty;
 
-            text = text.ToLower();
+            text = text.Trim().ToLower();
             RegexOptions options = RegexOptions.None;
             Regex regex = new Regex("[ ]{2,}", options);
             text = regex.Replace(text, " ");
@@ -409,7 +415,7 @@ namespace Common.Utilities
         {
             int result = 0;
 
-            for (DateTime date = fromDate.Date; date < toDate.Date; date = date.AddDays(1))
+            for (DateTime date = fromDate.Date; date <= toDate.Date; date = date.AddDays(1))
                 if (!IsHoliday(date, holidays) && !IsSunday(date))
                     result += 1;
 
@@ -419,7 +425,9 @@ namespace Common.Utilities
         public static decimal GetBussinessDaysBetweenTwoDates(DateTime start, DateTime end, TimeSpan workdayStartTime, TimeSpan workdayEndTime, IEnumerable<DateTime> holidays = null)
         {
             if (start > end)
+            {
                 return -1;
+            }
 
             var startTime = start.TimeOfDay;
             var endTime = end.TimeOfDay;
@@ -440,7 +448,7 @@ namespace Common.Utilities
             }
             else
             {
-                for (DateTime d = start; d < end; d = d.AddDays(1))
+                for (DateTime d = start; d <= end.Date; d = d.AddDays(1))
                 {
                     if (d.Date.CompareTo(start.Date) == 0)
                     {
@@ -588,16 +596,7 @@ namespace Common.Utilities
         }
 
         private static readonly List<DateTime> VietNamHolidays = new List<DateTime>() {
-          new DateTime(1, 1, 1), //New Year Day
-          new DateTime(1, 4, 25), //Dia da Liberdade (PT)
-          new DateTime(1, 5, 1), //Labour Day
-          new DateTime(1, 6, 10), //Dia de Portugal (PT)
-          new DateTime(1, 8, 15), //Assumption of Mary
-          new DateTime(1, 10, 5), //Implantação da república (PT)
-          new DateTime(1, 11, 1), //All Saints' Day
-          new DateTime(1, 12, 1), //Restauração da independência (PT)
-          new DateTime(1, 12, 8), //Imaculada Conceição (PT?)
-          new DateTime(1, 12, 25), //Christmas
+          new DateTime(1, 1, 1) //New Year Day
         };
 
         public static int GetDaysUntilBirthday(DateTime birthday)

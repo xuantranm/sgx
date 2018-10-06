@@ -303,7 +303,7 @@ namespace erp.Controllers
             //{10}: Link chi tiết
             //{11}: Website
             #endregion
-            var subject = "[TRIBAT] Hỗ trợ xác nhận công.";
+            var subject = "Hỗ trợ xác nhận công.";
             var requester = employee.FullName;
             if (!string.IsNullOrEmpty(employee.Title))
             {
@@ -509,34 +509,45 @@ namespace erp.Controllers
             var requester = employee.FullName;
             var tos = new List<EmailAddress>();
             var ccs = new List<EmailAddress>();
-            //tos.Add(new EmailAddress { Name = "xuan", Address = "xuan.tm@tribat.vn" });
             tos.Add(new EmailAddress { Name = employee.FullName, Address = employee.Email });
 
             // Send mail to HR: if approve = 1;
             if (approve == 1)
             {
-                var listEmailHR = string.Empty;
-                var settingListEmailHR = dbContext.Settings.Find(m => m.Enable.Equals(true) && m.Key.Equals("ListEmailHRApproveTimeKeeper")).FirstOrDefault();
-                if (settingListEmailHR != null)
+                var listHrRoles = dbContext.RoleUsers.Find(m => m.Role.Equals(Constants.Rights.NhanSu) && (m.Expired.Equals(null) || m.Expired > DateTime.Now)).ToList();
+                if (listHrRoles != null && listHrRoles.Count > 0)
                 {
-                    listEmailHR = settingListEmailHR.Value;
-                }
-                if (!string.IsNullOrEmpty(listEmailHR))
-                {
-                    foreach (var email in listEmailHR.Split(";"))
+                    foreach (var item in listHrRoles)
                     {
-                        tos.Add(new EmailAddress { Name = email, Address = email });
+                        if (item.Action == 3)
+                        {
+                            var fields = Builders<Employee>.Projection.Include(p => p.Email).Include(p => p.FullName);
+                            var emailEntity = dbContext.Employees.Find(m => m.Id.Equals(item.User)).Project<Employee>(fields).FirstOrDefault();
+                            if (emailEntity != null)
+                            {
+                                tos.Add(new EmailAddress { Name = emailEntity.FullName, Address = emailEntity.Email });
+                            }
+                        }
                     }
                 }
                 requester += " , HR";
             }
 
-            //if (!seftFlag)
-            //{
-            //    // cc người tạo dùm
-            //    //ccs.Add(new EmailAddress { Name = "xuan", Address = "xuan.tm@tribat.vn" });
-            //    ccs.Add(new EmailAddress { Name = userCreate.FullName, Address = userCreate.Email });
-            //}
+            #region UAT
+            var uat = dbContext.Settings.Find(m => m.Key.Equals("UAT")).FirstOrDefault();
+            if (uat != null && uat.Value == "1")
+            {
+                tos = new List<EmailAddress>
+                        {
+                            new EmailAddress { Name = "Xuan", Address = "xuan.tm1988@gmail.com" }
+                        };
+
+                ccs = new List<EmailAddress>
+                        {
+                            new EmailAddress { Name = "Xuan CC", Address = "xuantranm@gmail.com" }
+                        };
+            }
+            #endregion
 
             var webRoot = Environment.CurrentDirectory;
             var pathToFile = _env.WebRootPath
@@ -559,7 +570,7 @@ namespace erp.Controllers
             //{8}: Link chi tiết
             //{9}: Website
             #endregion
-            var subject = "[TRIBAT] Xác nhận công.";
+            var subject = "Xác nhận công.";
             var status = approve == 3 ? "Đồng ý" : "Không duyệt";
             var inTime = entity.In.HasValue ? entity.In.Value.ToString(@"hh\:mm") : string.Empty;
             var outTime = entity.Out.HasValue ? entity.Out.Value.ToString(@"hh\:mm") : string.Empty;
@@ -612,9 +623,9 @@ namespace erp.Controllers
             };
             try
             {
-                var emailFrom = Constants.System.emailErp;
-                var emailFromName = Constants.System.emailErpName;
-                var emailFromPwd = Constants.System.emailErpPwd;
+                var emailFrom = Constants.System.emailHr;
+                var emailFromName = Constants.System.emailHrName;
+                var emailFromPwd = Constants.System.emailHrPwd;
                 var message = new MimeMessage();
                 message.To.AddRange(emailMessage.ToAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
                 if (emailMessage.CCAddresses != null && emailMessage.CCAddresses.Count > 0)
@@ -703,30 +714,42 @@ namespace erp.Controllers
                 filterUpdateSum = filterUpdateSum & builderUpdateSum.Eq(m => m.Year, monthDate.Year);
                 filterUpdateSum = filterUpdateSum & builderUpdateSum.Eq(m => m.Month, monthDate.Month);
 
-                var updateSum = Builders<EmployeeWorkTimeMonthLog>.Update;
-                var updateField = updateSum.Set(m => m.LastUpdated, DateTime.Now);
+                double dateInc = 0;
+                double worktimeInc = 0;
+                double lateInc = 0;
+                double earlyInc = 0;
 
                 // Update 1 date
                 if (!entity.In.HasValue && !entity.Out.HasValue)
                 {
-                    updateField.Inc(m => m.Workday, 1)
-                        .Inc(m => m.WorkTime, new TimeSpan(8,0,0).TotalMilliseconds);
+                    dateInc += 1;
+                    worktimeInc += new TimeSpan(8, 0, 0).TotalMilliseconds;
                 }
-                // Update 0.5 date
-                if (!entity.In.HasValue || !entity.Out.HasValue)
+                else if (!entity.In.HasValue || !entity.Out.HasValue)
                 {
-                    updateField.Inc(m => m.Workday, 0.5)
-                        .Inc(m => m.WorkTime, new TimeSpan(4, 0, 0).TotalMilliseconds);
+                    dateInc += 0.5;
+                    worktimeInc += new TimeSpan(4, 0, 0).TotalMilliseconds;
                 }
-                if (entity.In.HasValue && entity.StatusLate == 0)
+
+                if (entity.Late.TotalMilliseconds > 0)
                 {
-                    updateField.Inc(m => m.WorkTime, entity.Late.TotalMilliseconds);
+                    worktimeInc += entity.Late.TotalMilliseconds;
+                    lateInc += entity.Late.TotalMilliseconds;
                 }
-                if (entity.Out.HasValue && entity.StatusEarly == 0)
+                if (entity.Early.TotalMilliseconds > 0)
                 {
-                    updateField.Inc(m => m.WorkTime, entity.Early.TotalMilliseconds);
+                    worktimeInc += entity.Early.TotalMilliseconds;
+                    earlyInc += entity.Early.TotalMilliseconds;
                 }
-                dbContext.EmployeeWorkTimeMonthLogs.UpdateOne(filterUpdateSum, updateField);
+
+                var updateSum = Builders<EmployeeWorkTimeMonthLog>.Update
+                    .Inc(m => m.Workday, dateInc)
+                    .Inc(m => m.WorkTime, worktimeInc)
+                    .Inc(m => m.Late, -(lateInc))
+                    .Inc(m => m.Early, -(earlyInc))
+                    .Set(m => m.LastUpdated, DateTime.Now);
+
+                dbContext.EmployeeWorkTimeMonthLogs.UpdateOne(filterUpdateSum, updateSum);
             }
             #endregion
 
@@ -798,7 +821,7 @@ namespace erp.Controllers
             //{8}: Link chi tiết
             //{9}: Website
             #endregion
-            var subject = "[TRIBAT] Xác nhận công.";
+            var subject = "Xác nhận công.";
             var status = approve == 3 ? "Đồng ý" : "Không duyệt";
             var inTime = entity.In.HasValue ? entity.In.Value.ToString("hh:mm") : "trống";
             var outTime = entity.Out.HasValue ? entity.Out.Value.ToString("hh:mm") : "trống";
@@ -832,9 +855,9 @@ namespace erp.Controllers
             };
             try
             {
-                var emailFrom = Constants.System.emailErp;
-                var emailFromName = Constants.System.emailErpName;
-                var emailFromPwd = Constants.System.emailErpPwd;
+                var emailFrom = Constants.System.emailHr;
+                var emailFromName = Constants.System.emailHrName;
+                var emailFromPwd = Constants.System.emailHrPwd;
                 var message = new MimeMessage();
                 message.To.AddRange(emailMessage.ToAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
                 if (emailMessage.CCAddresses != null && emailMessage.CCAddresses.Count > 0)

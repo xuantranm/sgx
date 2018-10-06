@@ -21,10 +21,17 @@ namespace Common.Utilities
             public const string emailErpPwd = "Kh0ngbiet@123";
             public const string emailErpName = "HCNS";
 
-            public const string emailHr = "test-erp@tribat.vn";
+            public const string emailHr = "app.hcns@tribat.vn";
+            public const string emailHrPwd = "Tr1b@t";
+            public const string emailHrName = "APP.HCNS";
+
             public const string emailNM = "test-erp@tribat.vn";
 
-            public const string viTriCodeTBLuong = "S-";
+            public const string viTriCodeTBLuong = "SVT-";
+
+            public const string chucVuSaleCode = "SCV-";
+
+            public const string kPITypeCode = "KPITYPE-";
         }
 
         public static class Rights
@@ -34,6 +41,7 @@ namespace Common.Utilities
             public const string NhanSu = "nhan-su";
             public const string HanhChanh = "hanh-chanh";
             public const string Luong = "luong";
+            public const string LuongReal = "luong-real";
             public const string ChamCong = "cham-cong";
             public const string XinNghiPhepDum = "xin-nghi-phep-dum";
 
@@ -86,6 +94,7 @@ namespace Common.Utilities
 
             public const string NewProduct = "them-san-pham";
             public const string NewUnit = "them-dvt";
+            public const string Birthday = "sinh-nhat";
         }
 
         public static class LinkFactory
@@ -129,19 +138,29 @@ namespace Common.Utilities
         public static class LinkSalary
         {
             public const string Main = "sl";
+            public const string UpdateData = "cap-nhat-du-lieu";
+            public const string Setting = "cai-dat";
             public const string Index = "bang-luong";
 
-            public const string BangLuongList = "danh-sach-luong-nhan-vien";
-            public const string UpdateBangLuongList = "cap-nhat-danh-sach-luong-nhan-vien";
+            public const string BangLuongReal = "danh-sach-luong-nhan-vien-ap-dung";
+            public const string TongThuNhapCalculator = "tinh-toan-tong-thu-nhap";
+            public const string ThucLanhCalculator = "tinh-toan-thuc-lanh";
+            public const string BangLuongLaw = "danh-sach-luong-nhan-vien";
 
-            public const string UpdateData = "cap-nhat-du-lieu";
-            public const string ThangBangLuong = "thang-bang-luong-doanh-nghiep";
+            public const string ThangBangLuongReal = "thang-bang-luong-ap-dung";
+            public const string ThangBangLuongRealCalculator = "tinh-toan-thang-bang-luong-ap-dung";
+
             public const string ThangBangLuongLaw = "thang-bang-luong";
-            public const string CalculatorThangBangLuongLaw = "tinh-toan-thang-bang-luong-law";
-            public const string CalculatorThangBangLuongReal = "tinh-toan-thang-bang-luong-real";
-            public const string UpdateThangBangLuongLaw = "cap-nhat-thang-bang-luong-law";
-            public const string UpdateThangBangLuongReal = "cap-nhat-thang-bang-luong-real";
+            public const string ThangBangLuongLawCalculator = "tinh-toan-thang-bang-luong";
+
+            public const string TheLuong = "the-luong";
+            public const string KPIMonth = "kpi-kinh-doanh";
+            public const string SaleKPIs = "so-lieu-kinh-doanh";
+            public const string LogisticDatas = "so-lieu-logistics";
+            public const string Credits = "so-lieu-tam-ung";
+
             public const string Export = "xuat-tai-lieu";
+            public const string Update = "cap-nhat";
         }
 
         public static class LinkTraining
@@ -194,10 +213,31 @@ namespace Common.Utilities
             public const string Approve = "duyet-phep";
         }
 
+        public static class LinkRole
+        {
+            public const string Role = "r";
+            public const string RoleUser = "r-u";
+            public const string Index = "phan-quyen";
+            public const string Detail = "chi-tiet";
+            public const string Create = "tao-moi";
+            public const string Edit = "chinh-sua";
+            public const string Disable = "vo-hieu";
+            public const string Active = "khoi-phuc";
+            public const string Delete = "xoa";
+
+            public const string HelpLeave = "nghi-phep-nhan-vien-khac";
+            public const string UpdateLeaveDay = "cap-nhat-ngay-nghi";
+            public const string CalculatorDate = "calculator-date";
+            public const string ApprovePost = "post-duyet-phep";
+            // API
+            public const string Approve = "duyet-phep";
+        }
+
         public static class LinkLeave
         {
             public const string Main = "lm";
             public const string Index = "nghi-phep";
+            public const string HelpLeave = "nghi-phep-nhan-vien-khac";
             public const string UpdateLeaveDay = "cap-nhat-ngay-nghi";
             public const string Create = "create";
             public const string CalculatorDate = "calculator-date";

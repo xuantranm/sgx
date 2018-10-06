@@ -62,49 +62,14 @@
     </div>
     <!--end of container-->
 </section>
-
-<form method="get" action="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Index" id="form-main">
-    <div class="form-row mb-3">
-        @if (rightChamCong)
-        {
-            <div class="col-md-6">
-                <label class="control-label">Nhân viên</label>
-                <select asp-for="employee" class="form-control form-control-lg js-select2-basic-single">
-                    <option value="">Tất cả</option>
-                    @{
-                        foreach (var item in Model.Employees)
-                        {
-                            <option value="@item.Id">@item.FullName [@item.Title]</option>
-                        }
-                    }
-                </select>
-            </div>
-        }
-
-        <div class="col-md-3 date-area">
-            <label class="control-label">Tháng</label>
-            <select asp-for="times" class="form-control form-control-lg js-select2-basic-single">
-                @{
-                    foreach (var item in Model.MonthYears)
-                    {
-                        <option value="@item.Month-@item.Year">@item.Month/@item.Year</option>
-                    }
-                }
-            </select>
-        </div>
-        <div class="col-md-3">
-            <label class="control-label"><small>Bấm nút hoặc Enter</small></label>
-            <button class="btn btn-lg btn-info form-control" type="submit"><i class="icon-magnifying-glass"></i> Tìm kiếm</button>
-        </div>
-    </div>
-</form>
-
 <h5 class="mb-4">Tổng quan</h5>
 <div class="card">
     @{
         var lastUpdated = DateTime.Now.ToString("dd/MM/yyyy");
         double dayworking = ViewBag.DayWorking;
         double workday = dayworking;
+        // 1 day * 8 hours * 60 minutes;
+        double workminutes = dayworking * 8 * 60;
         double late = 0;
         double early = 0;
         if (Model.EmployeeWorkTimeMonthLog != null)
@@ -112,8 +77,8 @@
             var employeeWorkTimeMonthLog = Model.EmployeeWorkTimeMonthLog;
             lastUpdated = employeeWorkTimeMonthLog.LastUpdated.ToString("dd/MM/yyyy");
             workday = employeeWorkTimeMonthLog.Workday;
-            late = employeeWorkTimeMonthLog.Late;
-            early = employeeWorkTimeMonthLog.Early;
+            late = employeeWorkTimeMonthLog.Late - employeeWorkTimeMonthLog.LateApprove;
+            early = employeeWorkTimeMonthLog.Early - employeeWorkTimeMonthLog.EarlyApprove;
         }
     }
     <span class="text-small"> Dữ liệu tính tới ngày @lastUpdated</span>
@@ -129,6 +94,12 @@
             <div class="d-flex justify-content-between">
                 <div><i class="icon-calculator mr-1"></i> Chấm công: (ngày)</div>
                 <span class="badge badge-light">@workday</span>
+            </div>
+        </li>
+        <li class="list-group-item d-none">
+            <div class="d-flex justify-content-between">
+                <div><i class="icon-calculator mr-1"></i> Tổng thời gian làm việc: (phút)</div>
+                <span class="badge badge-light">@workminutes</span>
             </div>
         </li>
         <li class="list-group-item">
@@ -151,15 +122,33 @@
         <div>
             <h6>Lịch sử chấm công</h6>
         </div>
-        <form class="d-flex align-items-center">
-            <span class="mr-2 text-muted text-small text-nowrap">Sắp xếp:</span>
-            <select class="custom-select">
-                <option value="old-new" selected>Mới nhất</option>
-                <option value="status">Trạng thái</option>
+        <form class="d-flex align-items-center" method="get" action="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Index" id="form-main">
+            @if (rightChamCong)
+            {
+                <div class="col-md-6">
+                    <label class="control-label">Nhân viên</label>
+                    <select asp-for="employee" class="form-control form-control-lg js-select2-basic-single">
+                        <option value="">Tất cả</option>
+                        @{
+                            foreach (var item in Model.Employees)
+                            {
+                                <option value="@item.Id">@item.FullName [@item.Title]</option>
+                            }
+                        }
+                    </select>
+                </div>
+            }
+            <span class="mr-2 text-muted text-small text-nowrap">Tháng:</span>
+            <select asp-for="times" class="custom-select ddl-times">
+                @{
+                    foreach (var item in Model.MonthYears)
+                    {
+                        <option value="@item.Month-@item.Year">@item.Month/@item.Year</option>
+                    }
+                }
             </select>
         </form>
     </div>
-
 </div>
 
 @if (Model.EmployeeWorkTimeLogs.Count > 0)
@@ -181,74 +170,122 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var log in Model.EmployeeWorkTimeLogs)
-                    {
-                        <tr>
-                            <td class="log-@log.Id">
-                                @{
-                                    if (log.Status == 0)
-                                    {
-                                        // Apply later: get db date allow [XacNhan]. Foreach fromAllow -> Now. If have sunday, leave ++;
-                                        if (log.Date.Date > DateTime.Now.AddDays(-7).Date)
+                    @{
+                        var iXacNhan = -1;
+                        if (DateTime.Now.Date.AddDays(iXacNhan).DayOfWeek == DayOfWeek.Sunday)
+                        {
+                            iXacNhan--;
+                        }
+                        foreach (var log in Model.EmployeeWorkTimeLogs)
+                        {
+                            <tr>
+                                <td class="log-@log.Id">
+                                    @{
+                                        if (log.Status == 0)
                                         {
-                                            <input type="button" class="btn btn-sm btn-danger" value="Xác nhận" data-toggle="modal" data-target="#requestTimeKeeperModal" data-id="@log.Id" />
+                                            if (log.Date.Date == DateTime.Now.Date.AddDays(iXacNhan))
+                                            {
+                                                <input type="button" class="btn btn-sm btn-danger" value="Xác nhận" data-toggle="modal" data-target="#requestTimeKeeperModal" data-id="@log.Id" />
+                                            }
+                                            else
+                                            {
+                                                var displayStatus = string.Empty;
+                                                if (log.Date.Date != DateTime.Now.Date)
+                                                {
+                                                    if (Math.Round(log.Late.TotalMinutes, 0) > 0)
+                                                    {
+                                                        displayStatus += string.IsNullOrEmpty(displayStatus) ? "" : " - ";
+                                                        displayStatus += "Trễ";
+                                                    }
+                                                    if (Math.Round(log.Early.TotalMinutes, 0) > 0)
+                                                    {
+                                                        displayStatus += string.IsNullOrEmpty(displayStatus) ? "" : " - ";
+                                                        displayStatus += "Sớm";
+                                                    }
+                                                    if (!log.In.HasValue && !log.Out.HasValue)
+                                                    {
+                                                        displayStatus += string.IsNullOrEmpty(displayStatus) ? "" : " - ";
+                                                        displayStatus += "Thiếu";
+
+                                                    }
+                                                    else if (!log.In.HasValue)
+                                                    {
+                                                        displayStatus += string.IsNullOrEmpty(displayStatus) ? "" : " - ";
+                                                        displayStatus += "Thiếu vào";
+                                                    }
+                                                    else if (!log.Out.HasValue)
+                                                    {
+                                                        displayStatus += string.IsNullOrEmpty(displayStatus) ? "" : " - ";
+                                                        displayStatus += "Thiếu ra";
+                                                    }
+                                                }
+
+                                                <small class="badge badge-secondary">@displayStatus</small>
+                                            }
                                         }
                                         else
                                         {
-                                            if (Math.Round(log.Late.TotalMinutes, 0) > 0)
+                                            var statusBag = "badge-info";
+                                            if (log.Status == 4)
                                             {
-                                                <span class="badge badge-warning">Đi trễ</span>
+                                                statusBag = "badge-pill";
                                             }
-                                            if (Math.Round(log.Early.TotalMinutes, 0) > 0)
-                                            {
-                                                <span class="badge badge-warning">Về sớm</span>
-                                            }
+                                            <span class="badge @statusBag">@Constants.TimeKeeper(log.Status)</span>
                                         }
                                     }
-                                    else
-                                    {
-                                        var statusBag = "badge-info";
-                                        if (log.Status == 4)
+                                </td>
+                                <td scope="row">
+                                    <span class="text-muted">@log.DateOnlyRecord.ToString("dd/MM/yyyy")</span>
+                                </td>
+                                <td>@log.In</td>
+                                <td>@log.Out</td>
+                                <td>
+                                    @{
+                                        if (log.Start.TotalMilliseconds == 0)
                                         {
-                                            statusBag = "badge-pill";
-                                        }
-                                        <span class="badge @statusBag">@Constants.TimeKeeper(log.Status)</span>
-                                    }
-                                }
-                            </td>
-                            <td scope="row">
-                                <a class="media align-items-center" href="#">
-                                    <div class="media-body">
-                                        <span class="text-muted">@log.DateOnlyRecord.ToString("dd/MM/yyyy")</span>
-                                    </div>
-                                </a>
-                            </td>
-                            <td>@log.In</td>
-                            <td>@log.Out</td>
-                            <td>@log.Start.ToString(@"hh\:mm")-@log.End.ToString(@"hh\:mm")</td>
-                            <td>@Math.Round(log.Late.TotalMinutes, 0)</td>
-                            <td>@Math.Round(log.Early.TotalMinutes, 0)</td>
-                            <td>
-                                @{
-                                    if (log.Status == 3)
-                                    {
-                                        <span>1</span>
-                                    }
-                                    else
-                                    {
-                                        if (log.WorkDay == 0)
-                                        {
-                                            <span>@log.Workcode</span>
+                                            <span></span>
                                         }
                                         else
                                         {
-                                            <span>@log.WorkDay</span>
+                                            <small>@log.Start.ToString(@"hh\:mm")-@log.End.ToString(@"hh\:mm")</small>
                                         }
                                     }
-                                }
-                            </td>
-                            <td>@log.WorkplaceCode</td>
-                        </tr>
+
+                                </td>
+                                <td>
+                                    @if ((log.StatusLate == 0 || log.StatusLate == 2 || log.StatusLate == 4) && log.Late.TotalMilliseconds > 0)
+                                    {
+                                        <span>@Math.Round(log.Late.TotalMinutes, 0)</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if ((log.StatusEarly == 0 || log.StatusEarly == 2 || log.StatusEarly == 4) && log.Early.TotalMilliseconds > 0)
+                                    {
+                                        <span>@Math.Round(log.Early.TotalMinutes, 0)</span>
+                                    }
+                                </td>
+                                <td>
+                                    @{
+                                        if (log.Status == 3)
+                                        {
+                                            <span>1</span>
+                                        }
+                                        else
+                                        {
+                                            if (log.WorkDay == 0)
+                                            {
+                                                <small>@log.Workcode</small>
+                                            }
+                                            else
+                                            {
+                                                <span>@log.WorkDay</span>
+                                            }
+                                        }
+                                    }
+                                </td>
+                                <td><small>@log.WorkplaceCode</small></td>
+                            </tr>
+                        }
                     }
                 </tbody>
             </table>

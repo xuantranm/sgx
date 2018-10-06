@@ -28,7 +28,7 @@ namespace Models
         [Display(Name = "Mã hệ thống")]
         public string Code { get; set; }
 
-        [Display(Name = "Mã nhân viên cũ")]
+        [Display(Name = "Mã nhân viên")]
         public string CodeOld { get; set; }
 
         public IList<Workplace> Workplaces { get; set; }
@@ -379,6 +379,19 @@ namespace Models
         public EmployeeBank EmployeeBank { get; set; }
         // For fast data access, divide other collection
         //public IList<Notification> Notifications { get; set; }
+
+        #region SALARIES
+        public string SalaryNoiLamViec { get; set; }
+        public string SalaryPhongBan { get; set; }
+        public string SalaryChucVu { get; set; }
+        public string SalaryChucVuViTriCode { get; set; }
+        public int SalaryNoiLamViecOrder { get; set; } = 0;
+        public int SalaryPhongBanOrder { get; set; } = 0;
+        public int SalaryChucVuOrder { get; set; } = 0;
+        // nhóm vào chức vụ
+        public string SalaryMaSoChucDanhCongViec { get; set; }
+        public double SalaryMauSo { get; set; } = 26;
+        #endregion
     }
 
     public class EmployeeBank

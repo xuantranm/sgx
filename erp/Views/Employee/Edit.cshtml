@@ -26,6 +26,7 @@
     }
 }
 
+<input type="hidden" value="@rightHr" class="right-hr"/>
 <div class="main-container">
     <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
         <div class="container">
@@ -380,7 +381,12 @@
                                                     @{
                                                         foreach (var item in Model.Employees)
                                                         {
-                                                            <option value="@item.Id">@item.FullName [@item.Title]</option>
+                                                            string displayTitle = string.Empty;
+                                                            if (!string.IsNullOrEmpty(item.Title))
+                                                            {
+                                                                displayTitle += "[" + item.Title + "]";
+                                                            }
+                                                            <option value="@item.Id">@item.FullName @displayTitle</option>
                                                         }
                                                     }
                                                 </select>
@@ -2407,9 +2413,12 @@
                 </button>
             </div>
             <div class="modal-footer">
-                <a href="/hr/nhan-su/thong-tin/" class="btn btn-danger">Thêm thông tin</a>
-                <a href="/hr/nhan-su/tao-moi" class="btn btn-primary">Thêm mới</a>
-                <a href="/hr/nhan-su" class="btn btn-info">Danh sách</a>
+                <a href="/hr/nhan-su/thong-tin/" class="btn btn-danger">Xem thông tin</a>
+                @if (rightHr)
+                {
+                    <a href="/hr/nhan-su/tao-moi" class="btn btn-primary">Thêm mới</a>
+                    <a href="/hr/nhan-su" class="btn btn-info">Danh sách</a>
+                }
             </div>
         </div>
     </div>

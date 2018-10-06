@@ -40,6 +40,7 @@ namespace Models
         [Display(Name = "Bảng lương theo chức danh")]
         public string TypeRole { get; set; }
 
+        // bac 0: default user set, if no use min value
         // 1->10 (current). upto .... Do later
         public int Bac { get; set; }
 

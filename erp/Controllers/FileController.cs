@@ -2622,27 +2622,16 @@ namespace erp.Controllers
                     stream.Position = 0;
                     int headerCal = 0;
                     ISheet sheet0;
-                    //ISheet sheet1;
-                    //ISheet sheet2;
-                    //ISheet sheet3;
                     if (sFileExtension == ".xls")
                     {
                         HSSFWorkbook hssfwb = new HSSFWorkbook(stream); //This will read the Excel 97-2000 formats  
                         sheet0 = hssfwb.GetSheetAt(0);
-                        //sheet1 = hssfwb.GetSheetAt(1);
-                        //sheet2 = hssfwb.GetSheetAt(2);
-                        //sheet3 = hssfwb.GetSheetAt(3);
                     }
                     else
                     {
                         XSSFWorkbook hssfwb = new XSSFWorkbook(stream); //This will read 2007 Excel format  
                         sheet0 = hssfwb.GetSheetAt(0);
-                        //sheet1 = hssfwb.GetSheetAt(1);
-                        //sheet2 = hssfwb.GetSheetAt(2);
-                        //sheet3 = hssfwb.GetSheetAt(3);
                     }
-
-                    #region Read & Insert Data
 
                     #region Sheet 0: Thang Bang Luong
                     dbContext.SalaryThangBangLuongs.DeleteMany(m => m.FlagReal.Equals(true));
@@ -2663,10 +2652,10 @@ namespace erp.Controllers
                         if (row.Cells.All(d => d.CellType == CellType.Error)) continue;
                         if (row.Cells.All(d => d.CellType == CellType.Unknown)) continue;
 
-                        var vitri = GetFormattedCellValue(row.GetCell(1));
+                        var vitri = GetFormattedCellValue(row.GetCell(1)).Trim();
                         if (!string.IsNullOrEmpty(vitri))
                         {
-                            var vitriFullCode = Constants.System.viTriCodeTBLuong + viTriCode.ToString("0000");
+                            var vitriFullCode = Constants.System.viTriCodeTBLuong + viTriCode.ToString("000");
                             var hesobac = (decimal)GetNumbericCellValue(row.GetCell(13));
                             // Min default each VITRI
                             var money = (decimal)GetNumbericCellValue(row.GetCell(14));
@@ -2683,7 +2672,7 @@ namespace erp.Controllers
                             var exist = dbContext.SalaryThangBangLuongs.CountDocuments(m => m.ViTriAlias.Equals(vitriAlias) & m.FlagReal.Equals(true));
                             if (exist == 0)
                             {
-                                for (int lv = 1; lv <= 10; lv++)
+                                for (int lv = 0; lv <= 10; lv++)
                                 {
                                     if (lv > 1)
                                     {
@@ -2705,27 +2694,6 @@ namespace erp.Controllers
                             }
                         }
                     }
-                    #endregion
-
-                    #region Sheet 1 Luong VP 
-                    ////dbContext.FactoryDanhGiaXCGs.DeleteMany(m => true);
-                    //headerCal = 4;
-                    //var chungloaixe = string.Empty;
-                    //for (int i = headerCal; i <= sheet1.LastRowNum; i++)
-                    //{
-                    //    IRow row = sheet0.GetRow(i);
-                    //    if (row == null) continue;
-                    //    if (row.Cells.All(d => d.CellType == CellType.Blank)) continue;
-                    //    if (row.Cells.All(d => d.CellType == CellType.Error)) continue;
-                    //    if (row.Cells.All(d => d.CellType == CellType.Unknown)) continue;
-
-                    //    var tempchungloaixe = GetFormattedCellValue(row.GetCell(0));
-                    //    // Do continute...
-                    //}
-                    #endregion
-
-                    // Sheet ....
-
                     #endregion
                 }
             }
@@ -2788,16 +2756,30 @@ namespace erp.Controllers
                     // Cap nhat phuc lơi cho nhan vien
                     dbContext.SalaryThangBangPhuCapPhucLois.DeleteMany(m => m.FlagReal.Equals(true));
                     // Du lieu lương tháng 8
-                    dbContext.SalaryEmployeeMonths.DeleteMany(m => m.FlagReal.Equals(true));
+                    dbContext.SalaryEmployeeMonths.DeleteMany(m => true);
 
                     headerCal = 7;
                     var location = string.Empty;
+                    int locationOrder = 0;
+                    int groupChucDanhOrder = 0;
                     var groupChucDanh = string.Empty;
                     int year = 2018;
                     int month = 8;
                     var codePc = string.Empty;
                     var namePc = string.Empty;
+                    var mauso = 26;
                     decimal moneyPc = 0;
+                    string[] c02 = { "giam-doc", "truong-ban" };
+                    string[] c03 = { "pho-giam-doc", "ke-toan-truong" };
+                    string[] d01 = "TRƯỞNG BP THIẾT KẾ, TRƯỞNG BP GS KT, KẾ TOÁN TỔNG HỢP, QUẢN LÝ THUẾ, Trưởng BP GS kỹ thuật".Split(',');
+                    string[] d02 = "TRƯỞNG SALE, NHÂN VIÊN NHÂN SỰ, CV THU MUA, CV PHÁP CHẾ, CV KẾ HOẠCH TỔNG HỢP, CV MÔI TRƯỜNG, CV NC KHCN, CV PHÒNG TN, Nhân viên hành chính/ HCNS NM, Chuyên viên pháp chế, CV thu mua vật tư, CV nghiên cứu ứng dụng SP".Split(',');
+                    string[] d03 = "NV KINH DOANH, SALE ADMIN, NV HÀNH CHÍNH, NV KẾ TOÁN, THỦ QUỸ, NV DỰ ÁN, NV KỸ THUẬT, Kế toán quản trị, Kế toán nội bộ, NV sale, Admin điều vận, NV triển khai thực hiện dự án, NV nghiệm thu thanh toán".Split(',');
+
+                    string[] b01 = "TRƯỞNG BP -NM, Trưởng BP kế hoạch & thống kê".Split(',');
+                    string[] b02 = "TỔ TRƯỞNG NM, TỔ PHÓ NM, TỔ TRƯỞNG LOGISTICS, QUẢN LÝ TRẠM CÂN,Trưởng phòng điều độ nhân lực, Trưởng phòng điều độ cơ giới, Trưởng đội vận chuyển, Tổ trưởng GS môi trường,Tổ trưởng điều độ sản xuất, Trưởng phòng quản lý chất lượng sản phẩm,Tổ trưởng bảo trì cơ điện,Tổ trưởng vận hành máy,Tổ phó bảo trì ".Split(',');
+                    string[] b03 = "TÀI XẾ, NV KHO, NV ĐIỀU ĐỘ, NV CẢNH QUAN, NV BẢO TRÌ, NV TRẠM CÂN, CV giám sát thi công,Giám sát kho,Nhân viên thống kê vận hành, NV QC inline ĐS - PB, NV thống kê ĐS - PB nguyên liệu, Nhân viên vận hành máy,Nhân viên bảo trì cơ khí".Split(',');
+                    string[] b04 = "GIAO NHẬN, PHỤ XE, BẢO VỆ, CÔNG NHÂN".Split(',');
+
                     for (int i = headerCal; i <= sheet0.LastRowNum; i++)
                     {
                         IRow row = sheet0.GetRow(i);
@@ -2806,6 +2788,12 @@ namespace erp.Controllers
                         if (row.Cells.All(d => d.CellType == CellType.Error)) continue;
                         if (row.Cells.All(d => d.CellType == CellType.Unknown)) continue;
 
+                        //var style = row.GetCell(1).CellStyle.FillForegroundColorColor;
+                        //if (style != null)
+                        //{
+                        //    var rgb = style.RGB;
+                        //}
+
                         var locationTemp = GetFormattedCellValue(row.GetCell(1));
                         var groupChucDanhTemp = GetFormattedCellValue(row.GetCell(2));
                         if (string.IsNullOrEmpty(locationTemp) && string.IsNullOrEmpty(groupChucDanhTemp))
@@ -2813,22 +2801,42 @@ namespace erp.Controllers
                             continue;
                         }
 
+                        // Fix ma nv (bang luong vs bang nhan su khac nhau. Update theo bang luong. BASE Email)
                         var maNV = GetFormattedCellValue(row.GetCell(1)).Trim();
                         var fullName = GetFormattedCellValue(row.GetCell(2)).Trim();
+                        var email = Utility.EmailConvert(fullName);
+                        if (fullName == "Ngô Pa Ri")
+                        {
+                            email = "ngopari@tribat.vn";
+                        }
                         var chucVu = GetFormattedCellValue(row.GetCell(3)).Trim();
                         if (!string.IsNullOrEmpty(chucVu))
                         {
                             var chucVuCode = string.Empty;
                             var joinDate = GetDateCellValue(row.GetCell(4));
                             var employeeId = string.Empty;
-                            if (!string.IsNullOrEmpty(fullName))
+                            if (!string.IsNullOrEmpty(email))
                             {
-                                var emp = dbContext.Employees.Find(m => m.FullName.Equals(fullName)).FirstOrDefault();
-                                if (emp != null)
+                                var emp = dbContext.Employees.Find(m => m.Email.Equals(email)).FirstOrDefault();
+                                if (emp == null)
+                                {
+                                    emp = dbContext.Employees.Find(m => m.FullName.Equals(fullName)).FirstOrDefault();
+                                    if (emp == null)
+                                    {
+                                        emp = dbContext.Employees.Find(m => m.CodeOld.Equals(maNV)).FirstOrDefault();
+                                        if (emp != null)
+                                        {
+                                            employeeId = emp.Id;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        employeeId = emp.Id;
+                                    }
+                                }
+                                else
                                 {
                                     employeeId = emp.Id;
-                                    // data missing
-                                    //joinDate = emp.Joinday;
                                 }
                             }
                             var dateSpan = DateTimeSpan.CompareDates(joinDate, DateTime.Now);
@@ -2885,9 +2893,9 @@ namespace erp.Controllers
                             var thucLanh = GetNumbericCellValue(row.GetCell(41)) * 1000;
                             if (thucLanh == 0)
                             {
-                                // calculator later.
                                 thucLanh = 0;
                             }
+
                             #region SalaryEmployeeMonth
                             dbContext.SalaryEmployeeMonths.InsertOne(new SalaryEmployeeMonth()
                             {
@@ -2899,7 +2907,6 @@ namespace erp.Controllers
                                 NoiLamViec = location,
                                 PhongBan = groupChucDanh,
                                 ChucVu = chucVu,
-                                // base chucvu
                                 ViTriCode = chucVuCode,
                                 ThamNienLamViec = joinDate,
                                 ThamNienYear = dateSpan.Years,
@@ -2944,17 +2951,21 @@ namespace erp.Controllers
                                 TamUng = (decimal)tamUng,
                                 ThuongLeTet = (decimal)thuongLeTet,
                                 ThucLanh = (decimal)thucLanh,
-                                Luong30Ngay = false
+                                MauSo = mauso
                             });
                             #endregion
 
                             // First Time
+                            // Quan ly theo thoi diem,...
                             #region SalaryThangBacLuongEmployee
                             dbContext.SalaryThangBacLuongEmployees.InsertOne(new SalaryThangBacLuongEmployee()
                             {
+                                Year = year,
+                                Month = month,
                                 EmployeeId = employeeId,
                                 ViTriCode = chucVuCode,
-                                Bac = bac
+                                Bac = bac,
+                                MucLuong = (decimal)luongCB
                             });
                             #endregion
 
@@ -2964,6 +2975,8 @@ namespace erp.Controllers
                             moneyPc = (decimal)nangNhoc;
                             dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
                             {
+                                Year = year,
+                                Month = month,
                                 EmployeeId = employeeId,
                                 Code = codePc,
                                 Name = namePc,
@@ -2978,6 +2991,8 @@ namespace erp.Controllers
                             moneyPc = (decimal)trachNhiem;
                             dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
                             {
+                                Year = year,
+                                Month = month,
                                 EmployeeId = employeeId,
                                 Code = codePc,
                                 Name = namePc,
@@ -2992,6 +3007,8 @@ namespace erp.Controllers
                             moneyPc = (decimal)thuHut;
                             dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
                             {
+                                Year = year,
+                                Month = month,
                                 EmployeeId = employeeId,
                                 Code = codePc,
                                 Name = namePc,
@@ -3006,6 +3023,8 @@ namespace erp.Controllers
                             moneyPc = (decimal)Xang;
                             dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
                             {
+                                Year = year,
+                                Month = month,
                                 EmployeeId = employeeId,
                                 Code = codePc,
                                 Name = namePc,
@@ -3020,6 +3039,8 @@ namespace erp.Controllers
                             moneyPc = (decimal)Xang;
                             dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
                             {
+                                Year = year,
+                                Month = month,
                                 EmployeeId = employeeId,
                                 Code = codePc,
                                 Name = namePc,
@@ -3034,6 +3055,8 @@ namespace erp.Controllers
                             moneyPc = (decimal)Com;
                             dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
                             {
+                                Year = year,
+                                Month = month,
                                 EmployeeId = employeeId,
                                 Code = codePc,
                                 Name = namePc,
@@ -3048,6 +3071,8 @@ namespace erp.Controllers
                             moneyPc = (decimal)KiemNhiem;
                             dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
                             {
+                                Year = year,
+                                Month = month,
                                 EmployeeId = employeeId,
                                 Code = codePc,
                                 Name = namePc,
@@ -3062,6 +3087,8 @@ namespace erp.Controllers
                             moneyPc = (decimal)BHYTDacBiet;
                             dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
                             {
+                                Year = year,
+                                Month = month,
                                 EmployeeId = employeeId,
                                 Code = codePc,
                                 Name = namePc,
@@ -3076,6 +3103,8 @@ namespace erp.Controllers
                             moneyPc = (decimal)viTriCanNhieuNamKinhNghiem;
                             dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
                             {
+                                Year = year,
+                                Month = month,
                                 EmployeeId = employeeId,
                                 Code = codePc,
                                 Name = namePc,
@@ -3090,6 +3119,8 @@ namespace erp.Controllers
                             moneyPc = (decimal)viTriDacThu;
                             dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
                             {
+                                Year = year,
+                                Month = month,
                                 EmployeeId = employeeId,
                                 Code = codePc,
                                 Name = namePc,
@@ -3099,18 +3130,136 @@ namespace erp.Controllers
                                 FlagReal = true
                             });
                             #endregion
+
+                            #region Update Employee Information
+                            // Fix ma nv (bang luong vs bang nhan su khac nhau. Update theo bang luong. BASE Email)
+                            // Analytics xet chuc danh cong viec by chuc vu
+                            // Update new code for vietnam. use LD + 4 so thu tu
+                            if (!string.IsNullOrEmpty(employeeId))
+                            {
+                                // debug
+                                if (employeeId == "5b6bb22fe73a301f941c5884")
+                                {
+                                    var a = "aa";
+                                }
+                                var chucdanhCode = string.Empty;
+                                var chucVuAlias = Utility.AliasConvert(chucVu);
+                                foreach (string item in c02)
+                                {
+                                    if (chucVuAlias.Contains(Utility.AliasConvert(item)))
+                                    {
+                                        chucdanhCode = "C.02";
+                                    }
+                                }
+                                foreach (string item in c03)
+                                {
+                                    if (chucVuAlias.Contains(Utility.AliasConvert(item)))
+                                    {
+                                        chucdanhCode = "C.03";
+                                    }
+                                }
+                                foreach (string item in d01)
+                                {
+                                    if (chucVuAlias.Contains(Utility.AliasConvert(item)))
+                                    {
+                                        chucdanhCode = "D.01";
+                                    }
+                                }
+                                foreach (string item in d02)
+                                {
+                                    if (chucVuAlias.Contains(Utility.AliasConvert(item)))
+                                    {
+                                        chucdanhCode = "D.02";
+                                    }
+                                }
+                                foreach (string item in d03)
+                                {
+                                    if (chucVuAlias.Contains(Utility.AliasConvert(item)))
+                                    {
+                                        chucdanhCode = "D.03";
+                                    }
+                                }
+                                foreach (string item in b01)
+                                {
+                                    if (chucVuAlias.Contains(Utility.AliasConvert(item)))
+                                    {
+                                        chucdanhCode = "B.01";
+                                    }
+                                }
+                                foreach (string item in b02)
+                                {
+                                    if (chucVuAlias.Contains(Utility.AliasConvert(item)))
+                                    {
+                                        chucdanhCode = "B.03";
+                                    }
+                                }
+                                foreach (string item in b03)
+                                {
+                                    if (chucVuAlias.Contains(Utility.AliasConvert(item)))
+                                    {
+                                        chucdanhCode = "B.03";
+                                    }
+                                }
+                                foreach (string item in b04)
+                                {
+                                    if (chucVuAlias.Contains(Utility.AliasConvert(item)))
+                                    {
+                                        chucdanhCode = "B.04";
+                                    }
+                                }
+                                var builder = Builders<Employee>.Filter;
+                                var filter = builder.Eq(m => m.Id, employeeId);
+                                var update = Builders<Employee>.Update
+                                    .Set(m => m.CodeOld, maNV)
+                                    .Set(m => m.SalaryNoiLamViec, location)
+                                    .Set(m => m.SalaryPhongBan, groupChucDanh)
+                                    .Set(m => m.SalaryChucVu, chucVu)
+                                    .Set(m => m.SalaryChucVuViTriCode, chucVuCode)
+                                    .Set(m => m.SalaryMaSoChucDanhCongViec, chucdanhCode)
+                                    .Set(m => m.Joinday, joinDate)
+                                    .Set(m => m.SalaryMauSo, mauso)
+                                    .Set(m => m.SalaryNoiLamViecOrder, locationOrder)
+                                    .Set(m => m.SalaryPhongBanOrder, groupChucDanhOrder)
+                                    .Set(m => m.UpdatedOn, DateTime.Now);
+                                dbContext.Employees.UpdateOne(filter, update);
+                            }
+                            #endregion
                         }
                         else
                         {
                             if (!string.IsNullOrEmpty(locationTemp))
                             {
                                 location = locationTemp;
+                                locationOrder ++;
                             }
                             if (!string.IsNullOrEmpty(groupChucDanhTemp))
                             {
                                 groupChucDanh = groupChucDanhTemp;
+                                groupChucDanhOrder++;
                             }
                         }
+                    }
+                    // Update TGD, CT
+                    var listTGD = "LĐ01,LĐ02".Split(',');
+                    foreach (var item in listTGD)
+                    {
+                        var builder = Builders<Employee>.Filter;
+                        var filter = builder.Eq(m => m.CodeOld, item);
+                        var update = Builders<Employee>.Update
+                            .Set(m => m.SalaryMaSoChucDanhCongViec, "C.01")
+                            .Set(m => m.UpdatedOn, DateTime.Now);
+                        dbContext.Employees.UpdateOne(filter, update);
+                    }
+                    // Update mauso 30, co 3 nguoi
+                    var list30 = "Lê Hoàng Tuấn,Nguyễn Hùng Dũng,Danh Thủy".Split(',');
+                    foreach (var item in list30)
+                    {
+                        var builder = Builders<Employee>.Filter;
+                        var filter = builder.Eq(m => m.FullName, item);
+                        var update = Builders<Employee>.Update
+                            .Set(m => m.SalaryMauSo, 30)
+                            .Set(m => m.UpdatedOn, DateTime.Now);
+                        dbContext.Employees.UpdateOne(filter, update);
                     }
                     #endregion
                 }

@@ -111,25 +111,25 @@ namespace timekeepers
             #endregion
 
             // Disable the device
-            TimeKeeperMachine.EnableDevice(iMachineNumber, false);
-            if (!TimeKeeperMachine.ReadGeneralLogData(iMachineNumber))//read all the attendance records to the memory
-            {
-                TimeKeeperMachine.GetLastError(ref idwErrorCode);
-                var message = string.Empty;
-                if (idwErrorCode != 0)
-                {
-                    message = "Reading data from terminal failed, ErrorCode: " + idwErrorCode.ToString();
-                }
-                else
-                {
-                    message = "No data from terminal returns!";
-                }
+            TimeKeeperMachine.EnableDevice(iMachineNumber, false);//disable the device
+            //if (!TimeKeeperMachine.ReadGeneralLogData(iMachineNumber))//read all the attendance records to the memory
+            //{
+            //    TimeKeeperMachine.GetLastError(ref idwErrorCode);
+            //    var message = string.Empty;
+            //    if (idwErrorCode != 0)
+            //    {
+            //        message = "Reading data from terminal failed, ErrorCode: " + idwErrorCode.ToString();
+            //    }
+            //    else
+            //    {
+            //        message = "No data from terminal returns!";
+            //    }
 
-                WriteLog(model, location, ip, port, databaseConnection, databaseName, false, message);
+            //    WriteLog(model, location, ip, port, databaseConnection, databaseName, false, message);
 
-                TimeKeeperMachine.EnableDevice(iMachineNumber, true); //enable the device
-                return;
-            }
+            //    TimeKeeperMachine.EnableDevice(iMachineNumber, true); //enable the device
+            //    return;
+            //}
 
             #region Get Data time
             var getDataDay = Convert.ToInt32(ConfigurationSettings.AppSettings["GetDataDay"]);
@@ -137,7 +137,7 @@ namespace timekeepers
             timeCrawled = new DateTime(timeCrawled.Year, timeCrawled.Month, timeCrawled.Day, 2, 0, 0);
             #endregion
 
-            var list = new List<AttLog>();
+            //var list = new List<AttLog>();
             while (TimeKeeperMachine.SSR_GetGeneralLogData(iMachineNumber, out sdwEnrollNumber, out idwVerifyMode,
                        out idwInOutMode, out idwYear, out idwMonth, out idwDay, out idwHour, out idwMinute, out idwSecond, ref idwWorkcode))//get records from the memory
             {

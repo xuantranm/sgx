@@ -1,9 +1,17 @@
 ﻿@using Common.Utilities;
+@using Common.Enums;
 @using ViewModels;
 @model HomeErpViewModel;
 
 @{
     Layout = "~/Views/Shared/_LayoutSocialFb.cshtml";
+    var login = User.Identity.Name;
+    var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+    var rightHr = false;
+    if (!string.IsNullOrEmpty(login))
+    {
+        rightHr = Utility.IsRight(login, Constants.Rights.HR, (int)ERights.View);
+    }
 }
 
 @{
@@ -44,6 +52,8 @@
         </section>
     }
 }
+
+        @*<canvas id="genderChart"></canvas>*@
 
 @{
     if (Model.NotificationExpires != null && Model.NotificationExpires.Count > 0)
@@ -184,7 +194,7 @@
                                             Loại phép: <b>@leave.TypeName</b>.
                                         </span>
                                         <span>
-                                            Thời gian nghỉ: <b>@leave.From - @leave.To</b> (Tổng số ngày: <b>@leave.Number</b>)
+                                            Thời gian nghỉ: <b>@leave.From.ToString("dd/MM/yyyy HH:mm") - @leave.To.ToString("dd/MM/yyyy HH:mm")</b> (Tổng số ngày: <b>@leave.Number</b>)
                                         </span>
                                         <div class="row">
                                             <div class="col-md-4 col-sm-6 col-xs-12">
@@ -291,13 +301,13 @@
                                         </div>
                                     </div>
                                 </div>
-                            }
+                                            }
                         </div>
                     </div>
                 </div>
             </div>
         </section>
-    }
+                                            }
 }
 
 <!-- BIRTHDAYS NOTIFICATIONS -->
@@ -313,41 +323,47 @@
                     }
                 </a>
             </div>
-            <div class="col-12 collapse" id="alert-birthday">
+            <div class="col-12 collapse show" id="alert-birthday">
                 <div class="row">
-                    @foreach (var birthday in Model.Birthdays)
-                    {
-                        <div class="col-12 col-md-6">
-                            <a href="/hr/nhan-su/thong-tin/@birthday.Id" alt="@birthday.FullName">
-                                <div class="card">
-                                    @if (birthday.Avatar != null)
-                                    {
-                                        <img class="card-img-top" src="@birthday.Avatar.Path@birthday.Avatar.FileName" alt="@birthday.FullName" style="width: 100%; height:180px;object-fit: contain;" />
-                                    }
-                                    else
-                                    {
-                                        <img class="" src="~/images/svg/no-img-282-180.svg" alt="@birthday.FullName" />
-                                    }
-                                    <div class="card-body">
-                                        <h4 class="card-title">@birthday.FullName</h4>
-                                        <p class="card-text">
-                                            <span class="badge badge-primary">@birthday.Code</span>
-                                            <span class="badge badge-danger">@birthday.Title</span>
-                                        </p>
-                                        <i class="icon-cake mr-1"></i>
+                    @{
+                        var href = "javascript:;";
+                        foreach (var birthday in Model.Birthdays)
+                        {
+                            if (rightHr)
+                            {
+                                href = "/" + Constants.LinkHr.Main + "/" + Constants.LinkHr.Human +"/"+ Constants.LinkHr.Information + "/"+ birthday.Id;
+                            }
+                            <div class="col-12 col-md-6">
+                                <a href="@href" alt="@birthday.FullName">
+                                    <div class="card">
+                                        @if (birthday.Avatar != null)
+                                        {
+                                            <img class="card-img-top" src="@birthday.Avatar.Path@birthday.Avatar.FileName" alt="@birthday.FullName" style="width: 100%; height:180px;object-fit: contain;" />
+                                        }
+                                        else
+                                        {
+                                            <img class="" src="~/images/svg/no-img-282-180.svg" alt="@birthday.FullName" />
+                                        }
+                                        <div class="card-body">
+                                            <h4 class="card-title">@birthday.FullName</h4>
+                                            <p class="card-text">
+                                                <span class="badge badge-primary">@birthday.Code</span>
+                                                <span class="badge badge-danger">@birthday.Title</span>
+                                            </p>
+                                            <i class="icon-cake mr-1"></i>
 
-                                        <span>@birthday.Birthday.ToString("dd/MM/yyyy")</span>
-                                        <span class="badge badge-indicator badge-success">&nbsp;</span>
-                                        <br />
-                                        <span class="small">Tuần @birthday.WeekBirthdayNumber @birthday.BirthdayOfWeek (@birthday.AgeBirthday tuổi)</span>
+                                            <span>@birthday.Birthday.ToString("dd/MM/yyyy")</span>
+                                            <span class="badge badge-indicator badge-success">&nbsp;</span>
+                                            <br />
+                                            <span class="small">Tuần @birthday.WeekBirthdayNumber @birthday.BirthdayOfWeek (@birthday.AgeBirthday tuổi)</span>
+                                        </div>
                                     </div>
-                                </div>
-                            </a>
-
-                        </div>
+                                </a>
+                            </div>
+                        }
                     }
                     <div class="col-12">
-                        <a href="/nhan-su/thong-tin">Xem thêm ›</a>
+                        <a href="/@Constants.LinkHr.Main/@Constants.LinkHr.Birthday/@Constants.LinkHr.List">Xem thêm ›</a>
                     </div>
                 </div>
             </div>
@@ -374,67 +390,85 @@
                         </div>
                         <div class="card-body">
                             <ul class="list-unstyled list-spacing-sm">
-                                @foreach (var timeKeeper in Model.MyWorkTimeLogs)
-                                {
-                                    <li>
-                                        <a href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Index" class="text-small">
-                                            <span class="badge badge-info">@Constants.TimeKeeper(timeKeeper.Status)</span>
-                                            @if (timeKeeper.RequestDate.HasValue)
-                                            {
-                                            <span>. Ngày gửi xác nhận: @timeKeeper.RequestDate.Value.ToString("dd/MM/yyyy")</span>
-                                            }
-                                            <br />
-                                            @if (!string.IsNullOrEmpty(timeKeeper.Reason))
-                                            {
-                                            <span>Lý do: @timeKeeper.Reason</span>
-                                                <br />
-                                            }
-                                            @{
-                                                var detail = string.Empty;
-                                                var inTime = timeKeeper.In.HasValue ? timeKeeper.In.Value.ToString(@"hh\:mm") : string.Empty;
-                                                var outTime = timeKeeper.Out.HasValue ? timeKeeper.Out.Value.ToString(@"hh\:mm") : string.Empty;
-                                                var lateTime = timeKeeper.Late.TotalMilliseconds > 0 ? timeKeeper.Late.TotalMinutes.ToString() : string.Empty;
-                                                var earlyTime = timeKeeper.Early.TotalMilliseconds > 0 ? timeKeeper.Early.TotalMinutes.ToString() : string.Empty;
-                                                var sumTime = string.Empty;
-                                                if (string.IsNullOrEmpty(inTime) && string.IsNullOrEmpty(outTime))
-                                                {
-                                                    sumTime = "1 ngày";
-                                                }
-                                                else if (string.IsNullOrEmpty(inTime) || string.IsNullOrEmpty(outTime))
-                                                {
-                                                    sumTime = "0.5 ngày";
-                                                }
-                                                var minutesMissing = TimeSpan.FromMilliseconds(timeKeeper.Late.TotalMilliseconds + timeKeeper.Early.TotalMilliseconds).TotalMinutes;
-                                                if (minutesMissing > 0)
-                                                {
-                                                    if (!string.IsNullOrEmpty(sumTime))
+                                @{
+                                    var iXacNhanCong = -1;
+                                    if (DateTime.Now.Date.AddDays(iXacNhanCong).DayOfWeek == DayOfWeek.Sunday)
+                                    {
+                                        iXacNhanCong--;
+                                    }
+                                    foreach (var timeKeeper in Model.MyWorkTimeLogs)
+                                    {
+                                        <li>
+                                            <a href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Index" class="text-small">
+                                                @{
+                                                    if (timeKeeper.Status == 0)
                                                     {
-                                                        sumTime += ", ";
+                                                        if (timeKeeper.Date.Date == DateTime.Now.Date.AddDays(iXacNhanCong))
+                                                        {
+                                                            <span class="badge badge-info">@Constants.TimeKeeper(timeKeeper.Status)</span>
+                                                        }
                                                     }
-                                                    sumTime += minutesMissing + " phút";
+                                                    else
+                                                    {
+                                                        <span class="badge badge-info">@Constants.TimeKeeper(timeKeeper.Status)</span>
+                                                    }
                                                 }
+                                                @if (timeKeeper.RequestDate.HasValue)
+                                                {
+                                                    <span>. Ngày gửi xác nhận: @timeKeeper.RequestDate.Value.ToString("dd/MM/yyyy")</span>
+                                                }
+                                                @if (!string.IsNullOrEmpty(timeKeeper.Reason))
+                                                {
+                                                    <span>Lý do: @timeKeeper.Reason</span>
+                                                    <br />
+                                                }
+                                                @{
+                                                    var detail = string.Empty;
+                                                    var inTime = timeKeeper.In.HasValue ? timeKeeper.In.Value.ToString(@"hh\:mm") : string.Empty;
+                                                    var outTime = timeKeeper.Out.HasValue ? timeKeeper.Out.Value.ToString(@"hh\:mm") : string.Empty;
+                                                    var lateTime = timeKeeper.Late.TotalMilliseconds > 0 ? Math.Round(timeKeeper.Late.TotalMinutes).ToString() : string.Empty;
+                                                    var earlyTime = timeKeeper.Early.TotalMilliseconds > 0 ? Math.Round(timeKeeper.Early.TotalMinutes).ToString() : string.Empty;
+                                                    var sumTime = string.Empty;
+                                                    if (string.IsNullOrEmpty(inTime) && string.IsNullOrEmpty(outTime))
+                                                    {
+                                                        sumTime = "1 ngày";
+                                                    }
+                                                    else if (string.IsNullOrEmpty(inTime) || string.IsNullOrEmpty(outTime))
+                                                    {
+                                                        sumTime = "0.5 ngày";
+                                                    }
+                                                    var minutesMissing = TimeSpan.FromMilliseconds(timeKeeper.Late.TotalMilliseconds + timeKeeper.Early.TotalMilliseconds).TotalMinutes;
+                                                    if (minutesMissing > 0)
+                                                    {
+                                                        if (!string.IsNullOrEmpty(sumTime))
+                                                        {
+                                                            sumTime += ", ";
+                                                        }
+                                                        sumTime += Math.Round(minutesMissing, 0) + " phút";
+                                                    }
 
-                                                detail += "Ngày: " + timeKeeper.Date.ToString("dd/MM/yyyy") + "; thiếu: " + sumTime;
-                                                if (!string.IsNullOrEmpty(inTime))
-                                                {
-                                                    detail += " | giờ vào: " + inTime;
+                                                    detail += "Ngày: " + timeKeeper.Date.ToString("dd/MM/yyyy") + "; thiếu: " + sumTime;
+                                                    if (!string.IsNullOrEmpty(inTime))
+                                                    {
+                                                        detail += " | giờ vào: " + inTime;
+                                                    }
+                                                    if (!string.IsNullOrEmpty(lateTime))
+                                                    {
+                                                        detail += "; trễ: " + lateTime;
+                                                    }
+                                                    if (!string.IsNullOrEmpty(outTime))
+                                                    {
+                                                        detail += "; giờ ra: " + outTime;
+                                                    }
+                                                    if (!string.IsNullOrEmpty(earlyTime))
+                                                    {
+                                                        detail += "; sớm: " + earlyTime;
+                                                    }
                                                 }
-                                                if (!string.IsNullOrEmpty(lateTime))
-                                                {
-                                                    detail += "; trễ: " + lateTime;
-                                                }
-                                                if (!string.IsNullOrEmpty(outTime))
-                                                {
-                                                    detail += "; giờ ra: " + outTime;
-                                                }
-                                                if (!string.IsNullOrEmpty(earlyTime))
-                                                {
-                                                    detail += "; sớm: " + earlyTime;
-                                                }
-                                            }
-                                            <span class="text-small">Chi tiết: @detail</span>
-                                        </a>
-                                    </li>
+                                                <span class="text-small"><i class="fas fa-asterisk"></i> Chi tiết: @detail</span>
+                                            </a>
+                                        </li>
+                                    }
                                 }
                             </ul>
                         </div>
@@ -704,4 +738,5 @@
 
 @section scripts {
     <script type="text/javascript" src="~/js/home.js?@DateTime.Now.Ticks"></script>
+    @*<script src="~/js/charts/gender.js?@DateTime.Now.Ticks"></script>*@
 }

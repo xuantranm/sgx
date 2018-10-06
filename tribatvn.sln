@@ -9,8 +9,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "xcore", "xcore\xcore.csproj
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "erp", "erp\erp.csproj", "{00F9365A-526A-484E-873C-12B1429BB087}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "timekeepers", "timekeepers\timekeepers.csproj", "{F1642680-EE1C-4AE9-8A57-6FD1D2316952}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimeKeeperBusiness", "TimeKeeperBusiness\TimeKeeperBusiness.csproj", "{966B7A9D-F626-4E5C-9F33-65D2ED7179C6}"
 EndProject
 Global
@@ -31,10 +29,6 @@ Global
 		{00F9365A-526A-484E-873C-12B1429BB087}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{00F9365A-526A-484E-873C-12B1429BB087}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{00F9365A-526A-484E-873C-12B1429BB087}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F1642680-EE1C-4AE9-8A57-6FD1D2316952}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F1642680-EE1C-4AE9-8A57-6FD1D2316952}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F1642680-EE1C-4AE9-8A57-6FD1D2316952}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F1642680-EE1C-4AE9-8A57-6FD1D2316952}.Release|Any CPU.Build.0 = Release|Any CPU
 		{966B7A9D-F626-4E5C-9F33-65D2ED7179C6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{966B7A9D-F626-4E5C-9F33-65D2ED7179C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{966B7A9D-F626-4E5C-9F33-65D2ED7179C6}.Release|Any CPU.ActiveCfg = Release|Any CPU

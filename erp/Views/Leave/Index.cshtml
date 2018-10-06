@@ -7,6 +7,16 @@
     Layout = "~/Views/Shared/_LayoutSocialFb.cshtml";
 }
 
+@if (Model.RightRequest)
+    {
+        <div class="form-group">
+            <a href="/@Constants.LinkLeave.Main/@Constants.LinkLeave.HelpLeave" style="cursor:pointer" data-toggle="tooltip" title="Bấm vô tạo nghỉ phép cho nhân viên khác.">
+                <i class="fas fa-hands-helping"></i> Tạo nghỉ phép cho nhân viên khác
+            </a>
+        </div>
+    }
+
+
 <h5 class="mb-4">Tổng quan</h5>
 
 @{
@@ -106,29 +116,6 @@
                     </select>
                     <span asp-validation-for="Leave.TypeId" class="text-danger"></span>
                 </div>
-                @{
-                    if (Model.RightRequest)
-                    {
-                        <div class="form-group">
-                            <label asp-for="Leave.EmployeeId" class="control-label"></label>
-                            <select asp-for="Leave.EmployeeId" class="form-control form-control-lg">
-                                <option>--Chọn--</option>
-                                @foreach (var employee in Model.Employees)
-                                {
-                                    if (employee.Id == User.Identity.Name)
-                                    {
-                                        <option value="@employee.Id" selected>@employee.FullName</option>
-                                    }
-                                    else
-                                    {
-                                        <option value="@employee.Id">@employee.FullName</option>
-                                    }
-                                }
-                            </select>
-                            <span asp-validation-for="Leave.EmployeeId" class="text-danger"></span>
-                        </div>
-                    }
-                }
                 <div class="row">
                     <div class="col-lg-4 col-sm-6 col-xs-12">
                         <div class="form-group">
@@ -187,7 +174,6 @@
                         @{
                             foreach (var item in Model.Approves)
                             {
-                                var title = string.Empty;
                                 <option value="@item.Id">@item.Name</option>
                             }
                         }

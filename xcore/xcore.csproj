@@ -5,15 +5,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DotNetCore.NPOI" Version="1.0.2" />
-    <PackageReference Include="MailKit" Version="2.0.4" />
+    <PackageReference Include="DotNetCore.NPOI" Version="1.2.1" />
+    <PackageReference Include="MailKit" Version="2.0.6" />
     <PackageReference Include="MaxMind.GeoIP2" Version="3.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" Version="2.1.2" />
     <PackageReference Include="MongoDB.Driver" Version="2.7.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Models\Logistics\" />
   </ItemGroup>
 
   <ItemGroup>

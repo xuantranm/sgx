@@ -28,6 +28,15 @@ namespace Models
 
         public string ChucVu { get; set; }
 
+        #region use group, data orginal in Employees
+
+        public int NoiLamViecOrder { get; set; } = 1;
+
+        public int PhongBanOrder { get; set; } = 1;
+
+        public int ChucVuOrder { get; set; } = 1;
+        #endregion
+
         // base chucvu
         public string ViTriCode { get; set; }
 
@@ -139,7 +148,7 @@ namespace Models
         public decimal BHXHBHYT { get; set; }
 
         [BsonRepresentation(BsonType.Decimal128)]
-        public decimal LuongThamGiaBHXH { get; set; }
+        public decimal LuongThamGiaBHXH { get; set; } = 0;
 
         [BsonRepresentation(BsonType.Decimal128)]
         public decimal TamUng { get; set; }
@@ -150,9 +159,8 @@ namespace Models
         [BsonRepresentation(BsonType.Decimal128)]
         public decimal ThucLanh { get; set; }
 
-        // Luong 30 ngay to mau xanh.
-        public bool Luong30Ngay { get; set; } = false;
-
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal MauSo { get; set; } = 26;
 
         // sử dụng sau. dùng FlagReal trước
         // muc luong theo luat VN, false theo cong ty

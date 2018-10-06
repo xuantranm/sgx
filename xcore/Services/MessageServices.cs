@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Common.Utilities;
 using MimeKit;
 using MimeKit.Text;
 using Models;
@@ -103,6 +104,51 @@ namespace Services
         {
             // Plug in your SMS service here to send a text message.
             return System.Threading.Tasks.Task.FromResult(0);
+        }
+
+        public async System.Threading.Tasks.Task SendEmailWelcomeAsync(EmailMessage emailMessage)
+        {
+            try
+            {
+                var message = new MimeMessage();
+                message.To.AddRange(emailMessage.ToAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
+                if (emailMessage.FromAddresses == null || emailMessage.FromAddresses.Count == 0)
+                {
+                    emailMessage.FromAddresses = new List<EmailAddress>
+                    {
+                        new EmailAddress { Name = Constants.System.emailHrName, Address = Constants.System.emailHr }
+                    };
+                }
+                message.From.AddRange(emailMessage.FromAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
+
+                message.Subject = emailMessage.Subject;
+                //We will say we are sending HTML. But there are options for plaintext etc. 
+                message.Body = new TextPart(TextFormat.Html)
+                {
+                    Text = emailMessage.BodyContent
+                };
+
+                //Be careful that the SmtpClient class is the one from Mailkit not the framework!
+                using (var emailClient = new MailKit.Net.Smtp.SmtpClient())
+                {
+                    //The last parameter here is to use SSL (Which you should!)
+                    emailClient.Connect(Constants.System.emailHr, 465, true);
+
+                    //Remove any OAuth functionality as we won't be using it. 
+                    emailClient.AuthenticationMechanisms.Remove("XOAUTH2");
+
+                    emailClient.Authenticate(Constants.System.emailHr, Constants.System.emailHrPwd);
+
+                    await emailClient.SendAsync(message);
+                    Console.WriteLine("The mail has been sent successfully !!");
+                    Console.ReadLine();
+                    await emailClient.DisconnectAsync(true);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
     }
 }

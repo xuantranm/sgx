@@ -38,11 +38,6 @@
     </StartupObject>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Interop.zkemkeeper, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-      <HintPath>dll\Interop.zkemkeeper.dll</HintPath>
-    </Reference>
     <Reference Include="MongoDB.Bson, Version=1.11.0.92, Culture=neutral, PublicKeyToken=f686731cfb9cc103, processorArchitecture=MSIL">
       <HintPath>..\packages\mongocsharpdriver.1.11.0\lib\net35\MongoDB.Bson.dll</HintPath>
     </Reference>
@@ -81,13 +76,48 @@
     </None>
     <None Include="packages.config" />
     <None Include="SDK\Communication Protocol SDK%2864Bit Ver6.2.4.1%29.rar" />
+    <None Include="TheSDK\Delete_SDK.bat" />
+    <None Include="TheSDK\Register_SDK.bat" />
+    <None Include="TheSDK\UpdateSDK.dat" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dll\Interop.zkemkeeper.dll" />
     <Content Include="helper.txt" />
     <Content Include="mongo1v11helper.txt" />
     <Content Include="SDK\helpSDKTimeKeeper.txt" />
+    <Content Include="TheSDK\cmd.exe" />
+    <Content Include="TheSDK\commpro.dll" />
+    <Content Include="TheSDK\comms.dll" />
+    <Content Include="TheSDK\FR_Chs.dll" />
+    <Content Include="TheSDK\FR_cht.dll" />
+    <Content Include="TheSDK\FR_Eng.dll" />
+    <Content Include="TheSDK\libusb0.dll" />
+    <Content Include="TheSDK\libusb0_x64.dll" />
+    <Content Include="TheSDK\midas.dll" />
+    <Content Include="TheSDK\plcommpro.dll" />
+    <Content Include="TheSDK\plcomms.dll" />
+    <Content Include="TheSDK\plrscagent.dll" />
+    <Content Include="TheSDK\plrscomm.dll" />
+    <Content Include="TheSDK\pltcpcomm.dll" />
+    <Content Include="TheSDK\QEEnglish.dll" />
+    <Content Include="TheSDK\rscagent.dll" />
+    <Content Include="TheSDK\rscomm.dll" />
+    <Content Include="TheSDK\tcpcomm.dll" />
+    <Content Include="TheSDK\Tested.txt" />
+    <Content Include="TheSDK\usbcomm.dll" />
+    <Content Include="TheSDK\usbstd.dll" />
+    <Content Include="TheSDK\zkemkeeper.dll" />
+    <Content Include="TheSDK\zkemsdk.dll" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <COMReference Include="zkemkeeper">
+      <Guid>{FE9DED34-E159-408E-8490-B720A5E632C7}</Guid>
+      <VersionMajor>1</VersionMajor>
+      <VersionMinor>0</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>tlbimp</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

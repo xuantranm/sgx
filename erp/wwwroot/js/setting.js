@@ -12,7 +12,6 @@
             data: { id: recipient },
             dataType: "json",
             success: function (data) {
-                //console.log(data);
                 if (data.result === false) {
                     console.log("Error.");
                     console.log(data);
@@ -20,12 +19,12 @@
                 else {
                     if (data.length !== 0) {
                         modal.find('.data-item-edit').html($.templates("#tmplDataItem").render(data));
+                        eventAfterRender();
                     }
                 }
             }
         });
-
-    })
+    });
 
     $('#disableItemModal').on('show.bs.modal', function (event) {
         var a = $(event.relatedTarget) // Button that triggered the modal
@@ -130,4 +129,10 @@
             });
         event.preventDefault();
     });
+
+    function eventAfterRender() {
+        $('textarea.js-auto-size').textareaAutoSize();
+        $('.setting-type').val($('.hide-type').val());
+        $('.setting-no-delete').val($('.hide-no-delete').val());
+    }
 });

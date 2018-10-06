@@ -168,8 +168,8 @@ $(function () {
 
 function keyPress(e) {
     var x = e || window.event;
-    var key = (x.keyCode || x.which);
-    if (key == 13 || key == 3) {
+    var key = x.keyCode || x.which;
+    if (key === 13 || key === 3) {
         formSubmit();
     }
 }

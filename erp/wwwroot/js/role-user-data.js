@@ -16,12 +16,12 @@
         loadEmployees();
     });
 
-    $('#user').on('change', function () {
-        $('input[name="RoleUser.FullName"]').val($("#user option:selected").text());
+    $('#userddl').on('change', function () {
+        $('input[name="RoleUser.FullName"]').val($("#userddl option:selected").text());
     });
 
     $('.datepicker').on('changeDate', function () {
-        var date = moment($(this).datepicker('getFormattedDate'), 'DD-MM-YYYY')
+        var date = moment($(this).datepicker('getFormattedDate'), 'DD-MM-YYYY');
         $('.hidedatepicker', $(this).closest('.form-group')).val(
             date.format('MM-DD-YYYY')
         );
@@ -73,7 +73,7 @@
                 }
             })
             .fail(function () {
-                toastr.error(data.message)
+                toastr.error(data.message);
             });
         event.preventDefault();
     });

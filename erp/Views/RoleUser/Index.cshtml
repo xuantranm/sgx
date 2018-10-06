@@ -9,9 +9,10 @@
 
 @Html.ValidationSummary()
 
+<input type="hidden" id="hidDetailLink" value="/@Constants.LinkRole.RoleUser/@Constants.LinkRole.Detail"/>
 <div class="card">
     <div class="card-header">
-        <a href="/r-u/phan-quyen/tao-moi/">
+        <a href="/@Constants.LinkRole.RoleUser/@Constants.LinkRole.Create">
             <i class="icon-add-to-list mr-1"></i> Tạo quyền cho người dùng
         </a>
     </div>
@@ -19,7 +20,7 @@
 
 <div class="card">
     <div class="card-header">
-        <a href="/r/phan-quyen/">
+        <a href="/@Constants.LinkRole.Role/@Constants.LinkRole.Index">
             <i class="icon-list mr-1"></i> Quản lý quyền
         </a>
     </div>
@@ -38,7 +39,6 @@
             </select>
         </form>
     </div>
-
 </div>
 
 @if (Model.RoleUsers.Count > 0)
@@ -87,36 +87,44 @@
         </div>
 
         <script id="tmplDataItem" type="text/x-jsrender">
-            <input type="hidden" name="Role.Id" value="{{:id}}" class="form-control" />
-            <input type="hidden" name="Role.Timestamp" value="{{:timestamp}}" class="form-control" />
+            <input type="hidden" name="RoleUser.Id" value="{{:id}}" class="form-control" />
+            <input type="hidden" name="RoleUser.Timestamp" value="{{:timestamp}}" class="form-control" />
             <div class="form-group">
-                <label class="control-label">Quyền</label>
-                <input name="Role.Object" value="{{:object}}" class="form-control form-control-lg" readonly />
+                <label class="control-label">Họ và tên</label>
+                <input name="RoleUser.FullName" value="{{:fullName}}" class="form-control form-control-lg" readonly />
             </div>
             <div class="form-group">
-                <label class="control-label">Mô tả</label>
-                <textarea name="Role.Description" class="form-control form-control-lg text-area">{{:description}}</textarea>
+                <label class="control-label">Quyền</label>
+                <input name="RoleUser.Role" value="{{:role}}" class="form-control form-control-lg" readonly />
+            </div>
+            <div class="form-group">
+                <label class="control-label">Phạm vi</label>
+                <input name="RoleUser.Action" value="{{:action}}" class="form-control form-control-lg" readonly />
             </div>
             <div class="form-group">
                 <label class="control-label">Thời hạn (ngày)</label>
-                <input name="Role.Duration" value="{{:duration}}" class="form-control form-control-lg" />
+                <input name="RoleUser.Start" value="{{:start}}" class="form-control form-control-lg" />
             </div>
         </script>
 
         <script id="tmplDataItemPlainText" type="text/x-jsrender">
-            <input type="hidden" name="Role.Id" value="{{:id}}" class="form-control" />
-            <input type="hidden" name="Role.Timestamp" value="{{:timestamp}}" class="form-control" />
+            <input type="hidden" name="RoleUser.Id" value="{{:id}}" class="form-control" />
+            <input type="hidden" name="RoleUser.Timestamp" value="{{:timestamp}}" class="form-control" />
             <div class="form-group">
-                <label class="control-label">Quyền</label>
-                <input name="Role.Object" value="{{:object}}" type="text" readonly class="form-control-plaintext" />
+                <label class="control-label">Họ và tên</label>
+                <p>{{:fullName}}</p>
             </div>
             <div class="form-group">
-                <label class="control-label">Mô tả</label>
-                <textarea name="Role.Description" type="text" readonly class="form-control-plaintext">{{:description}}</textarea>
+                <label class="control-label">Quyền</label>
+                <p>{{:role}}</p>
+            </div>
+            <div class="form-group">
+                <label class="control-label">Phạm vi</label>
+                <p>{{:action}}</p>
             </div>
             <div class="form-group">
                 <label class="control-label">Thời hạn (ngày)</label>
-                <input name="Role.Duration" value="{{:duration}}" type="text" readonly class="form-control-plaintext" />
+                <p>{{:start}}</p>
             </div>
         </script>
 
@@ -129,7 +137,7 @@
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
-                    <form class="data-form" action="/r/edit/" method="post" enctype="multipart/form-data">
+                    <form class="data-form" action="/@Constants.LinkRole.RoleUser/@Constants.LinkRole.Edit" method="post" enctype="multipart/form-data">
                         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                         <span class="result"></span>
                         <div class="modal-body data-item-edit">
@@ -166,7 +174,7 @@
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
-                    <form class="data-form" action="/r/disable/" method="post" enctype="multipart/form-data">
+                    <form class="data-form" action="/@Constants.LinkRole.RoleUser/@Constants.LinkRole.Disable" method="post" enctype="multipart/form-data">
                         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                         <div class="modal-body data-item-disable">
                             <input type="hidden" name="Role.Id" />
@@ -202,7 +210,7 @@
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
-                    <form class="data-form" action="/r/active/" method="post" enctype="multipart/form-data">
+                    <form class="data-form" action="/@Constants.LinkRole.RoleUser/@Constants.LinkRole.Active" method="post" enctype="multipart/form-data">
                         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                         <div class="modal-body data-item-active">
                             <input type="hidden" name="Role.Id" />
@@ -238,7 +246,7 @@
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
-                    <form class="data-form" action="/r/delete/" method="post" enctype="multipart/form-data">
+                    <form class="data-form" action="/@Constants.LinkRole.RoleUser/@Constants.LinkRole.Delete" method="post" enctype="multipart/form-data">
                         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                         <div class="modal-body data-item-delete">
                             <input type="hidden" name="Role.Id" />
@@ -276,6 +284,6 @@ else
 }
 
 @section scripts {
-    <script type="text/javascript" src="~/js/role-user.js"></script>
+    <script type="text/javascript" src="~/js/role-user.js?@DateTime.Now.Ticks"></script>
 }
 

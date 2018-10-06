@@ -1,0 +1,69 @@
+﻿@using Common.Utilities;
+@using Common.Enums;
+@using ViewModels;
+@model BirthdayViewModel;
+
+@{
+    Layout = "~/Views/Shared/_LayoutSocialFb.cshtml";
+    var login = User.Identity.Name;
+    var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+    var rightHr = false;
+    if (!string.IsNullOrEmpty(login))
+    {
+        rightHr = Utility.IsRight(login, Constants.Rights.HR, (int)ERights.View);
+    }
+}
+
+<!-- BIRTHDAYS NOTIFICATIONS -->
+<section class="bg-white" style="padding: 1rem 0">
+    <div class="container">
+        <div class="row">
+            <div class="col-12" id="alert-birthday">
+                <div class="row">
+                    @{
+                        var href = "javascript:;";
+                        foreach (var birthday in Model.Employees)
+                        {
+                            if (rightHr)
+                            {
+                                href = "/" + Constants.LinkHr.Main + "/" + Constants.LinkHr.Human + "/" + Constants.LinkHr.Information + "/" + birthday.Id;
+                            }
+                            <div class="col-12 col-md-6">
+                                <a href="@href" alt="@birthday.FullName">
+                                    <div class="card">
+                                        @if (birthday.Avatar != null)
+                                        {
+                                            <img class="card-img-top" src="@birthday.Avatar.Path@birthday.Avatar.FileName" alt="@birthday.FullName" style="width: 100%; height:180px;object-fit: contain;" />
+                                        }
+                                        else
+                                        {
+                                            <img class="" src="~/images/svg/no-img-282-180.svg" alt="@birthday.FullName" />
+                                        }
+                                        <div class="card-body">
+                                            <h4 class="card-title">@birthday.FullName</h4>
+                                            <p class="card-text">
+                                                <span class="badge badge-primary">@birthday.Code</span>
+                                                <span class="badge badge-danger">@birthday.Title</span>
+                                            </p>
+                                            <i class="icon-cake mr-1"></i>
+
+                                            <span>@birthday.Birthday.ToString("dd/MM/yyyy")</span>
+                                            <span class="badge badge-indicator badge-success">&nbsp;</span>
+                                            <br />
+                                            <span class="small">Tuần @birthday.WeekBirthdayNumber @birthday.BirthdayOfWeek (@birthday.AgeBirthday tuổi)</span>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section scripts {
+    @*<script type="text/javascript" src="~/js/birthday.js?@DateTime.Now.Ticks"></script>*@
+    <script src="~/js/charts/gender.js?@DateTime.Now.Ticks"></script>
+}

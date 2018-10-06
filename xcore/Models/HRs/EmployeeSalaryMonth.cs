@@ -8,7 +8,7 @@ namespace Models
 {
     // employee <=> employeesalaryMonth (1 <=> n)
     // Tính lương tháng
-    public class EmployeeSalaryMonth : Common
+    public class EmployeeSalaryMonth
     {
         [BsonId]
         // Mvc don't know how to create ObjectId from string

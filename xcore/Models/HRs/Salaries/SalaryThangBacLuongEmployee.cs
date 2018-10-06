@@ -17,11 +17,19 @@ namespace Models
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
 
+        public int Year { get; set; }
+
+        public int Month { get; set; }
+
         public string EmployeeId { get; set; }
 
         public string ViTriCode { get; set; }
 
         public int Bac { get; set; }
+
+        // Muc luong hien tai. query nhanh
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal MucLuong { get; set; }
 
         // chua su dung. su dung sau. dung FlagReal
         // muc luong theo luat VN, false theo cong ty

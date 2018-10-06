@@ -68,12 +68,14 @@
         var rightSystem = false;
         var rightHr = false;
         var rightLuong = false;
+        var rightLuongReal = false;
         var rightNhaMay = false;
         if (!string.IsNullOrEmpty(login))
         {
             rightSystem = Utility.IsRight(login, Constants.Rights.System, (int)ERights.View);
             rightHr = Utility.IsRight(login, Constants.Rights.HR, (int)ERights.View);
             rightLuong = Utility.IsRight(login, Constants.Rights.Luong, (int)ERights.View);
+            rightLuongReal = Utility.IsRight(login, Constants.Rights.LuongReal, (int)ERights.View);
             rightNhaMay = Utility.IsRight(login, Constants.Rights.NhaMay, (int)ERights.View);
         }
     }
@@ -127,17 +129,32 @@
                             }
                             @if (rightLuong)
                             {
+                                var displayLaw = string.Empty;
+                                @if (rightLuongReal)
+                                {
+                                    displayLaw = "BHXH";
+                                }
                                 <li class="nav-item dropdown">
-                                    <a class="nav-link dropdown-toggle" href="#" id="pagesDropdown" role="button" data-toggle="dropdown">Lương</a>
+                                    <a class="nav-link dropdown-toggle" href="#" id="pagesDropdown" role="button" data-toggle="dropdown"><i class="fas fa-dollar-sign"></i> Lương</a>
                                     <div class="dropdown-menu" aria-labelledby="pagesDropdown">
                                         <a class="dropdown-item" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.ThangBangLuongLaw">
-                                            <span class="h6 mb-0">Thang Bảng Lương</span>
+                                            <span class="h6 mb-0">Thang bảng lương @displayLaw</span>
                                         </a>
                                         <div class="dropdown-divider"></div>
-
-                                        <a class="dropdown-item" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.BangLuongList">
-                                            <span class="h6 mb-0">Bảng Lương</span>
+                                        <a class="dropdown-item" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.BangLuongLaw">
+                                            <span class="h6 mb-0">Bảng lương @displayLaw</span>
                                         </a>
+                                        @if (rightLuongReal)
+                                        {
+                                            <div class="dropdown-divider"></div>
+                                            <a class="dropdown-item" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.ThangBangLuongReal">
+                                                <span class="h6 mb-0">Thang bảng lương</span>
+                                            </a>
+                                            <div class="dropdown-divider"></div>
+                                            <a class="dropdown-item" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.BangLuongReal">
+                                                <span class="h6 mb-0">Bảng lương</span>
+                                            </a>
+                                        }
                                     </div>
                                 </li>
                             }
@@ -165,8 +182,10 @@
                                 </span>
                             </li>
                             <li class="nav-item">
-                                <form asp-area="" asp-controller="Account" asp-action="Logout" method="post" class="navbar-right logout-form">
-                                    <button type="submit" class="btn btn-link nav-link" style="margin-top: 2px;" data-toggle="tooltip" title="Bấm vô để thoát tài khoản."><i class="fas fa-sign-out-alt"></i> Đăng xuất</button>
+                                <form asp-area="" asp-controller="Account" asp-action="Logout" method="post" class="navbar-right logout-form" id="logout-form-layout">
+                                    <a href="#" onclick="document.getElementById('logout-form-layout').submit()" class="nav-link" title="Bấm vô để thoát tài khoản." data-toggle="tooltip">
+                                        <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                                    </a>
                                 </form>
                             </li>
                         </ul>
@@ -358,14 +377,14 @@
                                         <i class="icon-chevron-right"></i>
                                     </div>
                                 </a>
-                                <a class="list-group-item d-flex justify-content-between d-none" href="/@Constants.LinkNotication.Main/@Constants.LinkNotication.Index">
+                                @*<a class="list-group-item d-flex justify-content-between d-none" href="/@Constants.LinkNotication.Main/@Constants.LinkNotication.Index">
                                     <div>
                                         <span>Thông báo</span>
                                     </div>
                                     <div>
                                         <i class="icon-chevron-right"></i>
                                     </div>
-                                </a>
+                                </a>*@
 
                                 @if (rightNhaMay)
                                 {

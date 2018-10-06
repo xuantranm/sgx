@@ -4,7 +4,11 @@
             theme: "bootstrap"
         });
 
-    $('#times').on('select2:select', function (e) {
+    //$('#times').on('select2:select', function (e) {
+    //    formSubmit();
+    //});
+
+    $('#times').on('change', function (e) {
         formSubmit();
     });
 

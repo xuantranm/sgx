@@ -17,6 +17,7 @@ namespace Models
 
         public string EmployeeId { get; set; }
 
+        // Use employeeID
         public string EnrollNumber { get; set; }
 
         public int Year { get; set; } = DateTime.Now.Year;
@@ -28,9 +29,23 @@ namespace Models
         // store miliseconds
         public double WorkTime { get; set; }
 
+        public double NgayNghiHuongLuong { get; set; } = 0;
+
+        public double NgayNghiLeTetHuongLuong { get; set; } = 0;
+
+        public double CongCNGio { get; set; } = 0;
+
+        public double CongTangCaNgayThuongGio { get; set; } = 0;
+
+        public double CongLeTet { get; set; } = 0;
+
         public double Late { get; set; }
 
         public double Early { get; set; }
+
+        public double LateApprove { get; set; }
+
+        public double EarlyApprove { get; set; }
 
         // số lần cho phép trể trong tháng
         public int LateCountAllow { get; set; }
@@ -68,14 +83,9 @@ namespace Models
 
         public int NoFingerDate { get; set; } = 0;
 
-        // Rule from 26
-        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
-        public DateTime From { get; set; }
+        public string Rule { get; set; } = "26-25";
 
         // Last update data timekeeper
-        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
-        public DateTime To { get; set; }
-
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime LastUpdated { get; set; } = DateTime.Now;
     }

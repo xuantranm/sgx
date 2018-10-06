@@ -72,7 +72,7 @@
 
 function setValueFactory() {
     $('.datepicker').each(function (i, obj) {
-        var date = moment($(obj).datepicker('getFormattedDate'), 'DD-MM-YYYY')
+        var date = moment($(obj).datepicker('getFormattedDate'), 'DD-MM-YYYY');
         $('.hidedatepicker', $(obj).closest('.form-group')).val(
             date.format('MM-DD-YYYY')
         );

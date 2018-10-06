@@ -9,6 +9,7 @@
 
 @Html.ValidationSummary()
 
+<input type="hidden" id="hidDetailLink" value="/@Constants.LinkRole.Role/@Constants.LinkRole.Detail" />
 <div class="card">
     <div class="card-header">
         <a data-target="#new-role" data-toggle="collapse" aria-expanded="false" aria-controls="new-role" style="cursor:pointer">
@@ -17,7 +18,7 @@
     </div>
     <div class="collapse" id="new-role">
         <div class="card-body">
-            <form class="data-form" enctype="multipart/form-data" action="/r/create/" method="post">
+            <form class="data-form" enctype="multipart/form-data" action="/@Constants.LinkRole.Role/@Constants.LinkRole.Create" method="post">
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                 <div class="form-group">
                     <label asp-for="@Model.Role.Object" class="control-label"></label>
@@ -47,7 +48,7 @@
 
 <div class="card">
     <div class="card-header">
-        <a href="/r-u/phan-quyen/tao-moi/">
+        <a href="/@Constants.LinkRole.RoleUser/@Constants.LinkRole.Create">
             <i class="icon-add-to-list mr-1"></i> Tạo quyền cho người dùng
         </a>
     </div>
@@ -153,7 +154,7 @@
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <form class="data-form" action="/r/edit/" method="post" enctype="multipart/form-data">
+                <form class="data-form" action="/@Constants.LinkRole.Role/@Constants.LinkRole.Edit" method="post" enctype="multipart/form-data">
                     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                     <span class="result"></span>
                     <div class="modal-body data-item-edit">
@@ -190,7 +191,7 @@
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <form class="data-form" action="/r/disable/" method="post" enctype="multipart/form-data">
+                <form class="data-form" action="/@Constants.LinkRole.Role/@Constants.LinkRole.Disable" method="post" enctype="multipart/form-data">
                     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                     <div class="modal-body data-item-disable">
                         <input type="hidden" name="Role.Id" />
@@ -226,7 +227,7 @@
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <form class="data-form" action="/r/active/" method="post" enctype="multipart/form-data">
+                <form class="data-form" action="/@Constants.LinkRole.Role/@Constants.LinkRole.Active" method="post" enctype="multipart/form-data">
                     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                     <div class="modal-body data-item-active">
                         <input type="hidden" name="Role.Id" />
@@ -262,7 +263,7 @@
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <form class="data-form" action="/r/delete/" method="post" enctype="multipart/form-data">
+                <form class="data-form" action="/@Constants.LinkRole.Role/@Constants.LinkRole.Delete" method="post" enctype="multipart/form-data">
                     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                     <div class="modal-body data-item-delete">
                         <input type="hidden" name="Role.Id" />

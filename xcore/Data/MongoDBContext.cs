@@ -133,6 +133,42 @@ namespace Data
         #region HRs
 
         #region SALARIES
+
+        /// <summary>
+        /// Bang cai dat: mau so,...
+        /// </summary>
+        public IMongoCollection<SalarySetting> SalarySettings
+        {
+            get
+            {
+                return _database.GetCollection<SalarySetting>("SalarySettings");
+            }
+        }
+
+        public IMongoCollection<SalarySaleKPI> SalarySaleKPIs
+        {
+            get
+            {
+                return _database.GetCollection<SalarySaleKPI>("SalarySaleKPIs");
+            }
+        }
+
+        public IMongoCollection<SalaryLogisticData> SalaryLogisticDatas
+        {
+            get
+            {
+                return _database.GetCollection<SalaryLogisticData>("SalaryLogisticDatas");
+            }
+        }
+
+        public IMongoCollection<SalaryCredit> SalaryCredits
+        {
+            get
+            {
+                return _database.GetCollection<SalaryCredit>("SalaryCredits");
+            }
+        }
+
         public IMongoCollection<SalaryMucLuongVung> SalaryMucLuongVungs
         {
             get
@@ -198,6 +234,50 @@ namespace Data
             get
             {
                 return _database.GetCollection<ChucDanhCongViec>("ChucDanhCongViecs");
+            }
+        }
+        #endregion
+
+        #region KINH DOANH
+        public IMongoCollection<ChucVuSale> ChucVuSales
+        {
+            get
+            {
+                return _database.GetCollection<ChucVuSale>("ChucVuSales");
+            }
+        }
+
+        public IMongoCollection<SaleKPI> SaleKPIs
+        {
+            get
+            {
+                return _database.GetCollection<SaleKPI>("SaleKPIs");
+            }
+        }
+        #endregion
+
+        #region LOGISTICS
+        public IMongoCollection<CityGiaoNhan> CityGiaoNhans
+        {
+            get
+            {
+                return _database.GetCollection<CityGiaoNhan>("CityGiaoNhans");
+            }
+        }
+
+        public IMongoCollection<DonGiaChuyenXe> DonGiaChuyenXes
+        {
+            get
+            {
+                return _database.GetCollection<DonGiaChuyenXe>("DonGiaChuyenXes");
+            }
+        }
+
+        public IMongoCollection<HoTroCongTacXa> HoTroCongTacXas
+        {
+            get
+            {
+                return _database.GetCollection<HoTroCongTacXa>("HoTroCongTacXas");
             }
         }
         #endregion

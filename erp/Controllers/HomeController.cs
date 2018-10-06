@@ -116,7 +116,8 @@ namespace erp.Controllers
 
             #region Notification Birthday
             ViewData["birthdayNoticeBefore"] = birthdayNoticeBefore;
-            var nextBirthdays = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Birthday > Constants.MinDate).ToEnumerable().Where(m => m.RemainingBirthDays < birthdayNoticeBefore).OrderBy(m => m.RemainingBirthDays).ToList();
+            var nextBirthdays = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Birthday > Constants.MinDate).ToEnumerable()
+                .Where(m => m.RemainingBirthDays < birthdayNoticeBefore).OrderBy(m => m.RemainingBirthDays).Take(6).ToList();
             #endregion
 
             //#region Notification Contract
@@ -187,15 +188,15 @@ namespace erp.Controllers
             #region My Activities
             //public IList<Leave> MyLeaves { get; set; }
             //public IList<EmployeeWorkTimeLog> MyWorkTimeLogs { get; set; }
-            var sortMyLeave = Builders<Leave>.Sort.Ascending(m => m.CreatedOn).Descending(m => m.CreatedOn);
+            var sortMyLeave = Builders<Leave>.Sort.Descending(m => m.UpdatedOn);
             var builderMyLeave = Builders<Leave>.Filter;
             var filterMyLeave = builderMyLeave.Eq(m => m.Enable, true)
                 & builderMyLeave.Eq(m=>m.EmployeeId, login);
             var myLeaves = await dbContext.Leaves.Find(filterMyLeave).Sort(sortMyLeave).Limit(5).ToListAsync();
 
-            var sortMyWorkTime = Builders<EmployeeWorkTimeLog>.Sort.Ascending(m => m.CreatedOn).Descending(m => m.CreatedOn);
+            var sortMyWorkTime = Builders<EmployeeWorkTimeLog>.Sort.Descending(m => m.Date);
             var builderMyWorkTime = Builders<EmployeeWorkTimeLog>.Filter;
-            var filterMyWorkTime = builderMyWorkTime.Eq(m => m.Enable, true) & builderMyWorkTime.Ne(m => m.Status, 1)
+            var filterMyWorkTime = builderMyWorkTime.Eq(m => m.Enable, true) & builderMyWorkTime.Lt(m=>m.Date, DateTime.Now.Date) & builderMyWorkTime.Ne(m => m.Status, 1)
                 & builderMyWorkTime.Eq(m => m.EmployeeId, login);
             var myWorkTimes = await dbContext.EmployeeWorkTimeLogs.Find(filterMyWorkTime).Sort(sortMyWorkTime).Limit(5).ToListAsync();
 
@@ -281,7 +282,6 @@ namespace erp.Controllers
         [Route("/email/welcome/")]
         public IActionResult SendMail()
         {
-            var enableSendMail = false;
             var listSendMailTest = new List<string>
                             {
                                 "xuan.tm",
@@ -301,7 +301,7 @@ namespace erp.Controllers
             foreach (var employee in employees)
             {
                 // Update password
-                password = Guid.NewGuid().ToString("N").Substring(0, 12);
+                password = Guid.NewGuid().ToString("N").Substring(0, 6);
                 var sysPassword = Helpers.Helper.HashedPassword(password);
 
                 var filterUpdate = Builders<Employee>.Filter.Eq(m => m.Id, employee.Id);
@@ -309,15 +309,11 @@ namespace erp.Controllers
                     .Set(m => m.Password, sysPassword);
                 dbContext.Employees.UpdateOne(filterUpdate, update);
 
+                // UAT
                 if (!string.IsNullOrEmpty(listSendMailTest.Where(s => s.Equals(employee.UserName)).FirstOrDefault()))
-                {
-                    enableSendMail = true;
-                }
-                if (enableSendMail)
                 {
                     SendMailRegister(employee, password);
                 }
-                enableSendMail = false;
             }
 
             return Json(new { result = true, source = "sendmail", message = "Gửi mail thành công" });
@@ -335,7 +331,7 @@ namespace erp.Controllers
             //var callbackUrl = Url.Action(nameof(ConfirmEmail), "Account", new { userId = user.Id, code = code }, protocol: HttpContext.Request.Scheme);
             //Email from Email Template
             var callbackUrl = "/";
-            string Message = "Đăng nhập TRIBAT - ERP <a href=\"" + callbackUrl + "\">here</a>";
+            string Message = "Đăng nhập <a href=\"" + callbackUrl + "\">here</a>";
             // string body;
 
             var webRoot = _env.WebRootPath; //get wwwroot Folder
@@ -349,7 +345,7 @@ namespace erp.Controllers
                     + Path.DirectorySeparatorChar.ToString()
                     + "Confirm_Account_Registration.html";
 
-            var subject = "Thông tin đăng nhập hệ thống TRIBAT - ERP.";
+            var subject = "Thông tin đăng nhập hệ thống.";
 
             var builder = new BodyBuilder();
             using (StreamReader SourceReader = System.IO.File.OpenText(pathToFile))
@@ -387,7 +383,7 @@ namespace erp.Controllers
                 Subject = subject,
                 BodyContent = messageBody
             };
-            _emailSender.SendEmailAsync(emailMessage);
+            _emailSender.SendEmailWelcomeAsync(emailMessage);
 
             ViewData["Message"] = $"Please confirm your account by clicking this link: <a href='{callbackUrl}' class='btn btn-primary'>Confirmation Link</a>";
             ViewData["MessageValue"] = "1";

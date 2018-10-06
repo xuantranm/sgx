@@ -1,0 +1,170 @@
+﻿@using Common.Utilities;
+@using ViewModels;
+@model ThangBangLuongViewModel
+@{
+    Layout = "~/Views/Shared/_LayoutSocialFb.cshtml";
+    var login = User.Identity.Name;
+    var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+    var rightSalaryReal = false;
+    if (!string.IsNullOrEmpty(login))
+    {
+        rightSalaryReal = true;
+    }
+}
+
+<div class="main-container">
+    <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="/">Trang chủ</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">Thang bảng lương</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="flush-with-above space-0">
+        <div class="bg-white">
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <ul class="nav nav-tabs" id="myTab" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.ThangBangLuongReal">THANG LƯƠNG</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.BangLuongReal">BẢNG LƯƠNG</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MAIN -->
+    <section class="flush-with-above height-80 d-block">
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="real" role="tabpanel" aria-labelledby="real-tab">
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <a href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.ThangBangLuongReal/@Constants.LinkSalary.Update" class="btn btn-success btn-edit-real" data-toggle="tooltip" title="Bấm thay đổi thang bảng lương.">
+                            <i class="icon icon-edit"></i>Chỉnh sửa
+                        </a>
+                        <a class="btn btn-info d-none" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.ThangBangLuongReal/@Constants.LinkSalary.Export" data-toggle="tooltip" title="Xuất ra tài liệu file excel.">
+                            <i class="fas fa-download"></i> Xuất excel
+                        </a>
+                    </div>
+                </div>
+
+                <div class="mode-read-real">
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <b>I/ MỨC LƯƠNG TỐI THIỂU VÙNG:</b> <b>@String.Format("{0:#,###,###}", Math.Round((double)Model.SalaryMucLuongVung.ToiThieuVungQuiDinh / 1000d, 0) * 1000)</b> đồng/tháng
+                        </div>
+                        <div class="col-12">
+                            Mức lương tối thiểu mà doanh nghiệp đang áp dụng: <b>@String.Format("{0:#,###,###}", Math.Round((double)Model.SalaryMucLuongVung.ToiThieuVungDoanhNghiepApDung / 1000d, 0) * 1000)</b> đồng/tháng
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <b>
+                                II/ HỆ THỐNG THANG LƯƠNG:
+                            </b>
+                            (ĐVT:  đồng)
+                        </div>
+                        @{
+                            var levelMaxReal = 10;
+                            <div class="col-12 table-responsive-sm">
+                                <table class="table table-responsive-sm table-bordered">
+                                    <tr style="background-color:yellow!important">
+                                        <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>STT</th>
+                                        <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>VỊ TRÍ</th>
+                                        <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>MÃ</th>
+                                        <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>HỆ SỐ</th>
+                                        <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>ĐIỂM THAM KHẢO</th>
+                                        <td colspan="@levelMaxReal" style="text-align:center;font-weight:bold">BẬC LƯƠNG</td>
+                                    </tr>
+                                    <tr style="background-color:yellow!important">
+                                        @for (var ilevel = 1; ilevel <= levelMaxReal; ilevel++)
+                                        {
+                                            <td style="text-align:center; color:red">@ilevel</td>
+                                        }
+                                    </tr>
+                                    <tbody>
+                                        @{
+                                            var sTTReal = 1;
+                                            var groupsReal = (from s in Model.SalaryThangBangLuongs
+                                                              group s by new
+                                                              {
+                                                                  s.ViTri,
+                                                                  s.ViTriCode
+                                                              }
+                                            into l
+                                                              select new
+                                                              {
+                                                                  ViTri = l.Key.ViTri,
+                                                                  ViTriCode = l.Key.ViTriCode,
+                                                                  Salaries = l.ToList(),
+                                                              }).ToList();
+                                            foreach (var group in groupsReal)
+                                            {
+                                        <tr>
+                                            <td style="background-color:white">
+                                                @sTTReal
+                                            </td>
+                                            <td nowrap>@group.ViTri</td>
+                                            <td nowrap><small>@group.ViTriCode</small></td>
+                                            <td>@group.Salaries[0].HeSo</td>
+                                            <td>@String.Format("{0:#,###,###}", Math.Round((double)group.Salaries[0].MucLuong / 1000d, 0) * 1000)</td>
+                                            @{
+                                                if (group.Salaries.Count >= levelMaxReal)
+                                                {
+                                                    foreach (var item in group.Salaries.Where(m=>m.Bac!=0).OrderBy(m => m.Bac))
+                                                    {
+                                                        <td>@String.Format("{0:#,###,###}", Math.Round((double)item.MucLuong / 1000d, 0) * 1000)</td>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    var iMissing = 1;
+                                                    foreach (var item in group.Salaries.Where(m => m.Bac != 0).OrderBy(m => m.Bac))
+                                                    {
+                                                        if (item.Bac == iMissing)
+                                                        {
+                                                            <td>@String.Format("{0:#,###,###}", Math.Round((double)item.MucLuong / 1000d, 0) * 1000)</td>
+                                                        }
+                                                        else
+                                                        {
+                                                            <td></td>
+                                                        }
+                                                        iMissing++;
+                                                    }
+                                                }
+                                            }
+                                        </tr>
+                                                sTTReal++;
+                                            }
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+@section scripts {
+    <script type="text/javascript" src="~/js/thang-bang-luong-real.js?@DateTime.Now.Ticks"></script>
+}
+
+
+

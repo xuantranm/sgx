@@ -1,0 +1,101 @@
+﻿@using Common.Utilities;
+@using ViewModels;
+@model SalarySettingViewModel
+@{
+    Layout = "~/Views/Shared/_LayoutSocialFb.cshtml";
+    var login = User.Identity.Name;
+    var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+}
+
+<div class="main-container">
+    <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="/">Trang chủ</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">Cài đặt mẫu số</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="flush-with-above space-0">
+        <div class="bg-white">
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <ul class="nav nav-tabs" id="myTab" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Setting">Tham số</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.SaleKPIs">Nhập liệu Kinh doanh (KPI)</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.LogisticDatas">Nhập liệu Logistics</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link active" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Credits">Tạm ứng</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="flush-with-above height-80 d-block">
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="law" role="tabpanel" aria-labelledby="law-tab">
+                <form action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Setting" method="post" class="data-form">
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <button type="button" class="btn btn-success btn-edit d-none" data-toggle="tooltip" title="Bấm thay đổi mẫu số tính lương.">
+                                <i class="icon icon-edit"></i>Chỉnh sửa
+                            </button>
+
+                            <button type="submit" class="btn btn-primary btn-submit" data-toggle="tooltip" title="Bấm để cập nhật thông tin.">
+                                <i class="icon icon-save"></i>Lưu thay đổi
+                            </button>
+                            <button type="button" class="btn btn-success btn-back d-none" data-toggle="tooltip" title="Bấm để trở về.">
+                                <i class="icon icon-back"></i>Trở về
+                            </button>
+                        </div>
+                    </div>
+                    @{
+                        var i = 0;
+                        foreach (var item in Model.SalarySettings)
+                        {
+                            <div class="row">
+                                <div class="col-12 mode-read">
+                                    <span>@item.Title</span> <span class="badge badge-primary">@item.Value</span>
+                                    <small>@item.Description</small>
+                                </div>
+                                <div class="col-12 mode-edit d-none">
+                                    <span>@item.Title</span>
+                                    <input type="hidden" asp-for="SalarySettings[i].Id" />
+                                    <input type="hidden" asp-for="SalarySettings[i].Key" />
+                                    <input type="hidden" class="codeNumeric" value="@i" />
+                                    <input type="text" class="form-control" value="@item.Value" name="SalarySettings[@i].Id" id="numeric-@i" />
+                                    <textarea class="form-control js-auto-size">@item.Description</textarea>
+                                </div>
+                            </div>
+                            i++;
+                        }
+                    }
+                </form> 
+            </div>
+        </div>
+    </section>
+</div>
+
+@section scripts {
+    <script type="text/javascript" src="~/js/salary-setting.js?@DateTime.Now.Ticks"></script>
+}
+
+
+

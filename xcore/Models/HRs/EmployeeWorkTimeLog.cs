@@ -60,8 +60,10 @@ namespace Models
         [Display(Name = "Về sớm")]
         public TimeSpan Early { get; set; }
 
+        // 0: cần xác nhận công; 1: đủ ngày công ; 2: đã gửi xác nhận công, 3: đồng ý; 4: từ chối  
         public int StatusLate { get; set; } = 1;
 
+        // 0: cần xác nhận công; 1: đủ ngày công ; 2: đã gửi xác nhận công, 3: đồng ý; 4: từ chối  
         public int StatusEarly { get; set; } = 1;
 
         // 0: cần xác nhận công; 1: đủ ngày công ; 2: đã gửi xác nhận công, 3: đồng ý; 4: từ chối  

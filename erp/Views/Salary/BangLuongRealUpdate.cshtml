@@ -1,0 +1,423 @@
+﻿@using Common.Utilities;
+@using ViewModels;
+@model BangLuongViewModel
+@{
+    Layout = "~/Views/Shared/_LayoutSocialFb.cshtml";
+    var login = User.Identity.Name;
+    var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+    var rightSalaryReal = false;
+    if (!string.IsNullOrEmpty(login))
+    {
+        rightSalaryReal = true;
+    }
+}
+
+<div class="main-container">
+    <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="/">Trang chủ</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">Bảng lương</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="flush-with-above space-0">
+        <div class="bg-white">
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <ul class="nav nav-tabs" id="myTab" role="tablist">
+                            <li class="nav-item active">
+                                <a class="nav-link active" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.BangLuongReal">BẢNG LƯƠNG</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Setting/@Constants.LinkSalary.Update">THAM SỐ</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.SaleKPIs/@Constants.LinkSalary.Update">KINH DOANH</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.LogisticDatas/@Constants.LinkSalary.Update">LOGISTICS</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Credits/@Constants.LinkSalary.Update">VAY & TẠM ỨNG</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.ThangBangLuongReal/@Constants.LinkSalary.Update">THANG LƯƠNG</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MAIN -->
+    <section class="flush-with-above height-80 d-block">
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="real" role="tabpanel" aria-labelledby="real-tab">
+                <form action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.BangLuongReal/@Constants.LinkSalary.Update" method="post" class="data-form">
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <button class="btn btn-success btn-back" data-toggle="tooltip" title="Bấm để trở về.">
+                                <i class="icon icon-back"></i>Trở về
+                            </button>
+                            <button type="submit" class="btn btn-danger btn-submit" data-toggle="tooltip" title="Bấm cập nhật bảng lương."><i class="icon-save"></i>&nbsp;Cập nhật bảng lương</button>
+                        </div>
+                    </div>
+
+                    <div class="mode-read-real">
+                        <div class="row mb-3">
+                            <div class="col-12 d-none">
+                                <b>I/ MỨC LƯƠNG TỐI THIỂU VÙNG:</b> <b>@String.Format("{0:#,###,###}", Math.Round((double)Model.SalaryMucLuongVung.ToiThieuVungQuiDinh / 1000d, 0) * 1000)</b> đồng/tháng
+                            </div>
+                            <div class="col-12">
+                                Mức lương tối thiểu mà doanh nghiệp đang áp dụng: <b>@String.Format("{0:#,###,###}", Math.Round((double)Model.SalaryMucLuongVung.ToiThieuVungDoanhNghiepApDung / 1000d, 0) * 1000)</b> đồng/tháng
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-8 col-xs-12">
+                                <b>
+                                    II/ BẢNG LƯƠNG:
+                                </b>
+                                (ĐVT:  1000 đồng)
+                            </div>
+                            @{
+                                <div class="col-12 table-responsive-sm">
+                                    <table class="table table-responsive-sm table-bordered">
+                                        <tr style="background-color:white">
+                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>STT</th>
+                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>Mã</th>
+                                            <th rowspan="2" style="vertical-align:middle;text-align:center;font-weight:bold" nowrap>Họ và tên</th>
+                                            <th rowspan="2" style="vertical-align:middle;text-align:center;font-weight:bold" nowrap>Chức vụ</th>
+                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold">Thâm niên làm việc</th>
+                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>Bậc</th>
+                                            <td colspan="3" style="text-align:center;font-weight:bold">Thâm niên</td>
+                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>Lương CB</th>
+                                            <td colspan="4" style="vertical-align:middle;font-weight:bold" nowrap>PHỤ CẤP (P2)</td>
+                                            <td colspan="7" style="vertical-align:middle;font-weight:bold" nowrap>PHÚC LỢI KHÁC (P2)</td>
+                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold">
+                                                <div class="rotate">Lương cơ bản (tháng) bao gồm phụ cấp</div>
+                                            </th>
+                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>
+                                                <div class="rotate">
+                                                    Ngày công làm việc
+                                                </div>
+                                            </th>
+                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>
+                                                <div class="rotate">
+                                                    Ngày nghỉ phép hưởng lương
+                                                </div>
+                                            </th>
+                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>
+                                                <div class="rotate">
+                                                    Ngày nghỉ Lễ Tết hưởng lương
+                                                </div>
+                                            </th>
+                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>
+                                                <div class="rotate">
+                                                    Công CN (giờ)
+                                                </div>
+                                            </th>
+                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>
+                                                <div class="rotate">
+                                                    Công tăng ca ngày thường (giờ)
+                                                </div>
+                                            </th>
+                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>
+                                                <div class="rotate">
+                                                    Công lễ tết
+                                                </div>
+                                            </th>
+                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>
+                                                <div class="rotate">
+                                                    Công tác xa
+                                                </div>
+                                            </th>
+                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>
+                                                <div class="rotate">
+                                                    Mức đạt trong tháng
+                                                </div>
+                                            </th>
+                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>
+                                                <div class="rotate">
+                                                    Lương theo doanh thu doanh số
+                                                </div>
+                                            </th>
+                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>
+                                                <div class="rotate">
+                                                    Tổng bùn bốc
+                                                </div>
+                                            </th>
+                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>
+                                                <div class="rotate">
+                                                    Thành tiền bốc bùn
+                                                </div>
+                                            </th>
+                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>
+                                                <div class="rotate">
+                                                    Lương khác
+                                                </div>
+                                            </th>
+                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>
+                                                <div class="rotate">
+                                                    Thi đua
+                                                </div>
+                                            </th>
+                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>
+                                                <div class="rotate">
+                                                    Hỗ trợ ngoài lương
+                                                </div>
+                                            </th>
+                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold">Tổng thu nhập</th>
+                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold">BHXH BHYT</th>
+                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold">Lương tham gia BHXH</th>
+                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold">Tạm ứng</th>
+                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold">Thực lãnh</th>
+                                        </tr>
+                                        <tr style="background-color:white">
+                                            <td style="text-align:center; color:red">Năm</td>
+                                            <td style="text-align:center; color:red">Tháng</td>
+                                            <td style="text-align:center; color:red">Ngày</td>
+                                            <td style="text-align:center; color:red">
+                                                <div class="rotate">
+                                                    NẶNG NHỌC ĐỘC HẠI
+                                                </div>
+                                            </td>
+                                            <td style="text-align:center; color:red">
+                                                <div class="rotate">TRÁCH NHIỆM</div>
+                                            </td>
+                                            <td style="text-align:center; color:red">
+                                                <div class="rotate">THÂM NIÊN</div>
+                                            </td>
+                                            <td style="text-align:center; color:red">
+                                                <div class="rotate">THU HÚT</div>
+                                            </td>
+                                            <td style="text-align:center; color:red">
+                                                <div class="rotate">XĂNG</div>
+                                            </td>
+                                            <td style="text-align:center; color:red">
+                                                <div class="rotate">ĐIỆN THOẠI</div>
+                                            </td>
+                                            <td style="text-align:center; color:red">
+                                                <div class="rotate">CƠM</div>
+                                            </td>
+                                            <td style="text-align:center; color:red">
+                                                <div class="rotate">Kiêm nhiệm</div>
+                                            </td>
+                                            <td style="text-align:center; color:red">
+                                                <div class="rotate">BHYT ĐẶC BIỆT</div>
+                                            </td>
+                                            <td style="text-align:center; color:red">
+                                                <div class="rotate">VỊ TRÍ CẦN KN NHIỀU NĂM</div>
+                                            </td>
+                                            <td style="text-align:center; color:red">
+                                                <div class="rotate">Vị trí đặc thù</div>
+                                            </td>
+                                        </tr>
+                                        <tbody>
+                                            @{
+                                                var i = 1;
+                                                var iEntity = 0;
+                                                var groupLocation = (from s in Model.SalaryEmployeeMonths.Where(m => !m.NoiLamViecOrder.Equals(0))
+                                                                     group s by new
+                                                                     {
+                                                                         s.NoiLamViecOrder,
+                                                                         s.NoiLamViec
+                                                                     }
+                                                                                                                    into l
+                                                                     select new
+                                                                     {
+                                                                         NoiLamViecOrder = l.Key.NoiLamViecOrder,
+                                                                         NoiLamViec = l.Key.NoiLamViec,
+                                                                         salaries = l.ToList(),
+                                                                     }).ToList();
+
+                                                var locations = groupLocation.OrderBy(m => m.NoiLamViecOrder).ToList();
+                                                foreach (var location in locations)
+                                                {
+                                                    <tr>
+                                                        <td style="background-color:red"></td>
+                                                        <td colspan="40" style="background-color:red">
+                                                            @location.salaries[0].NoiLamViec
+                                                        </td>
+                                                    </tr>
+                                                    var locationSalaries = location.salaries;
+
+                                                    var groupDepartment = (from a in locationSalaries
+                                                                           group a by new
+                                                                           {
+                                                                               a.PhongBan,
+                                                                               a.PhongBanOrder
+                                                                           }
+                                                                into b
+                                                                           select new
+                                                                           {
+                                                                               PhongBan = b.Key.PhongBan,
+                                                                               PhongBanOrder = b.Key.PhongBanOrder,
+                                                                               salaries = b.ToList(),
+                                                                           }).ToList();
+                                                    var departments = groupDepartment.OrderBy(m => m.PhongBanOrder);
+
+                                                    foreach (var department in departments)
+                                                    {
+                                                        <tr><td colspan="2" style="background-color:forestgreen"></td><td colspan="39" style="background-color:forestgreen">@department.PhongBan</td></tr>
+                                                        foreach (var item in department.salaries)
+                                                        {
+                                                            <tr class="tr-@iEntity" data-id="@item.Id">
+                                                                <td style="vertical-align:middle">
+                                                                    @i
+                                                                    <input type="hidden" asp-for="SalaryEmployeeMonths[iEntity].Id" />
+                                                                </td>
+                                                                <td style="vertical-align:middle">
+                                                                    @item.MaNhanVien <small>@item.ViTriCode</small>
+                                                                </td>
+                                                                <td style="vertical-align:middle" nowrap>
+                                                                    @item.FullName
+                                                                </td>
+                                                                <td style="vertical-align:middle" nowrap>
+                                                                    @item.ChucVu
+                                                                </td>
+                                                                <td style="vertical-align:middle">
+                                                                    @item.ThamNienLamViec.ToString("dd/MM/yyyy")
+                                                                </td>
+                                                                <td style="vertical-align:middle">
+                                                                    @item.Bac
+                                                                </td>
+                                                                <td style="vertical-align:middle">
+                                                                    @item.ThamNienYear
+                                                                </td>
+                                                                <td style="vertical-align:middle">
+                                                                    @item.ThamNienMonth
+                                                                </td>
+                                                                <td style="vertical-align:middle">
+                                                                    @item.ThamNienDay
+                                                                </td>
+                                                                <td style="vertical-align:middle">
+                                                                    @String.Format("{0:#,###,###}", Math.Round((double)item.LuongCanBan / 1000d, 0))
+                                                                </td>
+                                                                <td>
+                                                                    <input value="@Math.Round(Model.SalaryEmployeeMonths[iEntity].NangNhocDocHai / 1000, 0)" name="SalaryEmployeeMonths[@iEntity].NangNhocDocHai" class="form-control width100 numeric dochai-@iEntity" data-id="dochai-@iEntity" />
+                                                                </td>
+                                                                <td>
+                                                                    <input value="@Math.Round(Model.SalaryEmployeeMonths[iEntity].TrachNhiem / 1000, 0)" name="SalaryEmployeeMonths[@iEntity].TrachNhiem" class="form-control width100 numeric trachnhiem-@iEntity" data-id="trachnhiem-@iEntity" />
+                                                                </td>
+                                                                <td style="vertical-align:middle">
+                                                                    @String.Format("{0:#,###,###}", Math.Round((double)item.ThamNien / 1000d, 0))
+                                                                </td>
+                                                                <td>
+                                                                    <input value="@Math.Round(Model.SalaryEmployeeMonths[iEntity].ThuHut / 1000, 0)" name="SalaryEmployeeMonths[@iEntity].ThuHut" class="form-control width100 numeric thuhut-@iEntity" data-id="thuhut-@iEntity" />
+                                                                </td>
+                                                                <td>
+                                                                    <input value="@Math.Round(Model.SalaryEmployeeMonths[iEntity].Xang / 1000, 0)" name="SalaryEmployeeMonths[@iEntity].Xang" class="form-control width100 numeric xang-@iEntity" data-id="xang-@iEntity" />
+                                                                </td>
+                                                                <td>
+                                                                    <input value="@Math.Round(Model.SalaryEmployeeMonths[iEntity].DienThoai / 1000, 0)" name="SalaryEmployeeMonths[@iEntity].DienThoai" class="form-control width100 numeric dienthoai-@iEntity" data-id="dienthoai-@iEntity" />
+                                                                </td>
+                                                                <td>
+                                                                    <input value="@Math.Round(Model.SalaryEmployeeMonths[iEntity].Com / 1000, 0)" name="SalaryEmployeeMonths[@iEntity].Com" class="form-control width100 numeric com-@iEntity" data-id="com-@iEntity" />
+                                                                </td>
+                                                                <td>
+                                                                    <input value="@Math.Round(Model.SalaryEmployeeMonths[iEntity].KiemNhiem / 1000, 0)" name="SalaryEmployeeMonths[@iEntity].KiemNhiem" class="form-control width100 numeric kiemnhiem-@iEntity" data-id="kiemnhiem-@iEntity" />
+                                                                </td>
+                                                                <td>
+                                                                    <input value="@Math.Round(Model.SalaryEmployeeMonths[iEntity].BhytDacBiet / 1000, 0)" name="SalaryEmployeeMonths[@iEntity].BhytDacBiet" class="form-control width100 numeric bhytdacbiet-@iEntity" data-id="bhytdacbiet-@iEntity" />
+                                                                </td>
+                                                                <td>
+                                                                    <input value="@Math.Round(Model.SalaryEmployeeMonths[iEntity].ViTriCanKnNhieuNam / 1000, 0)" name="SalaryEmployeeMonths[@iEntity].ViTriCanKnNhieuNam" class="form-control width100 numeric vitricanknnhieunam-@iEntity" data-id="vitricanknnhieunam-@iEntity" />
+                                                                </td>
+                                                                <td>
+                                                                    <input value="@Math.Round(Model.SalaryEmployeeMonths[iEntity].ViTriDacThu / 1000, 0)" name="SalaryEmployeeMonths[@iEntity].ViTriDacThu" class="form-control width100 numeric vitridacthu-@iEntity" data-id="vitridacthu-@iEntity" />
+                                                                </td>
+                                                                <td style="vertical-align:middle">
+                                                                    <span class="luongcbbaogomphucap-@iEntity">@String.Format("{0:#,###,###}", Math.Round((double)item.LuongCoBanBaoGomPhuCap / 1000d, 0))</span>
+                                                                </td>
+                                                                <td style="vertical-align:middle">
+                                                                    @String.Format("{0:#,###,###}", item.NgayCongLamViec)
+                                                                </td>
+                                                                <td style="vertical-align:middle">
+                                                                    @String.Format("{0:#,###,###}", item.NgayNghiLeTetHuongLuong)
+                                                                </td>
+                                                                <td style="vertical-align:middle">
+                                                                    @String.Format("{0:#,###,###}", item.CongCNGio)
+                                                                </td>
+                                                                <td style="vertical-align:middle">
+                                                                    @String.Format("{0:#,###,###}", item.CongTangCaNgayThuongGio)
+                                                                </td>
+                                                                <td style="vertical-align:middle">
+                                                                    @String.Format("{0:#,###,###}", item.CongLeTet)
+                                                                </td>
+                                                                <td style="vertical-align:middle">
+                                                                    @String.Format("{0:#,###,###}", Math.Round((double)item.CongTacXa / 1000d, 0))
+                                                                </td>
+                                                                <td style="vertical-align:middle">
+                                                                    @String.Format("{0:#,###,###}", item.CongCNGio)
+                                                                </td>
+                                                                <td style="vertical-align:middle">
+                                                                    @String.Format("{0:#,###,###}", item.MucDatTrongThang)
+                                                                </td>
+                                                                <td style="vertical-align:middle">
+                                                                    @String.Format("{0:#,###,###}", Math.Round((double)item.LuongTheoDoanhThuDoanhSo / 1000d, 0))
+                                                                </td>
+                                                                <td style="vertical-align:middle">
+                                                                    @String.Format("{0:#,###,###}", item.TongBunBoc)
+                                                                </td>
+                                                                <td style="vertical-align:middle">
+                                                                    @String.Format("{0:#,###,###}", Math.Round((double)item.ThanhTienBunBoc / 1000d, 0))
+                                                                </td>
+                                                                <td>
+                                                                    <input value="@Math.Round(Model.SalaryEmployeeMonths[iEntity].LuongKhac / 1000, 0)" name="SalaryEmployeeMonths[@iEntity].LuongKhac" class="form-control width100 numeric luongKhac-@iEntity" data-id="luongKhac-@iEntity" />
+                                                                </td>
+                                                                <td>
+                                                                    <input value="@Math.Round(Model.SalaryEmployeeMonths[iEntity].ThiDua / 1000, 0)" name="SalaryEmployeeMonths[@iEntity].ThiDua" class="form-control width100 numeric thiDua-@iEntity" data-id="thiDua-@iEntity" />
+                                                                </td>
+                                                                <td>
+                                                                    <input value="@Math.Round(Model.SalaryEmployeeMonths[iEntity].HoTroNgoaiLuong / 1000, 0)" name="SalaryEmployeeMonths[@iEntity].HoTroNgoaiLuong" class="form-control width100 numeric hoTroNgoaiLuong-@iEntity" data-id="hoTroNgoaiLuong-@iEntity" />
+                                                                </td>
+                                                                <td style="vertical-align:middle">
+                                                                    <span class="tongthunhap-@iEntity">@String.Format("{0:#,###,###}", Math.Round((double)item.TongThuNhap / 1000d, 0))</span>
+                                                                </td>
+                                                                <td style="vertical-align:middle">
+                                                                    @String.Format("{0:#,###,###}", Math.Round((double)item.BHXHBHYT / 1000d, 0))
+                                                                </td>
+                                                                <td>
+                                                                    <input value="@(Math.Round((double)Model.SalaryEmployeeMonths[iEntity].LuongThamGiaBHXH / 1000d, 0))" name="SalaryEmployeeMonths[@iEntity].LuongThamGiaBHXH" class="form-control width100 numeric luongThamGiaBHXH-@iEntity" data-id="luongThamGiaBHXH-@iEntity" />
+                                                                </td>
+                                                                <td style="vertical-align:middle">
+                                                                    @String.Format("{0:#,###,###}", Math.Round((double)item.TamUng / 1000d, 0))
+                                                                </td>
+                                                                <td style="vertical-align:middle">
+                                                                    <span class="thuclanh-@iEntity">@String.Format("{0:#,###,###}", Math.Round((double)item.ThucLanh / 1000d, 0))</span>
+                                                                </td>
+                                                            </tr>
+                                                            i++;
+                                                            iEntity++;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+</div>
+
+@section scripts {
+    <script type="text/javascript" src="~/js/bang-luong-real-update.js?@DateTime.Now.Ticks"></script>
+}
+
+
+

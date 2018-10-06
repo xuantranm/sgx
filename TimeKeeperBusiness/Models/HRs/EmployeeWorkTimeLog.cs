@@ -93,5 +93,7 @@ namespace Models
         public string InOutMode { get; set; }
 
         public string Workcode { get; set; }
+
+        public string SecureCode { get; set; }
     }
 }

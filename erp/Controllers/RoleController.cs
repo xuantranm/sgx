@@ -24,7 +24,7 @@ using Microsoft.AspNetCore.Authorization;
 namespace erp.Controllers
 {
     [Authorize]
-    [Route("r/")]
+    [Route(Constants.LinkRole.Role)]
     public class RoleController : Controller
     {
         MongoDBContext dbContext = new MongoDBContext();
@@ -43,7 +43,7 @@ namespace erp.Controllers
             _logger = logger;
         }
 
-        [Route("phan-quyen/")]
+        [Route(Constants.LinkRole.Index)]
         public ActionResult Index(string name)
         {
             var sort = Builders<Role>.Sort.Descending(m=>m.UpdatedOn);
@@ -57,7 +57,7 @@ namespace erp.Controllers
         }
 
         [HttpGet]
-        [Route("item/")]
+        [Route(Constants.LinkRole.Detail)]
         public JsonResult Item(string id)
         {
             var item = dbContext.Roles.Find(m => m.Id.Equals(id)).First();
@@ -66,7 +66,7 @@ namespace erp.Controllers
 
 
         [HttpPost]
-        [Route("create/")]
+        [Route(Constants.LinkRole.Create)]
         public ActionResult Create(RoleViewModel viewModel)
         {
             var userId = User.Identity.Name;
@@ -105,7 +105,7 @@ namespace erp.Controllers
         }
 
         [HttpPost]
-        [Route("edit/")]
+        [Route(Constants.LinkRole.Edit)]
         public ActionResult Edit(RoleViewModel viewModel)
         {
             var login = User.Identity.Name;
@@ -154,7 +154,7 @@ namespace erp.Controllers
         }
 
         [HttpPost]
-        [Route("disable/")]
+        [Route(Constants.LinkRole.Disable)]
         public ActionResult Disable(Role model)
         {
             var userId = User.Identity.Name;
@@ -196,7 +196,7 @@ namespace erp.Controllers
         }
 
         [HttpPost]
-        [Route("active/")]
+        [Route(Constants.LinkRole.Active)]
         public ActionResult Active(Role model)
         {
             var userId = User.Identity.Name;
@@ -238,7 +238,7 @@ namespace erp.Controllers
         }
 
         [HttpPost]
-        [Route("delete/")]
+        [Route(Constants.LinkRole.Delete)]
         public ActionResult Delete(RoleViewModel viewModel)
         {
             var userId = User.Identity.Name;
@@ -277,7 +277,7 @@ namespace erp.Controllers
 
         public bool CheckExistRole(Role entity)
         {
-            return dbContext.Roles.Find(m => m.Enable.Equals(true) && m.Alias.Equals(entity.Alias)).Count() > 0 ? false : true;
+            return dbContext.Roles.CountDocuments(m => m.Enable.Equals(true) && m.Alias.Equals(entity.Alias)) > 0 ? false : true;
         }
 
         public bool CheckUpdateRole(Role entity)
@@ -300,7 +300,7 @@ namespace erp.Controllers
 
         public bool CheckActive(Role entity)
         {
-            return dbContext.Roles.Find(m => m.Enable.Equals(true) && m.Alias.Equals(entity.Alias)).Count() > 0 ? false : true;
+            return dbContext.Roles.CountDocuments(m => m.Enable.Equals(true) && m.Alias.Equals(entity.Alias)) > 0 ? false : true;
         }
 
         public bool CheckDelete(Role entity)

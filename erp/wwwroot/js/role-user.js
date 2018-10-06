@@ -1,13 +1,13 @@
 ﻿$(function () {
     $('#editItemModal').on('show.bs.modal', function (event) {
-        var a = $(event.relatedTarget) // Button that triggered the modal
-        var recipient = a.data('id') // Extract info from data-* attributes
+        var a = $(event.relatedTarget); // Button that triggered the modal
+        var recipient = a.data('id'); // Extract info from data-* attributes
         // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
         // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
-        var modal = $(this)
+        var modal = $(this);
         $.ajax({
             type: "GET",
-            url: "/r-u/item/",
+            url: $('#hidDetailLink').val(),
             contentType: "application/json; charset=utf-8",
             data: { id: recipient },
             dataType: "json",
@@ -24,18 +24,17 @@
                 }
             }
         });
-
-    })
+    });
 
     $('#disableItemModal').on('show.bs.modal', function (event) {
-        var a = $(event.relatedTarget) // Button that triggered the modal
-        var recipient = a.data('id') // Extract info from data-* attributes
+        var a = $(event.relatedTarget); // Button that triggered the modal
+        var recipient = a.data('id'); // Extract info from data-* attributes
         // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
         // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
-        var modal = $(this)
+        var modal = $(this);
         $.ajax({
             type: "GET",
-            url: "/r-u/item/",
+            url: $('#hidDetailLink').val(),
             contentType: "application/json; charset=utf-8",
             data: { id: recipient },
             dataType: "json",
@@ -53,17 +52,17 @@
             }
         });
 
-    })
+    });
 
     $('#activeItemModal').on('show.bs.modal', function (event) {
-        var a = $(event.relatedTarget) // Button that triggered the modal
-        var recipient = a.data('id') // Extract info from data-* attributes
+        var a = $(event.relatedTarget); // Button that triggered the modal
+        var recipient = a.data('id'); // Extract info from data-* attributes
         // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
         // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
-        var modal = $(this)
+        var modal = $(this);
         $.ajax({
             type: "GET",
-            url: "/r-u/item/",
+            url: $('#hidDetailLink').val(),
             contentType: "application/json; charset=utf-8",
             data: { id: recipient },
             dataType: "json",
@@ -81,22 +80,22 @@
             }
         });
 
-    })
+    });
 
     $('#deleteItemModal').on('show.bs.modal', function (event) {
-        var a = $(event.relatedTarget) // Button that triggered the modal
-        var recipient = a.data('id') // Extract info from data-* attributes
+        var a = $(event.relatedTarget); // Button that triggered the modal
+        var recipient = a.data('id'); // Extract info from data-* attributes
         // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
         // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
-        var modal = $(this)
+        var modal = $(this);
         $.ajax({
             type: "GET",
-            url: "/r-u/item/",
+            url: $('#hidDetailLink').val(),
             contentType: "application/json; charset=utf-8",
             data: { id: recipient },
             dataType: "json",
             success: function (data) {
-                //console.log(data);
+                console.log(data);
                 if (data.result === false) {
                     console.log("Error.");
                     console.log(data);
@@ -108,7 +107,7 @@
                 }
             }
         });
-    })
+    });
 
     $(".data-form").on("submit", function (event) {
         var $this = $(this);
@@ -126,7 +125,7 @@
                 }, 1000);
             })
             .fail(function () {
-                toastr.error(data.message)
+                toastr.error(data.message);
             });
         event.preventDefault();
     });

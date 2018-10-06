@@ -283,6 +283,16 @@ namespace Models
         public string Intro { get; set; }
 
         public EmployeeBank EmployeeBank { get; set; }
+
+        #region SALARIES
+        public string SalaryNoiLamViec { get; set; }
+        public string SalaryPhongBan { get; set; }
+        public string SalaryChucVu { get; set; }
+        public string SalaryChucVuViTriCode { get; set; }
+        // nhóm vào chức vụ
+        public string SalaryMaSoChucDanhCongViec { get; set; }
+        public double SalaryMauSo { get; set; } = 26;
+        #endregion
     }
 
     public class EmployeeBank

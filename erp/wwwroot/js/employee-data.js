@@ -424,17 +424,25 @@
             data: formData
         })
             .done(function (data) {
+                console.log(data);
                 if (data.result === true) {
-                    $('#resultModal').modal();
-                    $('#modalnotice').html($.templates("#tmplModalNotice").render(data));
-                    resetForm();
+                    if ($('.right-hr').val() === "true") {
+                        $('#resultModal').modal();
+                        $('#modalnotice').html($.templates("#tmplModalNotice").render(data));
+                        resetForm();
+                    } else {
+                        toastr.success(data.message);
+                        setTimeout(function () {
+                            window.location = "/";
+                        }, 1000);
+                    }
                 }
                 else {
-                    if (data.error === "user") {
+                    if (data.source === "user") {
                         resetForm();
                         $('input[name="Employee.UserName"]').focus();
                     }
-                    if (data.error === "email") {
+                    if (data.source === "email") {
                         resetForm();
                         $('input[name="Employee.Email"]').focus();
                     }
@@ -442,7 +450,8 @@
                 }
             })
             .fail(function () {
-                toastr.error(data.message)
+                toastr.error(data.message);
+                resetForm();
             });
         event.preventDefault();
     });
@@ -453,7 +462,7 @@ function resetForm() {
     $('input', $('.data-form')).prop('disabled', false);
     $('select', $('.data-form')).prop('disabled', false);
     $('textarea', $('.data-form')).prop('disabled', false);
-    $('#btn-save-submit').html($('#btn-save-submit').data('original-text'));
+    $('#btn-save-submit').html('Lưu');
 }
 
 function setValue() {

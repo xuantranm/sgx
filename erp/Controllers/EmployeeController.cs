@@ -407,6 +407,39 @@ namespace erp.Controllers
             //return View(viewModel);
         }
 
+        [Route(Constants.LinkHr.Birthday + "/" + Constants.LinkHr.List)]
+        public async Task<IActionResult> Birthday()
+        {
+            #region Authorization
+            var login = User.Identity.Name;
+            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+            ViewData["LoginUserName"] = loginUserName;
+
+            var loginInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
+            if (loginInformation == null)
+            {
+                #region snippet1
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                #endregion
+                return RedirectToAction("login", "account");
+            }
+
+            //if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, "nhan-su", (int)ERights.View)))
+            //{
+            //    return RedirectToAction("AccessDenied", "Account");
+            //}
+
+            #endregion
+
+            var birthdays = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Birthday > Constants.MinDate).ToEnumerable()
+                .OrderBy(m => m.RemainingBirthDays).ToList();
+
+            var viewModel = new BirthdayViewModel()
+            {
+                Employees = birthdays
+            };
+            return View(viewModel);
+        }
 
         [HttpPost]
         [AllowAnonymous]
@@ -473,7 +506,7 @@ namespace erp.Controllers
         }
 
         // GET: Users/Details/5
-        [Route("nhan-su/thong-tin/{id}")]
+        [Route(Constants.LinkHr.Human + "/"+ Constants.LinkHr.Information+ "/"+ "{id}")]
         public ActionResult Details(string id)
         {
             if (string.IsNullOrEmpty(id))
@@ -1328,7 +1361,7 @@ namespace erp.Controllers
                     //{4} : Link chi tiết nhân sự
                     //{5}: Website
                     #endregion
-                    var subject = "[TRIBAT] Thay đổi thông tin nhân sự.";
+                    var subject = "Thay đổi thông tin nhân sự.";
                     var requester = entity.FullName;
                     var hrChanged = loginInformation.FullName;
                     if (!string.IsNullOrEmpty(loginInformation.Title))
@@ -1362,9 +1395,9 @@ namespace erp.Controllers
                     };
                     try
                     {
-                        var emailFrom = Constants.System.emailErp;
-                        var emailFromName = Constants.System.emailErpName;
-                        var emailFromPwd = Constants.System.emailErpPwd;
+                        var emailFrom = Constants.System.emailHr;
+                        var emailFromName = Constants.System.emailHrName;
+                        var emailFromPwd = Constants.System.emailHrPwd;
                         var message = new MimeMessage();
                         message.To.AddRange(emailMessage.ToAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
                         if (emailMessage.CCAddresses != null && emailMessage.CCAddresses.Count > 0)
@@ -1441,15 +1474,22 @@ namespace erp.Controllers
                             }
                         }
                     }
-                    // Test
 
-                    //tos = new List<EmailAddress>
-                    //{
-                    //    new EmailAddress { Name = "Xuan", Address = "xuan.tm1988@gmail.com" }
-                    //};
-                    //ccs = new List<EmailAddress>{
-                    //    new EmailAddress { Name = "Xuan CC", Address = "xuantranm@gmail.com" }
-                    //};
+                    #region UAT
+                    var uat = dbContext.Settings.Find(m=>m.Key.Equals("UAT")).FirstOrDefault();
+                    if (uat != null && uat.Value == "1")
+                    {
+                        tos = new List<EmailAddress>
+                        {
+                            new EmailAddress { Name = "Xuan", Address = "xuan.tm1988@gmail.com" }
+                        };
+
+                        ccs = new List<EmailAddress>
+                        {
+                            new EmailAddress { Name = "Xuan CC", Address = "xuantranm@gmail.com" }
+                        };
+                    }
+                    #endregion
 
                     // End Test
 
@@ -1470,7 +1510,7 @@ namespace erp.Controllers
                     //{4} : Link chi tiết nhân sự
                     //{5}: Website
                     #endregion
-                    var subject = "[TRIBAT] Thay đổi thông tin nhân sự.";
+                    var subject = "Thay đổi thông tin nhân sự.";
                     var requester = "Bộ phận nhân sự.";
                     var userTitle = entity.FullName;
                     if (!string.IsNullOrEmpty(entity.Title))
