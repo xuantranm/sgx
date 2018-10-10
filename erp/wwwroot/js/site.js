@@ -4,6 +4,16 @@
 $(function () {
     document.onkeypress = keyPress;
 
+    $(".toggle-password").on('click', function () {
+        $(this).toggleClass("fa-eye fa-eye-slash");
+        var input = $($(this).attr("toggle"));
+        if (input.attr("type") === "password") {
+            input.attr("type", "text");
+        } else {
+            input.attr("type", "password");
+        }
+    });
+
     //$('.btn').on('click', function () {
     //    var $this = $(this);
     //    var loadingText = '<i class="fa fa-circle-o-notch fa-spin"></i> đang xử lý...';

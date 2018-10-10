@@ -518,11 +518,17 @@
                             <li class="list-inline-item">
                                 <a href="/">Trang chủ</a>
                             </li>
-                            <li class="list-inline-item">
-                                <a href="/tai-lieu/">Tài liệu</a>
-                            </li>
+                            @if (rightSystem)
+                            {
+                                <li class="list-inline-item">
+                                    <a href="/tai-lieu/">Tài liệu</a>
+                                </li>
+                            }
                             <li class="list-inline-item">
                                 <a href="/v/phien-ban/">Phiên bản</a>
+                            </li>
+                            <li class="list-inline-item">
+                                <a href="/@Constants.LinkDocument.Main/@Constants.LinkDocument.GettingStarted" alt="Hướng dẫn sử dụng" target="_blank" data-toggle="tooltip" title="Bấm vô để mở hướng dẫn chi tiết bằng hình ảnh.">Hướng dẫn sử dụng</a>
                             </li>
                         </ul>
                     </div>
@@ -570,10 +576,12 @@
                         <div class="form-group">
                             <label for="recipient-name" class="col-form-label">Mật khẩu mới:</label>
                             <input type="password" class="form-control form-control-lg" name="newpassword" id="newpassword" />
+                            <span toggle="#newpassword" class="fa fa-fw fa-eye field-icon toggle-password"></span>
                         </div>
                         <div class="form-group">
                             <label for="message-text" class="col-form-label">Nhập lại mật khẩu mới:</label>
                             <input type="password" class="form-control form-control-lg" id="renewpassword" />
+                            <span toggle="#renewpassword" class="fa fa-fw fa-eye field-icon toggle-password"></span>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -622,7 +630,7 @@
     <script type="text/javascript" src="~/lib/datetimepicker-tempusdominus/js/tempusdominus-bootstrap-4.min.js"></script>
     <script type="text/javascript" src="~/lib/js-render/jsrender.min.js"></script>
     <script type="text/javascript" src="~/lib/select2/select2.min.js"></script>
-    <script type="text/javascript" src="~/js/site.js"></script>
+    <script type="text/javascript" src="~/js/site.js?@DateTime.Now.Ticks"></script>
 
     @RenderSection("scripts", required: false)
 

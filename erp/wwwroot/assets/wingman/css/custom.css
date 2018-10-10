@@ -152,3 +152,14 @@ img {
 .width100{
     width:100px;
 }
+.btn-change-data, .select-change-data, .select2-change-data, .txt-change-data {
+    cursor: pointer;
+}
+
+.field-icon {
+    float: right;
+    margin-left: -25px;
+    margin-top: -30px;
+    position: relative;
+    z-index: 2;
+}

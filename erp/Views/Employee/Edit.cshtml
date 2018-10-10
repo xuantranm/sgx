@@ -9,12 +9,14 @@
     var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
     var rightSystem = false;
     var rightHr = false;
+    var rightNhanSu = false;
     var rightLuong = false;
     var rightNhaMay = false;
     if (!string.IsNullOrEmpty(login))
     {
         rightSystem = Utility.IsRight(login, Constants.Rights.System, (int)ERights.View);
         rightHr = Utility.IsRight(login, Constants.Rights.HR, (int)ERights.Edit);
+        rightNhanSu = Utility.IsRight(login, Constants.Rights.NhanSu, (int)ERights.Edit);
         rightLuong = Utility.IsRight(login, Constants.Rights.Luong, (int)ERights.Edit);
         rightNhaMay = Utility.IsRight(login, Constants.Rights.NhaMay, (int)ERights.View);
     }
@@ -26,7 +28,8 @@
     }
 }
 
-<input type="hidden" value="@rightHr" class="right-hr"/>
+<input type="hidden" value="@rightHr" class="right-hr" />
+<input type="hidden" value="@rightNhanSu" class="right-nhan-su" />
 <div class="main-container">
     <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
         <div class="container">
@@ -37,7 +40,7 @@
                             <a href="/">Trang chủ</a>
                         </li>
                         <li class="breadcrumb-item">
-                            <a href="/hr/nhan-su">Nhân sự</a>
+                            <a href="/@Constants.LinkHr.Main/@Constants.LinkHr.Human">Nhân sự</a>
                         </li>
                         <li class="breadcrumb-item active" aria-current="page">Cập nhật tài khoản @Model.Employee.FullName</li>
                     </ol>
@@ -94,7 +97,7 @@
                                 var cover = Model.Employee.Cover;
                                 @if (cover != null)
                                 {
-                                    var pathCover = Url.Content("https://localhost:44366" + cover.Path + cover.FileName);
+                                    var pathCover = Url.Content(Constants.System.domain + cover.Path + cover.FileName);
                                     coverDisplay = "background-image: url(" + pathCover.Replace("\\", "/") + "); width:354px;height:167px";
                                 }
                             }
@@ -178,60 +181,13 @@
                                     <div class="col-12">
                                         <div class="form-group">
                                             <i class="icon icon-email"></i>
-                                            <label asp-for="Employee.Email" class="control-label"></label><span class="text-red">*</span>
+                                            <label asp-for="Employee.Email" class="control-label"></label>
                                             <p><span>@Model.Employee.Email</span></p>
                                             @*<input asp-for="Employee.Email" class="form-control form-control-lg" readonly />*@
                                             <span asp-validation-for="Employee.Email" class="text-danger"></span>
-                                            <small>@*Can used to log in to your account*@Có thể đăng nhập bằng email, mật khẩu được gửi tới email này.</small>
                                         </div>
                                     </div>
-                                    <div class="col-6">
-                                        <div class="form-group">
-                                            <i class="icon icon-phone"></i>
-                                            <label asp-for="Employee.Tel" class="control-label"></label>
-                                            <input asp-for="Employee.Tel" class="form-control form-control-lg" />
-                                            <span asp-validation-for="Employee.Tel" class="text-danger"></span>
-                                        </div>
-                                    </div>
-                                    @{
-                                        if (Model.Employee.Mobiles != null && Model.Employee.Mobiles.Count > 0)
-                                        {
-                                            i = 0;
-                                            var dnoneMobile = Model.Employee.Mobiles.Count == 1 ? "d-none" : string.Empty;
-                                            foreach (var mobile in Model.Employee.Mobiles)
-                                            {
-                                                if (!string.IsNullOrEmpty(mobile.Number))
-                                                {
-                                                    <div class="col-6 nodeMobile node">
-                                                        <div class="form-group">
-                                                            <i class="icon icon-phone"></i>
-                                                            <label class="control-label">Số điện thoại</label>
-                                                            <button type="button" class="btn btn-link btn-sm @dnoneMobile remove-item"><i class="icon-squared-cross"></i>Xóa</button>
-                                                            <input name="Employee.Mobiles[@i].Number" value="@mobile.Number" class="form-control form-control-lg" />
-                                                        </div>
-                                                        <input type="hidden" class="codeMobile" value="@i" />
-                                                    </div>
-                                                    i++;
-                                                }
-                                            }
-                                        }
-                                    }
-                                    <div class="col-12 p-1 more-mobile">
-                                        <div class="form-group">
-                                            <button class="btn btn-secondary btn-sm addMobile" type="button"><i class="icon icon-add-to-list"></i> Thêm số di động</button>
-                                        </div>
-                                    </div>
-                                    <script id="tmplMobile" type="text/x-jsrender">
-                                        <div class="col-6 nodeMobile node">
-                                            <div class="form-group">
-                                                <i class="icon icon-phone"></i>
-                                                <label>Số điện thoại</label>
-                                                <button type="button" class="btn btn-link btn-sm remove-item"><i class="icon-squared-cross"></i>Xóa</button>
-                                                <input name="Employee.Mobiles[{{:code}}].Number" class="form-control form-control-lg" />
-                                            </div>
-                                            <input type="hidden" class="codeMobile" value="{{:code}}" />
-                                        </div>
-                                    </script>
+
                                     <div class="col-6">
                                         <div class="form-group">
                                             <i class="icon icon-cake"></i>
@@ -292,7 +248,7 @@
                                                         <button class="btn btn-sm btn-add-department" type="button" data-toggle="modal" data-target="#newDepartment" title="Tạo mới Phòng/ban">+</button>
                                                     </div>
                                                 </div>
-                                                                }
+                                            }
                                         </div>
                                     </div>
                                     <div class="col-6">
@@ -321,7 +277,7 @@
                                                         <button class="btn btn-sm btn-add-part" type="button" data-toggle="modal" data-target="#newPart" title="Tạo mới Bộ phận">+</button>
                                                     </div>
                                                 </div>
-                                                                }
+                                            }
                                         </div>
                                     </div>
                                     <div class="col-6">
@@ -350,7 +306,7 @@
                                                         <button class="btn btn-sm btn-add-title" type="button" data-toggle="modal" data-target="#newTitle" title="Tạo mới Công việc">+</button>
                                                     </div>
                                                 </div>
-                                                                }
+                                            }
                                         </div>
                                     </div>
                                     <div class="col-6">
@@ -390,7 +346,7 @@
                                                         }
                                                     }
                                                 </select>
-                                                        }
+                                            }
 
                                             <input type="hidden" value="@Model.Employee.ManagerId" id="hidManagerId" />
                                             <script id="tmplManagePeople" type="text/x-jsrender">
@@ -458,7 +414,7 @@
                                                         }
                                                     }
                                                 </select>
-                                                        }
+                                            }
                                         </div>
                                     </div>
                                     @if (readonlyMode)
@@ -523,10 +479,10 @@
                                                     <input type="hidden" name="Employee.Workplaces[@i].Code" value="@workplace.Code" />
                                                     <input type="hidden" name="Employee.Workplaces[@i].Name" value="@workplace.Name" />
                                                 </div>
-                                                                            i++;
-                                                                        }
-                                                                    }
-                                                                }
+                                                i++;
+                                            }
+                                        }
+                                    }
                                     <script id="tmplWorkplace" type="text/x-jsrender">
                                         <div class="col-6 nodeWorkplace node">
                                             <div class="form-group">
@@ -614,24 +570,34 @@
                                                     <span asp-validation-for="Employee.LeaveLevelYear" class="text-danger"></span>
                                                 </div>
                                             </div>
-                                            <div class="col-6 d-none">
-                                                <div class="form-group">
-                                                    <i class="icon icon-archive"></i>
-                                                    <label class="control-label">Số ngày phép còn lại</label>
-                                                    <input name="Employee.LeaveDayAvailable" value="@Model.Employee.LeaveDayAvailable.ToString("G29")" class="form-control form-control-lg" />
-                                                    <span asp-validation-for="Employee.LeaveDayAvailable" class="text-danger"></span>
+                                            @if (rightHr)
+                                            {
+                                                <div class="col-6">
+                                                    <div class="form-group">
+                                                        <i class="icon icon-archive"></i>
+                                                        <label class="control-label">Số ngày phép còn lại</label>
+                                                        <input name="Employee.LeaveDayAvailable" value="@Model.Employee.LeaveDayAvailable.ToString("G29")" class="form-control form-control-lg" />
+                                                        <span asp-validation-for="Employee.LeaveDayAvailable" class="text-danger"></span>
+                                                    </div>
                                                 </div>
-                                            </div>
+                                            }
                                         </div>
                                     </div>
 
                                     @{
                                         var showFilter = "";
+                                        var iconFilter = "icon-add-to-list";
                                         var textFilter = "Mở rộng";
+                                        if (!rightHr)
+                                        {
+                                            showFilter = "show";
+                                            iconFilter = "icon-list";
+                                            textFilter = "Thu gọn";
+                                        }
                                     }
 
                                     <a class="nav-link custom-more collapsed" data-toggle="collapse" href="#more" aria-expanded="false" aria-controls="more">
-                                        <i class="icon icon-add-to-list"></i> @textFilter
+                                        <i class="icon @iconFilter"></i> @textFilter
                                     </a>
                                 </div>
                             </div>
@@ -692,62 +658,334 @@
                                             <textarea asp-for="Employee.LeaveReason" class="form-control form-control-lg"></textarea>
                                         </div>
                                     </div>
+                                }
+                                <div class="col-6">
+                                    <div class="form-group">
+                                        <i class="icon icon-phone"></i>
+                                        <label asp-for="Employee.Tel" class="control-label"></label>
+                                        @if (!Model.StatusChange)
+                                        {
+                                            <input asp-for="Employee.Tel" class="form-control form-control-lg" />
+                                        }
+                                        else
+                                        {
+                                            if (Model.EmployeeChance != null && Model.Employee.Tel != Model.EmployeeChance.Tel)
+                                            {
+                                                if (rightNhanSu)
+                                                {
+                                                    <input asp-for="Employee.Tel" class="form-control form-control-lg" />
+                                                    <p class="btn-change-data" data-value="@Model.EmployeeChance.Tel"><small class="badge badge-info"><i class="far fa-check-circle"></i> Xác nhận</small> <a href="tel:@Model.EmployeeChance.Tel">@Model.EmployeeChance.Tel</a></p>
                                                 }
+                                                else
+                                                {
+                                                    <input asp-for="Employee.Tel" value="@Model.EmployeeChance.Tel" class="form-control form-control-lg" />
+                                                    <p class="change-data"><small class="badge badge-info">@Constants.CurrentText</small> <a href="tel:@Model.Employee.Tel">@Model.Employee.Tel</a></p>
+                                                }
+                                            }
+                                        }
+                                    </div>
+                                </div>
+                                @{
+                                    if (Model.Employee.Mobiles != null && Model.Employee.Mobiles.Count > 0)
+                                    {
+                                        int iMobile = 0;
+                                        var dnoneMobile = Model.Employee.Mobiles.Count == 1 ? "d-none" : string.Empty;
+                                        foreach (var mobile in Model.Employee.Mobiles)
+                                        {
+                                            if (!string.IsNullOrEmpty(mobile.Number))
+                                            {
+                                                <div class="col-6 nodeMobile node">
+                                                    <div class="form-group">
+                                                        <i class="icon icon-phone"></i>
+                                                        <label class="control-label">Số điện thoại</label>
+                                                        @if (!Model.StatusChange)
+                                                        {
+                                                            <input name="Employee.Mobiles[@iMobile].Number" value="@mobile.Number" class="form-control form-control-lg" />
+                                                        }
+                                                        else
+                                                        {
+                                                            if (Model.EmployeeChance != null && Model.EmployeeChance.Mobiles != null && Model.EmployeeChance.Mobiles.Count > 0 && mobile.Number != Model.EmployeeChance.Mobiles[iMobile].Number)
+                                                            {
+                                                                if (rightNhanSu)
+                                                                {
+                                                                    <input name="Employee.Mobiles[@iMobile].Number" value="@mobile.Number" class="form-control form-control-lg" />
+                                                                    <p class="btn-change-data" data-value="@Model.EmployeeChance.Mobiles[iMobile].Number"><small class="badge badge-info"><i class="far fa-check-circle"></i> Xác nhận</small> <a href="tel:@Model.EmployeeChance.Mobiles[iMobile].Number">@Model.EmployeeChance.Mobiles[iMobile].Number</a></p>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <input name="Employee.Mobiles[@iMobile].Number" value="@Model.EmployeeChance.Mobiles[iMobile].Number" class="form-control form-control-lg" />
+                                                                    <p class="change-data"><small class="badge badge-info">@Constants.CurrentText</small> <a href="tel:@mobile.Number">@mobile.Number</a></p>
+                                                                }
+                                                            }
+                                                        }
+                                                        @if (iMobile != 0)
+                                                        {
+                                                            <button type="button" class="btn btn-link btn-sm @dnoneMobile remove-item"><i class="icon-squared-cross"></i>Xóa</button>
+                                                        }
+
+                                                    </div>
+                                                    <input type="hidden" class="codeMobile" value="@iMobile" />
+                                                </div>
+                                                iMobile++;
+                                            }
+                                        }
+                                    }
+                                }
+                                <div class="col-12 p-1 more-mobile">
+                                    <div class="form-group">
+                                        <button class="btn btn-success btn-sm addMobile" type="button"><i class="icon icon-add-to-list"></i> Thêm số di động</button>
+                                    </div>
+                                </div>
+                                <script id="tmplMobile" type="text/x-jsrender">
+                                    <div class="col-6 nodeMobile node">
+                                        <div class="form-group">
+                                            <i class="icon icon-phone"></i>
+                                            <label>Số điện thoại</label>
+                                            <button type="button" class="btn btn-link btn-sm remove-item"><i class="icon-squared-cross"></i>Xóa</button>
+                                            <input name="Employee.Mobiles[{{:code}}].Number" class="form-control form-control-lg" />
+                                        </div>
+                                        <input type="hidden" class="codeMobile" value="{{:code}}" />
+                                    </div>
+                                </script>
+
                                 <div class="col-12">
                                     <div class="form-group">
                                         <label asp-for="Employee.Bornplace" class="control-label"></label>
-                                        <input asp-for="Employee.Bornplace" class="form-control form-control-lg" />
-                                        <span asp-validation-for="Employee.Bornplace" class="text-danger"></span>
+                                        @if (!Model.StatusChange)
+                                        {
+                                            <input asp-for="Employee.Bornplace" class="form-control form-control-lg" />
+                                        }
+                                        else
+                                        {
+                                            if (Model.EmployeeChance != null && Model.Employee.Bornplace != Model.EmployeeChance.Bornplace)
+                                            {
+                                                if (rightNhanSu)
+                                                {
+                                                    <input asp-for="Employee.Bornplace" class="form-control form-control-lg" />
+                                                    <p class="btn-change-data" data-value="@Model.EmployeeChance.Bornplace"><small class="badge badge-info"><i class="far fa-check-circle"></i> Xác nhận</small> @Model.EmployeeChance.Bornplace</p>
+                                                }
+                                                else
+                                                {
+                                                    <input asp-for="Employee.Bornplace" value="@Model.EmployeeChance.Bornplace" class="form-control form-control-lg" />
+                                                    <p class="change-data"><small class="badge badge-info">@Constants.CurrentText</small> @Model.Employee.Bornplace</p>
+                                                }
+                                            }
+                                        }
                                     </div>
                                 </div>
+
+
+
+
                                 <div class="col-12">
                                     <div class="form-group">
                                         <label asp-for="Employee.AddressResident" class="control-label"></label>
-                                        <input asp-for="Employee.AddressResident" class="form-control form-control-lg" />
-                                        <span asp-validation-for="Employee.AddressResident" class="text-danger"></span>
+                                        @if (!Model.StatusChange)
+                                        {
+                                            <input asp-for="Employee.AddressResident" class="form-control form-control-lg" />
+                                        }
+                                        else
+                                        {
+                                            if (Model.EmployeeChance != null && Model.Employee.AddressResident != Model.EmployeeChance.AddressResident)
+                                            {
+                                                if (rightNhanSu)
+                                                {
+                                                    <input asp-for="Employee.AddressResident" class="form-control form-control-lg" />
+                                                    <p class="btn-change-data" data-value="@Model.EmployeeChance.AddressResident">
+                                                        <small class="badge badge-info"><i class="far fa-check-circle"></i> Xác nhận</small>
+                                                        @Model.EmployeeChance.AddressResident
+                                                    </p>
+                                                }
+                                                else
+                                                {
+                                                    <input asp-for="Employee.AddressResident" value="@Model.EmployeeChance.AddressResident" class="form-control form-control-lg" />
+                                                    <p class="change-data"><small class="badge badge-info">@Constants.CurrentText</small> @Model.Employee.AddressResident</p>
+                                                }
+                                            }
+                                        }
                                     </div>
                                 </div>
                                 <div class="col-12">
                                     <div class="form-group">
                                         <label asp-for="Employee.AddressTemporary" class="control-label"></label>
-                                        <input asp-for="Employee.AddressTemporary" class="form-control form-control-lg" />
-                                        <span asp-validation-for="Employee.AddressTemporary" class="text-danger"></span>
+                                        @if (!Model.StatusChange)
+                                        {
+                                            <input asp-for="Employee.AddressTemporary" class="form-control form-control-lg" />
+                                        }
+                                        else
+                                        {
+                                            if (Model.EmployeeChance != null && Model.Employee.AddressTemporary != Model.EmployeeChance.AddressTemporary)
+                                            {
+                                                if (rightNhanSu)
+                                                {
+                                                    <input asp-for="Employee.AddressTemporary" class="form-control form-control-lg" />
+                                                    <p class="btn-change-data" data-value="@Model.EmployeeChance.AddressTemporary">
+                                                        <small class="badge badge-info"><i class="far fa-check-circle"></i> Xác nhận</small>
+                                                        @Model.EmployeeChance.AddressTemporary
+                                                    </p>
+                                                }
+                                                else
+                                                {
+                                                    <input asp-for="Employee.AddressTemporary" value="@Model.EmployeeChance.AddressTemporary" class="form-control form-control-lg" />
+                                                    <p class="change-data"><small class="badge badge-info">@Constants.CurrentText</small> @Model.Employee.AddressTemporary</p>
+                                                }
+                                            }
+                                        }
                                     </div>
                                 </div>
                                 <div class="col-12">
                                     <div class="form-group">
                                         <i class="icon icon-email"></i>
-                                        <label asp-for="Employee.EmailPersonal" class="control-label"></label><span class="text-red">*</span>
-                                        <input asp-for="Employee.EmailPersonal" class="form-control form-control-lg" />
-                                        <span asp-validation-for="Employee.EmailPersonal" class="text-danger"></span>
+                                        <label asp-for="Employee.EmailPersonal" class="control-label"></label>
+                                        @if (!Model.StatusChange)
+                                        {
+                                            <input asp-for="Employee.EmailPersonal" class="form-control form-control-lg" />
+                                        }
+                                        else
+                                        {
+                                            if (Model.EmployeeChance != null && Model.Employee.EmailPersonal != Model.EmployeeChance.EmailPersonal)
+                                            {
+                                                if (rightNhanSu)
+                                                {
+                                                    <input asp-for="Employee.EmailPersonal" class="form-control form-control-lg" />
+                                                    <p class="btn-change-data" data-value="@Model.EmployeeChance.EmailPersonal">
+                                                        <small class="badge badge-info"><i class="far fa-check-circle"></i> Xác nhận</small>
+                                                        @Model.EmployeeChance.EmailPersonal
+                                                    </p>
+                                                }
+                                                else
+                                                {
+                                                    <input asp-for="Employee.EmailPersonal" value="@Model.EmployeeChance.EmailPersonal" class="form-control form-control-lg" />
+                                                    <p class="change-data"><small class="badge badge-info">@Constants.CurrentText</small> @Model.Employee.EmailPersonal</p>
+                                                }
+                                            }
+                                        }
                                     </div>
                                 </div>
                                 <div class="col-sm-6 col-xs-12">
                                     <div class="form-group">
                                         <label asp-for="Employee.StatusMarital" class="control-label"></label>
-                                        <select asp-for="Employee.StatusMarital" class="form-control form-control-lg">
-                                            <option value="">Chọn</option>
-                                            <option value="S">Độc thân</option>
-                                            <option value="M">Kết hôn</option>
-                                        </select>
+                                        @if (!Model.StatusChange)
+                                        {
+                                            <select asp-for="Employee.StatusMarital" class="form-control form-control-lg">
+                                                <option value="">Chọn</option>
+                                                <option value="S">Độc thân</option>
+                                                <option value="M">Kết hôn</option>
+                                            </select>
+                                        }
+                                        else
+                                        {
+                                            if (Model.EmployeeChance != null && Model.Employee.EmailPersonal != Model.EmployeeChance.EmailPersonal)
+                                            {
+                                                if (rightNhanSu)
+                                                {
+                                                    <select asp-for="Employee.StatusMarital" class="form-control form-control-lg">
+                                                        <option value="">Chọn</option>
+                                                        <option value="S">Độc thân</option>
+                                                        <option value="M">Kết hôn</option>
+                                                    </select>
+                                                    <p class="select-change-data" data-value="@Model.EmployeeChance.StatusMarital">
+                                                        <small class="badge badge-info"><i class="far fa-check-circle"></i> Xác nhận</small>
+                                                        @Constants.Married(Model.EmployeeChance.StatusMarital)
+                                                    </p>
+                                                }
+                                                else
+                                                {
+                                                    <select asp-for="EmployeeChance.StatusMarital" name="Model.Employee.StatusMarital" class="form-control form-control-lg">
+                                                        <option value="">Chọn</option>
+                                                        <option value="S">Độc thân</option>
+                                                        <option value="M">Kết hôn</option>
+                                                    </select>
+                                                    <p class="change-data"><small class="badge badge-info">@Constants.CurrentText</small> @Constants.Married(Model.Employee.StatusMarital)</p>
+                                                }
+                                            }
+                                        }
                                     </div>
                                 </div>
+
+
                                 <div class="col-sm-6 col-xs-12">
                                     <div class="form-group">
                                         <label asp-for="Employee.Nation" class="control-label"></label>
-                                        <input asp-for="Employee.Nation" class="form-control form-control-lg" />
+                                        @if (!Model.StatusChange)
+                                        {
+                                            <input asp-for="Employee.Nation" class="form-control form-control-lg" />
+                                        }
+                                        else
+                                        {
+                                            if (Model.EmployeeChance != null && Model.Employee.Nation != Model.EmployeeChance.Nation)
+                                            {
+                                                if (rightNhanSu)
+                                                {
+                                                    <input asp-for="Employee.Nation" class="form-control form-control-lg" />
+                                                    <p class="btn-change-data" data-value="@Model.EmployeeChance.Nation">
+                                                        <small class="badge badge-info"><i class="far fa-check-circle"></i> Xác nhận</small>
+                                                        @Model.EmployeeChance.Nation
+                                                    </p>
+                                                }
+                                                else
+                                                {
+                                                    <input asp-for="Employee.Nation" value="@Model.EmployeeChance.Nation" class="form-control form-control-lg" />
+                                                    <p class="change-data"><small class="badge badge-info">@Constants.CurrentText</small> @Model.Employee.Nation</p>
+                                                }
+                                            }
+                                        }
                                     </div>
                                 </div>
                                 <div class="col-sm-6 col-xs-12">
                                     <div class="form-group">
                                         <label asp-for="Employee.Religion" class="control-label"></label>
-                                        <input asp-for="Employee.Religion" class="form-control form-control-lg" />
+                                        @if (!Model.StatusChange)
+                                        {
+                                            <input asp-for="Employee.Religion" class="form-control form-control-lg" />
+                                        }
+                                        else
+                                        {
+                                            if (Model.EmployeeChance != null && Model.Employee.Religion != Model.EmployeeChance.Religion)
+                                            {
+                                                if (rightNhanSu)
+                                                {
+                                                    <input asp-for="Employee.Religion" class="form-control form-control-lg" />
+                                                    <p class="btn-change-data" data-value="@Model.EmployeeChance.Religion">
+                                                        <small class="badge badge-info"><i class="far fa-check-circle"></i> Xác nhận</small>
+                                                        @Model.EmployeeChance.Religion
+                                                    </p>
+                                                }
+                                                else
+                                                {
+                                                    <input asp-for="Employee.Religion" value="@Model.EmployeeChance.Religion" class="form-control form-control-lg" />
+                                                    <p class="change-data"><small class="badge badge-info">@Constants.CurrentText</small> @Model.Employee.Religion</p>
+                                                }
+                                            }
+                                        }
                                     </div>
                                 </div>
                                 <div class="col-12">
                                     <div class="form-group">
                                         <label asp-for="Employee.Intro" class="control-label"></label>
-                                        <textarea asp-for="Employee.Intro" class="form-control form-control-lg js-auto-size"></textarea>
+                                        @if (!Model.StatusChange)
+                                        {
+                                            <textarea asp-for="Employee.Intro" class="form-control form-control-lg js-auto-size"></textarea>
+                                        }
+                                        else
+                                        {
+                                            if (Model.EmployeeChance != null && Model.Employee.Intro != Model.EmployeeChance.Intro)
+                                            {
+                                                if (rightNhanSu)
+                                                {
+                                                    <textarea asp-for="Employee.Intro" class="form-control form-control-lg js-auto-size"></textarea>
+                                                    <p class="txt-change-data" data-value="@Model.EmployeeChance.Intro">
+                                                        <small class="badge badge-info"><i class="far fa-check-circle"></i> Xác nhận</small>
+                                                        @Model.EmployeeChance.Intro
+                                                    </p>
+                                                }
+                                                else
+                                                {
+                                                    <textarea asp-for="Employee.Intro" class="form-control form-control-lg js-auto-size">@Model.EmployeeChance.Intro</textarea>
+                                                    <p class="change-data"><small class="badge badge-info">@Constants.CurrentText</small> @Model.Employee.Intro</p>
+                                                }
+                                            }
+                                        }
                                     </div>
                                 </div>
                             </div>
@@ -776,31 +1014,117 @@
                                         <div class="col-12">
                                             <div class="form-group">
                                                 <label asp-for="Employee.IdentityCard" class="control-label"></label>
-                                                <input asp-for="Employee.IdentityCard" class="form-control form-control-lg" />
-                                                <span asp-validation-for="Employee.IdentityCard" class="text-danger"></span>
+                                                @if (!Model.StatusChange)
+                                                {
+                                                    <input asp-for="Employee.IdentityCard" class="form-control form-control-lg" />
+                                                }
+                                                else
+                                                {
+                                                    if (Model.EmployeeChance != null && Model.Employee.IdentityCard != Model.EmployeeChance.IdentityCard)
+                                                    {
+                                                        if (rightNhanSu)
+                                                        {
+                                                            <input asp-for="Employee.IdentityCard" class="form-control form-control-lg" />
+                                                            <p class="btn-change-data" data-value="@Model.EmployeeChance.IdentityCard">
+                                                                <small class="badge badge-info"><i class="far fa-check-circle"></i> Xác nhận</small>
+                                                                @Model.EmployeeChance.IdentityCard
+                                                            </p>
+                                                        }
+                                                        else
+                                                        {
+                                                            <input asp-for="Employee.IdentityCard" value="@Model.EmployeeChance.IdentityCard" class="form-control form-control-lg" />
+                                                            <p class="change-data"><small class="badge badge-info">@Constants.CurrentText</small> @Model.Employee.IdentityCard</p>
+                                                        }
+                                                    }
+                                                }
                                             </div>
                                         </div>
+
                                         <div class="col-6">
                                             <div class="form-group">
                                                 <label asp-for="Employee.IdentityCardDate" class="control-label"></label>
                                                 @{
-                                                    if (Model.Employee.IdentityCardDate.HasValue)
+                                                    var identityCardDate = Model.Employee.IdentityCardDate.HasValue && Model.Employee.IdentityCardDate.Value.Year > 1900 ? Model.Employee.IdentityCardDate.Value.ToString("dd/MM/yyyy") : string.Empty;
+                                                    var identityCardDateChange = string.Empty;
+                                                    if (Model.StatusChange && Model.EmployeeChance != null)
                                                     {
-                                                        <input class="form-control form-control-lg datepicker datepicker-lg" value="@Model.Employee.IdentityCardDate.Value.ToString("dd/MM/yyyy")" />
+                                                        identityCardDateChange = Model.EmployeeChance.IdentityCardDate.HasValue && Model.EmployeeChance.IdentityCardDate.Value.Year > 1900 ? Model.EmployeeChance.IdentityCardDate.Value.ToString("dd/MM/yyyy") : string.Empty;
+                                                    }
+
+                                                    if (!Model.StatusChange)
+                                                    {
+                                                        if (!string.IsNullOrEmpty(identityCardDate))
+                                                        {
+                                                            <input class="form-control form-control-lg datepicker datepicker-lg" value="@identityCardDate" />
+                                                        }
+                                                        else
+                                                        {
+                                                            <input class="form-control form-control-lg datepicker datepicker-lg" />
+                                                        }
+                                                        <input type="hidden" name="Employee.IdentityCardDate" class="form-control form-control-lg hidedatepicker" value="@Model.Employee.IdentityCardDate" />
                                                     }
                                                     else
                                                     {
-                                                        <input class="form-control form-control-lg datepicker datepicker-lg" />
+                                                        if (!string.IsNullOrEmpty(identityCardDateChange) && Model.Employee.IdentityCardDate != Model.EmployeeChance.IdentityCardDate)
+                                                        {
+                                                            if (rightNhanSu)
+                                                            {
+                                                                if (!string.IsNullOrEmpty(identityCardDate))
+                                                                {
+                                                                    <input class="form-control form-control-lg datepicker datepicker-lg" value="@identityCardDate" />
+                                                                }
+                                                                else
+                                                                {
+                                                                    <input class="form-control form-control-lg datepicker datepicker-lg" />
+                                                                }
+                                                                <p class="btn-change-data" data-value="@identityCardDateChange"><small class="badge badge-info"><i class="far fa-check-circle"></i> Xác nhận</small> @identityCardDateChange</p>
+                                                                <input type="hidden" name="Employee.IdentityCardDate" class="form-control form-control-lg hidedatepicker" value="@Model.Employee.IdentityCardDate" />
+                                                            }
+                                                            else
+                                                            {
+                                                                if (!string.IsNullOrEmpty(identityCardDateChange))
+                                                                {
+                                                                    <input class="form-control form-control-lg datepicker datepicker-lg" value="@identityCardDateChange" />
+                                                                }
+                                                                else
+                                                                {
+                                                                    <input class="form-control form-control-lg datepicker datepicker-lg" />
+                                                                }
+                                                                <p class="change-data"><small class="badge badge-info">@Constants.CurrentText</small> @identityCardDate</p>
+                                                                <input type="hidden" name="Employee.IdentityCardDate" class="form-control form-control-lg hidedatepicker" value="@Model.EmployeeChance.IdentityCardDate" />
+                                                            }
+                                                        }
                                                     }
                                                 }
-                                                <input type="hidden" name="Employee.IdentityCardDate" class="form-control form-control-lg hidedatepicker" value="@Model.Employee.IdentityCardDate" />
+
                                             </div>
                                         </div>
                                         <div class="col-6">
                                             <div class="form-group">
                                                 <label asp-for="Employee.IdentityCardPlace" class="control-label"></label>
-                                                <input asp-for="Employee.IdentityCardPlace" class="form-control form-control-lg" />
-                                                <span asp-validation-for="Employee.IdentityCardPlace" class="text-danger"></span>
+                                                @if (!Model.StatusChange)
+                                                {
+                                                    <input asp-for="Employee.IdentityCardPlace" class="form-control form-control-lg" />
+                                                }
+                                                else
+                                                {
+                                                    if (Model.EmployeeChance != null && Model.Employee.IdentityCardPlace != Model.EmployeeChance.IdentityCardPlace)
+                                                    {
+                                                        if (rightNhanSu)
+                                                        {
+                                                            <input asp-for="Employee.IdentityCardPlace" class="form-control form-control-lg" />
+                                                            <p class="btn-change-data" data-value="@Model.EmployeeChance.IdentityCardPlace">
+                                                                <small class="badge badge-info"><i class="far fa-check-circle"></i> Xác nhận</small>
+                                                                @Model.EmployeeChance.IdentityCardPlace
+                                                            </p>
+                                                        }
+                                                        else
+                                                        {
+                                                            <input asp-for="Employee.IdentityCardPlace" value="@Model.EmployeeChance.IdentityCardPlace" class="form-control form-control-lg" />
+                                                            <p class="change-data"><small class="badge badge-info">@Constants.CurrentText</small> @Model.Employee.IdentityCardPlace</p>
+                                                        }
+                                                    }
+                                                }
                                             </div>
                                         </div>
 
@@ -809,15 +1133,57 @@
                                         <div class="col-12">
                                             <div class="form-group">
                                                 <label asp-for="Employee.HouseHold" class="control-label"></label>
-                                                <input asp-for="Employee.HouseHold" class="form-control form-control-lg" />
-                                                <span asp-validation-for="Employee.HouseHold" class="text-danger"></span>
+                                                @if (!Model.StatusChange)
+                                                {
+                                                    <input asp-for="Employee.HouseHold" class="form-control form-control-lg" />
+                                                }
+                                                else
+                                                {
+                                                    if (Model.EmployeeChance != null && Model.Employee.HouseHold != Model.EmployeeChance.HouseHold)
+                                                    {
+                                                        if (rightNhanSu)
+                                                        {
+                                                            <input asp-for="Employee.HouseHold" class="form-control form-control-lg" />
+                                                            <p class="btn-change-data" data-value="@Model.EmployeeChance.HouseHold">
+                                                                <small class="badge badge-info"><i class="far fa-check-circle"></i> Xác nhận</small>
+                                                                @Model.EmployeeChance.HouseHold
+                                                            </p>
+                                                        }
+                                                        else
+                                                        {
+                                                            <input asp-for="Employee.HouseHold" value="@Model.EmployeeChance.HouseHold" class="form-control form-control-lg" />
+                                                            <p class="change-data"><small class="badge badge-info">@Constants.CurrentText</small> @Model.Employee.HouseHold</p>
+                                                        }
+                                                    }
+                                                }
                                             </div>
                                         </div>
                                         <div class="col-12">
                                             <div class="form-group">
                                                 <label asp-for="Employee.HouseHoldOwner" class="control-label"></label>
-                                                <input asp-for="Employee.HouseHoldOwner" class="form-control form-control-lg" />
-                                                <span asp-validation-for="Employee.HouseHoldOwner" class="text-danger"></span>
+                                                @if (!Model.StatusChange)
+                                                {
+                                                    <input asp-for="Employee.HouseHoldOwner" class="form-control form-control-lg" />
+                                                }
+                                                else
+                                                {
+                                                    if (Model.EmployeeChance != null && Model.Employee.HouseHoldOwner != Model.EmployeeChance.HouseHoldOwner)
+                                                    {
+                                                        if (rightNhanSu)
+                                                        {
+                                                            <input asp-for="Employee.HouseHoldOwner" class="form-control form-control-lg" />
+                                                            <p class="btn-change-data" data-value="@Model.EmployeeChance.HouseHoldOwner">
+                                                                <small class="badge badge-info"><i class="far fa-check-circle"></i> Xác nhận</small>
+                                                                @Model.EmployeeChance.HouseHoldOwner
+                                                            </p>
+                                                        }
+                                                        else
+                                                        {
+                                                            <input asp-for="Employee.HouseHoldOwner" value="@Model.EmployeeChance.HouseHoldOwner" class="form-control form-control-lg" />
+                                                            <p class="change-data"><small class="badge badge-info">@Constants.CurrentText</small> @Model.Employee.HouseHoldOwner</p>
+                                                        }
+                                                    }
+                                                }
                                             </div>
                                         </div>
 
@@ -826,60 +1192,230 @@
                                         <div class="col-12">
                                             <div class="form-group">
                                                 <label asp-for="Employee.Passport" class="control-label"></label>
-                                                <input asp-for="Employee.Passport" class="form-control form-control-lg" />
-                                                <span asp-validation-for="Employee.Passport" class="text-danger"></span>
+                                                @if (!Model.StatusChange)
+                                                {
+                                                    <input asp-for="Employee.Passport" class="form-control form-control-lg" />
+                                                }
+                                                else
+                                                {
+                                                    if (Model.EmployeeChance != null && Model.Employee.Passport != Model.EmployeeChance.Passport)
+                                                    {
+                                                        if (rightNhanSu)
+                                                        {
+                                                            <input asp-for="Employee.Passport" class="form-control form-control-lg" />
+                                                            <p class="btn-change-data" data-value="@Model.EmployeeChance.Passport">
+                                                                <small class="badge badge-info"><i class="far fa-check-circle"></i> Xác nhận</small>
+                                                                @Model.EmployeeChance.Passport
+                                                            </p>
+                                                        }
+                                                        else
+                                                        {
+                                                            <input asp-for="Employee.Passport" value="@Model.EmployeeChance.Passport" class="form-control form-control-lg" />
+                                                            <p class="change-data"><small class="badge badge-info">@Constants.CurrentText</small> @Model.Employee.Passport</p>
+                                                        }
+                                                    }
+                                                }
                                             </div>
                                         </div>
                                         <div class="col-6">
                                             <div class="form-group">
                                                 <label asp-for="Employee.PassportType" class="control-label"></label>
-                                                <input asp-for="Employee.PassportType" class="form-control form-control-lg" value="P" />
-                                                <span asp-validation-for="Employee.PassportType" class="text-danger"></span>
+                                                @if (!Model.StatusChange)
+                                                {
+                                                    <input asp-for="Employee.PassportType" class="form-control form-control-lg" />
+                                                }
+                                                else
+                                                {
+                                                    if (Model.EmployeeChance != null && Model.Employee.PassportType != Model.EmployeeChance.PassportType)
+                                                    {
+                                                        if (rightNhanSu)
+                                                        {
+                                                            <input asp-for="Employee.PassportType" class="form-control form-control-lg" />
+                                                            <p class="btn-change-data" data-value="@Model.EmployeeChance.PassportType">
+                                                                <small class="badge badge-info"><i class="far fa-check-circle"></i> Xác nhận</small>
+                                                                @Model.EmployeeChance.PassportType
+                                                            </p>
+                                                        }
+                                                        else
+                                                        {
+                                                            <input asp-for="Employee.PassportType" value="@Model.EmployeeChance.PassportType" class="form-control form-control-lg" />
+                                                            <p class="change-data"><small class="badge badge-info">@Constants.CurrentText</small> @Model.Employee.PassportType</p>
+                                                        }
+                                                    }
+                                                }
                                             </div>
                                         </div>
                                         <div class="col-6">
                                             <div class="form-group">
                                                 <label asp-for="Employee.PassportCode" class="control-label"></label>
-                                                <input asp-for="Employee.PassportCode" class="form-control form-control-lg" value="VNM" />
-                                                <span asp-validation-for="Employee.PassportCode" class="text-danger"></span>
+                                                @if (!Model.StatusChange)
+                                                {
+                                                    <input asp-for="Employee.PassportCode" class="form-control form-control-lg" />
+                                                }
+                                                else
+                                                {
+                                                    if (Model.EmployeeChance != null && Model.Employee.PassportCode != Model.EmployeeChance.PassportCode)
+                                                    {
+                                                        if (rightNhanSu)
+                                                        {
+                                                            <input asp-for="Employee.PassportCode" class="form-control form-control-lg" />
+                                                            <p class="btn-change-data" data-value="@Model.EmployeeChance.PassportCode">
+                                                                <small class="badge badge-info"><i class="far fa-check-circle"></i> Xác nhận</small>
+                                                                @Model.EmployeeChance.PassportCode
+                                                            </p>
+                                                        }
+                                                        else
+                                                        {
+                                                            <input asp-for="Employee.PassportCode" value="@Model.EmployeeChance.PassportCode" class="form-control form-control-lg" />
+                                                            <p class="change-data"><small class="badge badge-info">@Constants.CurrentText</small> @Model.Employee.PassportCode</p>
+                                                        }
+                                                    }
+                                                }
                                             </div>
                                         </div>
                                         <div class="col-6">
                                             <div class="form-group">
                                                 <label asp-for="Employee.PassportDate" class="control-label"></label>
                                                 @{
-                                                    if (Model.Employee.PassportDate.HasValue)
+                                                    var passportDate = Model.Employee.PassportDate.HasValue && Model.Employee.PassportDate.Value.Year > 1900 ? Model.Employee.PassportDate.Value.ToString("dd/MM/yyyy") : string.Empty;
+                                                    var passportDateChange = string.Empty;
+                                                    if (Model.StatusChange && Model.EmployeeChance != null)
                                                     {
-                                                        <input class="form-control form-control-lg datepicker datepicker-lg" value="@Model.Employee.PassportDate.Value.ToString("dd/MM/yyyy")" />
+                                                        passportDateChange = Model.EmployeeChance.PassportDate.HasValue && Model.EmployeeChance.PassportDate.Value.Year > 1900 ? Model.EmployeeChance.PassportDate.Value.ToString("dd/MM/yyyy") : string.Empty;
+                                                    }
+
+                                                    if (!Model.StatusChange)
+                                                    {
+                                                        if (!string.IsNullOrEmpty(passportDate))
+                                                        {
+                                                            <input class="form-control form-control-lg datepicker datepicker-lg" value="@passportDate" />
+                                                        }
+                                                        else
+                                                        {
+                                                            <input class="form-control form-control-lg datepicker datepicker-lg" />
+                                                        }
+                                                        <input type="hidden" name="Employee.PassportDate" class="form-control form-control-lg hidedatepicker" value="@Model.Employee.PassportDate" />
                                                     }
                                                     else
                                                     {
-                                                        <input class="form-control form-control-lg datepicker datepicker-lg" />
+                                                        if (!string.IsNullOrEmpty(passportDateChange) && Model.Employee.PassportDate != Model.EmployeeChance.PassportDate)
+                                                        {
+                                                            if (rightNhanSu)
+                                                            {
+                                                                if (!string.IsNullOrEmpty(passportDate))
+                                                                {
+                                                                    <input class="form-control form-control-lg datepicker datepicker-lg" value="@passportDate" />
+                                                                }
+                                                                else
+                                                                {
+                                                                    <input class="form-control form-control-lg datepicker datepicker-lg" />
+                                                                }
+                                                                <p class="btn-change-data" data-value="@passportDateChange"><small class="badge badge-info"><i class="far fa-check-circle"></i> Xác nhận</small> @passportDateChange</p>
+                                                                <input type="hidden" name="Employee.PassportDate" class="form-control form-control-lg hidedatepicker" value="@Model.Employee.PassportDate" />
+                                                            }
+                                                            else
+                                                            {
+                                                                if (!string.IsNullOrEmpty(passportDateChange))
+                                                                {
+                                                                    <input class="form-control form-control-lg datepicker datepicker-lg" value="@passportDateChange" />
+                                                                }
+                                                                else
+                                                                {
+                                                                    <input class="form-control form-control-lg datepicker datepicker-lg" />
+                                                                }
+                                                                <p class="change-data"><small class="badge badge-info">@Constants.CurrentText</small> @passportDate</p>
+                                                                <input type="hidden" name="Employee.PassportDate" class="form-control form-control-lg hidedatepicker" value="@Model.EmployeeChance.PassportDate" />
+                                                            }
+                                                        }
                                                     }
                                                 }
-                                                <input type="hidden" name="Employee.PassportDate" class="form-control form-control-lg hidedatepicker" value="@Model.Employee.PassportDate" />
+
                                             </div>
                                         </div>
                                         <div class="col-6">
                                             <div class="form-group">
                                                 <label asp-for="Employee.PassportExpireDate" class="control-label"></label>
                                                 @{
-                                                    if (Model.Employee.PassportExpireDate.HasValue)
+                                                    var passportExpireDate = Model.Employee.PassportExpireDate.HasValue && Model.Employee.PassportExpireDate.Value.Year > 1900 ? Model.Employee.PassportExpireDate.Value.ToString("dd/MM/yyyy") : string.Empty;
+                                                    var passportExpireDateChange = string.Empty;
+                                                    if (Model.StatusChange && Model.EmployeeChance != null)
                                                     {
-                                                        <input class="form-control form-control-lg datepicker datepicker-lg" value="@Model.Employee.PassportExpireDate.Value.ToString("dd/MM/yyyy")" />
+                                                        passportExpireDateChange = Model.EmployeeChance.PassportExpireDate.HasValue && Model.EmployeeChance.PassportExpireDate.Value.Year > 1900 ? Model.EmployeeChance.PassportExpireDate.Value.ToString("dd/MM/yyyy") : string.Empty;
+                                                    }
+
+                                                    if (!Model.StatusChange)
+                                                    {
+                                                        if (!string.IsNullOrEmpty(passportExpireDate))
+                                                        {
+                                                            <input class="form-control form-control-lg datepicker datepicker-lg" value="@passportExpireDate" />
+                                                        }
+                                                        else
+                                                        {
+                                                            <input class="form-control form-control-lg datepicker datepicker-lg" />
+                                                        }
+                                                        <input type="hidden" name="Employee.PassportExpireDate" class="form-control form-control-lg hidedatepicker" value="@Model.Employee.PassportExpireDate" />
                                                     }
                                                     else
                                                     {
-                                                        <input class="form-control form-control-lg datepicker datepicker-lg" />
+                                                        if (!string.IsNullOrEmpty(passportExpireDateChange) && Model.Employee.PassportExpireDate != Model.EmployeeChance.PassportExpireDate)
+                                                        {
+                                                            if (rightNhanSu)
+                                                            {
+                                                                if (!string.IsNullOrEmpty(passportExpireDate))
+                                                                {
+                                                                    <input class="form-control form-control-lg datepicker datepicker-lg" value="@passportExpireDate" />
+                                                                }
+                                                                else
+                                                                {
+                                                                    <input class="form-control form-control-lg datepicker datepicker-lg" />
+                                                                }
+                                                                <p class="btn-change-data" data-value="@passportExpireDateChange"><small class="badge badge-info"><i class="far fa-check-circle"></i> Xác nhận</small> @passportExpireDateChange</p>
+                                                                <input type="hidden" name="Employee.PassportExpireDate" class="form-control form-control-lg hidedatepicker" value="@Model.Employee.PassportExpireDate" />
+                                                            }
+                                                            else
+                                                            {
+                                                                if (!string.IsNullOrEmpty(passportExpireDateChange))
+                                                                {
+                                                                    <input class="form-control form-control-lg datepicker datepicker-lg" value="@passportExpireDateChange" />
+                                                                }
+                                                                else
+                                                                {
+                                                                    <input class="form-control form-control-lg datepicker datepicker-lg" />
+                                                                }
+                                                                <p class="change-data"><small class="badge badge-info">@Constants.CurrentText</small> @passportExpireDate</p>
+                                                                <input type="hidden" name="Employee.PassportExpireDate" class="form-control form-control-lg hidedatepicker" value="@Model.EmployeeChance.PassportExpireDate" />
+                                                            }
+                                                        }
                                                     }
                                                 }
-                                                <input type="hidden" name="Employee.PassportExpireDate" class="form-control form-control-lg hidedatepicker" value="@Model.Employee.PassportExpireDate" />
                                             </div>
                                         </div>
                                         <div class="col-12">
                                             <div class="form-group">
                                                 <label asp-for="Employee.PassportPlace" class="control-label"></label>
-                                                <input asp-for="Employee.PassportPlace" class="form-control form-control-lg" value="Cục Quản lý xuất nhập cảnh" />
+                                                @if (!Model.StatusChange)
+                                                {
+                                                    <input asp-for="Employee.PassportPlace" class="form-control form-control-lg" />
+                                                }
+                                                else
+                                                {
+                                                    if (Model.EmployeeChance != null && Model.Employee.PassportPlace != Model.EmployeeChance.PassportPlace)
+                                                    {
+                                                        if (rightNhanSu)
+                                                        {
+                                                            <input asp-for="Employee.PassportPlace" class="form-control form-control-lg" />
+                                                            <p class="btn-change-data" data-value="@Model.EmployeeChance.PassportPlace">
+                                                                <small class="badge badge-info"><i class="far fa-check-circle"></i> Xác nhận</small>
+                                                                @Model.EmployeeChance.PassportPlace
+                                                            </p>
+                                                        }
+                                                        else
+                                                        {
+                                                            <input asp-for="Employee.PassportPlace" value="@Model.EmployeeChance.PassportPlace" class="form-control form-control-lg" />
+                                                            <p class="change-data"><small class="badge badge-info">@Constants.CurrentText</small> @Model.Employee.PassportPlace</p>
+                                                        }
+                                                    }
+                                                }
                                             </div>
                                         </div>
                                     </div>
@@ -895,7 +1431,14 @@
                                             var dnone = Model.Employee.BhxhEnable ? "" : "d-none";
                                         }
                                         <div class="custom-control custom-checkbox custom-checkbox-switch">
-                                            <input type="checkbox" class="custom-control-input" id="public" @check />
+                                            @if (readonlyMode)
+                                            {
+                                                <input type="checkbox" class="custom-control-input" id="public" @check disabled />
+                                            }
+                                            else
+                                            {
+                                                <input type="checkbox" class="custom-control-input" id="public" @check />
+                                            }
                                             <label class="custom-control-label" for="public">Bảo hiểm xã hội</label>
                                             <input name="Employee.BhxhEnable" type="hidden" class="custom-control-input" value="@Model.Employee.BhxhEnable" />
                                         </div>
@@ -1042,19 +1585,56 @@
                                                 <label asp-for="Employee.BhxhHospital" class="control-label"></label>
                                                 <div class="row">
                                                     <div class="col-10">
-                                                        <select asp-for="Employee.BhxhHospital" class="form-control form-control-lg js-select2-basic-single" style="width:100%;">
-                                                            <option value="">Chọn</option>
-                                                            @{
-                                                                foreach (var hospital in ViewBag.Hospitals)
+                                                        @if (!Model.StatusChange)
+                                                        {
+                                                            <select asp-for="Employee.BhxhHospital" class="form-control form-control-lg js-select2-basic-single" style="width:100%;">
+                                                                <option value="">Chọn</option>
+                                                                @{
+                                                                    foreach (var hospital in ViewBag.Hospitals)
+                                                                    {
+                                                                        <option value="@hospital.Name">@hospital.Name</option>
+                                                                    }
+                                                                }
+                                                            </select>
+                                                        }
+                                                        else
+                                                        {
+                                                            @if (!string.IsNullOrEmpty(Model.EmployeeChance.BhxhHospital) && Model.Employee.BhxhHospital != Model.EmployeeChance.BhxhHospital)
+                                                            {
+                                                                if (rightNhanSu)
                                                                 {
-                                                                    <option value="@hospital.Name">@hospital.Name</option>
+                                                                    <select asp-for="Employee.BhxhHospital" class="form-control form-control-lg js-select2-basic-single" style="width:100%;">
+                                                                        <option value="">Chọn</option>
+                                                                        @{
+                                                                            foreach (var hospital in ViewBag.Hospitals)
+                                                                            {
+                                                                                <option value="@hospital.Name">@hospital.Name</option>
+                                                                            }
+                                                                        }
+                                                                    </select>
+                                                                    <p class="select2-change-data" data-value="@Model.EmployeeChance.BhxhHospital"><small class="badge badge-info"><i class="far fa-check-circle"></i> Xác nhận</small> @Model.EmployeeChance.BhxhHospital</p>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <select asp-for="EmployeeChance.BhxhHospital" name="Model.Employee.BhxhHospital" class="form-control form-control-lg js-select2-basic-single" style="width:100%;">
+                                                                        <option value="">Chọn</option>
+                                                                        @{
+                                                                            foreach (var hospital in ViewBag.Hospitals)
+                                                                            {
+                                                                                <option value="@hospital.Name">@hospital.Name</option>
+                                                                            }
+                                                                        }
+                                                                    </select>
+                                                                    <p class="change-data"><small class="badge badge-info">@Constants.CurrentText</small> @Model.Employee.BhxhHospital</p>
                                                                 }
                                                             }
-                                                        </select>
+                                                        }
                                                     </div>
                                                     <div class="col-2 align-middle">
                                                         <button class="btn btn-sm btn-add-hospital" type="button" data-toggle="modal" data-target="#newHospital" title="Tạo mới Cơ sở khám chữa bệnh">+</button>
                                                     </div>
+
+                                                    
                                                 </div>
                                             </div>
                                         </div>
@@ -1248,7 +1828,7 @@
                                             }
                                             <div class="col-12 p-1 more-task-bhxh">
                                                 <div class="form-group">
-                                                    <button class="btn btn-secondary btn-sm addBHXH" type="button"><i class="icon icon-add-to-list"></i> Thêm tác vụ</button>
+                                                    <button class="btn btn-success btn-sm addBHXH" type="button"><i class="icon icon-add-to-list"></i> Thêm tác vụ</button>
                                                 </div>
                                             </div>
                                         }
@@ -1315,40 +1895,205 @@
                             </div>
                             <div class="row">
                                 @{
-                                    if (Model.Employee.Certificates != null && Model.Employee.Certificates.Count > 0)
+                                    var cer1 = Model.Employee.Certificates;
+                                    var cer2 = Model.EmployeeChance != null ? Model.EmployeeChance.Certificates : null;
+                                    if (cer1 != null && cer1.Count > 0)
                                     {
-                                        i = 0;
-                                        foreach (var item in Model.Employee.Certificates)
+                                        var iHocVan = 0;
+                                        foreach (var item in cer1)
                                         {
-                                            if (!string.IsNullOrEmpty(item.Type) || !string.IsNullOrEmpty(item.Location))
+                                            <div class="col-12 nodeCertificate node">
+                                                <div class="row bd-example">
+                                                    <div class="col-6">
+                                                        <div class="form-group">
+                                                            <label class="control-label">Học vấn</label>
+                                                            <input asp-for="Employee.Certificates[iHocVan].Type" class="form-control form-control-lg" />
+                                                            @if (Model.StatusChange && cer2.Count >= cer1.Count && cer2[iHocVan] != null)
+                                                            {
+                                                                if (item.Type != cer2[iHocVan].Type)
+                                                                {
+                                                                    if (rightNhanSu)
+                                                                    {
+                                                                        <p class="btn-change-data" data-value="@cer2[iHocVan].Type"><small class="badge badge-info"><i class="far fa-check-circle"></i> Xác nhận</small> @cer2[iHocVan].Type</p>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <p class="change-data"><small class="badge badge-info">@Constants.CurrentText</small> @cer2[iHocVan].Type</p>
+                                                                    }
+                                                                }
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-12">
+                                                        <div class="form-group">
+                                                            <label class="control-label">Nơi cấp</label>
+                                                            <input asp-for="Employee.Certificates[iHocVan].Location" class="form-control form-control-lg" />
+                                                            @if (Model.StatusChange && cer2.Count >= cer1.Count && cer2[iHocVan] != null)
+                                                            {
+                                                                if (item.Location != cer2[iHocVan].Location)
+                                                                {
+                                                                    if (rightNhanSu)
+                                                                    {
+                                                                        <p class="btn-change-data" data-value="@cer2[iHocVan].Location"><small class="badge badge-info"><i class="far fa-check-circle"></i> Xác nhận</small> @cer2[iHocVan].Location</p>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <p class="change-data"><small class="badge badge-info">@Constants.CurrentText</small> @cer2[iHocVan].Location</p>
+                                                                    }
+                                                                }
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-12">
+                                                        <div class="form-group">
+                                                            <label class="control-label">Mô tả</label>
+                                                            <textarea asp-for="Employee.Certificates[iHocVan].Description" class="form-control form-control-lg js-auto-size"></textarea>
+                                                            @if (Model.StatusChange && cer2.Count >= cer1.Count && cer2[iHocVan] != null)
+                                                            {
+                                                                if (item.Description != cer2[iHocVan].Description)
+                                                                {
+                                                                    if (rightNhanSu)
+                                                                    {
+                                                                        <p class="txt-change-data" data-value="@cer2[iHocVan].Description"><small class="badge badge-info"><i class="far fa-check-circle"></i> Xác nhận</small> @cer2[iHocVan].Description</p>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <p class="change-data"><small class="badge badge-info">@Constants.CurrentText</small> @cer2[iHocVan].Description</p>
+                                                                    }
+                                                                }
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                    @if (iHocVan != 0)
+                                                    {
+                                                        <div class="col-12">
+                                                            <button type="button" class="btn btn-danger btn-sm remove-item"><i class="glyphicon-remove"></i>Xóa</button>
+                                                        </div>
+                                                    }
+                                                </div>
+                                                <input type="hidden" class="codeCertificate" value="@iHocVan" />
+                                            </div>
+                                            iHocVan++;
+                                        }
+                                        if (Model.StatusChange && cer2 != null && cer2.Count > 0 && cer2.Count > cer1.Count)
+                                        {
+                                            for (int icer2 = iHocVan; icer2 < cer2.Count; icer2++)
                                             {
                                                 <div class="col-12 nodeCertificate node">
                                                     <div class="row bd-example">
                                                         <div class="col-6">
                                                             <div class="form-group">
                                                                 <label class="control-label">Học vấn</label>
-                                                                <input asp-for="Employee.Certificates[i].Type" class="form-control form-control-lg" />
+                                                                <input name="Employee.Certificates[@icer2].Type" class="form-control form-control-lg" />
+                                                                @if (rightNhanSu)
+                                                                {
+                                                                    <p class="btn-change-data" data-value="@cer2[icer2].Type"><small class="badge badge-info"><i class="far fa-check-circle"></i> Xác nhận</small> @cer2[icer2].Type</p>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <p class="change-data"><small class="badge badge-info">@Constants.CurrentText</small> @cer2[icer2].Type</p>
+                                                                }
                                                             </div>
                                                         </div>
-                                                        <div class="col-12">
+                                                        <div class="col-6">
                                                             <div class="form-group">
                                                                 <label class="control-label">Nơi cấp</label>
-                                                                <input asp-for="Employee.Certificates[i].Location" class="form-control form-control-lg" />
+                                                                <input name="Employee.Certificates[@icer2].Location" class="form-control form-control-lg" />
+                                                                @if (rightNhanSu)
+                                                                {
+                                                                    <p class="btn-change-data" data-value="@cer2[icer2].Location"><small class="badge badge-info"><i class="far fa-check-circle"></i> Xác nhận</small> @cer2[icer2].Location</p>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <p class="change-data"><small class="badge badge-info">@Constants.CurrentText</small> @cer2[icer2].Location</p>
+                                                                }
                                                             </div>
                                                         </div>
                                                         <div class="col-12">
                                                             <div class="form-group">
-                                                                <label class="control-label">Mô tả</label>
-                                                                <textarea asp-for="Employee.Certificates[i].Description" class="form-control form-control-lg js-auto-size"></textarea>
+                                                                <label class="control-label">Nội dung</label>
+                                                                <textarea name="Employee.Certificates[@icer2].Description" class="form-control form-control-lg js-auto-size"></textarea>
+                                                                @if (rightNhanSu)
+                                                                {
+                                                                    <p class="txt-change-data" data-value="@cer2[icer2].Description"><small class="badge badge-info"><i class="far fa-check-circle"></i> Xác nhận</small> @cer2[icer2].Description</p>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <p class="change-data"><small class="badge badge-info">@Constants.CurrentText</small> @cer2[icer2].Description</p>
+                                                                }
                                                             </div>
                                                         </div>
                                                         <div class="col-12">
                                                             <button type="button" class="btn btn-danger btn-sm remove-item"><i class="glyphicon-remove"></i>Xóa</button>
                                                         </div>
                                                     </div>
-                                                    <input type="hidden" class="codeCertificate" value="@i" />
+                                                    <input type="hidden" class="codeCertificate" value="@icer2" />
                                                 </div>
-                                                i++;
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <p>@Constants.MissTitle</p>
+                                        if (cer2 != null && cer2.Count > 0)
+                                        {
+                                            var iHocVanChange = 0;
+                                            foreach (var item in cer2)
+                                            {
+                                                <div class="col-12 nodeCertificate node">
+                                                    <div class="row bd-example">
+                                                        <div class="col-6">
+                                                            <div class="form-group">
+                                                                <label class="control-label">Học vấn</label>
+                                                                <input name="Employee.Certificates[@iHocVanChange].Type" class="form-control form-control-lg" />
+                                                                @if (rightNhanSu)
+                                                                {
+                                                                    <p class="btn-change-data" data-value="@item.Type"><small class="badge badge-info"><i class="far fa-check-circle"></i> Xác nhận</small> @item.Type</p>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <p class="change-data"><small class="badge badge-info">@Constants.CurrentText</small> @item.Type</p>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-6">
+                                                            <div class="form-group">
+                                                                <label class="control-label">Nơi cấp</label>
+                                                                <input name="Employee.Certificates[@iHocVanChange].Location" class="form-control form-control-lg" />
+                                                                @if (rightNhanSu)
+                                                                {
+                                                                    <p class="btn-change-data" data-value="@item.Location"><small class="badge badge-info"><i class="far fa-check-circle"></i> Xác nhận</small> @item.Location</p>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <p class="change-data"><small class="badge badge-info">@Constants.CurrentText</small> @item.Location</p>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-12">
+                                                            <div class="form-group">
+                                                                <label class="control-label">Nội dung</label>
+                                                                <textarea name="Employee.Certificates[@iHocVanChange].Description" class="form-control form-control-lg js-auto-size"></textarea>
+                                                                @if (rightNhanSu)
+                                                                {
+                                                                    <p class="txt-change-data" data-value="@item.Description"><small class="badge badge-info"><i class="far fa-check-circle"></i> Xác nhận</small> @item.Description</p>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <p class="change-data"><small class="badge badge-info">@Constants.CurrentText</small> @item.Description</p>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                        @if (iHocVanChange != 0)
+                                                        {
+                                                            <div class="col-12">
+                                                                <button type="button" class="btn btn-danger btn-sm remove-item"><i class="glyphicon-remove"></i>Xóa</button>
+                                                            </div>
+                                                        }
+                                                    </div>
+                                                    <input type="hidden" class="codeCertificate" value="@iHocVanChange" />
+                                                </div>
+                                                iHocVanChange++;
                                             }
                                         }
                                     }
@@ -1356,7 +2101,7 @@
 
                                 <div class="col-12 p-1 more-certificate">
                                     <div class="form-group">
-                                        <button class="btn btn-secondary btn-sm addCertificate" type="button"><i class="icon icon-add-to-list"></i> Thêm học vấn</button>
+                                        <button class="btn btn-success btn-sm addCertificate" type="button"><i class="icon icon-add-to-list"></i> Thêm học vấn</button>
                                     </div>
                                 </div>
                                 <script id="tmplCertificate" type="text/x-jsrender">
@@ -1401,59 +2146,282 @@
 
                             <div class="row">
                                 @{
-                                    if (Model.Employee.EmployeeFamilys != null && Model.Employee.EmployeeFamilys.Count > 0)
+                                    var fa1 = Model.Employee.EmployeeFamilys;
+                                    var fa2 = Model.EmployeeChance != null ? Model.EmployeeChance.EmployeeFamilys : null;
+                                    if (fa1 != null && fa1.Count > 0)
                                     {
-                                        i = 0;
-                                        foreach (var item in Model.Employee.EmployeeFamilys)
+                                        int iFa = 0;
+                                        foreach (var item in fa1)
                                         {
-                                            if (!string.IsNullOrEmpty(item.FullName) && item.FullName.Length > 2)
+                                            <div class="col-12 nodeFamily node">
+                                                <div class="row bd-example">
+                                                    <div class="col-6">
+                                                        <div class="form-group">
+                                                            <label class="control-label">Quan hệ</label>
+                                                            <select asp-for="Employee.EmployeeFamilys[iFa].Relation" class="form-control form-control-lg">
+                                                                <option value="">Chọn</option>
+                                                                <option value="3">Con</option>
+                                                                <option value="2">Vợ/chồng</option>
+                                                                <option value="1">Cha/mẹ</option>
+                                                            </select>
+                                                            @if (Model.StatusChange && fa2.Count >= fa1.Count && fa2[iFa] != null)
+                                                            {
+                                                                if (item.Relation != fa2[iFa].Relation)
+                                                                {
+                                                                    var displayRelation = string.Empty;
+                                                                    if (fa2[iFa].Relation.HasValue)
+                                                                    {
+                                                                        displayRelation = Constants.Relation(fa2[iFa].Relation.Value);
+                                                                    }
+                                                                    if (rightNhanSu)
+                                                                    {
+                                                                        <p class="select-change-data" data-value="@fa2[iFa].Relation"><small class="badge badge-info"><i class="far fa-check-circle"></i> Xác nhận</small> @displayRelation</p>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <p class="change-data"><small class="badge badge-info">@Constants.CurrentText</small> @displayRelation</p>
+                                                                    }
+                                                                }
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <div class="form-group">
+                                                            <label class="control-label">Ngày sinh nhật</label>
+                                                            @{
+                                                                if (item.Birthday.HasValue)
+                                                                {
+                                                                    <input class="form-control form-control-lg datepicker datepicker-lg" value="@item.Birthday.Value.ToString("dd/MM/yyyy")" />
+                                                                }
+                                                                else
+                                                                {
+                                                                    <input class="form-control form-control-lg datepicker datepicker-lg" />
+                                                                }
+                                                            }
+                                                            @if (Model.StatusChange && fa2.Count >= fa1.Count && fa2[iFa] != null)
+                                                            {
+                                                                if (item.Birthday != fa2[iFa].Birthday)
+                                                                {
+                                                                    var displayBirthday = string.Empty;
+                                                                    if (fa2[iFa].Birthday.HasValue)
+                                                                    {
+                                                                        displayBirthday = fa2[iFa].Birthday.Value.ToString("dd/MM/yyyy");
+                                                                    }
+                                                                    if (rightNhanSu)
+                                                                    {
+                                                                        <p class="btn-change-data" data-value="@fa2[iFa].Birthday"><small class="badge badge-info"><i class="far fa-check-circle"></i> Xác nhận</small> @displayBirthday</p>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <p class="change-data"><small class="badge badge-info">@Constants.CurrentText</small> @displayBirthday</p>
+                                                                    }
+                                                                }
+                                                            }
+                                                            <input type="hidden" name="Employee.EmployeeFamilys[@iFa].Birthday" value="@item.Birthday" class="hidedatepicker" />
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-12">
+                                                        <div class="form-group">
+                                                            <label class="control-label">Họ và tên</label>
+                                                            <input name="Employee.EmployeeFamilys[@iFa].FullName" value="@item.FullName" class="form-control form-control-lg" />
+                                                            @if (Model.StatusChange && fa2.Count >= fa1.Count && fa2[iFa] != null)
+                                                            {
+                                                                if (item.FullName != fa2[iFa].FullName)
+                                                                {
+                                                                    if (rightNhanSu)
+                                                                    {
+                                                                        <p class="btn-change-data" data-value="@fa2[iFa].FullName"><small class="badge badge-info"><i class="far fa-check-circle"></i> Xác nhận</small> @fa2[iFa].FullName</p>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <p class="change-data"><small class="badge badge-info">@Constants.CurrentText</small> @fa2[iFa].FullName</p>
+                                                                    }
+                                                                }
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                    @if (iFa != 0)
+                                                    {
+                                                        <div class="col-12">
+                                                            <button type="button" class="btn btn-danger btn-sm remove-item"><i class="glyphicon-remove"></i>Xóa</button>
+                                                        </div>
+                                                    }
+                                                </div>
+                                                <input type="hidden" class="codeFamily" value="@iFa" />
+                                            </div>
+                                            iFa++;
+                                        }
+                                        if (Model.StatusChange && fa2 != null && fa2.Count > 0 && fa2.Count > fa1.Count)
+                                        {
+                                            for (int iFa2 = iFa; iFa2 < fa2.Count; iFa2++)
                                             {
                                                 <div class="col-12 nodeFamily node">
                                                     <div class="row bd-example">
                                                         <div class="col-6">
                                                             <div class="form-group">
                                                                 <label class="control-label">Quan hệ</label>
-                                                                <select asp-for="Employee.EmployeeFamilys[i].Relation" class="form-control form-control-lg">
+                                                                <select name="Employee.EmployeeFamilys[@iFa2].Relation" class="form-control form-control-lg">
                                                                     <option value="">Chọn</option>
                                                                     <option value="3">Con</option>
                                                                     <option value="2">Vợ/chồng</option>
                                                                     <option value="1">Cha/mẹ</option>
                                                                 </select>
+                                                                @{
+                                                                    var displayRelation = string.Empty;
+                                                                    if (fa2[iFa].Relation.HasValue)
+                                                                    {
+                                                                        displayRelation = Constants.Relation(fa2[iFa].Relation.Value);
+                                                                    }
+                                                                    if (rightNhanSu)
+                                                                    {
+                                                                        <p class="select-change-data" data-value="@fa2[iFa2].Relation"><small class="badge badge-info"><i class="far fa-check-circle"></i> Xác nhận</small> @displayRelation</p>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <p class="change-data"><small class="badge badge-info">@Constants.CurrentText</small> @displayRelation</p>
+                                                                    }
+                                                                }
                                                             </div>
                                                         </div>
                                                         <div class="col-6">
                                                             <div class="form-group">
                                                                 <label class="control-label">Ngày sinh nhật</label>
+                                                                <input class="form-control form-control-lg datepicker datepicker-lg" />
                                                                 @{
-                                                                    if (item.Birthday.HasValue)
+                                                                    var displayBirthday = string.Empty;
+                                                                    if (fa2[iFa].Birthday.HasValue)
                                                                     {
-                                                                        <input class="form-control form-control-lg datepicker datepicker-lg" value="@item.Birthday.Value.ToString("dd/MM/yyyy")" />
+                                                                        displayBirthday = fa2[iFa].Birthday.Value.ToString("dd/MM/yyyy");
+                                                                    }
+                                                                    if (rightNhanSu)
+                                                                    {
+                                                                        <p class="btn-change-data" data-value="@fa2[iFa2].Birthday"><small class="badge badge-info"><i class="far fa-check-circle"></i> Xác nhận</small> @displayBirthday</p>
                                                                     }
                                                                     else
                                                                     {
-                                                                        <input class="form-control form-control-lg datepicker datepicker-lg" />
+                                                                        <p class="change-data"><small class="badge badge-info">@Constants.CurrentText</small> @displayBirthday</p>
                                                                     }
                                                                 }
-                                                                <input type="hidden" name="Employee.EmployeeFamilys[@i].Birthday" value="@item.Birthday" class="hidedatepicker" />
+                                                                <input type="hidden" name="Employee.EmployeeFamilys[@iFa2].Birthday" value="@fa2[iFa2].Birthday" class="hidedatepicker" />
                                                             </div>
                                                         </div>
                                                         <div class="col-12">
                                                             <div class="form-group">
                                                                 <label class="control-label">Họ và tên</label>
-                                                                <input name="Employee.EmployeeFamilys[@i].FullName" value="@item.FullName" class="form-control form-control-lg" />
+                                                                <input name="Employee.EmployeeFamilys[@iFa2].FullName" class="form-control form-control-lg" />
+                                                                @if (rightNhanSu)
+                                                                {
+                                                                    <p class="btn-change-data" data-value="@fa2[iFa2].FullName"><small class="badge badge-info"><i class="far fa-check-circle"></i> Xác nhận</small> @fa2[iFa2].FullName</p>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <p class="change-data"><small class="badge badge-info">@Constants.CurrentText</small> @fa2[iFa2].FullName</p>
+                                                                }
                                                             </div>
                                                         </div>
+                                                        @if (iFa != 0)
+                                                        {
+                                                            <div class="col-12">
+                                                                <button type="button" class="btn btn-danger btn-sm remove-item"><i class="glyphicon-remove"></i>Xóa</button>
+                                                            </div>
+                                                        }
                                                     </div>
-                                                    <input type="hidden" class="codeFamily" value="@i" />
+                                                    <input type="hidden" class="codeFamily" value="@iFa2" />
                                                 </div>
-                                                i++;
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <p>@Constants.MissTitle</p>
+                                        if (fa2 != null && fa2.Count > 0)
+                                        {
+                                            var iFaChange = 0;
+                                            foreach (var item in fa2)
+                                            {
+                                                <div class="col-12 nodeFamily node">
+                                                    <div class="row bd-example">
+                                                        <div class="col-6">
+                                                            <div class="form-group">
+                                                                <label class="control-label">Quan hệ</label>
+                                                                <select name="Employee.EmployeeFamilys[@iFaChange].Relation" class="form-control form-control-lg">
+                                                                    <option value="">Chọn</option>
+                                                                    <option value="3">Con</option>
+                                                                    <option value="2">Vợ/chồng</option>
+                                                                    <option value="1">Cha/mẹ</option>
+                                                                </select>
+                                                                @{
+                                                                    var displayRelation = string.Empty;
+                                                                    if (item.Relation.HasValue)
+                                                                    {
+                                                                        displayRelation = Constants.Relation(item.Relation.Value);
+                                                                    }
+                                                                    if (rightNhanSu)
+                                                                    {
+                                                                        <p class="select-change-data" data-value="@item.Relation"><small class="badge badge-info"><i class="far fa-check-circle"></i> Xác nhận</small> @displayRelation</p>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <p class="change-data"><small class="badge badge-info">@Constants.CurrentText</small> @displayRelation</p>
+                                                                    }
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-6">
+                                                            <div class="form-group">
+                                                                <label class="control-label">Ngày sinh nhật</label>
+                                                                <input class="form-control form-control-lg datepicker datepicker-lg" />
+                                                                @{
+                                                                    var displayBirthday = string.Empty;
+                                                                    if (item.Birthday.HasValue)
+                                                                    {
+                                                                        displayBirthday = item.Birthday.Value.ToString("dd/MM/yyyy");
+                                                                    }
+                                                                    if (rightNhanSu)
+                                                                    {
+                                                                        <p class="btn-change-data" data-value="@item.Birthday"><small class="badge badge-info"><i class="far fa-check-circle"></i> Xác nhận</small> @displayBirthday</p>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <p class="change-data"><small class="badge badge-info">@Constants.CurrentText</small> @displayBirthday</p>
+                                                                    }
+                                                                }
+                                                                <input type="hidden" name="Employee.EmployeeFamilys[@iFaChange].Birthday" value="@item.Birthday" class="hidedatepicker" />
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-12">
+                                                            <div class="form-group">
+                                                                <label class="control-label">Họ và tên</label>
+                                                                <input name="Employee.EmployeeFamilys[@iFaChange].FullName" class="form-control form-control-lg" />
+                                                                @if (rightNhanSu)
+                                                                {
+                                                                    <p class="btn-change-data" data-value="@item.FullName"><small class="badge badge-info"><i class="far fa-check-circle"></i> Xác nhận</small> @item.FullName</p>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <p class="change-data"><small class="badge badge-info">@Constants.CurrentText</small> @item.FullName</p>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                        @if (iFaChange != 0)
+                                                        {
+                                                            <div class="col-12">
+                                                                <button type="button" class="btn btn-danger btn-sm remove-item"><i class="glyphicon-remove"></i>Xóa</button>
+                                                            </div>
+                                                        }
+                                                    </div>
+                                                    <input type="hidden" class="codeFamily" value="@iFaChange" />
+                                                </div>
+
+                                                iFaChange++;
                                             }
                                         }
                                     }
                                 }
+
                                 <div class="col-12 p-1 more-family">
                                     <div class="form-group">
-                                        <button class="btn btn-secondary btn-sm addFamily" type="button"><i class="icon icon-add-user"></i> Thêm thành viên</button>
+                                        <button class="btn btn-success btn-sm addFamily" type="button"><i class="icon icon-add-user"></i> Thêm thành viên</button>
                                     </div>
                                 </div>
 
@@ -1491,7 +2459,6 @@
                                     </div>
                                 </script>
                             </div>
-
 
                             <!-- HOP DONG LAO DONG -->
                             <div class="row mb-4">
@@ -1665,7 +2632,7 @@
                                     }
                                     <div class="col-12 p-1 more-contract">
                                         <div class="form-group">
-                                            <button class="btn btn-secondary btn-sm addContract" type="button"><i class="icon icon-add-user"></i> Thêm hợp đồng</button>
+                                            <button class="btn btn-success btn-sm addContract" type="button"><i class="icon icon-add-user"></i> Thêm hợp đồng</button>
                                         </div>
                                     </div>
                                 }
@@ -1749,22 +2716,26 @@
                                     {
                                         foreach (var item in Model.Employee.StorePapers)
                                         {
-                                            <div class="col-12 nodeStorePaper node">
-                                                <div class="row bd-example">
-                                                    <div class="col-sm-6 col-xs-12">
-                                                        <div class="form-group">
-                                                            <label class="control-label">Loại bảng lưu</label>
-                                                            <input value="@item.Type" type="text" readonly class="form-control-plaintext" />
+                                            if (item.Count > 0)
+                                            {
+                                                <div class="col-12 nodeStorePaper node">
+                                                    <div class="row bd-example">
+                                                        <div class="col-sm-6 col-xs-12">
+                                                            <div class="form-group">
+                                                                <label class="control-label">Loại bảng lưu</label>
+                                                                <input value="@item.Type" type="text" readonly class="form-control-plaintext" />
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                    <div class="col-sm-6 col-xs-12">
-                                                        <div class="form-group">
-                                                            <label class="control-label">Số lượng</label>
-                                                            <input value="@item.Count" type="text" readonly class="form-control-plaintext" />
+                                                        <div class="col-sm-6 col-xs-12">
+                                                            <div class="form-group">
+                                                                <label class="control-label">Số lượng</label>
+                                                                <input value="@item.Count" type="text" readonly class="form-control-plaintext" />
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </div>
+                                            }
+
                                         }
                                     }
                                 }
@@ -1801,7 +2772,7 @@
                                     }
                                     <div class="col-12 p-1 more-storepaper">
                                         <div class="form-group">
-                                            <button class="btn btn-secondary btn-sm addStorePaper" type="button"><i class="icon icon-add-to-list"></i> Thêm loại bảng lưu</button>
+                                            <button class="btn btn-success btn-sm addStorePaper" type="button"><i class="icon icon-add-to-list"></i> Thêm loại bảng lưu</button>
                                         </div>
                                     </div>
                                 }
@@ -1838,37 +2809,127 @@
                                     <h5>ĐÀO TẠO (THỜI GIAN, CHUYÊN MÔN, CHỨNG CHỈ)</h5>
                                 </div>
                             </div>
+
                             <div class="row">
                                 @{
-                                    if (Model.Employee.EmployeeEducations != null && Model.Employee.EmployeeEducations.Count > 0)
+                                    var tra1 = Model.Employee.EmployeeEducations;
+                                    var tra2 = Model.EmployeeChance != null ? Model.EmployeeChance.EmployeeEducations : null;
+                                    if (tra1 != null && tra1.Count > 0)
                                     {
-                                        i = 0;
-                                        foreach (var item in Model.Employee.EmployeeEducations)
+                                        int iTra = 0;
+                                        var iTraNo = 1;
+                                        foreach (var item in tra1)
                                         {
-                                            var no = i + 1;
-                                            <div class="col-12 nodeEducation node">
-                                                <div class="row bd-example">
-                                                    <div class="col-12">
-                                                        <div class="form-group">
-                                                            <label class="control-label">Lần @no - Nội dung</label>
-                                                            <textarea asp-for="Employee.EmployeeEducations[i].Content" class="form-control form-control-lg js-auto-size"></textarea>
+                                            if (!string.IsNullOrEmpty(item.Content))
+                                            {
+                                                <div class="col-12 nodeEducation node">
+                                                    <div class="row bd-example">
+                                                        <div class="col-12">
+                                                            <div class="form-group">
+                                                                <label class="control-label">Lần @iTraNo - Nội dung</label>
+                                                                <textarea asp-for="Employee.EmployeeEducations[iTra].Content" class="form-control form-control-lg js-auto-size"></textarea>
+                                                                @if (Model.StatusChange && tra2.Count > tra1.Count && tra2[iTra] != null)
+                                                                {
+                                                                    if (item.Content != tra2[iTra].Content)
+                                                                    {
+                                                                        if (rightNhanSu)
+                                                                        {
+                                                                            <p class="txt-change-data" data-value="@tra2[iTra].Content"><small class="badge badge-info"><i class="far fa-check-circle"></i> Xác nhận</small> @tra2[iTra].Content</p>
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <p class="change-data"><small class="badge badge-info">@Constants.CurrentText</small> @tra2[iTra].Content</p>
+                                                                        }
+                                                                    }
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                        @if (iTra != 0)
+                                                        {
+                                                            <div class="col-12">
+                                                                <button type="button" class="btn btn-danger btn-sm remove-item"><i class="glyphicon-remove"></i>Xóa</button>
+                                                            </div>
+                                                        }
+                                                    </div>
+                                                    <input type="hidden" class="codeEducation" value="@iTra" />
+                                                </div>
+                                                iTraNo++;
+                                                iTra++;
+                                            }
+                                        }
+
+
+                                        if (Model.StatusChange && tra2 != null && tra2.Count > 0 && tra2.Count > tra1.Count)
+                                        {
+                                            for (int iTra2 = iTra; iTra2 < tra2.Count; iTra2++)
+                                            {
+                                                <div class="col-12 nodeEducation node">
+                                                    <div class="row bd-example">
+                                                        <div class="col-12">
+                                                            <div class="form-group">
+                                                                <label class="control-label">Nội dung</label>
+                                                                <textarea name="Employee.EmployeeEducations[@iTra2].Content" class="form-control form-control-lg js-auto-size"></textarea>
+                                                                @if (rightNhanSu)
+                                                                {
+                                                                    <p class="txt-change-data" data-value="@tra2[iTra2].Content"><small class="badge badge-info"><i class="far fa-check-circle"></i> Xác nhận</small> @tra2[iTra2].Content</p>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <p class="change-data"><small class="badge badge-info">@Constants.CurrentText</small> @tra2[iTra2].Content</p>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-12">
+                                                            <button type="button" class="btn btn-danger btn-sm remove-item"><i class="glyphicon-remove"></i>Xóa</button>
                                                         </div>
                                                     </div>
-                                                    <div class="col-12">
-                                                        <button type="button" class="btn btn-danger btn-sm remove-item"><i class="glyphicon-remove"></i>Xóa</button>
-                                                    </div>
+                                                    <input type="hidden" class="codeEducation" value="@iTra2" />
                                                 </div>
-                                                <input type="hidden" name="Employee.EmployeeEducations[@i].No" value="@i" />
-                                                <input type="hidden" class="codeEducation" value="@i" />
-                                            </div>
-                                            i++;
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <p>@Constants.MissTitle</p>
+                                        if (tra2 != null && tra2.Count > 0)
+                                        {
+                                            var iTraChange = 0;
+                                            foreach (var item in tra2)
+                                            {
+                                                <div class="col-12 nodeEducation node">
+                                                    <div class="row bd-example">
+                                                        <div class="col-12">
+                                                            <div class="form-group">
+                                                                <label class="control-label">Nội dung</label>
+                                                                <textarea name="Employee.Certificates[@iTraChange].Content" class="form-control form-control-lg js-auto-size"></textarea>
+                                                                @if (rightNhanSu)
+                                                                {
+                                                                    <p class="txt-change-data" data-value="@item.Content"><small class="badge badge-info"><i class="far fa-check-circle"></i> Xác nhận</small> @item.Content</p>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <p class="change-data"><small class="badge badge-info">@Constants.CurrentText</small> @item.Content</p>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                        @if (iTraChange != 0)
+                                                        {
+                                                            <div class="col-12">
+                                                                <button type="button" class="btn btn-danger btn-sm remove-item"><i class="glyphicon-remove"></i>Xóa</button>
+                                                            </div>
+                                                        }
+                                                    </div>
+                                                    <input type="hidden" class="codeEducation" value="@iTraChange" />
+                                                </div>
+                                                iTraChange++;
+                                            }
                                         }
                                     }
                                 }
 
                                 <div class="col-12 p-1 more-education">
                                     <div class="form-group">
-                                        <button class="btn btn-secondary btn-sm addEducation" type="button"><i class="icon icon-add-to-list"></i> Thêm</button>
+                                        <button class="btn btn-success btn-sm addEducation" type="button"><i class="icon icon-add-to-list"></i> Thêm</button>
                                     </div>
                                 </div>
 
@@ -2242,9 +3303,9 @@
         </section>
 
         <div class="row">
-            <div class="col-12 col-md-8">
+            <div class="col-12">
                 <div class="form-group">
-                    <button class="btn btn-success btn-lg btn-block btn-submit" id="btn-save-submit" type="submit" data-toggle="tooltip" title="Bấm lưu thay đổi thông tin tài khoản." disabled><i class="icon icon-save"></i> Lưu</button>
+                    <button class="btn btn-danger btn-lg btn-block btn-submit" id="btn-save-submit" type="submit" data-toggle="tooltip" title="Bấm lưu thay đổi thông tin tài khoản." disabled><i class="icon icon-save"></i> Lưu</button>
                 </div>
             </div>
         </div>

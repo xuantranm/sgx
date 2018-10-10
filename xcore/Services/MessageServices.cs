@@ -43,7 +43,7 @@ namespace Services
                 {
                     emailMessage.FromAddresses = new List<EmailAddress>
                     {
-                        new EmailAddress { Name = "[Test environment] ERP", Address = "test-erp@tribat.vn" }
+                        new EmailAddress { Name = Constants.System.emailHrName, Address = Constants.System.emailHr }
                     };
                 }
                 message.From.AddRange(emailMessage.FromAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
@@ -59,12 +59,12 @@ namespace Services
                 using (var emailClient = new MailKit.Net.Smtp.SmtpClient())
                 {
                     //The last parameter here is to use SSL (Which you should!)
-                    emailClient.Connect("test-erp@tribat.vn", 465, true);
+                    emailClient.Connect(Constants.System.emailHr, 465, true);
 
                     //Remove any OAuth functionality as we won't be using it. 
                     emailClient.AuthenticationMechanisms.Remove("XOAUTH2");
 
-                    emailClient.Authenticate("test-erp@tribat.vn", "Kh0ngbiet@123");
+                    emailClient.Authenticate(Constants.System.emailHr, Constants.System.emailHrPwd);
 
                     await emailClient.SendAsync(message);
                     Console.WriteLine("The mail has been sent successfully !!");
@@ -139,7 +139,10 @@ namespace Services
 
                     emailClient.Authenticate(Constants.System.emailHr, Constants.System.emailHrPwd);
 
+                    //await emailClient.SendAsync(message);
+
                     await emailClient.SendAsync(message);
+
                     Console.WriteLine("The mail has been sent successfully !!");
                     Console.ReadLine();
                     await emailClient.DisconnectAsync(true);

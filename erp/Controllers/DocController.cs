@@ -60,5 +60,23 @@ namespace erp.Controllers
         {
             return View();
         }
+
+        [Route(Constants.LinkDocument.Information)]
+        public IActionResult Information()
+        {
+            return View();
+        }
+
+        [Route(Constants.LinkDocument.Leave)]
+        public IActionResult Leave()
+        {
+            return View();
+        }
+
+        [Route(Constants.LinkDocument.Timer)]
+        public IActionResult Timer()
+        {
+            return View();
+        }
     }
 }

@@ -1,8 +1,27 @@
 ﻿
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Tuyển dụng";
     Layout = "~/Views/Shared/_LayoutSocialFb.cshtml";
 }
 
-<h2>Index</h2>
+<nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="/">Trang chủ</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">@ViewData["Title"]</li>
+                </ol>
+            </div>
+            <!--end of col-->
+        </div>
+        <!--end of row-->
+    </div>
+    <!--end of container-->
+</nav>
 
+@{
+    await Html.RenderPartialAsync("Empty");
+}

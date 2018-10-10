@@ -289,6 +289,9 @@ namespace Models
         public string SalaryPhongBan { get; set; }
         public string SalaryChucVu { get; set; }
         public string SalaryChucVuViTriCode { get; set; }
+        public int SalaryNoiLamViecOrder { get; set; } = 0;
+        public int SalaryPhongBanOrder { get; set; } = 0;
+        public int SalaryChucVuOrder { get; set; } = 0;
         // nhóm vào chức vụ
         public string SalaryMaSoChucDanhCongViec { get; set; }
         public double SalaryMauSo { get; set; } = 26;

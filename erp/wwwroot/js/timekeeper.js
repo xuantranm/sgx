@@ -8,15 +8,15 @@
     //    formSubmit();
     //});
 
-    $('#times').on('change', function (e) {
+    $('ddl-times').on('change', function (e) {
         formSubmit();
     });
 
     $('#requestTimeKeeperModal').on('show.bs.modal', function (event) {
-        var a = $(event.relatedTarget) // Button that triggered the modal
-        var recipient = a.data('id') // Extract info from data-* attributes
+        var a = $(event.relatedTarget); // Button that triggered the modal
+        var recipient = a.data('id'); // Extract info from data-* attributes
         var url = $('#hidUrlGetItem').val();
-        var modal = $(this)
+        var modal = $(this);
         $.ajax({
             type: "post",
             url: url,
@@ -28,11 +28,14 @@
                 $('textarea.js-auto-size').textareaAutoSize();
             }
         });
-
-    })
+    });
 
     $(".data-form").on("submit", function (event) {
         event.preventDefault();
+        var $this = $(this);
+        var frmValues = $this.serialize();
+        console.log(frmValues);
+
         // loading button
         $('.btn-submit-timekeeping').prop('disabled', true);
         //$('input', $('.data-form')).prop('disabled', true);
@@ -41,10 +44,6 @@
 
         var loadingText = '<i class="fas fa-spinner"></i> đang xử lý...';
         $('.btn-submit-timekeeping').html(loadingText);
-
-        var $this = $(this);
-        var frmValues = $this.serialize();
-        console.log(frmValues);
         $.ajax({
             type: $this.attr('method'),
             url: $this.attr('action'),
@@ -67,7 +66,7 @@
                 }
             })
             .fail(function () {
-                toastr.error("Error.");
+                toastr.error("Có lỗi xảy ra. Liên hệ hỗ trợ hotro@tribat.vn");
             });
     });
 });

@@ -122,7 +122,7 @@ namespace erp.Controllers
             var mauSoBaoVe = Convert.ToDecimal(thamsoEntity.Find(m => m.Key.Equals("mau-so-bao-ve")).Value);
             var tyledongbh = Convert.ToDecimal(thamsoEntity.Find(m => m.Key.Equals("ty-le-dong-bh")).Value);
             decimal ngayConglamViec = Utility.BusinessDaysUntil(fromDate, toDate);
-            decimal phutLamViec = ngayConglamViec * 8 * 60;
+            decimal phutconglamviec = 0;
 
             var calBHXH = true;
             if (DateTime.Now.Day < 26 && DateTime.Now.Month == month)
@@ -270,21 +270,29 @@ namespace erp.Controllers
                     thamnien = luongCB * Convert.ToDecimal(0.03 + (dateSpan.Years - 3) * 0.01);
                 }
                 luongcbbaogomphucap = luongCB + nangnhoc + trachnhiem + thamnien + thuhut + dienthoai + xang + com + nhao + kiemnhiem + bhytdacbiet + vitricanknnhieunam + vitridacthu;
+
                 decimal ngayNghiPhepHuongLuong = 0;
                 decimal ngayNghiLeTetHuongLuong = 0;
                 decimal congCNGio = 0;
+                decimal phutcongCN = 0;
                 decimal congTangCaNgayThuongGio = 0;
+                decimal phutcongTangCaNgayThuong = 0;
                 decimal congLeTet = 0;
+                decimal phutcongLeTet = 0;
+
                 var chamCong = await dbContext.EmployeeWorkTimeMonthLogs.Find(m => m.EmployeeId.Equals(employee.Id) & m.Year.Equals(year) & m.Month.Equals(month)).FirstOrDefaultAsync();
                 if (chamCong != null)
                 {
                     ngayConglamViec = (decimal)chamCong.Workday;
-                    phutLamViec = (decimal)chamCong.WorkTime;
+                    phutconglamviec = (decimal)Math.Round(TimeSpan.FromMilliseconds(chamCong.WorkTime).TotalMinutes, 0);
                     ngayNghiPhepHuongLuong = (decimal)chamCong.NgayNghiHuongLuong;
                     ngayNghiLeTetHuongLuong = (decimal)chamCong.NgayNghiLeTetHuongLuong;
                     congCNGio = (decimal)chamCong.CongCNGio;
+                    phutcongCN = congCNGio * 60;
                     congTangCaNgayThuongGio = (decimal)chamCong.CongTangCaNgayThuongGio;
+                    phutcongTangCaNgayThuong = congTangCaNgayThuongGio * 60;
                     congLeTet = (decimal)chamCong.CongLeTet;
+                    phutcongLeTet = congLeTet * 60;
                 }
 
                 decimal congTacXa = 0;
@@ -330,7 +338,14 @@ namespace erp.Controllers
                 }
 
                 mauSo = employee.SalaryMauSo != 26 ? 30 : 26;
+
                 decimal tongthunhap = luongcbbaogomphucap / mauSo * (ngayConglamViec + congCNGio / 8 * 2 + congTangCaNgayThuongGio / 8 * (decimal)1.5 + congLeTet * 3)
+                                    + luongCB / mauSo * (ngayNghiPhepHuongLuong + ngayNghiLeTetHuongLuong)
+                                    + congTacXa + luongTheoDoanhThuDoanhSo + thanhTienBunBoc + luongKhac + thiDua + hoTroNgoaiLuong;
+
+                decimal thunhapbydate = luongcbbaogomphucap / mauSo;
+                decimal thunhapbyminute = thunhapbydate / 8 / 60;
+                decimal tongthunhapminute = thunhapbyminute * (phutconglamviec + (phutcongCN * 2) + (phutcongTangCaNgayThuong * (decimal)1.5) + (phutcongLeTet * 3))
                                     + luongCB / mauSo * (ngayNghiPhepHuongLuong + ngayNghiLeTetHuongLuong)
                                     + congTacXa + luongTheoDoanhThuDoanhSo + thanhTienBunBoc + luongKhac + thiDua + hoTroNgoaiLuong;
 
@@ -348,6 +363,7 @@ namespace erp.Controllers
                     tamung = creditData.MucThanhToanHangThang;
                 }
                 decimal thuclanh = tongthunhap - bhxhbhyt - tamung + thuongletet;
+                decimal thuclanhminute = tongthunhapminute - bhxhbhyt - tamung + thuongletet;
 
                 var salary = new SalaryEmployeeMonth()
                 {
@@ -380,11 +396,15 @@ namespace erp.Controllers
                     ViTriDacThu = vitridacthu,
                     LuongCoBanBaoGomPhuCap = luongcbbaogomphucap,
                     NgayCongLamViec = ngayConglamViec,
+                    PhutCongLamViec = phutconglamviec,
                     NgayNghiPhepHuongLuong = ngayNghiPhepHuongLuong,
                     NgayNghiLeTetHuongLuong = ngayNghiLeTetHuongLuong,
                     CongCNGio = congCNGio,
+                    CongCNPhut = phutcongCN,
                     CongTangCaNgayThuongGio = congTangCaNgayThuongGio,
+                    CongTangCaNgayThuongPhut = phutcongTangCaNgayThuong,
                     CongLeTet = congLeTet,
+                    CongLeTetPhut = phutcongLeTet,
                     CongTacXa = congTacXa,
                     MucDatTrongThang = mucDatTrongThang,
                     LuongTheoDoanhThuDoanhSo = luongTheoDoanhThuDoanhSo,
@@ -393,12 +413,16 @@ namespace erp.Controllers
                     LuongKhac = luongKhac,
                     ThiDua = thiDua,
                     HoTroNgoaiLuong = hoTroNgoaiLuong,
+                    ThuNhapByMinute = thunhapbyminute,
+                    ThuNhapByDate = thunhapbydate,
                     TongThuNhap = tongthunhap,
+                    TongThuNhapMinute = tongthunhapminute,
                     BHXHBHYT = bhxhbhyt,
                     LuongThamGiaBHXH = luongthamgiabhxh,
                     TamUng = tamung,
                     ThuongLeTet = thuongletet,
                     ThucLanh = thuclanh,
+                    ThucLanhMinute = thuclanhminute,
                     MauSo = mauSo,
                     FlagReal = true,
                     NoiLamViecOrder = employee.SalaryNoiLamViecOrder,

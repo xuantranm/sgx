@@ -107,7 +107,7 @@ namespace erp.Controllers
         }
 
         [Route(Constants.LinkTimeKeeper.Index)]
-        public async Task<IActionResult> Index(string times, string employee)
+        public async Task<IActionResult> Index(string times, string id)
         {
             #region Authorization
             var login = User.Identity.Name;
@@ -118,16 +118,16 @@ namespace erp.Controllers
             if (loginInformation == null)
             {
                 #region snippet1
-                HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                 #endregion
                 return RedirectToAction("login", "account");
             }
-            if (string.IsNullOrEmpty(employee))
+            if (string.IsNullOrEmpty(id))
             {
-                employee = login;
+                id = login;
             }
 
-            var userInformation = employee == login ? loginInformation : dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(employee)).FirstOrDefault();
+            var userInformation = id == login ? loginInformation : dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(id)).FirstOrDefault();
             #endregion
 
             #region Dropdownlist
@@ -158,9 +158,9 @@ namespace erp.Controllers
                     });
                 }
             }
-            if (approves == null && approves.Count == 0)
+            if (approves == null || approves.Count == 0)
             {
-                var rolesApprove = dbContext.RoleUsers.Find(m => m.Enable.Equals(true) && m.Role.Equals("xac-nhan-nghi-phep")).ToList();
+                var rolesApprove = dbContext.RoleUsers.Find(m => m.Enable.Equals(true) && m.Role.Equals(Constants.Rights.XacNhanCong)).ToList();
                 foreach (var roleApprove in rolesApprove)
                 {
                     approves.Add(new IdName
@@ -183,10 +183,10 @@ namespace erp.Controllers
 
             #region Filter
             var builder = Builders<EmployeeWorkTimeLog>.Filter;
-            var filter = builder.Eq(m => m.EmployeeId, employee);
+            var filter = builder.Eq(m => m.EmployeeId, id);
             filter = filter & builder.Gt(m => m.Date, fromDate.AddDays(-1)) & builder.Lt(m => m.Date, toDate.AddDays(1));
             var builderSum = Builders<EmployeeWorkTimeMonthLog>.Filter;
-            var filterSum = builderSum.Eq(m => m.EmployeeId, employee);
+            var filterSum = builderSum.Eq(m => m.EmployeeId, id);
             #endregion
 
             var timekeepings = await dbContext.EmployeeWorkTimeLogs.Find(filter).ToListAsync();
@@ -213,6 +213,134 @@ namespace erp.Controllers
                 StartWorkingDate = fromDate,
                 EndWorkingDate = toDate,
                 Approves = approves
+            };
+            return View(viewModel);
+        }
+
+        [Route(Constants.LinkTimeKeeper.HelpTime)]
+        public async Task<IActionResult> HelpTime(string id, string thang)
+        {
+            #region Authorization
+            var login = User.Identity.Name;
+            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+            ViewData["LoginUserName"] = loginUserName;
+
+            var userInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
+            if (userInformation == null)
+            {
+                #region snippet1
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                #endregion
+                return RedirectToAction("login", "account");
+            }
+
+            // Quyền tạo nghỉ phép dùm
+            bool isRight = false;
+            if (loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.XacNhanCongDum, (int)ERights.Add))
+            {
+                isRight = true;
+            }
+            if (!isRight)
+            {
+                return RedirectToAction("AccessDenied", "Account");
+            }
+            #endregion
+
+            #region Dropdownlist
+            // Danh sách nhân viên để tạo phép dùm
+            var builderEmp = Builders<Employee>.Filter;
+            var filterEmp = builderEmp.Eq(m => m.Enable, true);
+            filterEmp = filterEmp & !builderEmp.Eq(m => m.UserName, Constants.System.account);
+            // Remove cấp cao ra (theo mã số lương)
+            filterEmp = filterEmp & !builderEmp.In(m => m.SalaryMaSoChucDanhCongViec, new string[] { "C.01", "C.02", "C.03" });
+            var employees = await dbContext.Employees.Find(filterEmp).SortBy(m => m.FullName).ToListAsync();
+
+            var monthYears = new List<MonthYear>();
+            var date = new DateTime(2018, 02, 01);
+            var endDate = DateTime.Now;
+            while (date.Year < endDate.Year || (date.Year == endDate.Year && date.Month <= endDate.Month))
+            {
+                monthYears.Add(new MonthYear
+                {
+                    Month = date.Month,
+                    Year = date.Year
+                });
+                date = date.AddMonths(1);
+            }
+            var sortTimes = monthYears.OrderByDescending(x => x.Year).OrderByDescending(x => x.Month).ToList();
+            var approves = new List<IdName>();
+            var employee = new Employee();
+            if (!string.IsNullOrEmpty(id))
+            {
+                employee = dbContext.Employees.Find(m => m.Id.Equals(id)).FirstOrDefault();
+                if (!string.IsNullOrEmpty(userInformation.ManagerId))
+                {
+                    var approveEntity = dbContext.Employees.Find(m => m.Id.Equals(userInformation.ManagerId)).FirstOrDefault();
+                    if (approveEntity != null)
+                    {
+                        approves.Add(new IdName
+                        {
+                            Id = approveEntity.Id,
+                            Name = approveEntity.FullName
+                        });
+                    }
+                }
+            }
+
+            var rolesApprove = dbContext.RoleUsers.Find(m => m.Enable.Equals(true) && m.Role.Equals(Constants.Rights.XacNhanCong)).ToList();
+            foreach (var roleApprove in rolesApprove)
+            {
+                approves.Add(new IdName
+                {
+                    Id = roleApprove.User,
+                    Name = roleApprove.FullName
+                });
+            }
+            #endregion
+
+            var toDate = Utility.WorkingMonthToDate(thang);
+            var fromDate = toDate.AddMonths(-1).AddDays(1);
+            // override times if null
+            if (string.IsNullOrEmpty(thang))
+            {
+                toDate = DateTime.Now;
+                fromDate = new DateTime(toDate.AddMonths(-1).Year, toDate.AddMonths(-1).Month, 26);
+            }
+
+            #region Filter
+            var builder = Builders<EmployeeWorkTimeLog>.Filter;
+            var filter = builder.Eq(m => m.EmployeeId, id);
+            filter = filter & builder.Gt(m => m.Date, fromDate.AddDays(-1)) & builder.Lt(m => m.Date, toDate.AddDays(1));
+            var builderSum = Builders<EmployeeWorkTimeMonthLog>.Filter;
+            var filterSum = builderSum.Eq(m => m.EmployeeId, id);
+            #endregion
+
+            var timekeepings = await dbContext.EmployeeWorkTimeLogs.Find(filter).ToListAsync();
+            var monthsTimes = await dbContext.EmployeeWorkTimeMonthLogs.Find(filterSum).ToListAsync();
+
+            ViewData["DayWorking"] = Utility.BusinessDaysUntil(fromDate, toDate);
+
+            timekeepings = timekeepings.OrderByDescending(m => m.Date).ToList();
+            monthsTimes = monthsTimes.OrderByDescending(m => m.Year).OrderByDescending(m => m.Month).ToList();
+            var monthTime = monthsTimes.FirstOrDefault(m => m.Year.Equals(toDate.Year) && m.Month.Equals(toDate.Month));
+
+            #region My Activities
+
+            #endregion
+
+            var viewModel = new TimeKeeperViewModel
+            {
+                EmployeeWorkTimeLogs = timekeepings,
+                Employee = userInformation,
+                EmployeeWorkTimeMonthLogs = monthsTimes,
+                EmployeeWorkTimeMonthLog = monthTime,
+                Employees = employees,
+                MonthYears = sortTimes,
+                StartWorkingDate = fromDate,
+                EndWorkingDate = toDate,
+                Approves = approves,
+                id = id,
+                thang = thang
             };
             return View(viewModel);
         }

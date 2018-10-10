@@ -187,7 +187,7 @@ namespace erp.Controllers
 
             // Quyền tạo nghỉ phép dùm
             bool isRight = false;
-            if (loginUserName == Constants.System.account ? true : Utility.IsRight(login, "nghi-phep", (int)ERights.Add))
+            if (loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.XinNghiPhepDum, (int)ERights.Add))
             {
                 isRight = true;
             }
@@ -273,14 +273,17 @@ namespace erp.Controllers
                 }
             }
 
-            var rolesApprove = dbContext.RoleUsers.Find(m => m.Enable.Equals(true) && m.Role.Equals("xac-nhan-nghi-phep")).ToList();
+            var rolesApprove = dbContext.RoleUsers.Find(m => m.Enable.Equals(true) && m.Role.Equals(Constants.Rights.XacNhanNghiPhep)).ToList();
             foreach (var roleApprove in rolesApprove)
             {
-                approves.Add(new IdName
+                if (!approves.Any(item => item.Id == roleApprove.User))
                 {
-                    Id = roleApprove.User,
-                    Name = roleApprove.FullName
-                });
+                    approves.Add(new IdName
+                    {
+                        Id = roleApprove.User,
+                        Name = roleApprove.FullName
+                    });
+                }
             }
 
             var viewModel = new LeaveViewModel
@@ -418,11 +421,16 @@ namespace erp.Controllers
             if (typeLeave.SalaryPay == true)
             {
                 #region update Leave Date
-                var builderLeaveEmployee = Builders<LeaveEmployee>.Filter;
-                var filterLeaveEmployee = builderLeaveEmployee.Eq(m => m.EmployeeId, entity.EmployeeId)
-                                        & builderLeaveEmployee.Eq(x => x.LeaveTypeId, entity.TypeId);
-                var updateLeaveEmployee = Builders<LeaveEmployee>.Update.Inc(m => m.Number, -(entity.Number));
-                dbContext.LeaveEmployees.UpdateOne(filterLeaveEmployee, updateLeaveEmployee);
+                // phep nam, bu
+                // Nghỉ hưởng lương dc phép tạo (thai sản, cưới, sự kiện,...) 
+                if (typeLeave.Alias != "nghi-huong-luong")
+                {
+                    var builderLeaveEmployee = Builders<LeaveEmployee>.Filter;
+                    var filterLeaveEmployee = builderLeaveEmployee.Eq(m => m.EmployeeId, entity.EmployeeId)
+                                            & builderLeaveEmployee.Eq(x => x.LeaveTypeId, entity.TypeId);
+                    var updateLeaveEmployee = Builders<LeaveEmployee>.Update.Inc(m => m.Number, -(entity.Number));
+                    dbContext.LeaveEmployees.UpdateOne(filterLeaveEmployee, updateLeaveEmployee);
+                }
                 #endregion
 
                 phepcon = dbContext.LeaveEmployees.AsQueryable().Where(x => x.EmployeeId.Equals(entity.EmployeeId)).Sum(x => x.Number);

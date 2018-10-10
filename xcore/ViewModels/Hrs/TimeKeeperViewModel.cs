@@ -16,8 +16,7 @@ namespace ViewModels
 
         public Employee Employee { get; set; }
 
-        // information search box
-        public TimeKeeperSearch Search { get; set; }
+        public bool RightRequest { get; set; } = false;
 
         public IList<EmployeeWorkTimeMonthLog> EmployeeWorkTimeMonthLogs { get; set; }
 
@@ -28,9 +27,10 @@ namespace ViewModels
         public DateTime EndWorkingDate { get; set; }
 
         #region Search
-        public string times { get; set; }
+        public string thang { get; set; }
 
-        public string employee { get; set; }
+        // employeeId
+        public string id { get; set; }
 
         public string code { get; set; }
 
@@ -39,11 +39,8 @@ namespace ViewModels
         public string nl { get; set; }
         #endregion
 
-        #region Request
         public IList<IdName> Approves { get; set; }
         public EmployeeWorkTimeLog EmployeeWorkTimeLog { get; set; }
-        #endregion
-
 
         #region Extensions
         public int Approve { get; set; }

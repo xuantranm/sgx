@@ -14,8 +14,8 @@ namespace Common.Utilities
             public const string department = "system";
             public const int expire = 30;
             public const bool enable = true;
-            //public const string domain = "http://demo.tribat.vn:8090";
-            public const string domain = "https://localhost:44366";
+            public const string domain = "http://erp.tribat.vn:8090";
+            //public const string domain = "https://localhost:44366";
             public const string login = "/account/login/";
             public const string emailErp = "test-erp@tribat.vn";
             public const string emailErpPwd = "Kh0ngbiet@123";
@@ -42,8 +42,13 @@ namespace Common.Utilities
             public const string HanhChanh = "hanh-chanh";
             public const string Luong = "luong";
             public const string LuongReal = "luong-real";
-            public const string ChamCong = "cham-cong";
+            
             public const string XinNghiPhepDum = "xin-nghi-phep-dum";
+            public const string XacNhanNghiPhep = "xac-nhan-nghi-phep";
+
+            public const string ChamCong = "cham-cong";
+            public const string XacNhanCongDum = "xac-nhan-cong-dum";
+            public const string XacNhanCong = "xac-nhan-cong";
 
             public const string NhaMay = "nha-may";
             public const string TonSX = "ton-sx";
@@ -132,6 +137,7 @@ namespace Common.Utilities
             public const string Item = "chi-tiet-cham-cong";
             // API
             //public const string Approve = "duyet-phep";
+            public const string HelpTime = "cong-nhan-vien-khac";
 
         }
 
@@ -299,6 +305,9 @@ namespace Common.Utilities
         public static DateTime MinDate = new DateTime(1900, 01, 01);
 
         public static string MissTitle = "Đang cập nhật";
+
+        public static string CurrentText = "Dữ liệu hiện tại";
+
         public static string Godmode = "godmode";
 
         public static string String_Y = "Y";

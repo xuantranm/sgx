@@ -10,6 +10,8 @@ namespace ViewModels
         public Employee Employee { get; set; }
 
         public Employee EmployeeChance { get; set; }
+
+        public bool StatusChange { get; set; }
         // data display
         public IList<Employee> Employees { get; set; }
 

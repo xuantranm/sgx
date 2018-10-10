@@ -1683,6 +1683,102 @@ namespace erp.Controllers
             return Json(new { url = "/hr/nhan-su" });
         }
 
+        [Route("/tai-lieu/ngay-phep/")]
+        public IActionResult NgayPhep()
+        {
+            return View();
+        }
+
+        [Route("/tai-lieu/ngay-phep/update/")]
+        [HttpPost]
+        public ActionResult NgayPhepUpdate()
+        {
+            IFormFile file = Request.Form.Files[0];
+            string folderName = Constants.Storage.Hr;
+            string webRootPath = _env.WebRootPath;
+            string newPath = Path.Combine(webRootPath, folderName);
+            if (!Directory.Exists(newPath))
+            {
+                Directory.CreateDirectory(newPath);
+            }
+            if (file.Length > 0)
+            {
+                string sFileExtension = Path.GetExtension(file.FileName).ToLower();
+                ISheet sheet;
+                string fullPath = Path.Combine(newPath, file.FileName);
+                using (var stream = new FileStream(fullPath, FileMode.Create))
+                {
+                    file.CopyTo(stream);
+                    stream.Position = 0;
+                    if (sFileExtension == ".xls")
+                    {
+                        HSSFWorkbook hssfwb = new HSSFWorkbook(stream); //This will read the Excel 97-2000 formats  
+                        sheet = hssfwb.GetSheetAt(0);
+                    }
+                    else
+                    {
+                        XSSFWorkbook hssfwb = new XSSFWorkbook(stream); //This will read 2007 Excel format  
+                        sheet = hssfwb.GetSheetAt(0); //get first sheet from workbook   
+                    }
+
+                    var typeLeave = dbContext.LeaveTypes.Find(m => m.Display.Equals(true) && m.SalaryPay.Equals(true) && m.Alias.Equals("phep-nam")).FirstOrDefault();
+                    var leaveEmployees = new List<LeaveEmployee>();
+                    for (int i = 2; i <= sheet.LastRowNum; i++)
+                    {
+                        IRow row = sheet.GetRow(i);
+                        if (row == null) continue;
+                        if (row.Cells.All(d => d.CellType == CellType.Blank)) continue;
+                        if (row.Cells.All(d => d.CellType == CellType.Error)) continue;
+                        if (row.Cells.All(d => d.CellType == CellType.Unknown)) continue;
+
+                        var code = GetFormattedCellValue(row.GetCell(1));
+                        var fullName = GetFormattedCellValue(row.GetCell(2));
+                        var email = GetFormattedCellValue(row.GetCell(3));
+                        if (!string.IsNullOrEmpty(email))
+                        {
+                            email = Utility.EmailConvert(fullName);
+                        }
+                        var phepcon = GetNumbericCellValue(row.GetCell(6));
+                        // get employee by code -> email (from fullname) -> fullname
+                        var employee = new Employee();
+                        if (!string.IsNullOrEmpty(code))
+                        {
+                            employee = dbContext.Employees.Find(m => m.Enable.Equals(true) & m.CodeOld.Equals(code)).FirstOrDefault();
+                        }
+                        if (employee == null)
+                        {
+                            if (!string.IsNullOrEmpty(email))
+                            {
+                                employee = dbContext.Employees.Find(m => m.Enable.Equals(true) & m.Email.Equals(email)).FirstOrDefault();
+                            }
+                        }
+                        if (employee == null)
+                        {
+                            if (!string.IsNullOrEmpty(fullName))
+                            {
+                                employee = dbContext.Employees.Find(m => m.Enable.Equals(true) & m.FullName.Equals(fullName)).FirstOrDefault();
+                            }
+                        }
+
+                        if (employee != null)
+                        {
+                            leaveEmployees.Add(new LeaveEmployee
+                            {
+                                LeaveTypeId = typeLeave.Id,
+                                EmployeeId = employee.Id,
+                                LeaveTypeName = typeLeave.Name,
+                                EmployeeName = employee.FullName,
+                                Number = (decimal)phepcon
+                            });
+                        }
+                    }
+                    dbContext.LeaveEmployees.DeleteMany(new BsonDocument());
+                    dbContext.LeaveEmployees.InsertMany(leaveEmployees);
+                }
+            }
+            return Json(new { url = "/hr/nhan-su" });
+        }
+
         public void UpdateLeave()
         {
             var list = dbContext.Employees.Find(m => m.Function.Equals("Nghỉ việc")).ToList();
@@ -1842,6 +1938,8 @@ namespace erp.Controllers
 
             _logger.LogInformation(3, "User created a new account with password.");
         }
+
+
         #endregion
 
         #region Factory
@@ -2886,6 +2984,20 @@ namespace erp.Controllers
                             var thiDua = GetNumbericCellValue(row.GetCell(34)) * 1000;
                             var hoTroNgoaiLuong = GetNumbericCellValue(row.GetCell(35)) * 1000;
                             var tongThuNhap = GetNumbericCellValue(row.GetCell(36)) * 1000;
+
+                            double mauSo = 26;
+                            double thunhapbydate = luongCanBanBaoGomPhuCap / mauSo;
+                            double thunhapbyminute = thunhapbydate / 8 / 60;
+
+                            double phutconglamviec = ngayConglamViec * 8 * 60;
+                            double phutcongCN = congCNGio * 60;
+                            double phutcongTangCaNgayThuong = congTangCaNgayThuongGio * 60;
+                            double phutcongLeTet = congLeTet * 8 * 60;
+
+                            double tongthunhapminute = thunhapbyminute * (phutconglamviec + (phutcongCN * 2) + (phutcongTangCaNgayThuong * (double)1.5) + (phutcongLeTet * 3))
+                                                + luongCB / mauSo * (ngayNghiPhepHuongLuong + ngayNghiLeTetHuongLuong)
+                                                + congTacXa + luongTheoDoanhThuDoanhSo + thanhTienBunBoc + luongKhac + thiDua + hoTroNgoaiLuong;
+
                             var bHXHBHYT = GetNumbericCellValue(row.GetCell(37)) * 1000;
                             var luongThamGiaBHXH = GetNumbericCellValue(row.GetCell(38)) * 1000;
                             var tamUng = GetNumbericCellValue(row.GetCell(39)) * 1000;
@@ -2895,6 +3007,7 @@ namespace erp.Controllers
                             {
                                 thucLanh = 0;
                             }
+                            double thuclanhminute = tongthunhapminute - bHXHBHYT - tamUng + thuongLeTet;
 
                             #region SalaryEmployeeMonth
                             dbContext.SalaryEmployeeMonths.InsertOne(new SalaryEmployeeMonth()
@@ -2932,11 +3045,15 @@ namespace erp.Controllers
                                 #endregion
                                 LuongCoBanBaoGomPhuCap = (decimal)luongCanBanBaoGomPhuCap,
                                 NgayCongLamViec = (decimal)ngayConglamViec,
+                                PhutCongLamViec = (decimal)phutconglamviec,
                                 NgayNghiPhepHuongLuong = (decimal)ngayNghiPhepHuongLuong,
                                 NgayNghiLeTetHuongLuong = (decimal)ngayNghiLeTetHuongLuong,
                                 CongCNGio = (decimal)congCNGio,
+                                CongCNPhut = (decimal)phutcongCN,
                                 CongTangCaNgayThuongGio = (decimal)congTangCaNgayThuongGio,
+                                CongTangCaNgayThuongPhut = (decimal)phutcongTangCaNgayThuong,
                                 CongLeTet = (decimal)congLeTet,
+                                CongLeTetPhut = (decimal)phutcongLeTet,
                                 CongTacXa = (decimal)congTacXa,
                                 MucDatTrongThang = (decimal)mucDatTrongThang,
                                 LuongTheoDoanhThuDoanhSo = (decimal)luongTheoDoanhThuDoanhSo,
@@ -2945,12 +3062,16 @@ namespace erp.Controllers
                                 LuongKhac = (decimal)luongKhac,
                                 ThiDua = (decimal)thiDua,
                                 HoTroNgoaiLuong = (decimal)hoTroNgoaiLuong,
+                                ThuNhapByMinute = (decimal)thunhapbyminute,
+                                ThuNhapByDate = (decimal)thunhapbydate,
                                 TongThuNhap = (decimal)tongThuNhap,
+                                TongThuNhapMinute = (decimal)tongthunhapminute,
                                 BHXHBHYT = (decimal)bHXHBHYT,
                                 LuongThamGiaBHXH = (decimal)luongThamGiaBHXH,
                                 TamUng = (decimal)tamUng,
                                 ThuongLeTet = (decimal)thuongLeTet,
                                 ThucLanh = (decimal)thucLanh,
+                                ThucLanhMinute = (decimal)thuclanhminute,
                                 MauSo = mauso
                             });
                             #endregion

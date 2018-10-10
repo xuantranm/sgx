@@ -93,7 +93,7 @@
     @*<script type="text/javascript" src="~/lib/bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js"></script>*@
     <script type="text/javascript" src="~/lib/daterangepicker/daterangepicker.js"></script>
     <script type="text/javascript" src="~/lib/js-render/jsrender.min.js"></script>
-    <script type="text/javascript" src="~/js/site.js"></script>
+    <script type="text/javascript" src="~/js/site.js?@DateTime.Now.Ticks"></script>
 
     @RenderSection("scripts", required: false)
 

@@ -133,10 +133,18 @@
                                     <div class="col-12">
                                         <div class="form-group">
                                             <i class="icon icon-email"></i>
-                                            <label asp-for="Employee.Email" class="control-label"></label><span class="text-red">*</span>
-                                            <input asp-for="Employee.Email" class="form-control form-control-lg" />
+                                            <label asp-for="Employee.Password" class="control-label"></label>
+                                            <input asp-for="Employee.Password" class="form-control form-control-lg" autocomplete="off" />
+                                            <span toggle="#Employee_Password" class="fa fa-fw fa-eye field-icon toggle-password"></span>
+                                            <span asp-validation-for="Employee.Password" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="form-group">
+                                            <i class="icon icon-email"></i>
+                                            <label asp-for="Employee.Email" class="control-label"></label>
+                                            <input asp-for="Employee.Email" class="form-control form-control-lg" autocomplete="off" />
                                             <span asp-validation-for="Employee.Email" class="text-danger"></span>
-                                            <small>@*Can used to log in to your account*@Có thể đăng nhập bằng email, mật khẩu được gửi tới email này.</small>
                                         </div>
                                     </div>
                                     <div class="col-6">

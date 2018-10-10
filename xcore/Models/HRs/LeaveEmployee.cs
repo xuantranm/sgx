@@ -6,6 +6,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Models
 {
     // Quản lý số ngày nghỉ phép còn lại (nghỉ phép, các loại nghỉ bù,...)
+    // Khong quan ly nghi phep huong luong (thai san, dam cuoi,..)
     public class LeaveEmployee : Common
     {
         [BsonId]

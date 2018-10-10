@@ -1,0 +1,379 @@
+﻿@using System;
+@using Common.Utilities;
+@using Common.Enums;
+@using System.Globalization;
+@using ViewModels
+@model TimeKeeperViewModel
+
+@{
+    Layout = "~/Views/Shared/_LayoutSocialFb.cshtml";
+}
+
+<form method="get" action="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.HelpTime" id="form-main">
+    <div class="row">
+        <div class="col-md-6 col-xs-12">
+            <div class="form-group">
+                <label asp-for="EmployeeWorkTimeLog.EmployeeId" class="control-label"></label>
+                <select asp-for="id" class="form-control form-control-lg js-select2-basic-single ddl-employees">
+                    <option value="">--Chọn--</option>
+                    @foreach (var employee in Model.Employees)
+                    {
+                        string displayTitle = string.Empty;
+                        if (!string.IsNullOrEmpty(employee.Title))
+                        {
+                            displayTitle += "[" + employee.Title + "]";
+                        }
+                        <option value="@employee.Id">@employee.FullName @displayTitle</option>
+                    }
+                </select>
+            </div>
+        </div>
+        <div class="col-md-6 col-xs-12">
+            <div class="form-group">
+                <label class="control-label">Tháng</label>
+                <select asp-for="thang" class="form-control form-control-lg js-select2-basic-single ddl-times">
+                    <option value="">--Chọn--</option>
+                    @foreach (var item in Model.MonthYears)
+                    {
+                        <option value="@item.Month-@item.Year">@item.Month/@item.Year</option>
+                    }
+                </select>
+            </div>
+        </div>
+    </div>
+</form>
+
+<section>
+    <input type="hidden" id="hidUrlGetItem" value="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Item" />
+    <div class="container">
+        <div class="row justify-content-center align-items-center">
+            <div class="col">
+                <div class="media align-items-center">
+                    <a href="/hr/nhan-su/thong-tin/@Model.Employee.Id" class="mr-4">
+                        @if (Model.Employee.Avatar != null)
+                        {
+                            <img class="avatar" src="@Model.Employee.Avatar.Path@Model.Employee.Avatar.FileName" alt="@Model.Employee.FullName" />
+                        }
+                        else
+                        {
+                            <img alt="@Model.Employee.FullName" src="holder.js/120x120" class="avatar avatar-lg avatar-square">
+                        }
+                    </a>
+                    <div class="media-body">
+                        <div class="mb-3">
+                            <h1 class="h2 mb-2">@Model.Employee.FullName</h1>
+                            <span class="badge badge-primary">@Model.Employee.Code</span>
+                            <span class="badge badge-danger">@Model.Employee.Department</span>
+                            <span class="badge badge-danger">@Model.Employee.Part</span>
+                            <span class="badge badge-danger">@Model.Employee.Title</span>
+                        </div>
+                        <div>
+                            <ul class="list-inline text-small d-inline-block">
+                                <li class="list-inline-item">
+                                    <i class="icon-link"></i>  <a href="/hr/nhan-su/thong-tin/@Model.Employee.Id">@Constants.System.domain/hr/nhan-su/thong-tin/@Model.Employee.Id</a>
+                                </li>
+                                <li class="list-inline-item"><i class="icon-users"></i> 12</li>
+                                <li class="list-inline-item"><i class="icon-message"></i> 6</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!--end of col-->
+            @*<div class="col-auto">
+                    <button class="btn btn-primary"><i class="icon-add-user mr-1"></i> Invite Member</button>
+                </div>*@
+            <!--end of col-->
+        </div>
+        <!--end of row-->
+    </div>
+    <!--end of container-->
+</section>
+<h5 class="mb-4">Tổng quan</h5>
+<div class="card">
+    @{
+        var lastUpdated = DateTime.Now.ToString("dd/MM/yyyy");
+        double dayworking = ViewBag.DayWorking;
+        double workday = dayworking;
+        // 1 day * 8 hours * 60 minutes;
+        double workminutes = dayworking * 8 * 60;
+        double late = 0;
+        double early = 0;
+        if (Model.EmployeeWorkTimeMonthLog != null)
+        {
+            var employeeWorkTimeMonthLog = Model.EmployeeWorkTimeMonthLog;
+            lastUpdated = employeeWorkTimeMonthLog.LastUpdated.ToString("dd/MM/yyyy");
+            workday = employeeWorkTimeMonthLog.Workday;
+            workminutes = Math.Round(TimeSpan.FromMilliseconds(employeeWorkTimeMonthLog.WorkTime).TotalMinutes, 0);
+            late = employeeWorkTimeMonthLog.Late - employeeWorkTimeMonthLog.LateApprove;
+            early = employeeWorkTimeMonthLog.Early - employeeWorkTimeMonthLog.EarlyApprove;
+        }
+    }
+    <span class="text-small"> Dữ liệu tính tới ngày @lastUpdated</span>
+    <ul class="list-group list-group-flush">
+        <li class="list-group-item">
+            <div class="d-flex justify-content-between">
+                <div><i class="icon-calculator mr-1"></i> Số ngày làm việc: (@Model.StartWorkingDate.ToString("dd/MM/yyyy") - @Model.EndWorkingDate.ToString("dd/MM/yyyy"))</div>
+                <span class="badge badge-light">@dayworking</span>
+            </div>
+        </li>
+
+        <li class="list-group-item">
+            <div class="d-flex justify-content-between">
+                <div><i class="icon-calculator mr-1"></i> Chấm công: (ngày)</div>
+                <span class="badge badge-light">@workday</span>
+            </div>
+        </li>
+        <li class="list-group-item">
+            <div class="d-flex justify-content-between">
+                <div><i class="icon-calculator mr-1"></i> Tổng thời gian chấm công: (phút)</div>
+                <span class="badge badge-light">
+                    @String.Format("{0:#,###,###}", workminutes)
+                </span>
+            </div>
+        </li>
+        <li class="list-group-item">
+            <div class="d-flex justify-content-between">
+                <div><i class="icon-calculator mr-1"></i> Đi trễ: (phút)</div>
+                <span class="badge badge-light">@String.Format("{0:#,###,###}", Math.Round(TimeSpan.FromMilliseconds(late).TotalMinutes, 0))</span>
+            </div>
+        </li>
+        <li class="list-group-item">
+            <div class="d-flex justify-content-between">
+                <div><i class="icon-calculator mr-1"></i> Về sớm: (phút)</div>
+                <span class="badge badge-light">@Math.Round(TimeSpan.FromMilliseconds(early).TotalMinutes, 0)</span>
+            </div>
+        </li>
+    </ul>
+</div>
+
+<div class="card card-sm">
+    <div class="card-header bg-secondary d-flex justify-content-between align-items-center">
+        <div>
+            <h6>Lịch sử chấm công</h6>
+        </div>
+    </div>
+</div>
+
+@if (Model.EmployeeWorkTimeLogs.Count > 0)
+{
+    <div class="row">
+        <div class="table-responsive">
+            <table class="table table-sm table-striped">
+                <thead>
+                    <tr>
+                        <th scope="col"></th>
+                        <th scope="col">Ngày</th>
+                        <th scope="col">Vào</th>
+                        <th scope="col">Ra</th>
+                        <th scope="col">Ca làm việc</th>
+                        <th scope="col">Đi trễ (phút)</th>
+                        <th scope="col">Về sớm (phút)</th>
+                        <th scope="col">Ngày làm việc</th>
+                        <th scope="col">Nơi chấm công</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        var iXacNhan = -1;
+                        if (DateTime.Now.Date.AddDays(iXacNhan).DayOfWeek == DayOfWeek.Sunday)
+                        {
+                            iXacNhan--;
+                        }
+                        foreach (var log in Model.EmployeeWorkTimeLogs)
+                        {
+                            <tr>
+                                <td class="log-@log.Id">
+                                    @{
+                                        if (log.Status == 0)
+                                        {
+                                            if (log.Date.Date == DateTime.Now.Date.AddDays(iXacNhan))
+                                            {
+                                                <input type="button" class="btn btn-sm btn-danger" value="Xác nhận" data-toggle="modal" data-target="#requestTimeKeeperModal" data-id="@log.Id" />
+                                            }
+                                            else
+                                            {
+                                                var displayStatus = string.Empty;
+                                                if (log.Date.Date != DateTime.Now.Date)
+                                                {
+                                                    if (Math.Round(log.Late.TotalMinutes, 0) > 0)
+                                                    {
+                                                        displayStatus += string.IsNullOrEmpty(displayStatus) ? "" : " - ";
+                                                        displayStatus += "Trễ";
+                                                    }
+                                                    if (Math.Round(log.Early.TotalMinutes, 0) > 0)
+                                                    {
+                                                        displayStatus += string.IsNullOrEmpty(displayStatus) ? "" : " - ";
+                                                        displayStatus += "Sớm";
+                                                    }
+                                                    if (!log.In.HasValue && !log.Out.HasValue)
+                                                    {
+                                                        displayStatus += string.IsNullOrEmpty(displayStatus) ? "" : " - ";
+                                                        displayStatus += "Thiếu";
+
+                                                    }
+                                                    else if (!log.In.HasValue)
+                                                    {
+                                                        displayStatus += string.IsNullOrEmpty(displayStatus) ? "" : " - ";
+                                                        displayStatus += "Thiếu vào";
+                                                    }
+                                                    else if (!log.Out.HasValue)
+                                                    {
+                                                        displayStatus += string.IsNullOrEmpty(displayStatus) ? "" : " - ";
+                                                        displayStatus += "Thiếu ra";
+                                                    }
+                                                }
+
+                                                <small class="badge badge-secondary">@displayStatus</small>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            var statusBag = "badge-info";
+                                            if (log.Status == 4)
+                                            {
+                                                statusBag = "badge-pill";
+                                            }
+                                            <span class="badge @statusBag">@Constants.TimeKeeper(log.Status)</span>
+                                        }
+                                    }
+                                </td>
+                                <td scope="row">
+                                    <span class="text-muted">@log.DateOnlyRecord.ToString("dd/MM/yyyy")</span>
+                                </td>
+                                <td>@log.In</td>
+                                <td>@log.Out</td>
+                                <td>
+                                    @{
+                                        if (log.Start.TotalMilliseconds == 0)
+                                        {
+                                            <span></span>
+                                        }
+                                        else
+                                        {
+                                            <small>@log.Start.ToString(@"hh\:mm")-@log.End.ToString(@"hh\:mm")</small>
+                                        }
+                                    }
+
+                                </td>
+                                <td>
+                                    @if ((log.StatusLate == 0 || log.StatusLate == 2 || log.StatusLate == 4) && log.Late.TotalMilliseconds > 0)
+                                    {
+                                        <span>@Math.Round(log.Late.TotalMinutes, 0)</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if ((log.StatusEarly == 0 || log.StatusEarly == 2 || log.StatusEarly == 4) && log.Early.TotalMilliseconds > 0)
+                                    {
+                                        <span>@Math.Round(log.Early.TotalMinutes, 0)</span>
+                                    }
+                                </td>
+                                <td>
+                                    @{
+                                        if (log.Status == 3)
+                                        {
+                                            <span>1</span>
+                                        }
+                                        else
+                                        {
+                                            if (log.WorkDay == 0)
+                                            {
+                                                <small>@log.Workcode</small>
+                                            }
+                                            else
+                                            {
+                                                <span>@log.WorkDay</span>
+                                            }
+                                        }
+                                    }
+                                </td>
+                                <td><small>@log.WorkplaceCode</small></td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+        <!--end of col-->
+    </div>
+    <!--end of row-->
+}
+else
+{
+    <div class="alert alert-light" role="alert">
+        Không có dữ liệu hoặc bạn thuộc danh sách không chấm công.
+    </div>
+}
+
+<script id="tmplDataItem" type="text/x-jsrender">
+    <input type="hidden" name="EmployeeWorkTimeLog.Id" value="{{:id}}" />
+    <div class="form-group">
+        <label class="control-label">Người xác nhận</label>
+        <select name="EmployeeWorkTimeLog.ConfirmId" class="form-control">
+            @{
+                foreach (var item in Model.Approves)
+                {
+                    var title = string.Empty;
+                    <option value="@item.Id">@item.Name</option>
+                }
+            }
+        </select>
+    </div>
+    <div class="from-group">
+        <label class="control-label">Chi tiết</label>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            Ngày <span class="badge badge-info">{{:date}}</span>
+        </div>
+        <div class="col-md-3 col-sm-6 col-xs-12">
+            Vào: <span class="badge badge-info">{{:in}}</span>
+        </div>
+        <div class="col-md-3 col-sm-6 col-xs-12">
+            Trễ: <span class="badge badge-info">{{:late}}</span>
+        </div>
+        <div class="col-md-3 col-sm-6 col-xs-12">
+            Ra: <span class="badge badge-info">{{:out}}</span>
+        </div>
+        <div class="col-md-3 col-sm-6 col-xs-12">
+            Sớm: <span class="badge badge-info">{{:early}}</span>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label">Lý do</label>
+        <textarea name="EmployeeWorkTimeLog.Reason" class="form-control js-auto-size">{{:reason}}</textarea>
+    </div>
+</script>
+
+<div class="modal fade" id="requestTimeKeeperModal" tabindex="-1" role="dialog" aria-labelledby="requestTimeKeeperModal" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editItemModalLabel">Xác nhận công</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Đóng">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form class="data-form" method="post" action="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Request" enctype="multipart/form-data">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <span class="result"></span>
+                <div class="modal-body data-item-edit">
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fas fa-times"></i>Hủy và đóng</button>
+                    <button type="submit" class="btn btn-primary btn-submit-timekeeping"><i class="icon-save"></i>&nbsp;Gửi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+        <script type="text/javascript" src="~/js/timekeeper-help.js?@DateTime.Now.Ticks"></script>
+    }
+}
+
+

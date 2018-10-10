@@ -277,7 +277,7 @@ namespace erp.Controllers
             }
             if (!from.HasValue)
             {
-                from = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+                from = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1).AddMonths(-4);
             }
             if (!to.HasValue)
             {
@@ -626,7 +626,7 @@ namespace erp.Controllers
             }
             if (!from.HasValue)
             {
-                from = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+                from = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1).AddMonths(-4); ;
             }
             if (!to.HasValue)
             {

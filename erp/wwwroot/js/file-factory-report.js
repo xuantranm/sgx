@@ -36,7 +36,7 @@
             contentType: false,
             processData: false,
             success: function (response) {
-                if (response.length == 0)
+                if (response.length === 0)
                     alert('Some error occured while uploading');
                 else {
                     window.location.replace(response.url);

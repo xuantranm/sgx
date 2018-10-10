@@ -1,0 +1,143 @@
+﻿@using Common.Utilities;
+
+@{
+    ViewData["Title"] = "Thông tin cá nhân";
+    Layout = "~/Views/Shared/_LayoutDocument.cshtml";
+}
+
+<div class="main-container">
+    <nav aria-label="breadcrumb" role="navigation" class="text-white position-absolute">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="/@Constants.LinkDocument.Main/@Constants.LinkDocument.GettingStarted">Hướng dẫn</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">@ViewData["Title"]</li>
+                    </ol>
+                </div>
+                <!--end of col-->
+            </div>
+            <!--end of row-->
+        </div>
+        <!--end of container-->
+    </nav>
+
+    <section class="bg-primary text-light p-0">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 col-md-6">
+                    <div class="space-lg pb-0">
+                        <h1 class="display-4">@ViewData["Title"]</h1>
+                        <span class="lead">
+                            Hướng dẫn xem và thay đổi thông tin cá nhân.
+                        </span>
+                    </div>
+                </div>
+                <!--end of col-->
+            </div>
+            <!--end of row-->
+        </div>
+        <!--end of container-->
+        <svg class="decorative-divider" preserveAspectRatio="none" viewbox="0 0 100 100">
+            <polygon fill="#F8F9FB" points="0 100 100 100 100 0"></polygon>
+        </svg>
+    </section>
+    <!--end of section-->
+    <section>
+        <div class="container">
+            <div class="row">
+                <div class="col-12 col-md-2 mb-5">
+                    <nav class="nav flex-md-column">
+                        <a href="#" class="nav-link">Phiên bản <span class="badge badge-secondary">v1.0.0</span></a>
+                    </nav>
+                    <hr class="short">
+                    <nav class="nav flex-md-column mb-2">
+
+                        <a href="/@Constants.LinkDocument.Main/@Constants.LinkDocument.GettingStarted" class="nav-link">Bắt đầu</a>
+
+                        <a href="/@Constants.LinkDocument.Main/@Constants.LinkDocument.Information" class="active nav-link">Thông tin cá nhân</a>
+
+                        <a href="/@Constants.LinkDocument.Main/@Constants.LinkDocument.Leave" class="nav-link">Nghỉ phép</a>
+
+                        <a href="/@Constants.LinkDocument.Main/@Constants.LinkDocument.Timer" class="nav-link">Chấm công</a>
+
+                        <a href="#" class="nav-link">...</a>
+                    </nav>
+                </div>
+                <!--end of col-->
+                <div class="col-12 col-md-8">
+
+                    <article id="thong-tin">
+                        <h3>
+                            Thông tin cá nhân
+                        </h3>
+                        <div>
+                            <p>Bấm vào đường dẫn <code>Thông tin</code> để xem thông tin cá nhân</p>
+                            <figure class="figure" style="margin: 1rem 0;">
+                                <img src="~/images/docs/thong-tin-1-web.jpg" alt="Thông tin" />
+                                <figcaption class="figure-caption">Thông tin</figcaption>
+                            </figure>
+                            <p>Thông tin cá nhân</p>
+                            <figure class="figure" style="margin: 1rem 0;">
+                                <img src="~/images/docs/thong-tin-2-web.jpg" alt="Thông tin" />
+                                <figcaption class="figure-caption">Thông tin đăng nhập</figcaption>
+                            </figure>
+                        </div>
+                    </article>
+
+                    <article id="chinh-sua">
+                        <h3>
+                            Chỉnh sửa thông tin
+                        </h3>
+                        <div>
+                            
+                        </div>
+                    </article>
+
+                    <article id="ho-tro">
+                        <h3>
+                            Hỗ trợ
+                        </h3>
+                        <div>
+                            <p>Mọi thắc mắc & yêu cầu gửi về email bên dưới.</p>
+                            <p>
+                                Hỗ trợ: <a href="mailto:hotro@tribat.vn" target="_top"> hotro@tribat.vn</a>
+                            </p>
+                        </div>
+                    </article>
+                </div>
+                <div class="col">
+                    <nav id="nav-components" class="nav flex-md-column" data-sticky="below-nav">
+                        <a data-smooth-scroll href="#thong-tin" class="nav-link text-small">Thông tin</a>
+
+                        <a data-smooth-scroll href="#chinh-sua" class="nav-link text-small">Chỉnh sửa</a>
+
+                        <a data-smooth-scroll href="#ho-tro" class="nav-link text-small">Hỗ trợ</a>
+                    </nav>
+                </div>
+            </div>
+            <!--end of row-->
+        </div>
+        <!--end of container-->
+    </section>
+    <!--end of section-->
+    <section class="bg-gradient p-0 text-white">
+        <svg class="decorative-divider" preserveAspectRatio="none" viewbox=" 0 0 100 100">
+            <polygon fill="#F8F9FB" points="0 0 100 0 100 100"></polygon>
+        </svg>
+        <div class="container space-lg">
+            <div class="row text-center">
+                <div class="col">
+                    <h3 class="h1">Xem thông tin, nghỉ phép, chấm công...</h3>
+                    <a href="/tk/dang-nhap" class="btn btn-lg btn-light">Bắt đầu</a>
+                </div>
+                <!--end of col-->
+            </div>
+            <!--end of row-->
+        </div>
+        <!--end of container-->
+    </section>
+</div>
+

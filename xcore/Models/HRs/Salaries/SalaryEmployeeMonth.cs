@@ -51,113 +51,137 @@ namespace Models
 
         public int Bac { get; set; }
 
-        public decimal LuongCanBan { get; set; }
+        public decimal LuongCanBan { get; set; } = 0;
 
         #region Phu Cap
         [BsonRepresentation(BsonType.Decimal128)]
-        public decimal NangNhocDocHai { get; set; }
+        public decimal NangNhocDocHai { get; set; } = 0;
 
         [BsonRepresentation(BsonType.Decimal128)]
-        public decimal TrachNhiem { get; set; }
+        public decimal TrachNhiem { get; set; } = 0;
 
         // Cong thuc: =IF(ThamNienLamViecYear>=3,LuongCanBan*(0.03+(ThamNienLamViecYear-3)*0.01),0)
         [BsonRepresentation(BsonType.Decimal128)]
-        public decimal ThamNien { get; set; }
+        public decimal ThamNien { get; set; } = 0;
 
         [BsonRepresentation(BsonType.Decimal128)]
-        public decimal ThuHut { get; set; }
+        public decimal ThuHut { get; set; } = 0;
         #endregion
 
         #region PHUC LOI KHAC
 
         [BsonRepresentation(BsonType.Decimal128)]
-        public decimal Xang { get; set; }
+        public decimal Xang { get; set; } = 0;
 
         [BsonRepresentation(BsonType.Decimal128)]
-        public decimal DienThoai { get; set; }
+        public decimal DienThoai { get; set; } = 0;
 
         [BsonRepresentation(BsonType.Decimal128)]
-        public decimal Com { get; set; }
+        public decimal Com { get; set; } = 0;
 
         // Chua ap dung
         [BsonRepresentation(BsonType.Decimal128)]
         public decimal NhaO { get; set; } = 0;
 
         [BsonRepresentation(BsonType.Decimal128)]
-        public decimal KiemNhiem { get; set; }
+        public decimal KiemNhiem { get; set; } = 0;
 
         [BsonRepresentation(BsonType.Decimal128)]
-        public decimal BhytDacBiet { get; set; }
+        public decimal BhytDacBiet { get; set; } = 0;
 
         [BsonRepresentation(BsonType.Decimal128)]
-        public decimal ViTriCanKnNhieuNam { get; set; }
+        public decimal ViTriCanKnNhieuNam { get; set; } = 0;
 
         [BsonRepresentation(BsonType.Decimal128)]
-        public decimal ViTriDacThu { get; set; }
+        public decimal ViTriDacThu { get; set; } = 0;
         #endregion
 
         [BsonRepresentation(BsonType.Decimal128)]
-        public decimal LuongCoBanBaoGomPhuCap { get; set; }
+        public decimal LuongCoBanBaoGomPhuCap { get; set; } = 0;
 
         [BsonRepresentation(BsonType.Decimal128)]
-        public decimal NgayCongLamViec { get; set; }
+        public decimal NgayCongLamViec { get; set; } = 0;
 
         [BsonRepresentation(BsonType.Decimal128)]
-        public decimal NgayNghiPhepHuongLuong { get; set; }
+        public decimal PhutCongLamViec { get; set; } = 0;
 
         [BsonRepresentation(BsonType.Decimal128)]
-        public decimal NgayNghiLeTetHuongLuong { get; set; }
+        public decimal NgayNghiPhepHuongLuong { get; set; } = 0;
 
         [BsonRepresentation(BsonType.Decimal128)]
-        public decimal CongCNGio { get; set; }
+        public decimal NgayNghiLeTetHuongLuong { get; set; } = 0;
 
         [BsonRepresentation(BsonType.Decimal128)]
-        public decimal CongTangCaNgayThuongGio { get; set; }
+        public decimal CongCNGio { get; set; } = 0;
 
         [BsonRepresentation(BsonType.Decimal128)]
-        public decimal CongLeTet { get; set; }
+        public decimal CongCNPhut { get; set; } = 0;
 
         [BsonRepresentation(BsonType.Decimal128)]
-        public decimal CongTacXa { get; set; }
+        public decimal CongTangCaNgayThuongGio { get; set; } = 0;
 
         [BsonRepresentation(BsonType.Decimal128)]
-        public decimal MucDatTrongThang { get; set; }
+        public decimal CongTangCaNgayThuongPhut { get; set; } = 0;
 
         [BsonRepresentation(BsonType.Decimal128)]
-        public decimal LuongTheoDoanhThuDoanhSo { get; set; }
+        public decimal CongLeTet { get; set; } = 0;
 
         [BsonRepresentation(BsonType.Decimal128)]
-        public decimal TongBunBoc { get; set; }
+        public decimal CongLeTetPhut { get; set; } = 0;
 
         [BsonRepresentation(BsonType.Decimal128)]
-        public decimal ThanhTienBunBoc { get; set; }
+        public decimal CongTacXa { get; set; } = 0;
 
         [BsonRepresentation(BsonType.Decimal128)]
-        public decimal LuongKhac { get; set; }
+        public decimal MucDatTrongThang { get; set; } = 0;
 
         [BsonRepresentation(BsonType.Decimal128)]
-        public decimal ThiDua { get; set; }
+        public decimal LuongTheoDoanhThuDoanhSo { get; set; } = 0;
 
         [BsonRepresentation(BsonType.Decimal128)]
-        public decimal HoTroNgoaiLuong { get; set; }
+        public decimal TongBunBoc { get; set; } = 0;
 
         [BsonRepresentation(BsonType.Decimal128)]
-        public decimal TongThuNhap { get; set; }
+        public decimal ThanhTienBunBoc { get; set; } = 0;
 
         [BsonRepresentation(BsonType.Decimal128)]
-        public decimal BHXHBHYT { get; set; }
+        public decimal LuongKhac { get; set; } = 0;
+
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal ThiDua { get; set; } = 0;
+
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal HoTroNgoaiLuong { get; set; } = 0;
+
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal ThuNhapByMinute { get; set; } = 0;
+
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal ThuNhapByDate { get; set; } = 0;
+
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal TongThuNhap { get; set; } = 0;
+
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal TongThuNhapMinute { get; set; } = 0;
+
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal BHXHBHYT { get; set; } = 0;
 
         [BsonRepresentation(BsonType.Decimal128)]
         public decimal LuongThamGiaBHXH { get; set; } = 0;
 
         [BsonRepresentation(BsonType.Decimal128)]
-        public decimal TamUng { get; set; }
+        public decimal TamUng { get; set; } = 0;
 
         [BsonRepresentation(BsonType.Decimal128)]
-        public decimal ThuongLeTet { get; set; }
+        public decimal ThuongLeTet { get; set; } = 0;
 
         [BsonRepresentation(BsonType.Decimal128)]
-        public decimal ThucLanh { get; set; }
+        public decimal ThucLanh { get; set; } = 0;
+
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal ThucLanhMinute { get; set; } = 0;
 
         [BsonRepresentation(BsonType.Decimal128)]
         public decimal MauSo { get; set; } = 26;

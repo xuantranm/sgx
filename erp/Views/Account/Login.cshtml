@@ -39,7 +39,8 @@
                                     </div>
                                     <div class="form-group">
                                         <label asp-for="Password"></label>
-                                        <input asp-for="Password" class="form-control form-control-lg" data-toggle="tooltip" title="Nhập [mật khẩu]. Thông tin được gửi qua email công ty."/>
+                                        <input asp-for="Password" class="form-control form-control-lg" data-toggle="tooltip" title="Nhập [mật khẩu]. Thông tin được gửi qua email công ty." />
+                                        <span toggle="#Password" class="fa fa-fw fa-eye field-icon toggle-password"></span>
                                         <small>
                                             <a asp-action="ForgotPassword" data-toggle="tooltip" title="Bấm vô nếu bạn quên mật khẩu.">Quên mật khẩu?</a>
                                         </small>

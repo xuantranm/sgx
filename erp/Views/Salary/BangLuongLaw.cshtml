@@ -3,7 +3,7 @@
 @using ViewModels;
 @model BangLuongViewModel
 @{
-    Layout = "~/Views/Shared/_LayoutSocialFb.cshtml";
+    Layout = "~/Views/Shared/_LayoutSocialFbFS.cshtml";
     var login = User.Identity.Name;
     var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
     var displayLaw = string.Empty;
@@ -12,6 +12,17 @@
         displayLaw = "BHXH";
     }
 }
+
+<style>
+    th:nth-child(2), td:nth-child(2) {
+        position: sticky;
+        left: 0px;
+    }
+
+    td:nth-child(2) {
+        background-color: lightgoldenrodyellow;
+    }
+</style>
 
 <div class="main-container">
     <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">

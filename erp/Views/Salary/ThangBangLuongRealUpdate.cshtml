@@ -2,7 +2,7 @@
 @using ViewModels;
 @model ThangBangLuongViewModel
 @{
-    Layout = "~/Views/Shared/_LayoutSocialFb.cshtml";
+    Layout = "~/Views/Shared/_LayoutSocialFbFS.cshtml";
     var login = User.Identity.Name;
     var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
     var rightSalaryReal = false;
@@ -34,21 +34,6 @@
                 <div class="row">
                     <div class="col">
                         <ul class="nav nav-tabs" id="myTab" role="tablist">
-                            <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.BangLuongReal">BẢNG LƯƠNG</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Setting/@Constants.LinkSalary.Update">THAM SỐ</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.SaleKPIs/@Constants.LinkSalary.Update">KINH DOANH</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.LogisticDatas/@Constants.LinkSalary.Update">LOGISTICS</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Credits/@Constants.LinkSalary.Update">VAY & TẠM ỨNG</a>
-                            </li>
                             <li class="nav-item">
                                 <a class="nav-link active" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.ThangBangLuongReal/@Constants.LinkSalary.Update">THANG LƯƠNG</a>
                             </li>

@@ -1,6 +1,22 @@
 ﻿$(function () {
     setValue();
 
+    $('.btn-change-data').on('click', function () {
+        $('input', $(this).closest('.form-group')).val($(this).data('value'));
+    });
+
+    $('.select-change-data').on('click', function () {
+        $('select', $(this).closest('.form-group')).val($(this).data('value'));
+    });
+
+    $('.select2-change-data').on('click', function () {
+        $('select', $(this).closest('.form-group')).val($(this).data('value')).trigger('change');
+    });
+
+    $('.txt-change-data').on('click', function () {
+        $('textarea', $(this).closest('.form-group')).val($(this).data('value'));
+    });
+
     if ($('#hidManagerId').val() === "") {
         shortManagerPeople();
     } else {
@@ -494,7 +510,7 @@ function shortManagerPeople() {
         type: 'GET',
         data: {
             part: $('select[name="Employee.Part"]').val(),
-            department: $('select[name="Employee.Department"]').val(),
+            department: $('select[name="Employee.Department"]').val()
             //title: $('select[name="Employee.Title"]').val()
         },
         datatype: 'json',
@@ -548,10 +564,9 @@ function readCover() {
         document.getElementById('cover').style.backgroundImage = "url(" + reader.result + ")";
         document.getElementById('cover').style.width = "357px";
         document.getElementById('cover').style.height = "167px";
-    }
+    };
     if (file) {
         reader.readAsDataURL(file);
-    } else {
     }
 }
 

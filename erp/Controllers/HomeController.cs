@@ -28,6 +28,7 @@ using System.Threading;
 using MimeKit;
 using Services;
 using Common.Enums;
+using MongoDB.Bson;
 
 namespace erp.Controllers
 {
@@ -280,16 +281,27 @@ namespace erp.Controllers
         }
 
         [Route("/email/welcome/")]
-        public IActionResult SendMail()
+        public async Task<IActionResult> SendMail()
         {
-            var listSendMailTest = new List<string>
-                            {
-                                "xuan.tm",
-                                //"phuong.ndq",
-                                //"anh.nth",
-                                //"thanh.dnt",
-                                //"thoa.ctm"
-                            };
+            #region Authorization
+            var login = User.Identity.Name;
+            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+            ViewData["LoginUserName"] = loginUserName;
+
+            var userInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
+            if (userInformation == null)
+            {
+                #region snippet1
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                #endregion
+                return RedirectToAction("login", "account");
+            }
+            if (loginUserName != Constants.System.account)
+            {
+                return RedirectToAction("AccessDenied", "Account");
+            }
+            #endregion
+            
             #region Filter
             var builder = Builders<Employee>.Filter;
             var filter = builder.Eq(m => m.Enable, true);
@@ -300,18 +312,43 @@ namespace erp.Controllers
             var password = string.Empty;
             foreach (var employee in employees)
             {
-                // Update password
-                password = Guid.NewGuid().ToString("N").Substring(0, 6);
-                var sysPassword = Helpers.Helper.HashedPassword(password);
-
-                var filterUpdate = Builders<Employee>.Filter.Eq(m => m.Id, employee.Id);
-                var update = Builders<Employee>.Update
-                    .Set(m => m.Password, sysPassword);
-                dbContext.Employees.UpdateOne(filterUpdate, update);
-
-                // UAT
-                if (!string.IsNullOrEmpty(listSendMailTest.Where(s => s.Equals(employee.UserName)).FirstOrDefault()))
+                if (!string.IsNullOrEmpty(employee.Email))
                 {
+                    // Update password
+                    password = Guid.NewGuid().ToString("N").Substring(0, 6);
+                    var sysPassword = Helpers.Helper.HashedPassword(password);
+
+                    var filterUpdate = Builders<Employee>.Filter.Eq(m => m.Id, employee.Id);
+                    var update = Builders<Employee>.Update
+                        .Set(m => m.Password, sysPassword);
+                    dbContext.Employees.UpdateOne(filterUpdate, update);
+
+                    #region UAT
+                    //var uat = dbContext.Settings.Find(m => m.Key.Equals("UAT")).FirstOrDefault();
+                    //if (uat != null && uat.Value == "1")
+                    //{
+                    //    var listSendMailTest = new List<string>
+                    //        {
+                    //            "xuan.tm",
+                    //            //"phuong.ndq"
+                    //            //"anh.nth",
+                    //            //"thanh.dnt",
+                    //            //"thoa.ctm"
+                    //        };
+
+                    //    if (!string.IsNullOrEmpty(listSendMailTest.Where(s => s.Equals(employee.UserName)).FirstOrDefault()))
+                    //    {
+                    //        SendMailRegister(employee, password);
+                    //        return Json(new { result = true, source = "sendmail", message = "Gửi mail thành công" });
+                    //    }
+                    //}
+                    #endregion
+
+                    //if (uat.Value == "0")
+                    //{
+                    //    SendMailRegister(employee, password);
+                    //}
+
                     SendMailRegister(employee, password);
                 }
             }
@@ -319,11 +356,54 @@ namespace erp.Controllers
             return Json(new { result = true, source = "sendmail", message = "Gửi mail thành công" });
         }
 
+
+        [Route("/system/update-employee-code/")]
+        public async Task<IActionResult> UpdateEmployeeCode()
+        {
+            #region Authorization
+            var login = User.Identity.Name;
+            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+            ViewData["LoginUserName"] = loginUserName;
+
+            var userInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
+            if (userInformation == null)
+            {
+                #region snippet1
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                #endregion
+                return RedirectToAction("login", "account");
+            }
+            if (loginUserName != Constants.System.account)
+            {
+                return RedirectToAction("AccessDenied", "Account");
+            }
+            #endregion
+            
+            #region Filter
+            var builder = Builders<Employee>.Filter;
+            var filter = !builder.Eq(m => m.UserName, Constants.System.account);
+            #endregion
+
+            var employees = dbContext.Employees.Find(filter).ToList();
+            var i = 1;
+            foreach (var employee in employees)
+            {
+                var filterUpdate = Builders<Employee>.Filter.Eq(m => m.Id, employee.Id);
+                var update = Builders<Employee>.Update
+                    .Set(m => m.Code, "LD-" + i.ToString("0000"));
+                dbContext.Employees.UpdateOne(filterUpdate, update);
+                i++;
+            }
+
+            return Json(new { result = true, source = "update-employee-code", message = "Cập nhật mã nhân viên thành công" });
+        }
+
         public void SendMailRegister(Employee entity, string pwd)
         {
             var tos = new List<EmailAddress>
             {
                 new EmailAddress { Name = entity.FullName, Address = entity.Email }
+                //new EmailAddress { Name = entity.FullName, Address = "xuan.tm9@tribat.vn" }
             };
 
             // Send an email with this link
@@ -383,6 +463,7 @@ namespace erp.Controllers
                 Subject = subject,
                 BodyContent = messageBody
             };
+
             _emailSender.SendEmailWelcomeAsync(emailMessage);
 
             ViewData["Message"] = $"Please confirm your account by clicking this link: <a href='{callbackUrl}' class='btn btn-primary'>Confirmation Link</a>";

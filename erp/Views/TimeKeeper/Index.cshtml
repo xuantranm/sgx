@@ -7,14 +7,17 @@
 
 @{
     Layout = "~/Views/Shared/_LayoutSocialFb.cshtml";
-    var login = User.Identity.Name;
-    var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
-    var rightChamCong = false;
-    if (!string.IsNullOrEmpty(login))
-    {
-        rightChamCong = Utility.IsRight(login, Constants.Rights.ChamCong, (int)ERights.View);
-    }
 }
+
+@if (Model.RightRequest)
+{
+    <div class="form-group">
+        <a href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.HelpTime" style="cursor:pointer" data-toggle="tooltip" title="Bấm vô xác nhận công cho nhân viên khác.">
+            <i class="fas fa-hands-helping"></i> Xác nhận công cho nhân viên khác
+        </a>
+    </div>
+}
+
 
 <section>
     <input type="hidden" id="hidUrlGetItem" value="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Item" />
@@ -77,6 +80,7 @@
             var employeeWorkTimeMonthLog = Model.EmployeeWorkTimeMonthLog;
             lastUpdated = employeeWorkTimeMonthLog.LastUpdated.ToString("dd/MM/yyyy");
             workday = employeeWorkTimeMonthLog.Workday;
+            workminutes = Math.Round(TimeSpan.FromMilliseconds(employeeWorkTimeMonthLog.WorkTime).TotalMinutes, 0);
             late = employeeWorkTimeMonthLog.Late - employeeWorkTimeMonthLog.LateApprove;
             early = employeeWorkTimeMonthLog.Early - employeeWorkTimeMonthLog.EarlyApprove;
         }
@@ -96,16 +100,18 @@
                 <span class="badge badge-light">@workday</span>
             </div>
         </li>
-        <li class="list-group-item d-none">
+        <li class="list-group-item">
             <div class="d-flex justify-content-between">
-                <div><i class="icon-calculator mr-1"></i> Tổng thời gian làm việc: (phút)</div>
-                <span class="badge badge-light">@workminutes</span>
+                <div><i class="icon-calculator mr-1"></i> Tổng thời gian chấm công: (phút)</div>
+                <span class="badge badge-light">
+                    @String.Format("{0:#,###,###}", workminutes)
+                </span>
             </div>
         </li>
         <li class="list-group-item">
             <div class="d-flex justify-content-between">
                 <div><i class="icon-calculator mr-1"></i> Đi trễ: (phút)</div>
-                <span class="badge badge-light">@Math.Round(TimeSpan.FromMilliseconds(late).TotalMinutes, 0)</span>
+                <span class="badge badge-light">@String.Format("{0:#,###,###}", Math.Round(TimeSpan.FromMilliseconds(late).TotalMinutes, 0))</span>
             </div>
         </li>
         <li class="list-group-item">
@@ -123,23 +129,8 @@
             <h6>Lịch sử chấm công</h6>
         </div>
         <form class="d-flex align-items-center" method="get" action="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Index" id="form-main">
-            @if (rightChamCong)
-            {
-                <div class="col-md-6">
-                    <label class="control-label">Nhân viên</label>
-                    <select asp-for="employee" class="form-control form-control-lg js-select2-basic-single">
-                        <option value="">Tất cả</option>
-                        @{
-                            foreach (var item in Model.Employees)
-                            {
-                                <option value="@item.Id">@item.FullName [@item.Title]</option>
-                            }
-                        }
-                    </select>
-                </div>
-            }
             <span class="mr-2 text-muted text-small text-nowrap">Tháng:</span>
-            <select asp-for="times" class="custom-select ddl-times">
+            <select asp-for="thang" class="custom-select ddl-times">
                 @{
                     foreach (var item in Model.MonthYears)
                     {

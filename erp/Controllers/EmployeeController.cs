@@ -80,7 +80,7 @@ namespace erp.Controllers
                 return RedirectToAction("login", "account");
             }
 
-            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, "nhan-su", (int)ERights.View)))
+            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.NhanSu, (int)ERights.View)))
             {
                 return RedirectToAction("AccessDenied", "Account");
             }
@@ -212,7 +212,7 @@ namespace erp.Controllers
                 return RedirectToAction("login", "account");
             }
 
-            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, "nhan-su", (int)ERights.View)))
+            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.NhanSu, (int)ERights.View)))
             {
                 return RedirectToAction("AccessDenied", "Account");
             }
@@ -507,7 +507,7 @@ namespace erp.Controllers
 
         // GET: Users/Details/5
         [Route(Constants.LinkHr.Human + "/"+ Constants.LinkHr.Information+ "/"+ "{id}")]
-        public ActionResult Details(string id)
+        public async Task<ActionResult> Details(string id)
         {
             if (string.IsNullOrEmpty(id))
             {
@@ -523,7 +523,7 @@ namespace erp.Controllers
             if (loginInformation == null)
             {
                 #region snippet1
-                HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                 #endregion
                 return RedirectToAction("login", "account");
             }
@@ -531,7 +531,7 @@ namespace erp.Controllers
             // Check owner
             if (id != login)
             {
-                if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, "nhan-su", (int)ERights.View)))
+                if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.NhanSu, (int)ERights.View)))
                 {
                     return RedirectToAction("AccessDenied", "Account");
                 }
@@ -566,8 +566,8 @@ namespace erp.Controllers
 
             #endregion
 
-            var entity = dbContext.Employees
-                .Find(m => m.Id == id).FirstOrDefault();
+            var entity = await dbContext.Employees
+                .Find(m => m.Id == id).FirstOrDefaultAsync();
 
             if (entity == null)
             {
@@ -592,7 +592,7 @@ namespace erp.Controllers
             #endregion
 
             var sortEmployee = Builders<Employee>.Sort.Ascending(m => m.FullName);
-            var employees = dbContext.Employees.Find(m => m.Enable.Equals(true)).Sort(sortEmployee).ToList();
+            var employees = await dbContext.Employees.Find(m => m.Enable.Equals(true)).Sort(sortEmployee).ToListAsync();
 
             var manager = new Employee();
             if (!string.IsNullOrEmpty(entity.ManagerId))
@@ -600,9 +600,29 @@ namespace erp.Controllers
                 manager = dbContext.Employees.Find(m => m.Id.Equals(entity.ManagerId)).FirstOrDefault();
             }
 
+            var employeeChanged = await dbContext.EmployeeHistories.Find(m => m.EmployeeId.Equals(id)).SortByDescending(m => m.UpdatedOn).Limit(1).FirstOrDefaultAsync();
+            var statusChange = false;
+            if (employeeChanged != null && employeeChanged.UpdatedOn > entity.UpdatedOn)
+            {
+                // if in changed data is not HR
+                // Get list hr
+                // check with list hr
+                var listHr = new List<string>();
+                var hrs = dbContext.RoleUsers.Find(m => m.Role.Equals(Constants.Rights.NhanSu)).ToList();
+                foreach (var hr in hrs)
+                {
+                    listHr.Add(hr.User);
+                }
+                if (!listHr.Contains(employeeChanged.UpdatedBy))
+                {
+                    statusChange = true;
+                }
+            }
             var viewModel = new EmployeeDataViewModel()
             {
                 Employee = entity,
+                EmployeeChance = employeeChanged,
+                StatusChange = statusChange,
                 Employees = employees,
                 Manager = manager
             };
@@ -616,7 +636,7 @@ namespace erp.Controllers
             #region Authorization
             var login = User.Identity.Name;
             var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
-            bool right = Utility.IsRight(login, "nhan-su", (int)ERights.Add);
+            bool right = Utility.IsRight(login, Constants.Rights.NhanSu, (int)ERights.Add);
 
             // sys account override
             if (loginUserName == Constants.System.account)
@@ -723,7 +743,7 @@ namespace erp.Controllers
                 return RedirectToAction("login", "account");
             }
 
-            bool right = Utility.IsRight(login, "nhan-su", (int)ERights.Add);
+            bool right = Utility.IsRight(login, Constants.Rights.NhanSu, (int)ERights.Add);
             // sys account override
             if (loginUserName == Constants.System.account)
             {
@@ -742,9 +762,12 @@ namespace erp.Controllers
                 return Json(new { result = false, source = "user", id = string.Empty, message = "Tên đăng nhập đã có trong hệ thống." });
             }
 
-            if (checkEmail != entity.Email && !CheckEmail(entity))
+            if (!string.IsNullOrEmpty(entity.Email))
             {
-                return Json(new { result = false, source = "email", id = string.Empty, message = "Email đã có trong hệ thống." });
+                if (checkEmail != entity.Email && !CheckEmail(entity))
+                {
+                    return Json(new { result = false, source = "email", id = string.Empty, message = "Email đã có trong hệ thống." });
+                }
             }
 
             #region Update missing field
@@ -800,7 +823,12 @@ namespace erp.Controllers
 
                 #region System Generate
                 var pwdrandom = Guid.NewGuid().ToString("N");
+                if (!string.IsNullOrEmpty(entity.Password))
+                {
+                    pwdrandom = entity.Password;
+                }
                 var sysPassword = Helpers.Helper.HashedPassword(pwdrandom);
+
                 var lastEntity = dbContext.Employees.Find(m => m.Enable.Equals(true)).SortByDescending(m => m.Id).Limit(1).First();
                 var x = 1;
                 if (lastEntity != null && lastEntity.Code != null)
@@ -891,6 +919,7 @@ namespace erp.Controllers
                 var newUserId = entity.Id;
 
                 var hisEntity = entity;
+                hisEntity.EmployeeId = newUserId;
                 dbContext.EmployeeHistories.InsertOne(hisEntity);
                 #region Send mail to IT setup email
 
@@ -943,16 +972,27 @@ namespace erp.Controllers
 
         // GET: Users/Edit/5
         [Route("nhan-su/cap-nhat/{id}")]
-        public ActionResult Edit(string id)
+        public async Task<ActionResult> Edit(string id)
         {
             #region Authorization
             var login = User.Identity.Name;
             var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+            ViewData["LoginUserName"] = loginUserName;
+
+            var loginInformation = dbContext.Employees.Find(m => m.Id.Equals(login)).FirstOrDefault();
+            if (loginInformation == null)
+            {
+                #region snippet1
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                #endregion
+                return RedirectToAction("login", "account");
+            }
+
             var rightHr = false;
             // Check owner
             if (id != login)
             {
-                if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, "nhan-su", (int)ERights.Edit)))
+                if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.NhanSu, (int)ERights.Edit)))
                 {
                     return RedirectToAction("AccessDenied", "Account");
                 }
@@ -1048,36 +1088,38 @@ namespace erp.Controllers
             }
             entity.Salaries = currentSalaries;
 
-            // Use compare field by field
-            var employeeChance = new Employee();
-            if (rightHr)
-            {
-                var entityOtherChange = dbContext.EmployeeHistories.Find(m => m.EmployeeId.Equals(id)).SortByDescending(m => m.UpdatedOn).FirstOrDefault();
-                if (entityOtherChange != null && entityOtherChange.UpdatedOn > entity.UpdatedOn)
-                {
-                    employeeChance = entityOtherChange;
-                }
-            }
-            #region Compare change. No use this
-            //var variances = new List<Variance>();
-            //if (entityOtherChange!= null && entityOtherChange.UpdatedOn > entity.UpdatedOn)
-            //{
-            //    variances = entity.DetailedCompare(entityOtherChange);
-            //}
-            #endregion
-
             var manager = new Employee();
             if (!string.IsNullOrEmpty(entity.ManagerId))
             {
                 manager = dbContext.Employees.Find(m => m.Id.Equals(entity.ManagerId)).FirstOrDefault();
             }
 
+            var employeeChanged = await dbContext.EmployeeHistories.Find(m => m.EmployeeId.Equals(id)).SortByDescending(m => m.UpdatedOn).Limit(1).FirstOrDefaultAsync();
+            var statusChange = false;
+            if (employeeChanged != null && employeeChanged.UpdatedOn > entity.UpdatedOn)
+            {
+                // if in changed data is not HR
+                // Get list hr
+                // check with list hr
+                var listHr = new List<string>();
+                var hrs = dbContext.RoleUsers.Find(m => m.Role.Equals(Constants.Rights.NhanSu)).ToList();
+                foreach (var hr in hrs)
+                {
+                    listHr.Add(hr.User);
+                }
+                if (!listHr.Contains(employeeChanged.UpdatedBy))
+                {
+                    statusChange = true;
+                }
+            }
+
             var viewModel = new EmployeeDataViewModel()
             {
                 Employee = entity,
-                EmployeeChance = employeeChance,
+                EmployeeChance = employeeChanged,
                 Employees = employees,
-                Manager = manager
+                Manager = manager,
+                StatusChange = statusChange
             };
             return View(viewModel);
         }
@@ -1109,12 +1151,12 @@ namespace erp.Controllers
             // Check owner
             if (entity.Id != login)
             {
-                if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, "nhan-su", (int)ERights.Edit)))
+                if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.NhanSu, (int)ERights.Edit)))
                 {
                     return RedirectToAction("AccessDenied", "Account");
                 }
             }
-            var rightHr = Utility.IsRight(login, "nhan-su", (int)ERights.Edit);
+            var rightHr = Utility.IsRight(login, Constants.Rights.NhanSu, (int)ERights.Edit);
             // System
             if (loginUserName == Constants.System.account)
             {
@@ -1339,104 +1381,104 @@ namespace erp.Controllers
                     entity.Id = null;
                     dbContext.EmployeeHistories.InsertOne(entity);
                     #region Send email to user changed
-                    var tos = new List<EmailAddress>
-                    {
-                        new EmailAddress { Name = entity.FullName, Address = entity.Email }
-                    };
+                    //var tos = new List<EmailAddress>
+                    //{
+                    //    new EmailAddress { Name = entity.FullName, Address = entity.Email }
+                    //};
 
-                    var webRoot = Environment.CurrentDirectory;
-                    var pathToFile = _env.WebRootPath
-                            + Path.DirectorySeparatorChar.ToString()
-                            + "Templates"
-                            + Path.DirectorySeparatorChar.ToString()
-                            + "EmailTemplate"
-                            + Path.DirectorySeparatorChar.ToString()
-                            + "HrChangeInformation.html";
+                    //var webRoot = Environment.CurrentDirectory;
+                    //var pathToFile = _env.WebRootPath
+                    //        + Path.DirectorySeparatorChar.ToString()
+                    //        + "Templates"
+                    //        + Path.DirectorySeparatorChar.ToString()
+                    //        + "EmailTemplate"
+                    //        + Path.DirectorySeparatorChar.ToString()
+                    //        + "HrChangeInformation.html";
 
-                    #region parameters
-                    //{0} : Subject
-                    //{1} : Người được thay đổi thông tin
-                    //{2} : Nhân sự thay dổi (ten - chuc vu - email)
-                    //{3} : Ngày thay đổi
-                    //{4} : Link chi tiết nhân sự
-                    //{5}: Website
-                    #endregion
-                    var subject = "Thay đổi thông tin nhân sự.";
-                    var requester = entity.FullName;
-                    var hrChanged = loginInformation.FullName;
-                    if (!string.IsNullOrEmpty(loginInformation.Title))
-                    {
-                        hrChanged += " - " + loginInformation.Title;
-                    }
-                    if (!string.IsNullOrEmpty(loginInformation.Email))
-                    {
-                        hrChanged += " - email: " + loginInformation.Email;
-                    }
-                    var linkDomain = Constants.System.domain;
-                    var fullLinkInformation = linkDomain + "/" + linkInformation;
-                    var bodyBuilder = new BodyBuilder();
-                    using (StreamReader SourceReader = System.IO.File.OpenText(pathToFile))
-                    {
-                        bodyBuilder.HtmlBody = SourceReader.ReadToEnd();
-                    }
-                    string messageBody = string.Format(bodyBuilder.HtmlBody,
-                        subject,
-                        requester,
-                        hrChanged,
-                        entity.UpdatedOn.ToString("dd/MM/yyyy"),
-                        fullLinkInformation,
-                        linkDomain
-                        );
-                    var emailMessage = new EmailMessage()
-                    {
-                        ToAddresses = tos,
-                        Subject = subject,
-                        BodyContent = messageBody
-                    };
-                    try
-                    {
-                        var emailFrom = Constants.System.emailHr;
-                        var emailFromName = Constants.System.emailHrName;
-                        var emailFromPwd = Constants.System.emailHrPwd;
-                        var message = new MimeMessage();
-                        message.To.AddRange(emailMessage.ToAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
-                        if (emailMessage.CCAddresses != null && emailMessage.CCAddresses.Count > 0)
-                        {
-                            message.Cc.AddRange(emailMessage.CCAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
-                        }
-                        if (emailMessage.FromAddresses == null || emailMessage.FromAddresses.Count == 0)
-                        {
-                            emailMessage.FromAddresses = new List<EmailAddress>
-                                {
-                                    new EmailAddress { Name = emailFromName, Address = emailFrom }
-                                };
-                        }
-                        message.From.AddRange(emailMessage.FromAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
-                        message.Subject = emailMessage.Subject;
-                        message.Body = new TextPart(TextFormat.Html)
-                        {
-                            Text = emailMessage.BodyContent
-                        };
-                        using (var emailClient = new MailKit.Net.Smtp.SmtpClient())
-                        {
-                            //The last parameter here is to use SSL (Which you should!)
-                            emailClient.Connect(emailFrom, 465, true);
+                    //#region parameters
+                    ////{0} : Subject
+                    ////{1} : Người được thay đổi thông tin
+                    ////{2} : Nhân sự thay dổi (ten - chuc vu - email)
+                    ////{3} : Ngày thay đổi
+                    ////{4} : Link chi tiết nhân sự
+                    ////{5}: Website
+                    //#endregion
+                    //var subject = "Thay đổi thông tin nhân sự.";
+                    //var requester = entity.FullName;
+                    //var hrChanged = loginInformation.FullName;
+                    //if (!string.IsNullOrEmpty(loginInformation.Title))
+                    //{
+                    //    hrChanged += " - " + loginInformation.Title;
+                    //}
+                    //if (!string.IsNullOrEmpty(loginInformation.Email))
+                    //{
+                    //    hrChanged += " - email: " + loginInformation.Email;
+                    //}
+                    //var linkDomain = Constants.System.domain;
+                    //var fullLinkInformation = linkDomain + "/" + linkInformation;
+                    //var bodyBuilder = new BodyBuilder();
+                    //using (StreamReader SourceReader = System.IO.File.OpenText(pathToFile))
+                    //{
+                    //    bodyBuilder.HtmlBody = SourceReader.ReadToEnd();
+                    //}
+                    //string messageBody = string.Format(bodyBuilder.HtmlBody,
+                    //    subject,
+                    //    requester,
+                    //    hrChanged,
+                    //    entity.UpdatedOn.ToString("dd/MM/yyyy"),
+                    //    fullLinkInformation,
+                    //    linkDomain
+                    //    );
+                    //var emailMessage = new EmailMessage()
+                    //{
+                    //    ToAddresses = tos,
+                    //    Subject = subject,
+                    //    BodyContent = messageBody
+                    //};
+                    //try
+                    //{
+                    //    var emailFrom = Constants.System.emailHr;
+                    //    var emailFromName = Constants.System.emailHrName;
+                    //    var emailFromPwd = Constants.System.emailHrPwd;
+                    //    var message = new MimeMessage();
+                    //    message.To.AddRange(emailMessage.ToAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
+                    //    if (emailMessage.CCAddresses != null && emailMessage.CCAddresses.Count > 0)
+                    //    {
+                    //        message.Cc.AddRange(emailMessage.CCAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
+                    //    }
+                    //    if (emailMessage.FromAddresses == null || emailMessage.FromAddresses.Count == 0)
+                    //    {
+                    //        emailMessage.FromAddresses = new List<EmailAddress>
+                    //            {
+                    //                new EmailAddress { Name = emailFromName, Address = emailFrom }
+                    //            };
+                    //    }
+                    //    message.From.AddRange(emailMessage.FromAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
+                    //    message.Subject = emailMessage.Subject;
+                    //    message.Body = new TextPart(TextFormat.Html)
+                    //    {
+                    //        Text = emailMessage.BodyContent
+                    //    };
+                    //    using (var emailClient = new MailKit.Net.Smtp.SmtpClient())
+                    //    {
+                    //        //The last parameter here is to use SSL (Which you should!)
+                    //        emailClient.Connect(emailFrom, 465, true);
 
-                            //Remove any OAuth functionality as we won't be using it. 
-                            emailClient.AuthenticationMechanisms.Remove("XOAUTH2");
+                    //        //Remove any OAuth functionality as we won't be using it. 
+                    //        emailClient.AuthenticationMechanisms.Remove("XOAUTH2");
 
-                            emailClient.Authenticate(emailFrom, emailFromPwd);
+                    //        emailClient.Authenticate(emailFrom, emailFromPwd);
 
-                            emailClient.Send(message);
-                            emailClient.Disconnect(true);
-                            Console.WriteLine("The mail has been sent successfully !!");
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine(ex.Message);
-                        // insert dd. Do later.
-                    }
+                    //        emailClient.Send(message);
+                    //        emailClient.Disconnect(true);
+                    //        Console.WriteLine("The mail has been sent successfully !!");
+                    //    }
+                    //}
+                    //catch (Exception ex)
+                    //{
+                    //    Console.WriteLine(ex.Message);
+                    //    // insert dd. Do later.
+                    //}
                     #endregion
                 }
                 else
@@ -1469,7 +1511,16 @@ namespace erp.Controllers
                                 var emailEntity = dbContext.Employees.Find(m => m.Id.Equals(item.User)).Project<Employee>(fields).FirstOrDefault();
                                 if (emailEntity != null)
                                 {
-                                    ccs.Add(new EmailAddress { Name = emailEntity.FullName, Address = emailEntity.Email });
+                                    // Remove a Thao, Pari
+                                    var listNo = new List<string>
+                                    {
+                                        "ngopari@tribat.vn",
+                                        "thao.nv@tribat.vn"
+                                    };
+                                    if (!listNo.Any(s => emailEntity.Email.Contains(s)))
+                                    {
+                                        ccs.Add(new EmailAddress { Name = emailEntity.FullName, Address = emailEntity.Email });
+                                    }
                                 }
                             }
                         }

@@ -1,6 +1,4 @@
 ﻿$(function () {
-    loadEmployees();
-
     $('.js-select2-basic-single').select2(
         {
             theme: "bootstrap"
@@ -9,9 +7,11 @@
     $('#part').on('change', function () {
         loadEmployees();
     });
+
     $('#department').on('change', function () {
         loadEmployees();
     });
+
     $('#title').on('change', function () {
         loadEmployees();
     });
@@ -79,7 +79,6 @@
     });
 });
 
-
 function loadEmployees() {
     var tmplManagerPeople = $.templates("#employeesTmpl");
     $.ajax({
@@ -87,7 +86,7 @@ function loadEmployees() {
         type: 'GET',
         data: {
             department: $('#department').val(),
-            part: $('#part').val(),
+            part: $('#part').val()
             //title: $('select[name="Employee.Title"]').val()
         },
         datatype: 'json',

@@ -158,3 +158,10 @@ C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\Salary\Set
 C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\Salary\TheLuong.g.cshtml.cs
 C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\Employee\Birthday.g.cshtml.cs
 C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\Leave\HelpLeave.g.cshtml.cs
+C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\Shared\_LayoutSocialFbFS.g.cshtml.cs
+C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\Shared\Empty.g.cshtml.cs
+C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\Doc\Information.g.cshtml.cs
+C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\Doc\Leave.g.cshtml.cs
+C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\Doc\Timer.g.cshtml.cs
+C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\File\NgayPhep.g.cshtml.cs
+C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\TimeKeeper\HelpTime.g.cshtml.cs
