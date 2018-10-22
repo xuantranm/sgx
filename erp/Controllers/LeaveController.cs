@@ -58,14 +58,14 @@ namespace erp.Controllers
         }
 
         [Route(Constants.LinkLeave.Index)]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string id)
         {
             #region Authorization
             var login = User.Identity.Name;
             var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
             ViewData["LoginUserName"] = loginUserName;
 
-            var userInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
+            var userInformation = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(login)).FirstOrDefault();
             if (userInformation == null)
             {
                 #region snippet1
@@ -74,28 +74,32 @@ namespace erp.Controllers
                 return RedirectToAction("login", "account");
             }
             bool isRight = false;
-            if (loginUserName == Constants.System.account ? true : Utility.IsRight(login, "nghi-phep", (int)ERights.Add))
+            if (loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.XinNghiPhepDum, (int)ERights.Add))
             {
                 isRight = true;
             }
             #endregion
 
+            id = string.IsNullOrEmpty(id) ? login : id;
+            if (id != login)
+            {
+                userInformation = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(id)).FirstOrDefault();
+            }
+
             var approves = new List<IdName>();
-            // get information user
-            var employee = dbContext.Employees.Find(m => m.Id.Equals(login)).FirstOrDefault();
             var phone = string.Empty;
             var start = new TimeSpan(7, 0, 0);
             var end = new TimeSpan(16, 0, 0);
             var workingScheduleTime = "7:00-16:00";
-            if (employee != null)
+            if (userInformation != null)
             {
-                if (employee.Mobiles != null && employee.Mobiles.Count > 0)
+                if (userInformation.Mobiles != null && userInformation.Mobiles.Count > 0)
                 {
-                    phone = employee.Mobiles.First().Number;
+                    phone = userInformation.Mobiles.First().Number;
                 }
-                if (!string.IsNullOrEmpty(employee.ManagerId))
+                if (!string.IsNullOrEmpty(userInformation.ManagerId))
                 {
-                    var approveEntity = dbContext.Employees.Find(m => m.Id.Equals(employee.ManagerId)).FirstOrDefault();
+                    var approveEntity = dbContext.Employees.Find(m => m.Id.Equals(userInformation.ManagerId)).FirstOrDefault();
                     if (approveEntity != null)
                     {
                         approves.Add(new IdName
@@ -105,9 +109,9 @@ namespace erp.Controllers
                         });
                     }
                 }
-                if (employee.Workplaces != null && employee.Workplaces.Count > 0)
+                if (userInformation.Workplaces != null && userInformation.Workplaces.Count > 0)
                 {
-                    foreach (var workplace in employee.Workplaces)
+                    foreach (var workplace in userInformation.Workplaces)
                     {
                         if (!string.IsNullOrEmpty(workplace.WorkingScheduleTime))
                         {
@@ -122,8 +126,8 @@ namespace erp.Controllers
             // Create new leave
             var leave = new Leave
             {
-                EmployeeId = employee.Id,
-                EmployeeName = employee.FullName,
+                EmployeeId = userInformation.Id,
+                EmployeeName = userInformation.FullName,
                 Reason = "Nghỉ phép",
                 Phone = phone,
                 Start = start,
@@ -153,30 +157,31 @@ namespace erp.Controllers
             #endregion
 
             // Quản lý số ngày nghỉ phép còn lại (nghỉ phép, các loại nghỉ bù,...)
-            var leaveEmployees = await dbContext.LeaveEmployees.Find(m => m.EmployeeId.Equals(employee.Id)).ToListAsync();
+            var leaveEmployees = await dbContext.LeaveEmployees.Find(m => m.EmployeeId.Equals(id)).ToListAsync();
 
             var viewModel = new LeaveViewModel
             {
                 Leave = leave,
                 Leaves = leaves,
-                Employee = employee,
+                Employee = userInformation,
                 Approves = approves,
                 Types = types,
                 LeaveEmployees = leaveEmployees,
                 RightRequest = isRight
             };
+
             return View(viewModel);
         }
 
         [Route(Constants.LinkLeave.HelpLeave)]
-        public async Task<IActionResult> HelpLeave(string id)
+        public async Task<IActionResult> HelpLeave(string id, string thang)
         {
             #region Authorization
             var login = User.Identity.Name;
             var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
             ViewData["LoginUserName"] = loginUserName;
 
-            var userInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
+            var userInformation = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(login)).FirstOrDefault();
             if (userInformation == null)
             {
                 #region snippet1
@@ -184,8 +189,6 @@ namespace erp.Controllers
                 #endregion
                 return RedirectToAction("login", "account");
             }
-
-            // Quyền tạo nghỉ phép dùm
             bool isRight = false;
             if (loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.XinNghiPhepDum, (int)ERights.Add))
             {
@@ -196,7 +199,13 @@ namespace erp.Controllers
                 return RedirectToAction("AccessDenied", "Account");
             }
             #endregion
-            
+
+            id = string.IsNullOrEmpty(id) ? login : id;
+            if (id != login)
+            {
+                userInformation = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(id)).FirstOrDefault();
+            }
+
             #region Dropdownlist
             var types = dbContext.LeaveTypes.Find(m => m.Enable.Equals(true) && m.Display.Equals(true)).ToList();
             // Danh sách nhân viên để tạo phép dùm
@@ -209,69 +218,63 @@ namespace erp.Controllers
             var approves = new List<IdName>();
             #endregion
 
-            var employee = new Employee();
             var leave = new Leave();
             var leaves = new List<Leave>();
             var leaveEmployees = new List<LeaveEmployee>();
-            if (!string.IsNullOrEmpty(id))
+
+            var phone = string.Empty;
+            var start = new TimeSpan(7, 0, 0);
+            var end = new TimeSpan(16, 0, 0);
+            var workingScheduleTime = "7:00-16:00";
+
+            if (userInformation.Mobiles != null && userInformation.Mobiles.Count > 0)
             {
-                // get information user
-                employee = dbContext.Employees.Find(m => m.Id.Equals(id)).FirstOrDefault();
-                var phone = string.Empty;
-                var start = new TimeSpan(7, 0, 0);
-                var end = new TimeSpan(16, 0, 0);
-                var workingScheduleTime = "7:00-16:00";
-                if (employee != null)
+                phone = userInformation.Mobiles.First().Number;
+            }
+            if (!string.IsNullOrEmpty(userInformation.ManagerId))
+            {
+                var approveEntity = dbContext.Employees.Find(m => m.Id.Equals(userInformation.ManagerId)).FirstOrDefault();
+                if (approveEntity != null)
                 {
-                    if (employee.Mobiles != null && employee.Mobiles.Count > 0)
+                    approves.Add(new IdName
                     {
-                        phone = employee.Mobiles.First().Number;
-                    }
-                    if (!string.IsNullOrEmpty(employee.ManagerId))
-                    {
-                        var approveEntity = dbContext.Employees.Find(m => m.Id.Equals(employee.ManagerId)).FirstOrDefault();
-                        if (approveEntity != null)
-                        {
-                            approves.Add(new IdName
-                            {
-                                Id = approveEntity.Id,
-                                Name = approveEntity.FullName
-                            });
-                        }
-                    }
-                    if (employee.Workplaces != null && employee.Workplaces.Count > 0)
-                    {
-                        foreach (var workplace in employee.Workplaces)
-                        {
-                            if (!string.IsNullOrEmpty(workplace.WorkingScheduleTime))
-                            {
-                                workingScheduleTime = workplace.WorkingScheduleTime;
-                                start = TimeSpan.Parse(workplace.WorkingScheduleTime.Split("-")[0]);
-                                end = TimeSpan.Parse(workplace.WorkingScheduleTime.Split("-")[1]);
-                            }
-                        }
-                    }
-
-                    // Create new leave
-                    leave = new Leave
-                    {
-                        EmployeeId = employee.Id,
-                        EmployeeName = employee.FullName,
-                        Reason = "Nghỉ phép",
-                        Phone = phone,
-                        Start = start,
-                        End = end,
-                        WorkingScheduleTime = workingScheduleTime
-                    };
-
-                    // History leave
-                    var sort = Builders<Leave>.Sort.Descending(m => m.UpdatedOn);
-                    leaves = await dbContext.Leaves.Find(m => m.EmployeeId.Equals(employee.Id)).Sort(sort).ToListAsync();
-
-                    // Quản lý số ngày nghỉ phép còn lại (nghỉ phép, các loại nghỉ bù,...)
-                    leaveEmployees = await dbContext.LeaveEmployees.Find(m => m.EmployeeId.Equals(employee.Id)).ToListAsync();
+                        Id = approveEntity.Id,
+                        Name = approveEntity.FullName
+                    });
                 }
             }
+            if (userInformation.Workplaces != null && userInformation.Workplaces.Count > 0)
+            {
+                foreach (var workplace in userInformation.Workplaces)
+                {
+                    if (!string.IsNullOrEmpty(workplace.WorkingScheduleTime))
+                    {
+                        workingScheduleTime = workplace.WorkingScheduleTime;
+                        start = TimeSpan.Parse(workplace.WorkingScheduleTime.Split("-")[0]);
+                        end = TimeSpan.Parse(workplace.WorkingScheduleTime.Split("-")[1]);
+                    }
+                }
+            }
+
+            // Create new leave
+            leave = new Leave
+            {
+                EmployeeId = userInformation.Id,
+                EmployeeName = userInformation.FullName,
+                Reason = "Nghỉ phép",
+                Phone = phone,
+                Start = start,
+                End = end,
+                WorkingScheduleTime = workingScheduleTime
+            };
+
+            // History leave
+            var sort = Builders<Leave>.Sort.Descending(m => m.UpdatedOn);
+            leaves = await dbContext.Leaves.Find(m => m.EmployeeId.Equals(userInformation.Id)).Sort(sort).ToListAsync();
+
+            // Quản lý số ngày nghỉ phép còn lại (nghỉ phép, các loại nghỉ bù,...)
+            leaveEmployees = await dbContext.LeaveEmployees.Find(m => m.EmployeeId.Equals(userInformation.Id)).ToListAsync();
+
 
             var rolesApprove = dbContext.RoleUsers.Find(m => m.Enable.Equals(true) && m.Role.Equals(Constants.Rights.XacNhanNghiPhep)).ToList();
             foreach (var roleApprove in rolesApprove)
@@ -290,7 +293,7 @@ namespace erp.Controllers
             {
                 Leave = leave,
                 Leaves = leaves,
-                Employee = employee,
+                Employee = userInformation,
                 Approves = approves,
                 Types = types,
                 Employees = employees,
@@ -344,7 +347,7 @@ namespace erp.Controllers
             var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
             ViewData["LoginUserName"] = loginUserName;
 
-            var userInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
+            var userInformation = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(login)).FirstOrDefault();
             if (userInformation == null)
             {
                 #region snippet1
@@ -466,12 +469,12 @@ namespace erp.Controllers
             #region parameters
             //{0} : Subject
             //{1} : Nguoi duyet 
-            //{2} : Nguoi gui yeu cau  - Nguoi tao yeu cau (dùm)
-            //{3} : Email
-            //{4} : Chức vụ
-            //{5} : Date (từ, đến, số ngày)
-            //{6} : Lý do
-            //{7} : Số ngày phép còn lại
+            //{2} : Nguoi gui yeu cau - Nguoi tao yeu cau (dùm)
+            //{3} : Nguoi gui yeu cau
+            //{4} : Email
+            //{5} : Chức vụ
+            //{6} : Date (từ, đến, số ngày)
+            //{7} : Lý do
             //{8} : Loại phép
             //{9} : Số điện thoại liên hệ
             //{10}: Link đồng ý
@@ -481,13 +484,14 @@ namespace erp.Controllers
             #endregion
             var subject = "Xác nhận nghỉ phép.";
             var requester = employee.FullName;
-            if (!string.IsNullOrEmpty(employee.Title))
-            {
-                requester += " - " + employee.Title;
-            }
+            var var3 = employee.FullName;
+            //if (!string.IsNullOrEmpty(employee.Title))
+            //{
+            //    requester += " - " + employee.Title;
+            //}
             if (entity.EmployeeId != login)
             {
-                requester += " ( người tạo " + userInformation.FullName + " , chức vụ " + userInformation.Title + ")";
+                requester += " (người tạo phép: " + userInformation.FullName + " , chức vụ " + userInformation.Title + ")";
             }
             var dateRequest = entity.From.ToString("dd/MM/yyyy HH:mm") + " - " + entity.To.ToString("dd/MM/yyyy HH:mm") + " (" + entity.Number + " ngày)";
             // Api update, generate code.
@@ -504,11 +508,11 @@ namespace erp.Controllers
                 subject,
                 approver,
                 requester,
+                var3,
                 employee.Email,
                 employee.Title,
                 dateRequest,
                 entity.Reason,
-                phepcon,
                 entity.TypeName,
                 entity.Phone,
                 linkAccept,
@@ -516,51 +520,16 @@ namespace erp.Controllers
                 linkDetail,
                 Constants.System.domain
                 );
+
             var emailMessage = new EmailMessage()
             {
                 ToAddresses = tos,
                 Subject = subject,
-                BodyContent = messageBody
+                BodyContent = messageBody,
+                Type = "yeu-cau-nghi-phep"
             };
-            try
-            {
-                var emailFrom = Constants.System.emailHr;
-                var emailFromName = Constants.System.emailHrName;
-                var emailFromPwd = Constants.System.emailHrPwd;
-                var message = new MimeMessage();
-                message.To.AddRange(emailMessage.ToAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
-                if (emailMessage.FromAddresses == null || emailMessage.FromAddresses.Count == 0)
-                {
-                    emailMessage.FromAddresses = new List<EmailAddress>
-                                {
-                                    new EmailAddress { Name = emailFromName, Address = emailFrom }
-                                };
-                }
-                message.From.AddRange(emailMessage.FromAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
-                message.Subject = emailMessage.Subject;
-                message.Body = new TextPart(TextFormat.Html)
-                {
-                    Text = emailMessage.BodyContent
-                };
-                using (var emailClient = new MailKit.Net.Smtp.SmtpClient())
-                {
-                    //The last parameter here is to use SSL (Which you should!)
-                    emailClient.Connect(emailFrom, 465, true);
 
-                    //Remove any OAuth functionality as we won't be using it. 
-                    emailClient.AuthenticationMechanisms.Remove("XOAUTH2");
-
-                    emailClient.Authenticate(emailFrom, emailFromPwd);
-
-                    emailClient.Send(message);
-                    emailClient.Disconnect(true);
-                    Console.WriteLine("The mail has been sent successfully !!");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
+            _emailSender.SendEmail(emailMessage);
 
             #endregion
 
@@ -673,7 +642,7 @@ namespace erp.Controllers
 
             #region UAT
             var uat = dbContext.Settings.Find(m => m.Key.Equals("UAT")).FirstOrDefault();
-            if (uat != null && uat.Value == "1")
+            if (uat != null && uat.Value == "true")
             {
                 tos = new List<EmailAddress>
                         {
@@ -733,56 +702,18 @@ namespace erp.Controllers
                 linkDetail,
                 Constants.System.domain
                 );
+
             var emailMessage = new EmailMessage()
             {
                 ToAddresses = tos,
                 CCAddresses = ccs,
                 Subject = subject,
-                BodyContent = messageBody
+                BodyContent = messageBody,
+                Type = "leave-confirm"
             };
-            try
-            {
-                var emailFrom = Constants.System.emailHr;
-                var emailFromName = Constants.System.emailHrName;
-                var emailFromPwd = Constants.System.emailHrPwd;
-                var message = new MimeMessage();
-                message.To.AddRange(emailMessage.ToAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
-                if (emailMessage.CCAddresses != null && emailMessage.CCAddresses.Count > 0)
-                {
-                    message.Cc.AddRange(emailMessage.CCAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
-                }
-                if (emailMessage.FromAddresses == null || emailMessage.FromAddresses.Count == 0)
-                {
-                    emailMessage.FromAddresses = new List<EmailAddress>
-                                    {
-                                        new EmailAddress { Name = emailFromName, Address = emailFrom }
-                                    };
-                }
-                message.From.AddRange(emailMessage.FromAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
-                message.Subject = emailMessage.Subject;
-                message.Body = new TextPart(TextFormat.Html)
-                {
-                    Text = emailMessage.BodyContent
-                };
-                using (var emailClient = new MailKit.Net.Smtp.SmtpClient())
-                {
-                    //The last parameter here is to use SSL (Which you should!)
-                    emailClient.Connect(emailFrom, 465, true);
 
-                    //Remove any OAuth functionality as we won't be using it. 
-                    emailClient.AuthenticationMechanisms.Remove("XOAUTH2");
+            _emailSender.SendEmail(emailMessage);
 
-                    emailClient.Authenticate(emailFrom, emailFromPwd);
-
-                    emailClient.Send(message);
-                    emailClient.Disconnect(true);
-                    Console.WriteLine("The mail has been sent successfully !!");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
             #endregion
 
             ViewData["Status"] = "Cám ơn đã xác nhận, kết quả đang gửi cho người liên quan.";
@@ -895,7 +826,7 @@ namespace erp.Controllers
 
             #region UAT
             var uat = dbContext.Settings.Find(m => m.Key.Equals("UAT")).FirstOrDefault();
-            if (uat != null && uat.Value == "1")
+            if (uat != null && uat.Value == "true")
             {
                 tos = new List<EmailAddress>
                         {
@@ -955,56 +886,18 @@ namespace erp.Controllers
                 linkDetail,
                 Constants.System.domain
                 );
+
             var emailMessage = new EmailMessage()
             {
                 ToAddresses = tos,
                 CCAddresses = ccs,
                 Subject = subject,
-                BodyContent = messageBody
+                BodyContent = messageBody,
+                Type = "leave-confirm"
             };
-            try
-            {
-                var emailFrom = Constants.System.emailHr;
-                var emailFromName = Constants.System.emailHrName;
-                var emailFromPwd = Constants.System.emailHrPwd;
-                var message = new MimeMessage();
-                message.To.AddRange(emailMessage.ToAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
-                if (emailMessage.CCAddresses != null && emailMessage.CCAddresses.Count > 0)
-                {
-                    message.Cc.AddRange(emailMessage.CCAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
-                }
-                if (emailMessage.FromAddresses == null || emailMessage.FromAddresses.Count == 0)
-                {
-                    emailMessage.FromAddresses = new List<EmailAddress>
-                                {
-                                    new EmailAddress { Name = emailFromName, Address = emailFrom }
-                                };
-                }
-                message.From.AddRange(emailMessage.FromAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
-                message.Subject = emailMessage.Subject;
-                message.Body = new TextPart(TextFormat.Html)
-                {
-                    Text = emailMessage.BodyContent
-                };
-                using (var emailClient = new MailKit.Net.Smtp.SmtpClient())
-                {
-                    //The last parameter here is to use SSL (Which you should!)
-                    emailClient.Connect(emailFrom, 465, true);
 
-                    //Remove any OAuth functionality as we won't be using it. 
-                    emailClient.AuthenticationMechanisms.Remove("XOAUTH2");
+            _emailSender.SendEmail(emailMessage);
 
-                    emailClient.Authenticate(emailFrom, emailFromPwd);
-
-                    emailClient.Send(message);
-                    emailClient.Disconnect(true);
-                    Console.WriteLine("The mail has been sent successfully !!");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
             #endregion
 
             return Json(new { result = true, message = "Cám ơn đã xác nhận, kết quả đang gửi cho người liên quan." });

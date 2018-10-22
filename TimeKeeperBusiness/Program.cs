@@ -4,6 +4,7 @@ using MimeKit;
 using MimeKit.Text;
 using Models;
 using MongoDB.Driver;
+using Services;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -35,8 +36,8 @@ namespace TimeKeeperBusiness
             #region Setting
             // mode = true: Get all data
             // mode = false: get by date
-            var mode = true;
-            var day = -7;
+            var mode = false;
+            var day = -30;
             var modeEmail = false;
 
             var linkChamCong = Constants.System.domain + "/" + Constants.LinkTimeKeeper.Main + "/" + Constants.LinkTimeKeeper.Index;
@@ -44,31 +45,50 @@ namespace TimeKeeperBusiness
             var dateCrawled = DateTime.Now.AddDays(day);
             var builder = Builders<AttLog>.Filter;
             var filter = builder.Gt(m => m.Date, dateCrawled.AddDays(-1));
-            #region UAT
-            var uat = dbContext.Settings.Find(m => m.Key.Equals("UAT")).FirstOrDefault();
-            if (uat != null && uat.Value == "1")
-            {
-                filter = filter & builder.Eq(m => m.EnrollNumber, "514");
-            }
             #endregion
+
+            //#region UAT
+            //var uat = dbContext.Settings.Find(m => m.Key.Equals("UAT")).FirstOrDefault();
+            //if (uat != null && uat.Value == "true")
+            //{
+            //    dbContext.EmployeeWorkTimeLogs.DeleteMany(m => true);
+            //    dbContext.EmployeeWorkTimeMonthLogs.DeleteMany(m => true);
+
+            //    filter = filter & builder.Eq(m => m.EnrollNumber, "514");
+            //}
+            //#endregion
+
+            dbContext.EmployeeWorkTimeLogs.DeleteMany(m => true);
+            dbContext.EmployeeWorkTimeMonthLogs.DeleteMany(m => true);
 
             if (mode)
             {
                 dbContext.EmployeeWorkTimeLogs.DeleteMany(m => true);
                 dbContext.EmployeeWorkTimeMonthLogs.DeleteMany(m => true);
             }
-            #endregion
 
             var attlogVps = mode ? dbContext.X628CVPAttLogs.Find(m => true).ToList() : dbContext.X628CVPAttLogs.Find(filter).ToList();
             if (attlogVps != null && attlogVps.Count > 0)
             {
                 Proccess(attlogVps, "VP", mode, connectString, linkChamCong, modeEmail);
             }
+
+            #region UAT
+            //if (uat != null && uat.Value == "true")
+            //{
+            //    builder = Builders<AttLog>.Filter;
+            //    filter = builder.Gt(m => m.Date, dateCrawled.AddDays(-1));
+            //    filter = filter & builder.Eq(m => m.EnrollNumber, "259");
+            //}
+            #endregion
+
             var attlogNMs = mode ? dbContext.X928CNMAttLogs.Find(m => true).ToList() : dbContext.X928CNMAttLogs.Find(filter).ToList();
             if (attlogNMs != null && attlogNMs.Count > 0)
             {
                 Proccess(attlogNMs, "NM", mode, connectString, linkChamCong, modeEmail);
             }
+
+            UpdateFinal(dbContext);
         }
 
         private static void Proccess(List<AttLog> attlogs, string location, bool mode, string connectString, string linkChamCong, bool modeEmail)
@@ -81,7 +101,7 @@ namespace TimeKeeperBusiness
             #endregion
 
             #region Config
-            var dateNewPolicy = new DateTime(2018, 8, 1);
+            var dateNewPolicy = new DateTime(2018, 10, 01);
             double workingScheduleHour = 8;
             var lunch = TimeSpan.FromHours(1);
 
@@ -104,12 +124,12 @@ namespace TimeKeeperBusiness
 
             foreach (var group in groups)
             {
-                Console.WriteLine("Date: " + group.groupDate + ",fingerCode: " + group.groupCode + ",location: " + location);
+                Console.WriteLine("Date: " + group.groupDate + ", fingerCode: " + group.groupCode + ", location: " + location);
                 try
                 {
                     var dateData = DateTime.ParseExact(group.groupDate, "yyyy-MM-dd", CultureInfo.InvariantCulture);
                     var workTime = new TimeSpan(0);
-                    double workDay = 0;
+                    double workDay = 1;
                     var late = new TimeSpan(0);
                     var early = new TimeSpan(0);
                     // 0: cần xác nhận công; 1: đủ ngày công ; 2: đã gửi xác nhận công, 3: đồng ý; 4: từ chối  
@@ -161,61 +181,95 @@ namespace TimeKeeperBusiness
                     #endregion
 
                     #region Procees Times
-                    // Rule: If the start time is before the starting hours, set it to the starting hour.
-                    if (inLogTime < startWorkingScheduleTime) inLogTime = startWorkingScheduleTime;
-                    if (outLogTime > endWorkingScheduleTime) outLogTime = endWorkingScheduleTime;
-
-                    workTime = (outLogTime - inLogTime) - lunch;
-                    workDay = workTime.TotalHours / workingScheduleHour;
-                    if (inLogTime > startWorkingScheduleTime)
+                    // No Data
+                    if (!dbinLogTime.HasValue && !dboutLogTime.HasValue)
                     {
-                        late = inLogTime - startWorkingScheduleTime;
-                        statusLate = 0;
+                        workTime = new TimeSpan(0);
+                        workDay = 0;
                         status = 0;
                     }
-                    if (outLogTime < endWorkingScheduleTime)
+                    else
                     {
-                        early = endWorkingScheduleTime - outLogTime;
-                        statusEarly = 0;
-                        status = 0;
-                    }
-
-                    #region Check miss in/out
-                    var workingArr = new int[] { startWorkingScheduleTime.Hours, endWorkingScheduleTime.Hours };
-                    var incheck = workingArr.ClosestTo(dbinLogTime.Value.Hours);
-                    var outcheck = workingArr.ClosestTo(dboutLogTime.Value.Hours);
-                    if (incheck == outcheck)
-                    {
-                        if (incheck == endWorkingScheduleTime.Hours)
+                        if (group.times != null && group.times.Count > 1)
                         {
-                            // missing in
-                            dbinLogTime = null;
-                            late = new TimeSpan(0);
-                            early = endWorkingScheduleTime - outLogTime;
-                            workTime = TimeSpan.FromHours(4) - early;
-                            statusLate = 0;
+                            if (dateFinger < dateNewPolicy)
+                            {
+                                status = 1;
+                                statusEarly = 1;
+                                statusLate = 1;
+                                workDay = 1;
+                                workTime = TimeSpan.FromHours(8);
+                            }
+                            else
+                            {
+                                // Rule: If the start time is before the starting hours, set it to the starting hour.
+                                // New Rule: 
+                                // ** Nếu không được xác nhận công:
+                                //  - Trễ 15 phút không tính buổi nào không tính buổi đó. (1 buổi tương đương 0.5 ngày)
+                                //  - Trễ  dưới 15 phút lưu để trừ thưởng,...
+                                if (inLogTime < startWorkingScheduleTime) inLogTime = startWorkingScheduleTime;
+                                if (outLogTime > endWorkingScheduleTime) outLogTime = endWorkingScheduleTime;
+
+                                workTime = (outLogTime - inLogTime) - lunch;
+                                //workDay = workTime.TotalHours / workingScheduleHour;
+
+                                if (inLogTime > startWorkingScheduleTime)
+                                {
+                                    late = inLogTime - startWorkingScheduleTime;
+                                    statusLate = 0;
+                                    status = 0;
+                                    //workDay = workDay - 0.5;
+                                }
+                                if (outLogTime < endWorkingScheduleTime)
+                                {
+                                    early = endWorkingScheduleTime - outLogTime;
+                                    statusEarly = 0;
+                                    status = 0;
+                                    //workDay = workDay - 0.5;
+                                }
+                            }
                         }
                         else
                         {
-                            // missing out
-                            dboutLogTime = null;
-                            early = new TimeSpan(0);
-                            late = inLogTime - startWorkingScheduleTime;
-                            workTime = TimeSpan.FromHours(4) - late;
-                            statusEarly = 0;
+                            // Check miss in/out
+                            var workingArr = new int[] { startWorkingScheduleTime.Hours, endWorkingScheduleTime.Hours };
+                            var incheck = workingArr.ClosestTo(dbinLogTime.Value.Hours);
+                            var outcheck = workingArr.ClosestTo(dboutLogTime.Value.Hours);
+                            if (incheck == outcheck)
+                            {
+                                if (incheck == endWorkingScheduleTime.Hours)
+                                {
+                                    // missing in
+                                    dbinLogTime = null;
+                                    late = new TimeSpan(0);
+                                    early = endWorkingScheduleTime - outLogTime;
+                                    workTime = TimeSpan.FromHours(4) - early;
+                                    statusLate = 0;
+                                }
+                                else
+                                {
+                                    // missing out
+                                    dboutLogTime = null;
+                                    early = new TimeSpan(0);
+                                    late = inLogTime - startWorkingScheduleTime;
+                                    workTime = TimeSpan.FromHours(4) - late;
+                                    statusEarly = 0;
+                                }
+                                status = 0;
+                                workDay = 0.5;
+                                //workDay = workTime.TotalHours / workingScheduleHour;
+                            }
+                            if (dateFinger < dateNewPolicy)
+                            {
+                                status = 1;
+                                statusEarly = 1;
+                                statusLate = 1;
+                                workDay = 0.5;
+                                workTime = TimeSpan.FromHours(4);
+                            }
                         }
-                        status = 0;
-                        workDay = workTime.TotalHours / workingScheduleHour;
                     }
-                    #endregion
-                    // Tính ngày, nếu trừ lương thì tính theo Status và số phút đi trễ,về sớm (Status, Status late| early and Late|Early.TotalMinutes)
-                    // <4h : 0.5 day; > 5: 1 day
-                    workDay = workTime.TotalHours > 4 ? 1 : 0.5;
-                    // Cap nhat trang thai tai thoi diem ap dung, thoi gian truoc trang thai ok
-                    if (dateFinger < dateNewPolicy)
-                    {
-                        status = 1;
-                    }
+
                     var employeeWorkTimeLog = new EmployeeWorkTimeLog
                     {
                         EmployeeId = employeeId,
@@ -357,45 +411,8 @@ namespace TimeKeeperBusiness
                                 Subject = subject,
                                 BodyContent = messageBody
                             };
-                            try
-                            {
-                                var emailFrom = Constants.System.emailHr;
-                                var emailFromName = Constants.System.emailHrName;
-                                var emailFromPwd = Constants.System.emailHrPwd;
-                                var message = new MimeMessage();
-                                message.To.AddRange(emailMessage.ToAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
-                                if (emailMessage.FromAddresses == null || emailMessage.FromAddresses.Count == 0)
-                                {
-                                    emailMessage.FromAddresses = new List<EmailAddress>
-                                    {
-                                        new EmailAddress { Name = emailFromName, Address = emailFrom }
-                                    };
-                                }
-                                message.From.AddRange(emailMessage.FromAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
-                                message.Subject = emailMessage.Subject;
-                                message.Body = new TextPart(TextFormat.Html)
-                                {
-                                    Text = emailMessage.BodyContent
-                                };
-                                using (var emailClient = new MailKit.Net.Smtp.SmtpClient())
-                                {
-                                    //The last parameter here is to use SSL (Which you should!)
-                                    emailClient.Connect(emailFrom, 465, true);
 
-                                    //Remove any OAuth functionality as we won't be using it. 
-                                    emailClient.AuthenticationMechanisms.Remove("XOAUTH2");
-
-                                    emailClient.Authenticate(emailFrom, emailFromPwd);
-
-                                    emailClient.Send(message);
-                                    emailClient.Disconnect(true);
-                                    Console.WriteLine("The mail has been sent successfully !!");
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                Console.WriteLine(ex.Message);
-                            }
+                            new AuthMessageSender().SendEmail(emailMessage);
                         }
                     }
                     #endregion
@@ -405,8 +422,130 @@ namespace TimeKeeperBusiness
                     Console.WriteLine(ex.Message);
                 }
             }
+        }
 
-            #region Update missing Date, Leave date, apply allow late|early,...
+        private static void UpdateSummary(MongoDBContext dbContext, DateTime dateData, EmployeeWorkTimeLog employeeWorkTimeLog)
+        {
+            int month = dateData.Month;
+            int year = dateData.Year;
+            if (dateData.Day > 25)
+            {
+                // 26->31: chấm công tháng sau
+                var nextMonthDate = dateData.AddMonths(1);
+                month = nextMonthDate.Month;
+                year = nextMonthDate.Year;
+            }
+            var existSum = dbContext.EmployeeWorkTimeMonthLogs.Find(m => m.EmployeeId.Equals(employeeWorkTimeLog.EmployeeId) && m.Year.Equals(year) && m.Month.Equals(month)).FirstOrDefault();
+            if (existSum != null)
+            {
+                // Do later
+                //if (existSum.EnrollNumber != employeeWorkTimeLog.EnrollNumber){}
+                var builderUpdateSum = Builders<EmployeeWorkTimeMonthLog>.Filter;
+                var filterUpdateSum = builderUpdateSum.Eq(m => m.Id, existSum.Id);
+                var updateSum = Builders<EmployeeWorkTimeMonthLog>.Update
+                    .Inc(m => m.Workday, employeeWorkTimeLog.WorkDay)
+                    .Inc(m => m.WorkTime, employeeWorkTimeLog.WorkTime.TotalMilliseconds)
+                    .Inc(m => m.Late, employeeWorkTimeLog.Late.TotalMilliseconds)
+                    .Inc(m => m.Early, employeeWorkTimeLog.Early.TotalMilliseconds)
+                    .Set(m => m.LastUpdated, dateData);
+                dbContext.EmployeeWorkTimeMonthLogs.UpdateOne(filterUpdateSum, updateSum);
+            }
+            else
+            {
+                // Qui dinh 1 thang cho phep thiếu giờ (tre/sơm) 15p,
+                // Qua 15 phut nếu ko có xác nhận công trừ 0.5 ngày
+                var missingMinuteAllow = 15;
+                var settingMissingMinuteAllow = dbContext.Settings.Find(m => m.Key.Equals("missingMinuteAllow")).FirstOrDefault();
+                if (settingMissingMinuteAllow != null && !string.IsNullOrEmpty(settingMissingMinuteAllow.Value))
+                {
+                    missingMinuteAllow = Convert.ToInt32(settingMissingMinuteAllow.Value);
+                }
+                //var lateMinuteAllow = 5;
+                //var lateCountAllow = 1;
+                //var earlyMinuteAllow = 5;
+                //var earlyCountAllow = 1;
+                //var settingLateMinuteAllow = dbContext.Settings.Find(m => m.Key.Equals("lateMinuteAllow")).FirstOrDefault();
+                //if (settingLateMinuteAllow != null && !string.IsNullOrEmpty(settingLateMinuteAllow.Value))
+                //{
+                //    lateMinuteAllow = Convert.ToInt32(settingLateMinuteAllow.Value);
+                //}
+                //var settingLateCountAllow = dbContext.Settings.Find(m => m.Key.Equals("lateCountAllow")).FirstOrDefault();
+                //if (settingLateCountAllow != null && !string.IsNullOrEmpty(settingLateCountAllow.Value))
+                //{
+                //    lateCountAllow = Convert.ToInt32(settingLateCountAllow.Value);
+                //}
+                //var settingEarlyMinuteAllow = dbContext.Settings.Find(m => m.Key.Equals("earlyMinuteAllow")).FirstOrDefault();
+                //if (settingEarlyMinuteAllow != null && !string.IsNullOrEmpty(settingEarlyMinuteAllow.Value))
+                //{
+                //    earlyMinuteAllow = Convert.ToInt32(settingEarlyMinuteAllow.Value);
+                //}
+                //var settingEarlyCountAllow = dbContext.Settings.Find(m => m.Key.Equals("earlyCountAllow")).FirstOrDefault();
+                //if (settingEarlyCountAllow != null && !string.IsNullOrEmpty(settingEarlyCountAllow.Value))
+                //{
+                //    earlyCountAllow = Convert.ToInt32(settingEarlyCountAllow.Value);
+                //}
+
+                dbContext.EmployeeWorkTimeMonthLogs.InsertOne(new EmployeeWorkTimeMonthLog
+                {
+                    EmployeeId = employeeWorkTimeLog.EmployeeId,
+                    //EnrollNumber = employeeWorkTimeLog.EnrollNumber,
+                    Month = month,
+                    Year = year,
+                    Workday = employeeWorkTimeLog.WorkDay,
+                    WorkTime = employeeWorkTimeLog.WorkTime.TotalMilliseconds,
+                    Late = employeeWorkTimeLog.Late.TotalMilliseconds,
+                    Early = employeeWorkTimeLog.Early.TotalMilliseconds,
+                    LateApprove = 0,
+                    EarlyApprove = 0,
+                    MissingMinuteAllow = missingMinuteAllow,
+                    //LateCountAllow = 0,
+                    //LateMinuteAllow = lateMinuteAllow,
+                    //LateCountAllowUsed = 0,
+                    //LateCount = 0,
+                    //EarlyCountAllow = earlyCountAllow,
+                    //EarlyMinuteAllow = earlyMinuteAllow,
+                    //EarlyCountAllowUsed = 0,
+                    //EarlyCount = 0,
+                    LastUpdated = dateData
+                });
+            }
+        }
+
+        private static void UpdateSummaryChangeData(MongoDBContext dbContext, DateTime dateData, EmployeeWorkTimeLog employeeWorkTimeLog, double currentWorkTime, double currentLate, double currentEarly, double currentWorkDay)
+        {
+            int month = dateData.Month;
+            int year = dateData.Year;
+            if (dateData.Day > 25)
+            {
+                // 26->31: chấm công tháng sau
+                var nextMonthDate = dateData.AddMonths(1);
+                month = nextMonthDate.Month;
+                year = nextMonthDate.Year;
+            }
+            var existSum = dbContext.EmployeeWorkTimeMonthLogs.Find(m => m.EmployeeId.Equals(employeeWorkTimeLog.EmployeeId) && m.Year.Equals(year) && m.Month.Equals(month)).FirstOrDefault();
+            if (existSum != null)
+            {
+                var builderUpdateSum = Builders<EmployeeWorkTimeMonthLog>.Filter;
+                var filterUpdateSum = builderUpdateSum.Eq(m => m.Id, existSum.Id);
+                var updateSumCurrent = Builders<EmployeeWorkTimeMonthLog>.Update
+                    .Inc(m => m.Workday, -currentWorkDay)
+                    .Inc(m => m.WorkTime, -currentWorkTime)
+                    .Inc(m => m.Late, -currentLate)
+                    .Inc(m => m.Early, -currentEarly);
+                dbContext.EmployeeWorkTimeMonthLogs.UpdateOne(filterUpdateSum, updateSumCurrent);
+
+                var updateSumNew = Builders<EmployeeWorkTimeMonthLog>.Update
+                    .Inc(m => m.Workday, employeeWorkTimeLog.WorkDay)
+                    .Inc(m => m.WorkTime, employeeWorkTimeLog.WorkTime.TotalMilliseconds)
+                    .Inc(m => m.Late, employeeWorkTimeLog.Late.TotalMilliseconds)
+                    .Inc(m => m.Early, employeeWorkTimeLog.Early.TotalMilliseconds);
+                dbContext.EmployeeWorkTimeMonthLogs.UpdateOne(filterUpdateSum, updateSumNew);
+            }
+        }
+
+        private static void UpdateFinal(MongoDBContext dbContext)
+        {
+            // Update missing Date, Leave date, apply allow late|early,...
             // Apply current month
             var endDate = Utility.WorkingMonthToDate(DateTime.Now.Month + "-" + DateTime.Now.Year);
             var startDate = endDate.AddMonths(-1).AddDays(1);
@@ -416,27 +555,22 @@ namespace TimeKeeperBusiness
             // For startDate = > to Date. If missing and not sunday add missing times, if leave add reason leave- status.
             // if In date late or early, check allow count. update order a->n if still allow count.
             var filterEmployees = Builders<Employee>.Filter.ElemMatch(z => z.Workplaces, a => !string.IsNullOrEmpty(a.Fingerprint));
-            #region UAT
-            var uat = dbContext.Settings.Find(m => m.Key.Equals("UAT")).FirstOrDefault();
-            if (uat != null && uat.Value == "1")
-            {
-                //filterEmployees = filterEmployees & Builders<Employee>.Filter.ElemMatch(z => z.Workplaces, a => a.Fingerprint == "514");
-                // Id xuan
-                filterEmployees = filterEmployees & Builders<Employee>.Filter.Eq(m=>m.Id, "5b6bfc463ee8461ee48cbbea");
-            }
-            #endregion
             var employees = dbContext.Employees.Find(filterEmployees).ToList();
             foreach (var employee in employees)
             {
                 var monthTimeInformation = dbContext.EmployeeWorkTimeMonthLogs.Find(m => m.EmployeeId.Equals(employee.Id) && m.Year.Equals(yearCurrent) && m.Month.Equals(monthCurrent)).FirstOrDefault();
                 if (monthTimeInformation != null)
                 {
-                    var lateCountAllow = monthTimeInformation.LateCountAllow;
-                    double lateCountAllowUsed = monthTimeInformation.LateCountAllowUsed;
-                    int lateMinuteAllow = monthTimeInformation.LateMinuteAllow;
-                    var earlyCountAllow = monthTimeInformation.LateCountAllow;
-                    double earlyCountAllowUsed = monthTimeInformation.EarlyCountAllowUsed;
-                    int earlyMinuteAllow = monthTimeInformation.EarlyMinuteAllow;
+                    var missingMinuteAllow = monthTimeInformation.MissingMinuteAllow;
+                    var missingMinuteAllowUsed = monthTimeInformation.MissingMinuteAllowUsed;
+                    var missingMinuteAllowCanUse = missingMinuteAllow - missingMinuteAllowUsed;
+                    int missingMinuteAllowUsedCount = 0;
+                    //var lateCountAllow = monthTimeInformation.LateCountAllow;
+                    //double lateCountAllowUsed = monthTimeInformation.LateCountAllowUsed;
+                    //int lateMinuteAllow = monthTimeInformation.LateMinuteAllow;
+                    //var earlyCountAllow = monthTimeInformation.LateCountAllow;
+                    //double earlyCountAllowUsed = monthTimeInformation.EarlyCountAllowUsed;
+                    //int earlyMinuteAllow = monthTimeInformation.EarlyMinuteAllow;
                     int noFingerDate = monthTimeInformation.NoFingerDate;
                     double lateApprove = monthTimeInformation.LateApprove;
                     double earlyApprove = monthTimeInformation.EarlyApprove;
@@ -454,6 +588,9 @@ namespace TimeKeeperBusiness
                     filterLeaves = filterLeaves & builderLeaves.Gt(m => m.From, startDate) & builderLeaves.Lte(m => m.To, endDate);
                     var leaves = dbContext.Leaves.Find(filterLeaves).ToList();
 
+                    decimal workday = 0;
+                    var late = new TimeSpan(0);
+                    var early = new TimeSpan(0);
                     decimal sundayCount = 0;
                     decimal ngayNghiHuongLuong = 0;
                     decimal ngayNghiLeTetHuongLuong = 0;
@@ -464,7 +601,6 @@ namespace TimeKeeperBusiness
                     decimal leaveCount = 0;
                     decimal leaveNotApproveCount = 0;
                     decimal leaveAprovedCount = 0;
-
 
                     for (DateTime date = startDate; date <= DateTime.Now; date = date.AddDays(1))
                     {
@@ -478,48 +614,122 @@ namespace TimeKeeperBusiness
                             int statusEarly = timekeeping.StatusEarly;
                             if (status == 0)
                             {
-                                if (statusLate == 0 && timekeeping.In.HasValue && timekeeping.Late.TotalMinutes <= lateMinuteAllow)
+                                if (statusLate == 0 && timekeeping.In.HasValue)
                                 {
-                                    if (lateCountAllowUsed < lateCountAllow)
+                                    var lateMinute = timekeeping.Late.TotalMinutes;
+                                    if (lateMinute > 15)
                                     {
-                                        // xac nhan
-                                        lateApprove += timekeeping.Late.TotalMilliseconds;
-                                        statusLate = 3;
-                                        if (statusEarly == 1 || statusEarly == 3)
-                                        {
-                                            status = 3;
-                                        }
+                                        // Trừ 0.5 ngay
                                         var filterUpdate = Builders<EmployeeWorkTimeLog>.Filter.Eq(m => m.Id, timekeeping.Id);
                                         var update = Builders<EmployeeWorkTimeLog>.Update
-                                            .Set(m => m.StatusLate, statusLate)
-                                            .Set(m => m.Status, status)
-                                            .Set(m => m.UpdatedBy, Constants.System.account)
-                                            .Set(m => m.UpdatedOn, DateTime.Now);
+                                            .Inc(m => m.WorkDay, -0.5);
                                         dbContext.EmployeeWorkTimeLogs.UpdateOne(filterUpdate, update);
-                                        lateCountAllowUsed++;
+                                        workday += (decimal)0.5;
+                                        late += timekeeping.Late;
                                     }
+                                    //if (lateMinute <= missingMinuteAllow && lateMinute <= missingMinuteAllowCanUse)
+                                    //{
+                                    //    lateApprove += timekeeping.Late.TotalMilliseconds;
+                                    //    statusLate = 3;
+                                    //    if (statusEarly == 1 || statusEarly == 3)
+                                    //    {
+                                    //        status = 5;
+                                    //    }
+                                    //    var filterUpdate = Builders<EmployeeWorkTimeLog>.Filter.Eq(m => m.Id, timekeeping.Id);
+                                    //    var update = Builders<EmployeeWorkTimeLog>.Update
+                                    //        .Inc(m => m.WorkDay, 0.5)
+                                    //        .Set(m => m.StatusLate, statusLate)
+                                    //        .Set(m => m.Status, status)
+                                    //        .Set(m => m.UpdatedBy, Constants.System.account)
+                                    //        .Set(m => m.UpdatedOn, DateTime.Now);
+                                    //    dbContext.EmployeeWorkTimeLogs.UpdateOne(filterUpdate, update);
+                                    //    missingMinuteAllowCanUse -= lateMinute;
+                                    //    workday += (decimal)0.5;
+                                    //    missingMinuteAllowUsedCount++;
+                                    //}
                                 }
-                                if (statusEarly == 0 && timekeeping.Out.HasValue && timekeeping.Early.TotalMinutes <= earlyMinuteAllow)
+                                if (statusEarly == 0 && timekeeping.Out.HasValue)
                                 {
-                                    if (earlyCountAllowUsed < earlyCountAllow)
+                                    var earlyMinute = timekeeping.Early.TotalMinutes;
+
+                                    if(earlyMinute > 15)
                                     {
-                                        // xac nhan
-                                        earlyApprove += timekeeping.Early.TotalMilliseconds;
-                                        statusEarly = 3;
-                                        if (statusLate == 1 || statusLate == 3)
-                                        {
-                                            status = 3;
-                                        }
+                                        // Trừ 0.5 ngay
                                         var filterUpdate = Builders<EmployeeWorkTimeLog>.Filter.Eq(m => m.Id, timekeeping.Id);
                                         var update = Builders<EmployeeWorkTimeLog>.Update
-                                            .Set(m => m.StatusEarly, statusEarly)
-                                            .Set(m => m.Status, status)
-                                            .Set(m => m.UpdatedBy, Constants.System.account)
-                                            .Set(m => m.UpdatedOn, DateTime.Now);
+                                            .Inc(m => m.WorkDay, -0.5);
                                         dbContext.EmployeeWorkTimeLogs.UpdateOne(filterUpdate, update);
-                                        earlyCountAllowUsed++;
+                                        workday += (decimal)0.5;
+                                        early += timekeeping.Late;
                                     }
+
+                                    //if (earlyMinute <= missingMinuteAllow && earlyMinute <= missingMinuteAllowCanUse)
+                                    //{
+                                    //    // xac nhan
+                                    //    earlyApprove += timekeeping.Early.TotalMilliseconds;
+                                    //    statusEarly = 3;
+                                    //    if (statusLate == 1 || statusLate == 3)
+                                    //    {
+                                    //        status = 5;
+                                    //    }
+                                    //    var filterUpdate = Builders<EmployeeWorkTimeLog>.Filter.Eq(m => m.Id, timekeeping.Id);
+                                    //    var update = Builders<EmployeeWorkTimeLog>.Update
+                                    //        .Inc(m => m.WorkDay, 0.5)
+                                    //        .Set(m => m.StatusEarly, statusEarly)
+                                    //        .Set(m => m.Status, status)
+                                    //        .Set(m => m.UpdatedBy, Constants.System.account)
+                                    //        .Set(m => m.UpdatedOn, DateTime.Now);
+                                    //    dbContext.EmployeeWorkTimeLogs.UpdateOne(filterUpdate, update);
+                                    //    missingMinuteAllowCanUse -= earlyMinute;
+                                    //    workday += (decimal)0.5;
+                                    //    missingMinuteAllowUsedCount++;
+                                    //}
                                 }
+
+                                #region Comment rule late & early
+                                //if (statusLate == 0 && timekeeping.In.HasValue && timekeeping.Late.TotalMinutes <= lateMinuteAllow)
+                                //{
+                                //    if (lateCountAllowUsed < lateCountAllow)
+                                //    {
+                                //        // xac nhan
+                                //        lateApprove += timekeeping.Late.TotalMilliseconds;
+                                //        statusLate = 3;
+                                //        if (statusEarly == 1 || statusEarly == 3)
+                                //        {
+                                //            status = 3;
+                                //        }
+                                //        var filterUpdate = Builders<EmployeeWorkTimeLog>.Filter.Eq(m => m.Id, timekeeping.Id);
+                                //        var update = Builders<EmployeeWorkTimeLog>.Update
+                                //            .Set(m => m.StatusLate, statusLate)
+                                //            .Set(m => m.Status, status)
+                                //            .Set(m => m.UpdatedBy, Constants.System.account)
+                                //            .Set(m => m.UpdatedOn, DateTime.Now);
+                                //        dbContext.EmployeeWorkTimeLogs.UpdateOne(filterUpdate, update);
+                                //        lateCountAllowUsed++;
+                                //    }
+                                //}
+                                //if (statusEarly == 0 && timekeeping.Out.HasValue && timekeeping.Early.TotalMinutes <= earlyMinuteAllow)
+                                //{
+                                //    if (earlyCountAllowUsed < earlyCountAllow)
+                                //    {
+                                //        // xac nhan
+                                //        earlyApprove += timekeeping.Early.TotalMilliseconds;
+                                //        statusEarly = 3;
+                                //        if (statusLate == 1 || statusLate == 3)
+                                //        {
+                                //            status = 3;
+                                //        }
+                                //        var filterUpdate = Builders<EmployeeWorkTimeLog>.Filter.Eq(m => m.Id, timekeeping.Id);
+                                //        var update = Builders<EmployeeWorkTimeLog>.Update
+                                //            .Set(m => m.StatusEarly, statusEarly)
+                                //            .Set(m => m.Status, status)
+                                //            .Set(m => m.UpdatedBy, Constants.System.account)
+                                //            .Set(m => m.UpdatedOn, DateTime.Now);
+                                //        dbContext.EmployeeWorkTimeLogs.UpdateOne(filterUpdate, update);
+                                //        earlyCountAllowUsed++;
+                                //    }
+                                //}
+                                #endregion
                             }
                         }
                         else
@@ -597,7 +807,7 @@ namespace TimeKeeperBusiness
                                             StatusLate = 0,
                                             StatusEarly = 0,
                                             Status = 0,
-                                            Workcode = "Không chấm công"
+                                            Workcode = "0"
                                         };
                                         dbContext.EmployeeWorkTimeLogs.InsertOne(employeeWorkTimeLog);
                                         noFingerDate++;
@@ -631,8 +841,13 @@ namespace TimeKeeperBusiness
                     filterUpdateSum = filterUpdateSum & builderUpdateSum.Eq(m => m.Month, endDate.Month);
 
                     var updateSum = Builders<EmployeeWorkTimeMonthLog>.Update
-                        .Set(m => m.LateCountAllowUsed, lateCountAllowUsed)
-                        .Set(m => m.EarlyCountAllowUsed, earlyCountAllowUsed)
+                        //.Set(m => m.LateCountAllowUsed, lateCountAllowUsed)
+                        //.Set(m => m.EarlyCountAllowUsed, earlyCountAllowUsed)
+                        .Set(m => m.MissingMinuteAllowUsed, missingMinuteAllow - missingMinuteAllowCanUse)
+                        .Inc(m => m.MissingMinuteAllowUsedCount, missingMinuteAllowUsedCount)
+                        .Inc(m => m.Workday, -(double)workday)
+                        .Inc(m => m.Late, -late.TotalMilliseconds)
+                        .Inc(m => m.Early, -early.TotalMilliseconds)
                         .Set(m => m.LateApprove, lateApprove)
                         .Set(m => m.EarlyApprove, earlyApprove)
                         .Set(m => m.Sunday, (double)sundayCount)
@@ -647,120 +862,6 @@ namespace TimeKeeperBusiness
                     dbContext.EmployeeWorkTimeMonthLogs.UpdateOne(filterUpdateSum, updateSum);
                     #endregion
                 }
-            }
-            #endregion
-
-        }
-
-        private static void UpdateSummary(MongoDBContext dbContext, DateTime dateData, EmployeeWorkTimeLog employeeWorkTimeLog)
-        {
-            int month = dateData.Month;
-            int year = dateData.Year;
-            if (dateData.Day > 25)
-            {
-                // 26->31: chấm công tháng sau
-                var nextMonthDate = dateData.AddMonths(1);
-                month = nextMonthDate.Month;
-                year = nextMonthDate.Year;
-            }
-            var existSum = dbContext.EmployeeWorkTimeMonthLogs.Find(m => m.EmployeeId.Equals(employeeWorkTimeLog.EmployeeId) && m.Year.Equals(year) && m.Month.Equals(month)).FirstOrDefault();
-            if (existSum != null)
-            {
-                // Do later
-                //if (existSum.EnrollNumber != employeeWorkTimeLog.EnrollNumber)
-                //{
-
-                //}
-                var builderUpdateSum = Builders<EmployeeWorkTimeMonthLog>.Filter;
-                var filterUpdateSum = builderUpdateSum.Eq(m => m.Id, existSum.Id);
-                var updateSum = Builders<EmployeeWorkTimeMonthLog>.Update
-                    .Inc(m => m.Workday, employeeWorkTimeLog.WorkDay)
-                    .Inc(m => m.WorkTime, employeeWorkTimeLog.WorkTime.TotalMilliseconds)
-                    .Inc(m => m.Late, employeeWorkTimeLog.Late.TotalMilliseconds)
-                    .Inc(m => m.Early, employeeWorkTimeLog.Early.TotalMilliseconds)
-                    .Set(m => m.LastUpdated, dateData);
-                dbContext.EmployeeWorkTimeMonthLogs.UpdateOne(filterUpdateSum, updateSum);
-            }
-            else
-            {
-                var lateMinuteAllow = 5;
-                var lateCountAllow = 1;
-                var earlyMinuteAllow = 5;
-                var earlyCountAllow = 1;
-                var settingLateMinuteAllow = dbContext.Settings.Find(m => m.Key.Equals("lateMinuteAllow")).FirstOrDefault();
-                if (settingLateMinuteAllow != null && !string.IsNullOrEmpty(settingLateMinuteAllow.Value))
-                {
-                    lateMinuteAllow = Convert.ToInt32(settingLateMinuteAllow.Value);
-                }
-                var settingLateCountAllow = dbContext.Settings.Find(m => m.Key.Equals("lateCountAllow")).FirstOrDefault();
-                if (settingLateCountAllow != null && !string.IsNullOrEmpty(settingLateCountAllow.Value))
-                {
-                    lateCountAllow = Convert.ToInt32(settingLateCountAllow.Value);
-                }
-                var settingEarlyMinuteAllow = dbContext.Settings.Find(m => m.Key.Equals("earlyMinuteAllow")).FirstOrDefault();
-                if (settingEarlyMinuteAllow != null && !string.IsNullOrEmpty(settingEarlyMinuteAllow.Value))
-                {
-                    earlyMinuteAllow = Convert.ToInt32(settingEarlyMinuteAllow.Value);
-                }
-                var settingEarlyCountAllow = dbContext.Settings.Find(m => m.Key.Equals("earlyCountAllow")).FirstOrDefault();
-                if (settingEarlyCountAllow != null && !string.IsNullOrEmpty(settingEarlyCountAllow.Value))
-                {
-                    earlyCountAllow = Convert.ToInt32(settingEarlyCountAllow.Value);
-                }
-                dbContext.EmployeeWorkTimeMonthLogs.InsertOne(new EmployeeWorkTimeMonthLog
-                {
-                    EmployeeId = employeeWorkTimeLog.EmployeeId,
-                    //EnrollNumber = employeeWorkTimeLog.EnrollNumber,
-                    Month = month,
-                    Year = year,
-                    Workday = employeeWorkTimeLog.WorkDay,
-                    WorkTime = employeeWorkTimeLog.WorkTime.TotalMilliseconds,
-                    Late = employeeWorkTimeLog.Late.TotalMilliseconds,
-                    Early = employeeWorkTimeLog.Early.TotalMilliseconds,
-                    LateApprove = 0,
-                    EarlyApprove = 0,
-                    LateCountAllow = lateCountAllow,
-                    LateMinuteAllow = lateMinuteAllow,
-                    LateCountAllowUsed = 0,
-                    LateCount = 0,
-                    EarlyCountAllow = earlyCountAllow,
-                    EarlyMinuteAllow = earlyMinuteAllow,
-                    EarlyCountAllowUsed = 0,
-                    EarlyCount = 0,
-                    LastUpdated = dateData
-                });
-            }
-        }
-
-        private static void UpdateSummaryChangeData(MongoDBContext dbContext, DateTime dateData, EmployeeWorkTimeLog employeeWorkTimeLog, double currentWorkTime, double currentLate, double currentEarly, double currentWorkDay)
-        {
-            int month = dateData.Month;
-            int year = dateData.Year;
-            if (dateData.Day > 25)
-            {
-                // 26->31: chấm công tháng sau
-                var nextMonthDate = dateData.AddMonths(1);
-                month = nextMonthDate.Month;
-                year = nextMonthDate.Year;
-            }
-            var existSum = dbContext.EmployeeWorkTimeMonthLogs.Find(m => m.EmployeeId.Equals(employeeWorkTimeLog.EmployeeId) && m.Year.Equals(year) && m.Month.Equals(month)).FirstOrDefault();
-            if (existSum != null)
-            {
-                var builderUpdateSum = Builders<EmployeeWorkTimeMonthLog>.Filter;
-                var filterUpdateSum = builderUpdateSum.Eq(m => m.Id, existSum.Id);
-                var updateSumCurrent = Builders<EmployeeWorkTimeMonthLog>.Update
-                    .Inc(m => m.Workday, -currentWorkDay)
-                    .Inc(m => m.WorkTime, -currentWorkTime)
-                    .Inc(m => m.Late, -currentLate)
-                    .Inc(m => m.Early, -currentEarly);
-                dbContext.EmployeeWorkTimeMonthLogs.UpdateOne(filterUpdateSum, updateSumCurrent);
-
-                var updateSumNew = Builders<EmployeeWorkTimeMonthLog>.Update
-                    .Inc(m => m.Workday, employeeWorkTimeLog.WorkDay)
-                    .Inc(m => m.WorkTime, employeeWorkTimeLog.WorkTime.TotalMilliseconds)
-                    .Inc(m => m.Late, employeeWorkTimeLog.Late.TotalMilliseconds)
-                    .Inc(m => m.Early, employeeWorkTimeLog.Early.TotalMilliseconds);
-                dbContext.EmployeeWorkTimeMonthLogs.UpdateOne(filterUpdateSum, updateSumNew);
             }
         }
     }

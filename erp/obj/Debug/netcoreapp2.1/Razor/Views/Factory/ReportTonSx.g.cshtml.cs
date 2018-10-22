@@ -80,7 +80,7 @@ using ViewModels;
             WriteLiteral("\r\n");
             EndContext();
             BeginContext(181, 2147, false);
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("form", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "bc693d02f44948eaa480728c8342ce9d", async() => {
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("form", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "da95f32a529a4f24aab312fd01cd0771", async() => {
                 BeginContext(289, 130, true);
                 WriteLiteral("\r\n    <div class=\"form-row mb-3\">\r\n        <div class=\"col-md-3 date-area\">\r\n            <label class=\"control-label\">Từ</label>\r\n");
                 EndContext();
@@ -124,7 +124,7 @@ WriteAttributeValue("", 592, Model.from.Value.ToString("dd/MM/yyyy"), 592, 40, f
                 WriteLiteral("            ");
                 EndContext();
                 BeginContext(837, 61, false);
-                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.SelfClosing, "8192f63de3f74e3eb500ef7f7a1c8cde", async() => {
+                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.SelfClosing, "caaf9a18b4d44d859d31805b6ea3e648", async() => {
                 }
                 );
                 __Microsoft_AspNetCore_Mvc_TagHelpers_InputTagHelper = CreateTagHelper<global::Microsoft.AspNetCore.Mvc.TagHelpers.InputTagHelper>();
@@ -189,7 +189,7 @@ WriteAttributeValue("", 1183, Model.to.Value.ToString("dd/MM/yyyy"), 1183, 38, f
                 WriteLiteral("            ");
                 EndContext();
                 BeginContext(1426, 59, false);
-                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.SelfClosing, "9f904a27be6343a78f268eeffb52b22d", async() => {
+                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.SelfClosing, "7c5b6b27722648679f7dbd9987648ab7", async() => {
                 }
                 );
                 __Microsoft_AspNetCore_Mvc_TagHelpers_InputTagHelper = CreateTagHelper<global::Microsoft.AspNetCore.Mvc.TagHelpers.InputTagHelper>();
@@ -215,12 +215,12 @@ __Microsoft_AspNetCore_Mvc_TagHelpers_InputTagHelper.For = ModelExpressionProvid
                 WriteLiteral("\r\n        </div>\r\n        <div class=\"col-md-6\">\r\n            <label class=\"control-label\">Tên NVL/BTP/TP</label>\r\n            ");
                 EndContext();
                 BeginContext(1612, 372, false);
-                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("select", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "6bfb3ac7dc094188a7733768a505ae17", async() => {
+                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("select", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "e18b28e5ae6042c2b32e628c189fe035", async() => {
                     BeginContext(1695, 18, true);
                     WriteLiteral("\r\n                ");
                     EndContext();
                     BeginContext(1713, 32, false);
-                    __tagHelperExecutionContext = __tagHelperScopeManager.Begin("option", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "b272492fde68406ca89f2eb17f606b07", async() => {
+                    __tagHelperExecutionContext = __tagHelperScopeManager.Begin("option", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "a82f8397ba3d497a9ebede6f5cee7733", async() => {
                         BeginContext(1730, 6, true);
                         WriteLiteral("Tất cả");
                         EndContext();
@@ -252,7 +252,7 @@ __Microsoft_AspNetCore_Mvc_TagHelpers_InputTagHelper.For = ModelExpressionProvid
                     WriteLiteral("                        ");
                     EndContext();
                     BeginContext(1872, 47, false);
-                    __tagHelperExecutionContext = __tagHelperScopeManager.Begin("option", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "d0b3f3617369411985eb6e72ec9ed66b", async() => {
+                    __tagHelperExecutionContext = __tagHelperScopeManager.Begin("option", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "de329ea183e24a67b6bf22138a1bbe61", async() => {
                         BeginContext(1901, 9, false);
 #line 47 "C:\Projects\Tribat\sourcecode\erp\Views\Factory\ReportTonSx.cshtml"
                                                Write(item.Name);
@@ -548,7 +548,7 @@ AddHtmlAttributeValue("", 237, Constants.LinkFactory.ReportTonSx, 237, 34, false
                 WriteLiteral("\r\n    ");
                 EndContext();
                 BeginContext(6273, 94, false);
-                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("script", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "17178a3224e941889fbf2c0b87f5f195", async() => {
+                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("script", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "84a8d972a7b84bdaa894556e8b37610e", async() => {
                 }
                 );
                 __Microsoft_AspNetCore_Mvc_Razor_TagHelpers_UrlResolutionTagHelper = CreateTagHelper<global::Microsoft.AspNetCore.Mvc.Razor.TagHelpers.UrlResolutionTagHelper>();

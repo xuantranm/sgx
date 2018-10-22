@@ -117,8 +117,9 @@ namespace erp.Controllers
 
             #region Notification Birthday
             ViewData["birthdayNoticeBefore"] = birthdayNoticeBefore;
+
             var nextBirthdays = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Birthday > Constants.MinDate).ToEnumerable()
-                .Where(m => m.RemainingBirthDays < birthdayNoticeBefore).OrderBy(m => m.RemainingBirthDays).Take(6).ToList();
+                .Where(m => m.RemainingBirthDays <= birthdayNoticeBefore).OrderBy(m => m.RemainingBirthDays).Take(6).ToList();
             #endregion
 
             //#region Notification Contract
@@ -325,7 +326,7 @@ namespace erp.Controllers
 
                     #region UAT
                     //var uat = dbContext.Settings.Find(m => m.Key.Equals("UAT")).FirstOrDefault();
-                    //if (uat != null && uat.Value == "1")
+                    //if (uat != null && uat.Value == "true")
                     //{
                     //    var listSendMailTest = new List<string>
                     //        {
@@ -356,67 +357,14 @@ namespace erp.Controllers
             return Json(new { result = true, source = "sendmail", message = "Gửi mail thành công" });
         }
 
-
-        [Route("/system/update-employee-code/")]
-        public async Task<IActionResult> UpdateEmployeeCode()
-        {
-            #region Authorization
-            var login = User.Identity.Name;
-            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
-            ViewData["LoginUserName"] = loginUserName;
-
-            var userInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
-            if (userInformation == null)
-            {
-                #region snippet1
-                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                #endregion
-                return RedirectToAction("login", "account");
-            }
-            if (loginUserName != Constants.System.account)
-            {
-                return RedirectToAction("AccessDenied", "Account");
-            }
-            #endregion
-            
-            #region Filter
-            var builder = Builders<Employee>.Filter;
-            var filter = !builder.Eq(m => m.UserName, Constants.System.account);
-            #endregion
-
-            var employees = dbContext.Employees.Find(filter).ToList();
-            var i = 1;
-            foreach (var employee in employees)
-            {
-                var filterUpdate = Builders<Employee>.Filter.Eq(m => m.Id, employee.Id);
-                var update = Builders<Employee>.Update
-                    .Set(m => m.Code, "LD-" + i.ToString("0000"));
-                dbContext.Employees.UpdateOne(filterUpdate, update);
-                i++;
-            }
-
-            return Json(new { result = true, source = "update-employee-code", message = "Cập nhật mã nhân viên thành công" });
-        }
-
         public void SendMailRegister(Employee entity, string pwd)
         {
+            var url = Constants.System.domain;
+            var subject = "Thông tin đăng nhập hệ thống.";
             var tos = new List<EmailAddress>
             {
                 new EmailAddress { Name = entity.FullName, Address = entity.Email }
-                //new EmailAddress { Name = entity.FullName, Address = "xuan.tm9@tribat.vn" }
             };
-
-            // Send an email with this link
-            //var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-            //var callbackUrl = Url.Action(nameof(ConfirmEmail), "Account", new { userId = user.Id, code = code }, protocol: HttpContext.Request.Scheme);
-            //Email from Email Template
-            var callbackUrl = "/";
-            string Message = "Đăng nhập <a href=\"" + callbackUrl + "\">here</a>";
-            // string body;
-
-            var webRoot = _env.WebRootPath; //get wwwroot Folder
-
-            //Get TemplateFile located at wwwroot/Templates/EmailTemplate/Register_EmailTemplate.html
             var pathToFile = _env.WebRootPath
                     + Path.DirectorySeparatorChar.ToString()
                     + "Templates"
@@ -424,38 +372,18 @@ namespace erp.Controllers
                     + "EmailTemplate"
                     + Path.DirectorySeparatorChar.ToString()
                     + "Confirm_Account_Registration.html";
-
-            var subject = "Thông tin đăng nhập hệ thống.";
-
             var builder = new BodyBuilder();
             using (StreamReader SourceReader = System.IO.File.OpenText(pathToFile))
             {
                 builder.HtmlBody = SourceReader.ReadToEnd();
             }
-            //{0} : Subject
-            //{1} : DateTime
-            //{2} : Email
-            //{3} : Username
-            //{4} : Password
-            //{5} : Message
-            //{6} : callbackURL
-            //{7} : domain url
-            //{8} : link forgot password => use login
-            //{9} : FullName
-            var url = Constants.System.domain;
-            var forgot = url + Constants.System.login;
             string messageBody = string.Format(builder.HtmlBody,
                 subject,
-                String.Format("{0:dddd, d MMMM yyyy}", DateTime.Now),
-                entity.Email,
+                entity.FullName,
+                url,
                 entity.UserName,
                 pwd,
-                Message,
-                callbackUrl,
-                url,
-                forgot,
-                entity.FullName
-                );
+                entity.Email);
 
             var emailMessage = new EmailMessage()
             {
@@ -464,13 +392,7 @@ namespace erp.Controllers
                 BodyContent = messageBody
             };
 
-            _emailSender.SendEmailWelcomeAsync(emailMessage);
-
-            ViewData["Message"] = $"Please confirm your account by clicking this link: <a href='{callbackUrl}' class='btn btn-primary'>Confirmation Link</a>";
-            ViewData["MessageValue"] = "1";
-
-            _logger.LogInformation(3, "User created a new account with password.");
+            _emailSender.SendEmail(emailMessage);
         }
-
     }
 }

@@ -27,6 +27,7 @@ using Common.Enums;
 using Helpers;
 using MimeKit;
 using MimeKit.Text;
+using Services;
 
 namespace erp.Controllers
 {
@@ -42,11 +43,17 @@ namespace erp.Controllers
 
         public IConfiguration Configuration { get; }
 
-        public TimeKeeperController(IDistributedCache cache, IConfiguration configuration, IHostingEnvironment env, ILogger<TimeKeeperController> logger)
+        private readonly IEmailSender _emailSender;
+        private readonly ISmsSender _smsSender;
+
+        public TimeKeeperController(IDistributedCache cache, IConfiguration configuration, IHostingEnvironment env, IEmailSender emailSender,
+            ISmsSender smsSender, ILogger<TimeKeeperController> logger)
         {
             _cache = cache;
             Configuration = configuration;
             _env = env;
+            _emailSender = emailSender;
+            _smsSender = smsSender;
             _logger = logger;
         }
 
@@ -107,31 +114,35 @@ namespace erp.Controllers
         }
 
         [Route(Constants.LinkTimeKeeper.Index)]
-        public async Task<IActionResult> Index(string times, string id)
+        public async Task<IActionResult> Index(string thang, string id)
         {
             #region Authorization
             var login = User.Identity.Name;
             var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
             ViewData["LoginUserName"] = loginUserName;
 
-            var loginInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
-            if (loginInformation == null)
+            var userInformation = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(login)).FirstOrDefault();
+            if (userInformation == null)
             {
                 #region snippet1
                 await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                 #endregion
                 return RedirectToAction("login", "account");
             }
-            if (string.IsNullOrEmpty(id))
+            bool isRight = false;
+            if (loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.XacNhanCongDum, (int)ERights.Add))
             {
-                id = login;
+                isRight = true;
             }
-
-            var userInformation = id == login ? loginInformation : dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(id)).FirstOrDefault();
             #endregion
 
+            id = string.IsNullOrEmpty(id) ? login : id;
+            if (id != login)
+            {
+                userInformation = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(id)).FirstOrDefault();
+            }
+           
             #region Dropdownlist
-            var employees = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.IsTimeKeeper.Equals(false)).SortBy(m=>m.FullName).ToList();
             var monthYears = new List<MonthYear>();
             var date = new DateTime(2018, 02, 01);
             var endDate = DateTime.Now;
@@ -172,10 +183,9 @@ namespace erp.Controllers
             }
             #endregion
 
-            var toDate = Utility.WorkingMonthToDate(times);
+            var toDate = Utility.WorkingMonthToDate(thang);
             var fromDate = toDate.AddMonths(-1).AddDays(1);
-            // override times if null
-            if (string.IsNullOrEmpty(times))
+            if (string.IsNullOrEmpty(thang))
             {
                 toDate = DateTime.Now;
                 fromDate = new DateTime(toDate.AddMonths(-1).Year, toDate.AddMonths(-1).Month, 26);
@@ -208,11 +218,12 @@ namespace erp.Controllers
                 Employee = userInformation,
                 EmployeeWorkTimeMonthLogs = monthsTimes,
                 EmployeeWorkTimeMonthLog = monthTime,
-                Employees = employees,
                 MonthYears = sortTimes,
                 StartWorkingDate = fromDate,
                 EndWorkingDate = toDate,
-                Approves = approves
+                Approves = approves,
+                thang = thang,
+                RightRequest = isRight
             };
             return View(viewModel);
         }
@@ -225,7 +236,7 @@ namespace erp.Controllers
             var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
             ViewData["LoginUserName"] = loginUserName;
 
-            var userInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
+            var userInformation = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(login)).FirstOrDefault();
             if (userInformation == null)
             {
                 #region snippet1
@@ -245,6 +256,12 @@ namespace erp.Controllers
                 return RedirectToAction("AccessDenied", "Account");
             }
             #endregion
+
+            id = string.IsNullOrEmpty(id) ? login : id;
+            if (id != login)
+            {
+                userInformation = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(id)).FirstOrDefault();
+            }
 
             #region Dropdownlist
             // Danh sách nhân viên để tạo phép dùm
@@ -269,24 +286,18 @@ namespace erp.Controllers
             }
             var sortTimes = monthYears.OrderByDescending(x => x.Year).OrderByDescending(x => x.Month).ToList();
             var approves = new List<IdName>();
-            var employee = new Employee();
-            if (!string.IsNullOrEmpty(id))
+            if (!string.IsNullOrEmpty(userInformation.ManagerId))
             {
-                employee = dbContext.Employees.Find(m => m.Id.Equals(id)).FirstOrDefault();
-                if (!string.IsNullOrEmpty(userInformation.ManagerId))
+                var approveEntity = dbContext.Employees.Find(m => m.Id.Equals(userInformation.ManagerId)).FirstOrDefault();
+                if (approveEntity != null)
                 {
-                    var approveEntity = dbContext.Employees.Find(m => m.Id.Equals(userInformation.ManagerId)).FirstOrDefault();
-                    if (approveEntity != null)
+                    approves.Add(new IdName
                     {
-                        approves.Add(new IdName
-                        {
-                            Id = approveEntity.Id,
-                            Name = approveEntity.FullName
-                        });
-                    }
+                        Id = approveEntity.Id,
+                        Name = approveEntity.FullName
+                    });
                 }
             }
-
             var rolesApprove = dbContext.RoleUsers.Find(m => m.Enable.Equals(true) && m.Role.Equals(Constants.Rights.XacNhanCong)).ToList();
             foreach (var roleApprove in rolesApprove)
             {
@@ -355,8 +366,8 @@ namespace erp.Controllers
             var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
             ViewData["LoginUserName"] = loginUserName;
 
-            var employee = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
-            if (employee == null)
+            var userInformation = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(login)).FirstOrDefault();
+            if (userInformation == null)
             {
                 #region snippet1
                 await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
@@ -365,13 +376,20 @@ namespace erp.Controllers
             }
             #endregion
 
+            
+
             // Update status
             var entity = dbContext.EmployeeWorkTimeLogs.Find(m => m.Id.Equals(model.Id)).FirstOrDefault();
             string secureCode = Helper.HashedPassword(Guid.NewGuid().ToString("N").Substring(0, 12));
+            // Tự yêu cầu
+            var employee = userInformation;
+            // Làm cho người khác
+            if (entity.EmployeeId != login)
+            {
+                employee = dbContext.Employees.Find(m => m.Id.Equals(entity.EmployeeId)).FirstOrDefault();
+            }
 
             var approveEntity = new Employee();
-            
-            
             if (!string.IsNullOrEmpty(model.ConfirmId))
             {
                 approveEntity = dbContext.Employees.Find(m => m.Id.Equals(model.ConfirmId)).FirstOrDefault();
@@ -421,26 +439,32 @@ namespace erp.Controllers
             //{0} : Subject
             //{1} : Nguoi duyet 
             //{2} : Nguoi gui yeu cau  - Nguoi tao yeu cau (dùm)
-            //{3} : Email
-            //{4} : Chức vụ
-            //{5} : Nội dung chấm công (ngay, in, out,....)
-            //{6} : Lý do
-            //{7} : Số điện thoại liên hệ
-            //{8}: Link đồng ý
-            //{9}: Link từ chối
-            //{10}: Link chi tiết
-            //{11}: Website
+            //{3} : v3
+            //{4} : Email
+            //{5} : Chức vụ
+            //{6} : Nội dung chấm công (ngay, in, out,....)
+            //{7} : Lý do
+            //{8} : Số điện thoại liên hệ
+            //{9}: Link đồng ý
+            //{10}: Link từ chối
+            //{11}: Link chi tiết
+            //{12}: Website
             #endregion
             var subject = "Hỗ trợ xác nhận công.";
             var requester = employee.FullName;
-            if (!string.IsNullOrEmpty(employee.Title))
+            var var3 = employee.FullName;
+            //if (!string.IsNullOrEmpty(employee.Title))
+            //{
+            //    requester += " - " + employee.Title;
+            //}
+            if (entity.EmployeeId != login)
             {
-                requester += " - " + employee.Title;
+                requester += " (người tạo xác nhận: " + userInformation.FullName + " , chức vụ " + userInformation.Title + ")";
             }
             var inTime = entity.In.HasValue ? entity.In.Value.ToString(@"hh\:mm") : string.Empty;
             var outTime = entity.Out.HasValue ? entity.Out.Value.ToString(@"hh\:mm") : string.Empty;
-            var lateTime = entity.Late.TotalMilliseconds > 0 ? entity.Late.TotalMinutes.ToString() : string.Empty;
-            var earlyTime = entity.Early.TotalMilliseconds > 0 ? entity.Early.TotalMinutes.ToString() : string.Empty;
+            var lateTime = entity.Late.TotalMilliseconds > 0 ? Math.Round(entity.Late.TotalMinutes,0).ToString() : "0";
+            var earlyTime = entity.Early.TotalMilliseconds > 0 ? Math.Round(entity.Early.TotalMinutes,0).ToString() : "0";
             var sumTime = string.Empty;
             if (string.IsNullOrEmpty(inTime) && string.IsNullOrEmpty(outTime))
             {
@@ -456,10 +480,26 @@ namespace erp.Controllers
                 {
                     sumTime += ", ";
                 }
-                sumTime += minutesMissing + " phút";
+                sumTime += Math.Round(minutesMissing, 0) + " phút";
             }
-            
-            var detailTimeKeeping = "Ngày: " + entity.Date.ToString("dd/MM/yyyy") + "; thiếu: "+ sumTime + " | giờ vào: " + inTime + "; trễ: " + lateTime + "; giờ ra: " + outTime + "; sớm: " + earlyTime;
+
+            var detailTimeKeeping = "Ngày: " + entity.Date.ToString("dd/MM/yyyy") + "; thiếu: " + sumTime;
+            if (!string.IsNullOrEmpty(inTime))
+            {
+                detailTimeKeeping += " | giờ vào: " + inTime + "; trễ: " + lateTime;
+            }
+            else
+            {
+                detailTimeKeeping += " | giờ vào: --; trễ: --";
+            }
+            if (!string.IsNullOrEmpty(outTime))
+            {
+                detailTimeKeeping += "; giờ ra: " + outTime + "; sớm: " + earlyTime;
+            }
+            else
+            {
+                detailTimeKeeping += "; giờ ra: --; sớm: --";
+            }
             // Api update, generate code.
             var linkapprove = Constants.System.domain + "/" + Constants.LinkTimeKeeper.Main + "/" + Constants.LinkTimeKeeper.Aprrove;
             var linkAccept = linkapprove + "?id=" + entity.Id + "&approve=3&secure=" + secureCode;
@@ -474,6 +514,7 @@ namespace erp.Controllers
                 subject,
                 confirmName,
                 requester,
+                var3,
                 employee.Email,
                 employee.Title,
                 detailTimeKeeping,
@@ -484,51 +525,17 @@ namespace erp.Controllers
                 linkDetail,
                 Constants.System.domain
                 );
+
             var emailMessage = new EmailMessage()
             {
                 ToAddresses = tos,
+                //CCAddresses = ccs,
                 Subject = subject,
-                BodyContent = messageBody
+                BodyContent = messageBody,
+                Type = "ho-tro-xac-nhan-cong"
             };
-            try
-            {
-                var emailFrom = Constants.System.emailErp;
-                var emailFromName = Constants.System.emailErpName;
-                var emailFromPwd = Constants.System.emailErpPwd;
-                var message = new MimeMessage();
-                message.To.AddRange(emailMessage.ToAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
-                if (emailMessage.FromAddresses == null || emailMessage.FromAddresses.Count == 0)
-                {
-                    emailMessage.FromAddresses = new List<EmailAddress>
-                                {
-                                    new EmailAddress { Name = emailFromName, Address = emailFrom }
-                                };
-                }
-                message.From.AddRange(emailMessage.FromAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
-                message.Subject = emailMessage.Subject;
-                message.Body = new TextPart(TextFormat.Html)
-                {
-                    Text = emailMessage.BodyContent
-                };
-                using (var emailClient = new MailKit.Net.Smtp.SmtpClient())
-                {
-                    //The last parameter here is to use SSL (Which you should!)
-                    emailClient.Connect(emailFrom, 465, true);
 
-                    //Remove any OAuth functionality as we won't be using it. 
-                    emailClient.AuthenticationMechanisms.Remove("XOAUTH2");
-
-                    emailClient.Authenticate(emailFrom, emailFromPwd);
-
-                    emailClient.Send(message);
-                    emailClient.Disconnect(true);
-                    Console.WriteLine("The mail has been sent successfully !!");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
+            _emailSender.SendEmail(emailMessage);
 
             #endregion
 
@@ -639,8 +646,8 @@ namespace erp.Controllers
             var ccs = new List<EmailAddress>();
             tos.Add(new EmailAddress { Name = employee.FullName, Address = employee.Email });
 
-            // Send mail to HR: if approve = 1;
-            if (approve == 1)
+            // Send mail to HR: if approve = 3 (dong y);
+            if (approve == 3)
             {
                 var listHrRoles = dbContext.RoleUsers.Find(m => m.Role.Equals(Constants.Rights.NhanSu) && (m.Expired.Equals(null) || m.Expired > DateTime.Now)).ToList();
                 if (listHrRoles != null && listHrRoles.Count > 0)
@@ -663,7 +670,7 @@ namespace erp.Controllers
 
             #region UAT
             var uat = dbContext.Settings.Find(m => m.Key.Equals("UAT")).FirstOrDefault();
-            if (uat != null && uat.Value == "1")
+            if (uat != null && uat.Value == "true")
             {
                 tos = new List<EmailAddress>
                         {
@@ -742,56 +749,17 @@ namespace erp.Controllers
                 linkDetail,
                 Constants.System.domain
                 );
+
             var emailMessage = new EmailMessage()
             {
                 ToAddresses = tos,
                 CCAddresses = ccs,
                 Subject = subject,
-                BodyContent = messageBody
+                BodyContent = messageBody,
+                Type = "xac-nhan-cong"
             };
-            try
-            {
-                var emailFrom = Constants.System.emailHr;
-                var emailFromName = Constants.System.emailHrName;
-                var emailFromPwd = Constants.System.emailHrPwd;
-                var message = new MimeMessage();
-                message.To.AddRange(emailMessage.ToAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
-                if (emailMessage.CCAddresses != null && emailMessage.CCAddresses.Count > 0)
-                {
-                    message.Cc.AddRange(emailMessage.CCAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
-                }
-                if (emailMessage.FromAddresses == null || emailMessage.FromAddresses.Count == 0)
-                {
-                    emailMessage.FromAddresses = new List<EmailAddress>
-                                {
-                                    new EmailAddress { Name = emailFromName, Address = emailFrom }
-                                };
-                }
-                message.From.AddRange(emailMessage.FromAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
-                message.Subject = emailMessage.Subject;
-                message.Body = new TextPart(TextFormat.Html)
-                {
-                    Text = emailMessage.BodyContent
-                };
-                using (var emailClient = new MailKit.Net.Smtp.SmtpClient())
-                {
-                    //The last parameter here is to use SSL (Which you should!)
-                    emailClient.Connect(emailFrom, 465, true);
 
-                    //Remove any OAuth functionality as we won't be using it. 
-                    emailClient.AuthenticationMechanisms.Remove("XOAUTH2");
-
-                    emailClient.Authenticate(emailFrom, emailFromPwd);
-
-                    emailClient.Send(message);
-                    emailClient.Disconnect(true);
-                    Console.WriteLine("The mail has been sent successfully !!");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
+            _emailSender.SendEmail(emailMessage);
             #endregion
 
             ViewData["Status"] = "Cám ơn đã xác nhận, kết quả đang gửi cho người liên quan.";
@@ -902,8 +870,8 @@ namespace erp.Controllers
             //tos.Add(new EmailAddress { Name = "xuan", Address = "xuan.tm@tribat.vn" });
             tos.Add(new EmailAddress { Name = employee.FullName, Address = employee.Email });
 
-            // Send mail to HR: if approve = 1;
-            if (approve == 1)
+            // Send mail to HR: if approve = 3 (dong y);
+            if (approve == 3)
             {
                 var listEmailHR = string.Empty;
                 var settingListEmailHR = dbContext.Settings.Find(m => m.Enable.Equals(true) && m.Key.Equals("ListEmailHRApproveTimeKeeper")).FirstOrDefault();
@@ -979,51 +947,11 @@ namespace erp.Controllers
                 ToAddresses = tos,
                 CCAddresses = ccs,
                 Subject = subject,
-                BodyContent = messageBody
+                BodyContent = messageBody,
+                Type = "xac-nhan-cong"
             };
-            try
-            {
-                var emailFrom = Constants.System.emailHr;
-                var emailFromName = Constants.System.emailHrName;
-                var emailFromPwd = Constants.System.emailHrPwd;
-                var message = new MimeMessage();
-                message.To.AddRange(emailMessage.ToAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
-                if (emailMessage.CCAddresses != null && emailMessage.CCAddresses.Count > 0)
-                {
-                    message.Cc.AddRange(emailMessage.CCAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
-                }
-                if (emailMessage.FromAddresses == null || emailMessage.FromAddresses.Count == 0)
-                {
-                    emailMessage.FromAddresses = new List<EmailAddress>
-                                {
-                                    new EmailAddress { Name = emailFromName, Address = emailFrom }
-                                };
-                }
-                message.From.AddRange(emailMessage.FromAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
-                message.Subject = emailMessage.Subject;
-                message.Body = new TextPart(TextFormat.Html)
-                {
-                    Text = emailMessage.BodyContent
-                };
-                using (var emailClient = new MailKit.Net.Smtp.SmtpClient())
-                {
-                    //The last parameter here is to use SSL (Which you should!)
-                    emailClient.Connect(emailFrom, 465, true);
 
-                    //Remove any OAuth functionality as we won't be using it. 
-                    emailClient.AuthenticationMechanisms.Remove("XOAUTH2");
-
-                    emailClient.Authenticate(emailFrom, emailFromPwd);
-
-                    emailClient.Send(message);
-                    emailClient.Disconnect(true);
-                    Console.WriteLine("The mail has been sent successfully !!");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
+            _emailSender.SendEmail(emailMessage);
             #endregion
 
             return Json(new { result = true, message = "Cám ơn đã xác nhận, kết quả đang gửi cho người liên quan." });

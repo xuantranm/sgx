@@ -7,14 +7,9 @@ using System.Threading.Tasks;
 
 namespace Models
 {
+    // No use. Use [Error]
     public class ErrorLog
     {
-        /// <summary>  
-        /// Gets or sets the Error log identifier.  
-        /// </summary>  
-        /// <value>  
-        /// The Error log identifier.  
-        /// </value>  
         [BsonRepresentation(BsonType.ObjectId)]
         public ObjectId Id { get; set; }
         /// <summary>  

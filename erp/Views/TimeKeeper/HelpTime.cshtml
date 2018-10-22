@@ -13,15 +13,19 @@
     <div class="row">
         <div class="col-md-6 col-xs-12">
             <div class="form-group">
-                <label asp-for="EmployeeWorkTimeLog.EmployeeId" class="control-label"></label>
+                <label class="control-label">Nhân viên</label>
                 <select asp-for="id" class="form-control form-control-lg js-select2-basic-single ddl-employees">
-                    <option value="">--Chọn--</option>
+                    <option value="">Chọn</option>
                     @foreach (var employee in Model.Employees)
                     {
                         string displayTitle = string.Empty;
                         if (!string.IsNullOrEmpty(employee.Title))
                         {
                             displayTitle += "[" + employee.Title + "]";
+                        }
+                        if (!string.IsNullOrEmpty(employee.Email))
+                        {
+                            displayTitle += "- " + employee.Email + "";
                         }
                         <option value="@employee.Id">@employee.FullName @displayTitle</option>
                     }
@@ -32,7 +36,6 @@
             <div class="form-group">
                 <label class="control-label">Tháng</label>
                 <select asp-for="thang" class="form-control form-control-lg js-select2-basic-single ddl-times">
-                    <option value="">--Chọn--</option>
                     @foreach (var item in Model.MonthYears)
                     {
                         <option value="@item.Month-@item.Year">@item.Month/@item.Year</option>
@@ -175,7 +178,7 @@
                 </thead>
                 <tbody>
                     @{
-                        var iXacNhan = -1;
+                        var iXacNhan = -8;
                         if (DateTime.Now.Date.AddDays(iXacNhan).DayOfWeek == DayOfWeek.Sunday)
                         {
                             iXacNhan--;
@@ -185,56 +188,63 @@
                             <tr>
                                 <td class="log-@log.Id">
                                     @{
-                                        if (log.Status == 0)
+                                        if (log.Date.Date != DateTime.Now.Date)
                                         {
-                                            if (log.Date.Date == DateTime.Now.Date.AddDays(iXacNhan))
+                                            if (log.Status == 0)
                                             {
-                                                <input type="button" class="btn btn-sm btn-danger" value="Xác nhận" data-toggle="modal" data-target="#requestTimeKeeperModal" data-id="@log.Id" />
+                                                if (log.Date.Date >= DateTime.Now.Date.AddDays(iXacNhan))
+                                                {
+                                                    <input type="button" class="btn btn-sm btn-danger" value="Xác nhận" data-toggle="modal" data-target="#requestTimeKeeperModal" data-id="@log.Id" />
+                                                }
+                                                else
+                                                {
+                                                    var displayStatus = string.Empty;
+                                                    if (log.Date.Date != DateTime.Now.Date)
+                                                    {
+                                                        if (Math.Round(log.Late.TotalMinutes, 0) > 0)
+                                                        {
+                                                            displayStatus += string.IsNullOrEmpty(displayStatus) ? "" : " - ";
+                                                            displayStatus += "Trễ";
+                                                        }
+                                                        if (Math.Round(log.Early.TotalMinutes, 0) > 0)
+                                                        {
+                                                            displayStatus += string.IsNullOrEmpty(displayStatus) ? "" : " - ";
+                                                            displayStatus += "Sớm";
+                                                        }
+                                                        if (!log.In.HasValue && !log.Out.HasValue)
+                                                        {
+                                                            displayStatus += string.IsNullOrEmpty(displayStatus) ? "" : " - ";
+                                                            displayStatus += "Thiếu";
+
+                                                        }
+                                                        else if (!log.In.HasValue)
+                                                        {
+                                                            displayStatus += string.IsNullOrEmpty(displayStatus) ? "" : " - ";
+                                                            displayStatus += "Thiếu vào";
+                                                        }
+                                                        else if (!log.Out.HasValue)
+                                                        {
+                                                            displayStatus += string.IsNullOrEmpty(displayStatus) ? "" : " - ";
+                                                            displayStatus += "Thiếu ra";
+                                                        }
+                                                    }
+
+                                                    <small class="badge badge-secondary">@displayStatus</small>
+                                                }
                                             }
                                             else
                                             {
-                                                var displayStatus = string.Empty;
-                                                if (log.Date.Date != DateTime.Now.Date)
+                                                var statusBag = "badge-info";
+                                                if (log.Status == 4)
                                                 {
-                                                    if (Math.Round(log.Late.TotalMinutes, 0) > 0)
-                                                    {
-                                                        displayStatus += string.IsNullOrEmpty(displayStatus) ? "" : " - ";
-                                                        displayStatus += "Trễ";
-                                                    }
-                                                    if (Math.Round(log.Early.TotalMinutes, 0) > 0)
-                                                    {
-                                                        displayStatus += string.IsNullOrEmpty(displayStatus) ? "" : " - ";
-                                                        displayStatus += "Sớm";
-                                                    }
-                                                    if (!log.In.HasValue && !log.Out.HasValue)
-                                                    {
-                                                        displayStatus += string.IsNullOrEmpty(displayStatus) ? "" : " - ";
-                                                        displayStatus += "Thiếu";
-
-                                                    }
-                                                    else if (!log.In.HasValue)
-                                                    {
-                                                        displayStatus += string.IsNullOrEmpty(displayStatus) ? "" : " - ";
-                                                        displayStatus += "Thiếu vào";
-                                                    }
-                                                    else if (!log.Out.HasValue)
-                                                    {
-                                                        displayStatus += string.IsNullOrEmpty(displayStatus) ? "" : " - ";
-                                                        displayStatus += "Thiếu ra";
-                                                    }
+                                                    statusBag = "badge-pill";
                                                 }
-
-                                                <small class="badge badge-secondary">@displayStatus</small>
+                                                <span class="badge @statusBag">@Constants.TimeKeeper(log.Status)</span>
                                             }
                                         }
                                         else
                                         {
-                                            var statusBag = "badge-info";
-                                            if (log.Status == 4)
-                                            {
-                                                statusBag = "badge-pill";
-                                            }
-                                            <span class="badge @statusBag">@Constants.TimeKeeper(log.Status)</span>
+                                            <span class="badge badge-light">Đang lấy dữ liệu</span>
                                         }
                                     }
                                 </td>
@@ -304,6 +314,15 @@ else
         Không có dữ liệu hoặc bạn thuộc danh sách không chấm công.
     </div>
 }
+
+<small>Phòng Hành Chính Nhân Sự cho phép mỗi nhân viên 01 tháng được đi trễ về sớm 15 phút.</small>
+<small>Hệ thống sẽ tính tự động theo điều kiện đến trước và chuyển sang trạng thái "Duyệt tự động".</small>
+<br />
+<small>Nếu ngoài số phút cho phép này. Không có lý do chính đáng và không được duyệt thì thiếu thời gian buổi nào trừ 0.5 ngày/buổi.</small>
+<small>Vui lòng xác nhận công trong vòng 02 ngày.</small>
+<br />
+<small>Chúc ngày làm việc hiệu quả.</small>
+
 
 <script id="tmplDataItem" type="text/x-jsrender">
     <input type="hidden" name="EmployeeWorkTimeLog.Id" value="{{:id}}" />
@@ -375,5 +394,4 @@ else
         <script type="text/javascript" src="~/js/timekeeper-help.js?@DateTime.Now.Ticks"></script>
     }
 }
-
 

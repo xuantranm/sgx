@@ -16,5 +16,9 @@ namespace ViewModels
         public IList<SalaryThangBangPhuCapPhucLoi> SalaryThangBangPhuCapPhucLois { get; set; }
 
         public IList<SalaryThangBangPhuCapPhucLoi> SalaryThangBangPhuCapPhucLoisReal { get; set; }
+
+        public string thang { get; set; }
+
+        public IList<MonthYear> MonthYears { get; set; }
     }
 }

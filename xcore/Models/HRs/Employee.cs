@@ -61,29 +61,9 @@ namespace Models
             {
                 DateTime today = DateTime.Today;
                 int age = today.Year - Birthday.Year;
-                if (today < Birthday.AddYears(age))
+                if (today < Birthday.AddYears(age) )
                     age--;
                 return age;
-            }
-        }
-
-        public int AgeBirthday
-        {
-            get
-            {
-                DateTime today = DateTime.Today;
-                int age = today.Year - Birthday.Year;
-                if (today < Birthday.AddYears(age))
-                    age--;
-                return age+1;
-            }
-        }
-
-        public DateTime NextBirthDays
-        {
-            get
-            {
-                return Birthday.AddYears(Age + 1);
             }
         }
 
@@ -92,11 +72,40 @@ namespace Models
             get
             {
                 DateTime today = DateTime.Today;
-                DateTime nextBirthday = Birthday.AddYears(Age + 1);
+                DateTime next = Birthday.AddYears(today.Year - Birthday.Year);
 
-                TimeSpan difference = nextBirthday - DateTime.Today;
+                if (next < today)
+                    next = next.AddYears(1);
 
-                return Convert.ToInt32(difference.TotalDays);
+                int numDays = (next - today).Days;
+
+                return numDays;
+            }
+        }
+
+        public int AgeBirthday
+        {
+            get
+            {
+                if (RemainingBirthDays == 0)
+                {
+                    // Today is birthday
+                    return Age;
+                }
+                return Age+1;
+            }
+        }
+
+        public DateTime NextBirthDays
+        {
+            get
+            {
+                if (RemainingBirthDays == 0)
+                {
+                    // Today is birthday
+                    return Birthday.AddYears(Age);
+                }
+                return Birthday.AddYears(Age + 1);
             }
         }
 

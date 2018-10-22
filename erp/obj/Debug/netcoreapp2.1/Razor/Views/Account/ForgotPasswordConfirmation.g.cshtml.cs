@@ -69,7 +69,7 @@ using Models;
                         ");
             EndContext();
             BeginContext(404, 54, false);
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("img", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.SelfClosing, "9bcb77188c9148bc81ed6f18f4bc9645", async() => {
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("img", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.SelfClosing, "c50a0ec0aa85452c81211a596f90efd8", async() => {
             }
             );
             __Microsoft_AspNetCore_Mvc_Razor_TagHelpers_UrlResolutionTagHelper = CreateTagHelper<global::Microsoft.AspNetCore.Mvc.Razor.TagHelpers.UrlResolutionTagHelper>();
@@ -120,7 +120,7 @@ using Models;
                             ");
             EndContext();
             BeginContext(1507, 96, false);
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("a", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "e36dfd32a0f64e6fbc6e676e0a1a5c0a", async() => {
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("a", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "608551fba2de4749b5138672eb0934f0", async() => {
                 BeginContext(1577, 22, true);
                 WriteLiteral("Đăng ký tài khoản mới?");
                 EndContext();
@@ -155,7 +155,7 @@ using Models;
             WriteLiteral("\r\n                        </span>\r\n                        <span class=\"text-small\">\r\n                            ");
             EndContext();
             BeginContext(1717, 36, false);
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("a", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "caea6da6a25c4f72958bf49e9dd46348", async() => {
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("a", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "7109fb4795bb4aa7b7f5ddf3bbe6cf78", async() => {
                 BeginContext(1739, 10, true);
                 WriteLiteral("Đăng nhập?");
                 EndContext();

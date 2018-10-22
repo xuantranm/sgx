@@ -1722,7 +1722,6 @@ namespace erp.Controllers
                     }
 
                     var typeLeave = dbContext.LeaveTypes.Find(m => m.Display.Equals(true) && m.SalaryPay.Equals(true) && m.Alias.Equals("phep-nam")).FirstOrDefault();
-                    var leaveEmployees = new List<LeaveEmployee>();
                     for (int i = 2; i <= sheet.LastRowNum; i++)
                     {
                         IRow row = sheet.GetRow(i);
@@ -1733,6 +1732,7 @@ namespace erp.Controllers
 
                         var code = GetFormattedCellValue(row.GetCell(1));
                         var fullName = GetFormattedCellValue(row.GetCell(2));
+                        var alias = Utility.AliasConvert(fullName);
                         var email = GetFormattedCellValue(row.GetCell(3));
                         if (!string.IsNullOrEmpty(email))
                         {
@@ -1741,9 +1741,9 @@ namespace erp.Controllers
                         var phepcon = GetNumbericCellValue(row.GetCell(6));
                         // get employee by code -> email (from fullname) -> fullname
                         var employee = new Employee();
-                        if (!string.IsNullOrEmpty(code))
+                        if (!string.IsNullOrEmpty(alias))
                         {
-                            employee = dbContext.Employees.Find(m => m.Enable.Equals(true) & m.CodeOld.Equals(code)).FirstOrDefault();
+                            employee = dbContext.Employees.Find(m => m.Enable.Equals(true) & m.AliasFullName.Equals(alias)).FirstOrDefault();
                         }
                         if (employee == null)
                         {
@@ -1759,21 +1759,142 @@ namespace erp.Controllers
                                 employee = dbContext.Employees.Find(m => m.Enable.Equals(true) & m.FullName.Equals(fullName)).FirstOrDefault();
                             }
                         }
+                        if (employee == null)
+                        {
+                            if (!string.IsNullOrEmpty(code))
+                            {
+                                employee = dbContext.Employees.Find(m => m.Enable.Equals(true) & m.CodeOld.Equals(code)).FirstOrDefault();
+                            }
+                        }
 
                         if (employee != null)
                         {
-                            leaveEmployees.Add(new LeaveEmployee
+                            if(employee.Id == "5b6bfc463ee8461ee48cbbea")
                             {
-                                LeaveTypeId = typeLeave.Id,
-                                EmployeeId = employee.Id,
-                                LeaveTypeName = typeLeave.Name,
-                                EmployeeName = employee.FullName,
-                                Number = (decimal)phepcon
+                                var phoo = phepcon;
+                            }
+                            if (dbContext.LeaveEmployees.CountDocuments(m => m.EmployeeId.Equals(employee.Id) & m.LeaveTypeId.Equals(typeLeave.Id)) > 0)
+                            {
+                                var filter = Builders<LeaveEmployee>.Filter.Eq(m => m.EmployeeId, employee.Id);
+                                filter = filter & Builders<LeaveEmployee>.Filter.Eq(m => m.LeaveTypeId, typeLeave.Id);
+                                var update = Builders<LeaveEmployee>.Update
+                                    .Set(m => m.Number, (decimal)phepcon);
+                                dbContext.LeaveEmployees.UpdateOne(filter, update);
+                            }
+                            else
+                            {
+                                dbContext.LeaveEmployees.InsertOne(new LeaveEmployee
+                                {
+                                    LeaveTypeId = typeLeave.Id,
+                                    EmployeeId = employee.Id,
+                                    LeaveTypeName = typeLeave.Name,
+                                    EmployeeName = employee.FullName,
+                                    Number = (decimal)phepcon
+                                });
+                            }
+                        }
+                        else
+                        {
+                            // Insert log
+                            dbContext.Misss.InsertOne(new Miss
+                            {
+                                Type = "leavedate",
+                                Object = fullName + " - " + email,
+                                Error = "No get data",
+                                DateTime = DateTime.Now.ToString()
                             });
                         }
                     }
-                    dbContext.LeaveEmployees.DeleteMany(new BsonDocument());
-                    dbContext.LeaveEmployees.InsertMany(leaveEmployees);
+                }
+            }
+            return Json(new { url = "/hr/nhan-su" });
+        }
+
+        [Route("/tai-lieu/ma-cham-cong/")]
+        public IActionResult MaChamCong()
+        {
+            return View();
+        }
+
+        [Route("/tai-lieu/ma-cham-cong/update/")]
+        [HttpPost]
+        public ActionResult MaChamCongUpdate()
+        {
+            IFormFile file = Request.Form.Files[0];
+            string folderName = Constants.Storage.Hr;
+            string webRootPath = _env.WebRootPath;
+            string newPath = Path.Combine(webRootPath, folderName);
+            if (!Directory.Exists(newPath))
+            {
+                Directory.CreateDirectory(newPath);
+            }
+            if (file.Length > 0)
+            {
+                string sFileExtension = Path.GetExtension(file.FileName).ToLower();
+                ISheet sheet;
+                string fullPath = Path.Combine(newPath, file.FileName);
+                using (var stream = new FileStream(fullPath, FileMode.Create))
+                {
+                    file.CopyTo(stream);
+                    stream.Position = 0;
+                    if (sFileExtension == ".xls")
+                    {
+                        HSSFWorkbook hssfwb = new HSSFWorkbook(stream); //This will read the Excel 97-2000 formats  
+                        sheet = hssfwb.GetSheetAt(0);
+                    }
+                    else
+                    {
+                        XSSFWorkbook hssfwb = new XSSFWorkbook(stream); //This will read 2007 Excel format  
+                        sheet = hssfwb.GetSheetAt(0); //get first sheet from workbook   
+                    }
+
+                    for (int i = 1; i <= sheet.LastRowNum; i++)
+                    {
+                        IRow row = sheet.GetRow(i);
+                        if (row == null) continue;
+                        if (row.Cells.All(d => d.CellType == CellType.Blank)) continue;
+                        if (row.Cells.All(d => d.CellType == CellType.Error)) continue;
+                        if (row.Cells.All(d => d.CellType == CellType.Unknown)) continue;
+
+                        var code = Convert.ToInt32(GetFormattedCellValue(row.GetCell(0)));
+                        var fullName = GetFormattedCellValue(row.GetCell(1));
+                        var alias = Utility.AliasConvert(fullName);
+                        var email = Utility.EmailConvert(fullName);
+                        var employee = dbContext.Employees.Find(m => m.Email.Equals(email)).FirstOrDefault();
+                        if (employee == null)
+                        {
+                            employee = dbContext.Employees.Find(m => m.AliasFullName.Equals(alias)).FirstOrDefault();
+                        }
+
+                        if (employee != null)
+                        {
+                            // Update fingercode code.ToString("000")
+                            var workPlaces = employee.Workplaces;
+                            foreach (var workplace in workPlaces)
+                            {
+                                if (workplace.Code == "NM")
+                                {
+                                    workplace.Fingerprint = code.ToString("000");
+                                }
+                            }
+
+                            var filter = Builders<Employee>.Filter.Eq(m => m.Id, employee.Id);
+                            var update = Builders<Employee>.Update
+                                .Set(m=> m.Workplaces, workPlaces);
+                            dbContext.Employees.UpdateOne(filter, update);
+                        }
+                        else
+                        {
+                            // Insert log
+                            dbContext.Misss.InsertOne(new Miss
+                            {
+                                Type = "fingercode",
+                                Object = fullName,
+                                Error = "No get data",
+                                DateTime = DateTime.Now.ToString()
+                            });
+                        }
+                    }
                 }
             }
             return Json(new { url = "/hr/nhan-su" });
@@ -2778,6 +2899,8 @@ namespace erp.Controllers
                                     }
                                     dbContext.SalaryThangBangLuongs.InsertOne(new SalaryThangBangLuong()
                                     {
+                                        Month = 8,
+                                        Year = 2018,
                                         ViTri = vitri,
                                         Bac = lv,
                                         HeSo = hesobac,
@@ -2850,7 +2973,7 @@ namespace erp.Controllers
 
                     #region Sheet 0: Luong Nhan Vien
                     // Cap nhat thang bang luong cho nhan vien
-                    dbContext.SalaryThangBacLuongEmployees.DeleteMany(m => m.FlagReal.Equals(true));
+                    // dbContext.SalaryThangBacLuongEmployees.DeleteMany(m => m.FlagReal.Equals(true));
                     // Cap nhat phuc lơi cho nhan vien
                     dbContext.SalaryThangBangPhuCapPhucLois.DeleteMany(m => m.FlagReal.Equals(true));
                     // Du lieu lương tháng 8
@@ -3079,15 +3202,15 @@ namespace erp.Controllers
                             // First Time
                             // Quan ly theo thoi diem,...
                             #region SalaryThangBacLuongEmployee
-                            dbContext.SalaryThangBacLuongEmployees.InsertOne(new SalaryThangBacLuongEmployee()
-                            {
-                                Year = year,
-                                Month = month,
-                                EmployeeId = employeeId,
-                                ViTriCode = chucVuCode,
-                                Bac = bac,
-                                MucLuong = (decimal)luongCB
-                            });
+                            //dbContext.SalaryThangBacLuongEmployees.InsertOne(new SalaryThangBacLuongEmployee()
+                            //{
+                            //    Year = year,
+                            //    Month = month,
+                            //    EmployeeId = employeeId,
+                            //    ViTriCode = chucVuCode,
+                            //    Bac = bac,
+                            //    MucLuong = (decimal)luongCB
+                            //});
                             #endregion
 
                             #region SalaryThangBangPhuCapPhucLoiEmployee

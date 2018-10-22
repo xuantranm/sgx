@@ -15,6 +15,9 @@ namespace Models
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
 
+        // Use store history
+        public string EmployeeId { get; set; }
+
         public string UserName { get; set; }
 
         public string Password { get; set; }
@@ -53,15 +56,32 @@ namespace Models
             }
         }
 
-        public int AgeBirthday
+        public int RemainingBirthDays
         {
             get
             {
                 DateTime today = DateTime.Today;
-                int age = today.Year - Birthday.Year;
-                if (today < Birthday.AddYears(age))
-                    age--;
-                return age+1;
+                DateTime next = Birthday.AddYears(today.Year - Birthday.Year);
+
+                if (next < today)
+                    next = next.AddYears(1);
+
+                int numDays = (next - today).Days;
+
+                return numDays;
+            }
+        }
+
+        public int AgeBirthday
+        {
+            get
+            {
+                if (RemainingBirthDays == 0)
+                {
+                    // Today is birthday
+                    return Age;
+                }
+                return Age + 1;
             }
         }
 
@@ -69,20 +89,12 @@ namespace Models
         {
             get
             {
+                if (RemainingBirthDays == 0)
+                {
+                    // Today is birthday
+                    return Birthday.AddYears(Age);
+                }
                 return Birthday.AddYears(Age + 1);
-            }
-        }
-
-        public int RemainingBirthDays
-        {
-            get
-            {
-                DateTime today = DateTime.Today;
-                DateTime nextBirthday = Birthday.AddYears(Age + 1);
-
-                TimeSpan difference = nextBirthday - DateTime.Today;
-
-                return Convert.ToInt32(difference.TotalDays);
             }
         }
 
@@ -103,6 +115,68 @@ namespace Models
                 return culture.Calendar.GetWeekOfYear(NextBirthDays, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
             }
         }
+        //public int Age
+        //{
+        //    get
+        //    {
+        //        DateTime today = DateTime.Today;
+        //        int age = today.Year - Birthday.Year;
+        //        if (today < Birthday.AddYears(age))
+        //            age--;
+        //        return age;
+        //    }
+        //}
+
+        //public int AgeBirthday
+        //{
+        //    get
+        //    {
+        //        DateTime today = DateTime.Today;
+        //        int age = today.Year - Birthday.Year;
+        //        if (today < Birthday.AddYears(age))
+        //            age--;
+        //        return age+1;
+        //    }
+        //}
+
+        //public DateTime NextBirthDays
+        //{
+        //    get
+        //    {
+        //        return Birthday.AddYears(Age + 1);
+        //    }
+        //}
+
+        //public int RemainingBirthDays
+        //{
+        //    get
+        //    {
+        //        DateTime today = DateTime.Today;
+        //        DateTime nextBirthday = Birthday.AddYears(Age + 1);
+
+        //        TimeSpan difference = nextBirthday - DateTime.Today;
+
+        //        return Convert.ToInt32(difference.TotalDays);
+        //    }
+        //}
+
+        //public string BirthdayOfWeek
+        //{
+        //    get
+        //    {
+        //        var culture = new CultureInfo("vi");
+        //        return culture.DateTimeFormat.GetDayName(NextBirthDays.DayOfWeek);
+        //    }
+        //}
+
+        //public int WeekBirthdayNumber
+        //{
+        //    get
+        //    {
+        //        var culture = new CultureInfo("vi");
+        //        return culture.Calendar.GetWeekOfYear(NextBirthDays, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
+        //    }
+        //}
 
         public string Bornplace { get; set; }
 

@@ -8,7 +8,7 @@
     //    formSubmit();
     //});
 
-    $('ddl-times').on('change', function (e) {
+    $('.ddl-times').on('change', function (e) {
         formSubmit();
     });
 

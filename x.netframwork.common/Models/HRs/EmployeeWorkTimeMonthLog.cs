@@ -39,6 +39,7 @@ namespace Models
 
         public double CongLeTet { get; set; } = 0;
 
+        // store miliseconds
         public double Late { get; set; }
 
         public double Early { get; set; }
@@ -47,29 +48,36 @@ namespace Models
 
         public double EarlyApprove { get; set; }
 
+        // Số phút cho phép thiếu trong tháng
+        public double MissingMinuteAllow { get; set; } = 0;
+
+        public double MissingMinuteAllowUsed { get; set; } = 0;
+
+        public int MissingMinuteAllowUsedCount { get; set; } = 0;
+
         // số lần cho phép trể trong tháng
-        public int LateCountAllow { get; set; }
+        public int LateCountAllow { get; set; } = 0;
 
         // số phút cho phép trể 1 lần
-        public int LateMinuteAllow { get; set; }
+        public double LateMinuteAllow { get; set; } = 0;
 
         // số lần dùng cho phép trể trong tháng
-        public int LateCountAllowUsed { get; set; }
+        public int LateCountAllowUsed { get; set; } = 0;
 
         // Số lần đi trễ trong tháng
-        public int LateCount { get; set; }
+        public int LateCount { get; set; } = 0;
 
         // số lần cho phép về sớm trong tháng
-        public int EarlyCountAllow { get; set; }
+        public int EarlyCountAllow { get; set; } = 0;
 
         // số phút cho phép về sớm 1 lần
-        public int EarlyMinuteAllow { get; set; }
+        public double EarlyMinuteAllow { get; set; } = 0;
 
         // số lần dùng cho phép về sớm trong tháng
-        public int EarlyCountAllowUsed { get; set; }
+        public int EarlyCountAllowUsed { get; set; } = 0;
 
         // Số lần về sớm trong tháng
-        public int EarlyCount { get; set; }
+        public int EarlyCount { get; set; } = 0;
 
         public double Sunday { get; set; }
 

@@ -338,22 +338,12 @@ namespace erp.Controllers
 
         public void SendMailRegister(Employee entity, string pwd)
         {
+            var url = Constants.System.domain;
+            var subject = "Thông tin đăng nhập hệ thống.";
             var tos = new List<EmailAddress>
             {
                 new EmailAddress { Name = entity.FullName, Address = entity.Email }
             };
-
-            // Send an email with this link
-            //var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-            //var callbackUrl = Url.Action(nameof(ConfirmEmail), "Account", new { userId = user.Id, code = code }, protocol: HttpContext.Request.Scheme);
-            //Email from Email Template
-            var callbackUrl = "/";
-            string Message = "Đăng nhập TRIBAT - ERP <a href=\"" + callbackUrl + "\">here</a>";
-            // string body;
-
-            var webRoot = _env.WebRootPath; //get wwwroot Folder
-
-            //Get TemplateFile located at wwwroot/Templates/EmailTemplate/Register_EmailTemplate.html
             var pathToFile = _env.WebRootPath
                     + Path.DirectorySeparatorChar.ToString()
                     + "Templates"
@@ -361,38 +351,18 @@ namespace erp.Controllers
                     + "EmailTemplate"
                     + Path.DirectorySeparatorChar.ToString()
                     + "Confirm_Account_Registration.html";
-
-            var subject = "Thông tin đăng nhập hệ thống TRIBAT - ERP.";
-
             var builder = new BodyBuilder();
             using (StreamReader SourceReader = System.IO.File.OpenText(pathToFile))
             {
                 builder.HtmlBody = SourceReader.ReadToEnd();
             }
-            //{0} : Subject
-            //{1} : DateTime
-            //{2} : Email
-            //{3} : Username
-            //{4} : Password
-            //{5} : Message
-            //{6} : callbackURL
-            //{7} : domain url
-            //{8} : link forgot password => use login
-            //{9} : FullName
-            var url = Constants.System.domain;
-            var forgot = url + Constants.System.login;
             string messageBody = string.Format(builder.HtmlBody,
                 subject,
-                String.Format("{0:dddd, d MMMM yyyy}", DateTime.Now),
-                entity.Email,
+                entity.FullName,
+                url,
                 entity.UserName,
                 pwd,
-                Message,
-                callbackUrl,
-                url,
-                forgot,
-                entity.FullName
-                );
+                entity.Email);
 
             var emailMessage = new EmailMessage()
             {
@@ -400,12 +370,8 @@ namespace erp.Controllers
                 Subject = subject,
                 BodyContent = messageBody
             };
-            _emailSender.SendEmailAsync(emailMessage);
 
-            ViewData["Message"] = $"Please confirm your account by clicking this link: <a href='{callbackUrl}' class='btn btn-primary'>Confirmation Link</a>";
-            ViewData["MessageValue"] = "1";
-
-            _logger.LogInformation(3, "User created a new account with password.");
+            _emailSender.SendEmail(emailMessage);
         }
         #endregion
 

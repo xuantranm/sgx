@@ -193,6 +193,7 @@ namespace Data
             }
         }
 
+        // No use. Use direct to SalaryThangBangLuong base ViTriCode of employee vs heso
         // Thang Bac Luong của nhân viên
         public IMongoCollection<SalaryThangBacLuongEmployee> SalaryThangBacLuongEmployees
         {
@@ -533,6 +534,39 @@ namespace Data
         #endregion
 
         #region SYSTEM
+        public IMongoCollection<ScheduleEmail> ScheduleEmails
+        {
+            get
+            {
+                return _database.GetCollection<ScheduleEmail>("ScheduleEmails");
+            }
+        }
+
+        public IMongoCollection<SystemReport> SystemReports
+        {
+            get
+            {
+                return _database.GetCollection<SystemReport>("SystemReports");
+            }
+        }
+        
+        public IMongoCollection<Error> Errors
+        {
+            get
+            {
+                return _database.GetCollection<Error>("Errors");
+            }
+        }
+
+        // Use tracking error data,...
+        public IMongoCollection<Miss> Misss
+        {
+            get
+            {
+                return _database.GetCollection<Miss>("Misss");
+            }
+        }
+
         public IMongoCollection<LogSystem> LogSystems
         {
             get

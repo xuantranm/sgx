@@ -124,6 +124,13 @@
                                             <span class="h6 mb-0">Nội dung</span>
                                             <p class="text-small text-muted">Multi languages display control</p>
                                         </a>
+
+                                        <div class="dropdown-divider"></div>
+                                        <a class="dropdown-item" href="/@Constants.LinkSystem.Main/@Constants.LinkSystem.Mail/">
+                                            <span class="h6 mb-0">Quản lý mail</span>
+                                            <p class="text-small text-muted">Tình trạng gửi mail</p>
+                                        </a>
+
                                     </div>
                                 </li>
                             }
@@ -378,13 +385,13 @@
                                     </div>
                                 </a>
                                 @*<a class="list-group-item d-flex justify-content-between d-none" href="/@Constants.LinkNotication.Main/@Constants.LinkNotication.Index">
-                                    <div>
-                                        <span>Thông báo</span>
-                                    </div>
-                                    <div>
-                                        <i class="icon-chevron-right"></i>
-                                    </div>
-                                </a>*@
+                                        <div>
+                                            <span>Thông báo</span>
+                                        </div>
+                                        <div>
+                                            <i class="icon-chevron-right"></i>
+                                        </div>
+                                    </a>*@
 
                                 @if (rightNhaMay)
                                 {
@@ -630,6 +637,7 @@
     <script type="text/javascript" src="~/lib/datetimepicker-tempusdominus/js/tempusdominus-bootstrap-4.min.js"></script>
     <script type="text/javascript" src="~/lib/js-render/jsrender.min.js"></script>
     <script type="text/javascript" src="~/lib/select2/select2.min.js"></script>
+    <script type="text/javascript" src="~/lib/jquery.floatThead/dist/jquery.floatThead.min.js"></script>
     <script type="text/javascript" src="~/js/site.js?@DateTime.Now.Ticks"></script>
 
     @RenderSection("scripts", required: false)

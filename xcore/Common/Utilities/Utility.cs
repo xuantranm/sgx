@@ -162,6 +162,18 @@ namespace Common.Utilities
             return last + output + Constants.MailExtension;
         }
 
+        public static bool IsValidEmail(string email)
+        {
+            try
+            {
+                var addr = new System.Net.Mail.MailAddress(email);
+                return addr.Address == email;
+            }
+            catch
+            {
+                return false;
+            }
+        }
         public static string ReadTextFile(string filePath)
         {
             try
@@ -448,7 +460,7 @@ namespace Common.Utilities
             }
             else
             {
-                for (DateTime d = start; d <= end.Date; d = d.AddDays(1))
+                for (DateTime d = start; d <= end; d = d.AddDays(1))
                 {
                     if (d.Date.CompareTo(start.Date) == 0)
                     {

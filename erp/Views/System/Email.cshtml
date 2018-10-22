@@ -1,0 +1,136 @@
+﻿@using System.Globalization;
+@using Common.Utilities;
+@using ViewModels
+@model MailViewModel
+
+@{
+    Layout = "~/Views/Shared/_LayoutSocialFb.cshtml";
+}
+
+@Html.ValidationSummary()
+
+<form method="get" action="/@Constants.LinkSystem.Main/@Constants.LinkSystem.Mail">
+    <div class="form-row mb-3">
+        <div class="col-md-4 col-xs-12">
+            <label class="control-label">Tình trạng</label>
+            <select asp-for="status" class="form-control">
+                <option value="2">Lỗi</option>
+                <option value="1">Thành công</option>
+            </select>
+        </div>
+        <div class="col-md-4 col-xs-12">
+            <label class="control-label">Mã</label>
+            <input asp-for="id" class="form-control" />
+        </div>
+        <div class="col-md-4 col-xs-12">
+            <label class="control-label">Email</label>
+            <input asp-for="toemail" class="form-control" />
+        </div>
+    </div>
+    <div class="form-row mb-3">
+        <div class="col-md-2">
+            <label class="control-label">Dòng</label>
+            <select asp-for="size" class="form-control">
+                <option value="100">100</option>
+                <option value="200">200</option>
+                <option value="500">500</option>
+                <option value="1000">1000</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="control-label">Trang</label>
+            <select asp-for="page" class="form-control">
+                @{
+                    var pages = Model.Pages;
+                    for (var i = 1; i <= pages; i++)
+                    {
+                        <option value="@i">@i</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="col-md-8">
+            <label class="control-label"><small>Bấm nút hoặc Enter</small></label>
+            <button class="btn btn-primary form-control" type="submit"><i class="icon-magnifying-glass"></i> Tìm kiếm</button>
+        </div>
+    </div>
+</form>
+<small><span class="badge badge-info">@Model.Records</span> được tìm thấy.</small>
+
+@if (Model.ScheduleEmails.Count > 0)
+{
+    <form method="post" action="/@Constants.LinkSystem.Main/@Constants.LinkSystem.Mail/@Constants.LinkSystem.Resend" class="data-form">
+        <div class="row mb-3">
+            <div class="col">
+                <button type="submit" class="btn btn-lg btn-block btn-danger btn-submit">GỬI LẠI</button>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12 table-responsive-sm">
+                <table class="table table-responsive-sm table-bordered table-striped table-hover floating-header">
+                    <thead>
+                        <tr>
+                            <th>
+                                <input type="checkbox" class="checkbox-all" /> Tất cả
+                            </th>
+                            <th>Mã</th>
+                            <th>Ngày</th>
+                            <th>Loại</th>
+                            <th>Tiêu đề</th>
+                            <th>Người nhận</th>
+                            <th>Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            int i = 0;
+                            foreach (var item in Model.ScheduleEmails)
+                            {
+                                <tr>
+                                    <td>
+                                        <input type="checkbox" class="checkbox-item" />
+                                        <input type="hidden" value="@item.Id" name="ScheduleEmails[@i].Id" />
+                                        <input type="hidden" value="@item.Status" name="ScheduleEmails[@i].Status" class="status-item" />
+                                    </td>
+                                    <td><code>@item.Id</code></td>
+                                    <td>@item.UpdatedOn</td>
+                                    <td>@item.Type</td>
+                                    <td>@item.Title</td>
+                                    <td>
+                                        @foreach (var toItem in item.To)
+                                        {
+                                            <small>Tên <b>@toItem.Name</b> - Email: <b>@toItem.Address</b></small>
+                                        }
+                                    </td>
+                                    <td>
+                                        @{
+                                            var result = "Gửi thành công";
+                                            if (item.Status == 2)
+                                            {
+                                                result = "Lỗi: " + item.Error;
+                                            }
+                                            <span>@result</span>
+                                        }
+                                    </td>
+                                </tr>
+                                i++;
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </form>
+
+}
+else
+{
+    <div class="alert alert-light" role="alert">
+        Không thấy dữ liệu...
+    </div>
+}
+
+@section scripts {
+    <script type="text/javascript" src="~/js/system-mail.js?@DateTime.Now.Ticks"></script>
+}
+

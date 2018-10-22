@@ -1,10 +1,17 @@
 ﻿$(function () {
+    var $table = $('table.floating-header');
+    $table.floatThead();
+
     $('.left-menu').addClass('d-none');
 
     $('.js-select2-basic-single').select2(
         {
             theme: "bootstrap"
         });
+
+    $('#thang').on('change', function (e) {
+        formSubmit();
+    });
 
     registerAutoNumeric();
 
@@ -13,11 +20,11 @@
         var $this = $(this);
         var frmValues = $this.serialize();
 
-        // loading button
-        $('.btnSubmitThangBangLuongLaw').prop('disabled', true);
+        $('.btn-submit').prop('disabled', true);
+        $('.btn-back').prop('disabled', true);
         $('input', $('.data-form')).prop('disabled', true);
         var loadingText = '<i class="fas fa-spinner"></i> đang xử lý...';
-        $('.btnSubmitThangBangLuongLaw').html(loadingText);
+        $('.btn-submit').html(loadingText);
 
         $.ajax({
             type: $this.attr('method'),
@@ -33,11 +40,10 @@
                 }
                 else {
                     toastr.error(data.message);
-                    $('.btnSubmitThangBangLuongLaw').prop('disabled', false);
+                    $('.btn-submit').prop('disabled', false);
+                    $('.btn-back').prop('disabled', false);
                     $('input', $('.data-form')).prop('disabled', false);
-                    //$('select', $('.data-form')).prop('disabled', false);
-                    //$('textarea', $('.data-form')).prop('disabled', false);
-                    $('.btnSubmitThangBangLuongLaw').html($('.btnSubmitThangBangLuongLaw').data('original-text'));
+                    $('.btn-submit').html($('.btn-submit').data('original-text'));
                 }
             })
             .fail(function () {
@@ -100,6 +106,7 @@ function calculatorThangLuong(id, heso, money) {
         type: 'get',
         url: $('#hidCalculatorThangBangLuongReal').val(),
         data: {
+            thang: $('#thang').val(),
             id: id,
             heso: heso,
             money: money

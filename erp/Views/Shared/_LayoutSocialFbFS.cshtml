@@ -124,6 +124,11 @@
                                             <span class="h6 mb-0">Nội dung</span>
                                             <p class="text-small text-muted">Multi languages display control</p>
                                         </a>
+                                        <div class="dropdown-divider"></div>
+                                        <a class="dropdown-item" href="/@Constants.LinkSystem.Main/@Constants.LinkSystem.Mail/">
+                                            <span class="h6 mb-0">Quản lý mail</span>
+                                            <p class="text-small text-muted">Tình trạng gửi mail</p>
+                                        </a>
                                     </div>
                                 </li>
                             }
@@ -263,8 +268,8 @@
                                 <div class="d-none">
                                     @*<button class="btn btn-outline-primary"><i class="icon-add-user"></i> Theo dõi</button>*@
                                     @*<button class="btn btn-outline-primary">
-                                            <i class="icon-mail"></i>
-                                        </button>*@
+                                        <i class="icon-mail"></i>
+                                    </button>*@
                                 </div>
                             </div>
                         </div>
@@ -285,9 +290,9 @@
                                 </div>
                                 <div class="d-none">
                                     @*<button class="btn btn-outline-primary"><i class="icon-add-user"></i> Theo dõi</button>
-                                        <button class="btn btn-outline-primary">
-                                                <i class="icon-mail"></i>
-                                            </button>*@
+                                    <button class="btn btn-outline-primary">
+                                            <i class="icon-mail"></i>
+                                        </button>*@
                                 </div>
                             </div>
                         </script>
@@ -485,24 +490,14 @@
                         <!-- end card -->
                     </div>
                     <!--end of col-->
-                    <div class="col-12 col-md-8">
-                        @*<div class="alert alert-info text-small mb-0" role="alert">
-                                <i class="icon-shield"></i>
-                                <span>
-                                    We will never distribute your email address to third parties. Read about email communication in our privacy policy.
-                                </span>
-                                <a href="/nhan-su/thong-tin">Xem thêm ›</a>
-                            </div>*@
 
-                        @RenderBody()
-
-                    </div>
-                    <!--end of col-->
                 </div>
                 <!--end of row-->
             </div>
             <!--end of container-->
         </section>
+
+        @RenderBody()
 
         <footer class="footer-short">
             <div class="container">
@@ -622,7 +617,8 @@
     <script type="text/javascript" src="~/lib/datetimepicker-tempusdominus/js/tempusdominus-bootstrap-4.min.js"></script>
     <script type="text/javascript" src="~/lib/js-render/jsrender.min.js"></script>
     <script type="text/javascript" src="~/lib/select2/select2.min.js"></script>
-    <script type="text/javascript" src="~/js/site.js"></script>
+    <script type="text/javascript" src="~/lib/jquery.floatThead/dist/jquery.floatThead.min.js"></script>
+    <script type="text/javascript" src="~/js/site.js?@DateTime.Now.Ticks"></script>
 
     @RenderSection("scripts", required: false)
 

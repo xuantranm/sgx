@@ -165,3 +165,5 @@ C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\Doc\Leave.
 C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\Doc\Timer.g.cshtml.cs
 C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\File\NgayPhep.g.cshtml.cs
 C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\TimeKeeper\HelpTime.g.cshtml.cs
+C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\File\MaChamCong.g.cshtml.cs
+C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\System\Email.g.cshtml.cs

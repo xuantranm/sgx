@@ -53,24 +53,24 @@
         <div class="tab-content">
             <!-- LAW -->
             <div class="tab-pane fade show active" id="law" role="tabpanel" aria-labelledby="law-tab">
-                <div class="row mb-3">
-                    <div class="col-12">
-                        <a class="btn btn-success btn-edit" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.ThangBangLuongLaw/@Constants.LinkSalary.Update" data-toggle="tooltip" title="Bấm thay đổi thang bảng lương.">
-                            <i class="icon icon-edit"></i>Chỉnh sửa
-                        </a>
-                        <a class="btn btn-info d-none" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.ThangBangLuongLaw/@Constants.LinkSalary.Export" data-toggle="tooltip" title="Xuất ra tài liệu file excel.">
-                            <i class="fas fa-download"></i> Xuất excel
-                        </a>
-                    </div>
-                </div>
-
-                <div class="mode-read">
+                <div class="container">
                     <div class="row mb-3">
                         <div class="col-12">
-                            <b>I/ MỨC LƯƠNG TỐI THIỂU VÙNG:</b> <b>@String.Format("{0:#,###,###}", Math.Round((double)Model.SalaryMucLuongVung.ToiThieuVungQuiDinh / 1000d, 0) * 1000)</b> đồng/tháng
+                            <a class="btn btn-success btn-edit" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.ThangBangLuongLaw/@Constants.LinkSalary.Update" data-toggle="tooltip" title="Bấm thay đổi thang bảng lương.">
+                                <i class="icon icon-edit"></i>Chỉnh sửa
+                            </a>
+                            <a class="btn btn-info d-none" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.ThangBangLuongLaw/@Constants.LinkSalary.Export" data-toggle="tooltip" title="Xuất ra tài liệu file excel.">
+                                <i class="fas fa-download"></i> Xuất excel
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <b>I/ MỨC LƯƠNG TỐI THIỂU VÙNG:</b> <b>@String.Format("{0:#,###,###}", Math.Round((double)Model.SalaryMucLuongVung.ToiThieuVungQuiDinh / 1000d, 0))</b> đồng/tháng
                         </div>
                         <div class="col-12">
-                            Mức lương tối thiểu mà doanh nghiệp đang áp dụng: <b>@String.Format("{0:#,###,###}", Math.Round((double)Model.SalaryMucLuongVung.ToiThieuVungDoanhNghiepApDung / 1000d, 0) * 1000)</b> đồng/tháng
+                            Mức lương tối thiểu mà doanh nghiệp đang áp dụng: <b>@String.Format("{0:#,###,###}", Math.Round((double)Model.SalaryMucLuongVung.ToiThieuVungDoanhNghiepApDung / 1000d, 0))</b> đồng/tháng
                         </div>
                     </div>
                     <div class="row">
@@ -99,7 +99,7 @@
                                     <b>@i-@typeLevel.TypeRoleName</b>
                                 </div>
                                 <div class="col-12 table-responsive-sm">
-                                    <table class="table table-responsive-sm table-bordered">
+                                    <table class="table table-responsive-sm table-bordered floating-header">
                                         @{
                                             var groupBacLuong = (from s in typeLevel.Levels
                                                                  group s by new
@@ -118,24 +118,27 @@
 
                                             var levelMax = groupBacLuong.OrderByDescending(m => m.CountSalaries).First().CountSalaries;
                                         }
-                                        <tr style="background-color:yellow!important">
-                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>CHỨC DANH CÔNG VIỆC</th>
-                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>MÃ SỐ</th>
-                                            <td colspan="@levelMax" style="text-align:center;font-weight:bold">BẬC/ HỆ SỐ/ MỨC LƯƠNG</td>
-                                        </tr>
-                                        <tr style="background-color:yellow!important">
-                                            @for (var ilevel = 0; ilevel < levelMax; ilevel++)
-                                            {
-                                                if (ilevel == 0)
+                                        <thead>
+                                            <tr style="background-color:yellow!important">
+                                                <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>CHỨC DANH CÔNG VIỆC</th>
+                                                <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>MÃ SỐ</th>
+                                                <td colspan="@levelMax" style="text-align:center;font-weight:bold">BẬC/ HỆ SỐ/ MỨC LƯƠNG</td>
+                                            </tr>
+                                            <tr style="background-color:yellow!important">
+                                                @for (var ilevel = 0; ilevel < levelMax; ilevel++)
                                                 {
-                                                    <td style="text-align:center;">Định mức</td>
+                                                    if (ilevel == 0)
+                                                    {
+                                                        <td style="text-align:center;">Định mức</td>
+                                                    }
+                                                    else
+                                                    {
+                                                        <td style="text-align:center; color:red">@ilevel</td>
+                                                    }
                                                 }
-                                                else
-                                                {
-                                                    <td style="text-align:center; color:red">@ilevel</td>
-                                                }
-                                            }
-                                        </tr>
+                                            </tr>
+                                        </thead>
+
                                         <tbody>
                                             @{
                                                 int iName = 1;
@@ -195,7 +198,7 @@
                                                             foreach (var heso in bacLuong.Salaries)
                                                             {
                                                                 <td style="background-color:white">
-                                                                    @string.Format("{0:n0}", Math.Round((double)heso.MucLuong / 1000d, 0) * 1000)
+                                                                    @string.Format("{0:n0}", Math.Round((double)heso.MucLuong / 1000d, 0))
                                                                 </td>
                                                             }
                                                             if (miss > 0)
@@ -232,7 +235,7 @@
                     </div>
                     <div class="row">
                         <div class="col-12 table-responsive-sm">
-                            <table class="table table-responsive-sm table-bordered table-striped table-hover">
+                            <table class="table table-responsive-sm table-bordered table-striped table-hover floating-header">
                                 <tr>
                                     <th rowspan="2"></th>
                                     <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>Phụ cấp trách nhiệm</th>

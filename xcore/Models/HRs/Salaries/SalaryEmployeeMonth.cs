@@ -51,6 +51,7 @@ namespace Models
 
         public int Bac { get; set; }
 
+        [BsonRepresentation(BsonType.Decimal128)]
         public decimal LuongCanBan { get; set; } = 0;
 
         #region Phu Cap
@@ -190,7 +191,8 @@ namespace Models
         // muc luong theo luat VN, false theo cong ty
         public bool Law { get; set; } = true;
 
-        // Thuc te - true;
+        // No use, Law base LuongThamGiaBHXH
+        // Thuc te - true; 
         public bool FlagReal { get; set; } = true;
 
         public bool Enable { get; set; } = true;

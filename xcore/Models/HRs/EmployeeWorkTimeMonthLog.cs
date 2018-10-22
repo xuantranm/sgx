@@ -47,6 +47,13 @@ namespace Models
 
         public double EarlyApprove { get; set; }
 
+        // Số phút cho phép thiếu trong tháng
+        public double MissingMinuteAllow { get; set; } = 0;
+
+        public double MissingMinuteAllowUsed { get; set; } = 0;
+
+        public int MissingMinuteAllowUsedCount { get; set; } = 0;
+
         // số lần cho phép trể trong tháng
         public int LateCountAllow { get; set; }
 

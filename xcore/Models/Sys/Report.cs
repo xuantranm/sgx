@@ -20,6 +20,8 @@ namespace Models
         // updating rules
         public string Times { get; set; }
 
-        public DateTime DateTime { get; set; } = DateTime.Now;
+        public string CreatedOn { get; set; } = DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss.fff");
+
+        public string UpdatedOn { get; set; } = DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss.fff");
     }
 }

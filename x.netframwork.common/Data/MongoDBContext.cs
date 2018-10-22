@@ -155,6 +155,14 @@ namespace Data
                 return _database.GetCollection<Setting>("Settings");
             }
         }
+
+        public IMongoCollection<ScheduleEmail> ScheduleEmails
+        {
+            get
+            {
+                return _database.GetCollection<ScheduleEmail>("ScheduleEmails");
+            }
+        }
         #endregion
     }
 }

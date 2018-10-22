@@ -10,17 +10,17 @@ namespace Services
     // For more details see https://go.microsoft.com/fwlink/?LinkID=532713
     public class EmailSender : IEmailSender
     {
+        public void SendEmail(EmailMessage emailMessage)
+        {
+            throw new NotImplementedException();
+        }
+
         public System.Threading.Tasks.Task SendEmailAsync(string email, string subject, string message)
         {
             return System.Threading.Tasks.Task.CompletedTask;
         }
 
         public System.Threading.Tasks.Task SendEmailAsync(EmailMessage emailMessage)
-        {
-            throw new NotImplementedException();
-        }
-
-        public System.Threading.Tasks.Task SendEmailWelcomeAsync(EmailMessage emailMessage)
         {
             throw new NotImplementedException();
         }

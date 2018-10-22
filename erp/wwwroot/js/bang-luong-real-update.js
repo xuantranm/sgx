@@ -1,4 +1,14 @@
 ﻿$(function () {
+    var $table = $('table.floating-header');
+    $table.floatThead();
+
+    $('.serial').keypress(function (e) {
+        if (e.which === 13) {
+            $(this).closest('tr').next().find('input.serial').focus();
+            e.preventDefault();
+        }
+    });
+
     $('.left-menu').addClass('d-none');
 
     $('.js-select2-basic-single').select2(
@@ -12,7 +22,7 @@
         event.preventDefault();
         var $this = $(this);
         var frmValues = $this.serialize();
-
+        console.log(frmValues);
         // loading button
         $('.btnSubmitThangBangLuongLaw').prop('disabled', true);
         $('input', $('.data-form')).prop('disabled', true);
@@ -25,6 +35,7 @@
             data: frmValues
         })
             .done(function (data) {
+                console.log(data);
                 if (data.result === true) {
                     toastr.success(data.message);
                     setTimeout(function () {
@@ -60,47 +71,24 @@
     }
     
     function calculatorLuong(code) {
-        var luongcb = 0;
-        var dochai = Math.round($('.dochai-' + code).val().replace(/\D(\d{2})$/, '.$1').replace(/[^\d.]+/g, ""));
-        var trachnhiem = Math.round($('.trachnhiem-' + code).val().replace(/\D(\d{2})$/, '.$1').replace(/[^\d.]+/g, ""));
-        var thamnien = 0;
-        var thuhut = Math.round($('.thuhut-' + code).val().replace(/\D(\d{2})$/, '.$1').replace(/[^\d.]+/g, ""));
-        var xang = Math.round($('.xang-' + code).val().replace(/\D(\d{2})$/, '.$1').replace(/[^\d.]+/g, ""));
-        var dienthoai = Math.round($('.dienthoai-' + code).val().replace(/\D(\d{2})$/, '.$1').replace(/[^\d.]+/g, ""));
-        var com = Math.round($('.com-' + code).val().replace(/\D(\d{2})$/, '.$1').replace(/[^\d.]+/g, ""));
-        var kiemnhiem = Math.round($('.kiemnhiem-' + code).val().replace(/\D(\d{2})$/, '.$1').replace(/[^\d.]+/g, ""));
-        var bhytdacbiet = Math.round($('.bhytdacbiet-' + code).val().replace(/\D(\d{2})$/, '.$1').replace(/[^\d.]+/g, ""));
-        var vitricanknnhieunam = Math.round($('.vitricanknnhieunam-' + code).val().replace(/\D(\d{2})$/, '.$1').replace(/[^\d.]+/g, ""));
-        var vitridacthu = Math.round($('.vitridacthu-' + code).val().replace(/\D(\d{2})$/, '.$1').replace(/[^\d.]+/g, ""));
-        var luongcbbaogomphucap = luongcb + dochai + trachnhiem + thamnien + thuhut + xang + dienthoai + com + kiemnhiem + bhytdacbiet + vitricanknnhieunam + vitridacthu;
-        //console.log(input);
-        $('.luongcbbaogomphucap-' + code).html(accounting.formatNumber(luongcbbaogomphucap));
-        // ajax get
+        var dataInput = $('.tr-' + code + ' :input').serialize().replace(new RegExp('%5B' + code + '%5D', 'g'), '%5B0%5D');
+        console.log(dataInput);
         $.ajax({
             type: "post",
-            url: $('#hidCalculatorTongThuNhap').val(),
-            data: {
-                id: $('.tr-'+code).data('id'),
-                to: toPost,
-                scheduleWorkingTime: $('#Leave_WorkingScheduleTime').val(),
-                type: $('#Leave_TypeId').val()
-            },
+            url: $('#hidCalculatorLuong').val(),
+            data: dataInput,
             success: function (data) {
                 console.log(data);
-                if (data.result === true) {
-                    $('.leave-duration').text(data.date);
-                }
-                else {
-                    $('.leave-duration').text(data.message);
-                }
+                $('.luong-co-ban-' + code).html(accounting.formatNumber(data.entity.luongCanBan / 1000));
+                $('.tham-nien-' + code).html(accounting.formatNumber(data.entity.thamNien / 1000));
+                $('.luongcbbaogomphucap-' + code).html(accounting.formatNumber(data.entity.luongCoBanBaoGomPhuCap / 1000));
+                $('.tongthunhap-' + code).html(accounting.formatNumber(data.entity.tongThuNhap / 1000));
+                $('.tongthunhapphut-' + code).html(accounting.formatNumber(data.entity.tongThuNhapMinute / 1000));
+                $('.bHXHBHYT-' + code).html(accounting.formatNumber(data.entity.BHXHBHYT / 1000));
+                $('.thuclanh-' + code).html(accounting.formatNumber(data.entity.thucLanh / 1000));
+                $('.thuclanhphut-' + code).html(accounting.formatNumber(data.entity.thucLanhMinute / 1000));
             }
         });
-
-        var tongthunhap = luongcbbaogomphucap + 0;
-        $('.tongthunhap-' + code).html(accounting.formatNumber(tongthunhap));
-        // ajax get
-        var thuclanh = tongthunhap;
-        $('.thuclanh-' + code).html(accounting.formatNumber(thuclanh));
     }
 });
 

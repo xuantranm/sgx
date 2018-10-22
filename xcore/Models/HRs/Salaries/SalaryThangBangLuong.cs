@@ -22,6 +22,10 @@ namespace Models
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
 
+        public int Year { get; set; }
+
+        public int Month { get; set; }
+
         // Theo qui mô công ty.
         // Thang bang luong cong ty.
         // Theo từng vị trí trong công ty.

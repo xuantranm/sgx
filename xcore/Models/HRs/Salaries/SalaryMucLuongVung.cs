@@ -16,6 +16,10 @@ namespace Models
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
 
+        public int Year { get; set; }
+
+        public int Month { get; set; }
+
         [Display(Name = "Mức lương tối thiểu vùng")]
         [BsonRepresentation(BsonType.Decimal128)]
         public decimal ToiThieuVungQuiDinh { get; set; }

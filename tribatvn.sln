@@ -11,6 +11,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "erp", "erp\erp.csproj", "{0
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimeKeeperBusiness", "TimeKeeperBusiness\TimeKeeperBusiness.csproj", "{966B7A9D-F626-4E5C-9F33-65D2ED7179C6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "x.day", "x.day\x.day.csproj", "{CF2E631C-5404-455E-ADA8-225B0126FE5D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "x.netframwork.common", "x.netframwork.common\x.netframwork.common.csproj", "{C861FF74-E160-405D-99CB-E38F079BFE14}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +37,14 @@ Global
 		{966B7A9D-F626-4E5C-9F33-65D2ED7179C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{966B7A9D-F626-4E5C-9F33-65D2ED7179C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{966B7A9D-F626-4E5C-9F33-65D2ED7179C6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CF2E631C-5404-455E-ADA8-225B0126FE5D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CF2E631C-5404-455E-ADA8-225B0126FE5D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CF2E631C-5404-455E-ADA8-225B0126FE5D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CF2E631C-5404-455E-ADA8-225B0126FE5D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C861FF74-E160-405D-99CB-E38F079BFE14}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C861FF74-E160-405D-99CB-E38F079BFE14}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C861FF74-E160-405D-99CB-E38F079BFE14}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C861FF74-E160-405D-99CB-E38F079BFE14}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -523,6 +523,8 @@
     <None Include="wwwroot\lib\jquery-validation\dist\jquery.validate.js" />
     <None Include="wwwroot\lib\jquery-validation\dist\jquery.validate.min.js" />
     <None Include="wwwroot\lib\jquery-validation\LICENSE.md" />
+    <None Include="wwwroot\lib\jquery.floatThead\dist\jquery.floatThead.js" />
+    <None Include="wwwroot\lib\jquery.floatThead\dist\jquery.floatThead.min.js" />
     <None Include="wwwroot\lib\jquery3.2.1\dist\jquery-3.2.1.min.js" />
     <None Include="wwwroot\lib\jquery\dist\jquery.js" />
     <None Include="wwwroot\lib\jquery\dist\jquery.min.js" />
@@ -741,6 +743,9 @@
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
     <Content Update="Views\Factory\DinhMucXCG.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\File\MaChamCong.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
     <Content Update="Views\File\NgayPhep.cshtml">

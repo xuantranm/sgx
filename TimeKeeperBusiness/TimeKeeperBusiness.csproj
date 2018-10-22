@@ -70,37 +70,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Common\Enums\Enums.cs" />
-    <Compile Include="Common\Utilities\Constants.cs" />
-    <Compile Include="Common\Utilities\LoggingEvents.cs" />
-    <Compile Include="Common\Utilities\Utility.cs" />
-    <Compile Include="Data\MongoDBContext.cs" />
-    <Compile Include="Models\Email\EmailAddress.cs" />
-    <Compile Include="Models\Email\EmailMessage.cs" />
-    <Compile Include="Models\Extensions\Common.cs" />
-    <Compile Include="Models\Extensions\Extension.cs" />
-    <Compile Include="Models\Extensions\Tracking.cs" />
-    <Compile Include="Models\HRs\Employee.cs" />
-    <Compile Include="Models\HRs\EmployeeManager.cs" />
-    <Compile Include="Models\HRs\EmployeeWorkTime.cs" />
-    <Compile Include="Models\HRs\EmployeeWorkTimeMonthLog.cs" />
-    <Compile Include="Models\HRs\EmployeeWorkTimeLog.cs" />
-    <Compile Include="Models\HRs\Leave.cs" />
-    <Compile Include="Models\HRs\WorkTimeType.cs" />
-    <Compile Include="Models\Image.cs" />
-    <Compile Include="Models\Sys\Setting.cs" />
-    <Compile Include="Models\Sys\Text.cs" />
-    <Compile Include="Models\TimeKeeper\AttLog.cs" />
-    <Compile Include="Models\TimeKeeper\DeviceTimeInfo.cs" />
-    <Compile Include="Models\TimeKeeper\Group.cs" />
-    <Compile Include="Models\TimeKeeper\LogTimeKeeper.cs" />
-    <Compile Include="Models\TimeKeeper\TimeKeeper.cs" />
-    <Compile Include="Models\TimeKeeper\UserIDInfo.cs" />
-    <Compile Include="Models\TimeKeeper\UserInfo.cs" />
-    <Compile Include="Models\UserAgent\ClientBrowser.cs" />
-    <Compile Include="Models\UserAgent\ClientOS.cs" />
-    <Compile Include="Models\UserAgent\MatchExpression.cs" />
-    <Compile Include="Models\UserAgent\UserAgent.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -108,9 +77,11 @@
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
-    <Content Include="Templates\TimeKeeperNotice.html" />
+    <ProjectReference Include="..\x.netframwork.common\x.netframwork.common.csproj">
+      <Project>{c861ff74-e160-405d-99cb-e38f079bfe14}</Project>
+      <Name>x.netframwork.common</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -163,3 +163,9 @@ img {
     position: relative;
     z-index: 2;
 }
+.font-14 {
+    font-size: 14px;
+}
+.font-12{
+    font-size:12px;
+}

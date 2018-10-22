@@ -255,10 +255,10 @@
                                         Chi tiết chấm công:
                                         @{
                                             var detail = string.Empty;
-                                            var inTime = timeKeeper.In.HasValue ? timeKeeper.In.Value.ToString(@"hh\:mm") : string.Empty;
-                                            var outTime = timeKeeper.Out.HasValue ? timeKeeper.Out.Value.ToString(@"hh\:mm") : string.Empty;
-                                            var lateTime = timeKeeper.Late.TotalMilliseconds > 0 ? timeKeeper.Late.TotalMinutes.ToString() : string.Empty;
-                                            var earlyTime = timeKeeper.Early.TotalMilliseconds > 0 ? timeKeeper.Early.TotalMinutes.ToString() : string.Empty;
+                                            var inTime = timeKeeper.In.HasValue ? timeKeeper.In.Value.ToString(@"hh\:mm") : "trống";
+                                            var outTime = timeKeeper.Out.HasValue ? timeKeeper.Out.Value.ToString(@"hh\:mm") : "trống";
+                                            var lateTime = timeKeeper.Late.TotalMilliseconds > 0 ? Math.Round(timeKeeper.Late.TotalMinutes,0).ToString() : string.Empty;
+                                            var earlyTime = timeKeeper.Early.TotalMilliseconds > 0 ? Math.Round(timeKeeper.Early.TotalMinutes,0).ToString() : string.Empty;
                                             var sumTime = string.Empty;
                                             if (string.IsNullOrEmpty(inTime) && string.IsNullOrEmpty(outTime))
                                             {

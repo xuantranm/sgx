@@ -9,15 +9,19 @@
 
 <form method="get" action="/@Constants.LinkLeave.Main/@Constants.LinkLeave.HelpLeave" id="form-main">
     <div class="form-group">
-        <label asp-for="Leave.EmployeeId" class="control-label"></label>
+        <label class="control-label">Nhân viên</label>
         <select asp-for="Leave.EmployeeId" name="id" class="form-control form-control-lg js-select2-basic-single ddlEmployeeId">
-            <option value="">--Chọn--</option>
+            <option value="">Chọn</option>
             @foreach (var employee in Model.Employees)
             {
                 string displayTitle = string.Empty;
                 if (!string.IsNullOrEmpty(employee.Title))
                 {
                     displayTitle += "[" + employee.Title + "]";
+                }
+                if (!string.IsNullOrEmpty(employee.Email))
+                {
+                    displayTitle += "- " + employee.Email + "";
                 }
                 <option value="@employee.Id">@employee.FullName @displayTitle</option>
             }

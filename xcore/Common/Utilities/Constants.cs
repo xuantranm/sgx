@@ -149,7 +149,7 @@ namespace Common.Utilities
             public const string Index = "bang-luong";
 
             public const string BangLuongReal = "danh-sach-luong-nhan-vien-ap-dung";
-            public const string TongThuNhapCalculator = "tinh-toan-tong-thu-nhap";
+            public const string LuongCalculator = "tinh-toan-luong";
             public const string ThucLanhCalculator = "tinh-toan-thuc-lanh";
             public const string BangLuongLaw = "danh-sach-luong-nhan-vien";
 
@@ -250,6 +250,13 @@ namespace Common.Utilities
             public const string ApprovePost = "post-duyet-phep";
             // API
             public const string Approve = "duyet-phep";
+        }
+
+        public static class LinkSystem
+        {
+            public const string Main = "system";
+            public const string Mail = "mail";
+            public const string Resend = "gui-lai";
         }
 
         public static class Link
@@ -453,6 +460,8 @@ namespace Common.Utilities
                     return "Đã xác nhận";
                 case 4:
                     return "Không xác nhận";
+                case 5:
+                    return "Duyệt tự động";
                 default:
                     return string.Empty;
             }
