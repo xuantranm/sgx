@@ -21,6 +21,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "xbhxh", "xbhxh\xbhxh.csproj
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "xscheduleemail", "xscheduleemail\xscheduleemail.csproj", "{2CCDBA0D-8CA0-4BB5-A3C8-3B3413AB5F1F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "xleave", "xleave\xleave.csproj", "{6F465A57-43A9-4482-B846-E9347E6A8C35}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "xschedulemail5", "xschedulemail5\xschedulemail5.csproj", "{78695336-D0AB-4F88-A8C9-202AE63F3747}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -63,6 +67,14 @@ Global
 		{2CCDBA0D-8CA0-4BB5-A3C8-3B3413AB5F1F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2CCDBA0D-8CA0-4BB5-A3C8-3B3413AB5F1F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2CCDBA0D-8CA0-4BB5-A3C8-3B3413AB5F1F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6F465A57-43A9-4482-B846-E9347E6A8C35}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6F465A57-43A9-4482-B846-E9347E6A8C35}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6F465A57-43A9-4482-B846-E9347E6A8C35}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6F465A57-43A9-4482-B846-E9347E6A8C35}.Release|Any CPU.Build.0 = Release|Any CPU
+		{78695336-D0AB-4F88-A8C9-202AE63F3747}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{78695336-D0AB-4F88-A8C9-202AE63F3747}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{78695336-D0AB-4F88-A8C9-202AE63F3747}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{78695336-D0AB-4F88-A8C9-202AE63F3747}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -35,5 +35,9 @@ namespace Models
 
         [BsonRepresentation(BsonType.Decimal128)]
         public decimal NumberUsed { get; set; } = 0;
+
+        // Define probation. Probation no use leave phep-nam.
+        // UseFlag = false if probation
+        public bool UseFlag { get; set; } = true;
     }
 }

@@ -86,6 +86,7 @@
     <Compile Include="Models\HRs\EmployeeWorkTimeMonthLog.cs" />
     <Compile Include="Models\HRs\Leave.cs" />
     <Compile Include="Models\HRs\LeaveEmployee.cs" />
+    <Compile Include="Models\HRs\LeaveEmployeeHistory.cs" />
     <Compile Include="Models\HRs\LeaveType.cs" />
     <Compile Include="Models\HRs\WorkTimeType.cs" />
     <Compile Include="Models\Image.cs" />

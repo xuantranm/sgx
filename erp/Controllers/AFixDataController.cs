@@ -131,6 +131,47 @@ namespace erp.Controllers
             return View();
         }
 
+        [Route("/fix/title-order/")]
+        public async Task<IActionResult> UpdateTitleCode()
+        {
+            #region Authorization
+            var login = User.Identity.Name;
+            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+            ViewData["LoginUserName"] = loginUserName;
+
+            var userInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
+            if (userInformation == null)
+            {
+                #region snippet1
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                #endregion
+                return RedirectToAction("login", "account");
+            }
+            if (loginUserName != Constants.System.account)
+            {
+                return RedirectToAction("AccessDenied", "Account");
+            }
+            #endregion
+
+            var datas = dbContext.Titles.Find(m => m.Enable.Equals(true)).ToList();
+            var i = 1;
+            foreach (var data in datas)
+            {
+                var code = data.Code.Substring(2);
+                var newCode = Constants.System.viTriCodeTBLuong + Convert.ToInt32(code).ToString("000");
+                var filterUpdate = Builders<Title>.Filter.Eq(m => m.Id, data.Id);
+                var update = Builders<Title>.Update
+                    .Set(m => m.Code, newCode)
+                    .Set(m => m.Order, Convert.ToInt32(code))
+                    .Set(m => m.CreatedOn, DateTime.Now)
+                    .Set(m => m.UpdatedOn, DateTime.Now);
+                dbContext.Titles.UpdateOne(filterUpdate, update);
+                i++;
+            }
+
+            return Json(new { result = true, source = "update-employee-code", message = "Cập nhật mã nhân viên thành công" });
+        }
+
         [Route("/fix/phong-ban-bo-phan/update/")]
         [HttpPost]
         public ActionResult PhongBanBoPhanUpdate()

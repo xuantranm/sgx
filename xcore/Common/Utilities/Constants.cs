@@ -130,6 +130,10 @@ namespace Common.Utilities
             public const string NewProduct = "them-san-pham";
             public const string NewUnit = "them-dvt";
             public const string Birthday = "sinh-nhat";
+
+            public const string Title = "chuc-vu";
+            public const string Part = "bo-phan";
+            public const string Hospital = "benh-vien";
         }
 
         public static class LinkFactory

@@ -137,6 +137,22 @@ namespace Data
             }
         }
 
+        public IMongoCollection<LeaveEmployee> LeaveEmployees
+        {
+            get
+            {
+                return _database.GetCollection<LeaveEmployee>("LeaveEmployees");
+            }
+        }
+
+        public IMongoCollection<LeaveEmployeeHistory> LeaveEmployeeHistories
+        {
+            get
+            {
+                return _database.GetCollection<LeaveEmployeeHistory>("LeaveEmployeeHistories");
+            }
+        }
+
         public IMongoCollection<Employee> Employees
         {
             get

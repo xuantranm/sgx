@@ -220,17 +220,16 @@ namespace Services
 
             if (newToList != null && newToList.Count > 0)
             {
-                //message.To.AddRange(newToList.Select(x => new MailboxAddress(x.Name, x.Address)));
-                message.To.AddRange(newToList.Select(x => new MailboxAddress(x.Name, "xuan.tm@tribat.vn")));
+                message.To.AddRange(newToList.Select(x => new MailboxAddress(x.Name, x.Address)));
 
-                //if (emailMessage.CCAddresses != null && emailMessage.CCAddresses.Count > 0)
-                //{
-                //    message.Cc.AddRange(emailMessage.CCAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
-                //}
-                //if (emailMessage.BCCAddresses != null && emailMessage.BCCAddresses.Count > 0)
-                //{
-                //    message.Bcc.AddRange(emailMessage.BCCAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
-                //}
+                if (emailMessage.CCAddresses != null && emailMessage.CCAddresses.Count > 0)
+                {
+                    message.Cc.AddRange(emailMessage.CCAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
+                }
+                if (emailMessage.BCCAddresses != null && emailMessage.BCCAddresses.Count > 0)
+                {
+                    message.Bcc.AddRange(emailMessage.BCCAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
+                }
 
                 var isEmailSent = (int)EEmailStatus.Send;
                 var error = string.Empty;
@@ -270,7 +269,7 @@ namespace Services
                         .Set(m => m.Error, error)
                         .Inc(m => m.ErrorCount, 1)
                         .Set(m => m.UpdatedOn, DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss.fff"));
-                    //dbContext.ScheduleEmails.UpdateOne(filter, update);
+                    dbContext.ScheduleEmails.UpdateOne(filter, update);
                     #endregion
                     SendMailSupport(id);
                 }

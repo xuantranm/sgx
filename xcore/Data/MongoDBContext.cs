@@ -421,6 +421,14 @@ namespace Data
             }
         }
 
+        public IMongoCollection<LeaveEmployeeHistory> LeaveEmployeeHistories
+        {
+            get
+            {
+                return _database.GetCollection<LeaveEmployeeHistory>("LeaveEmployeeHistories");
+            }
+        }
+
         public IMongoCollection<LeaveType> LeaveTypes
         {
             get

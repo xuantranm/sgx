@@ -32,7 +32,8 @@ namespace Models
         // true: not chấm công.
         public bool IsTimeKeeper { get; set; } = false;
 
-        public string LeaveLevelYear { get; set; }
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal LeaveLevelYear { get; set; } = 12;
 
         public string FullName { get; set; }
 

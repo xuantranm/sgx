@@ -150,7 +150,7 @@ namespace xbhxh
                         {
                             FromAddresses = froms,
                             ToAddresses = tos,
-                            CCAddresses = ccs,
+                            //CCAddresses = ccs,
                             Subject = subject,
                             BodyContent = messageBody,
                             Type = "alert-bhxh"

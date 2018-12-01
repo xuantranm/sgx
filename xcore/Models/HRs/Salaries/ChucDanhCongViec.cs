@@ -6,6 +6,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Models
 {
     // Use manager role,.... later apply
+    // 
     public class ChucDanhCongViec
     {
         [BsonId]

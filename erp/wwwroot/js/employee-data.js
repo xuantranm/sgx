@@ -165,28 +165,39 @@
     $('.btn-save-title').on('click', function () {
         var form = $(this).closest('form');
         var frmValues = form.serialize();
+        console.log(frmValues);
+        console.log(form.attr('action'));
         $.ajax({
-            type: form.attr('method'),
-            url: form.attr('action'),
-            data: frmValues
-        })
-            .done(function (data) {
-                if (data.result === true) {
-                    toastr.info(data.message);
-                    // Update ddl
-                    $('select[name="Employee.Title"] option:first').after('<option value="' + data.entity.name + '">' + data.entity.name + '</option>');
-                    $('select[name="Employee.Title"]').val(data.entity.name);
-                    $('input', form).val('');
-                    $('textarea', form).val('');
-                    $('#newTitle').modal('hide');
-                }
+            type: "post",
+            url: "/hr/chuc-vu/cap-nhat",
+            data: frmValues,
+            success: function (response) {
+                if (response.length === 0)
+                    alert('Some error occured while uploading');
                 else {
-                    toastr.error(data.message);
+                    //window.location.replace(response.url);
+                    console.log(response);
                 }
-            })
-            .fail(function () {
-                toastr.error(data.message)
-            });
+            }
+        });
+            //.done(function (data) {
+            //    console.log(data);
+            //    if (data.result === true) {
+            //        toastr.info(data.message);
+            //        // Update ddl
+            //        $('select[name="Employee.Title"] option:first').after('<option value="' + data.entity.name + '">' + data.entity.name + '</option>');
+            //        $('select[name="Employee.Title"]').val(data.entity.name);
+            //        $('input', form).val('');
+            //        $('textarea', form).val('');
+            //        $('#newTitle').modal('hide');
+            //    }
+            //    else {
+            //        toastr.error(data.message);
+            //    }
+            //})
+            //.fail(function () {
+            //    toastr.error(data.message)
+            //});
         event.preventDefault();
     });
 

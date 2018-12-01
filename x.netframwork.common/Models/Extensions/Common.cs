@@ -13,6 +13,7 @@ namespace Models
         public string Timestamp { get; set; } = DateTime.Now.ToString("yyyyMMddHHmmssfff");
 
         public string Language { get; set; } = Constants.Languages.Vietnamese;
+
         public bool Enable { get; set; } = true;
 
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]

@@ -1038,7 +1038,7 @@
         <div class="row">
             <div class="col-12 col-md-8">
                 <div class="form-group">
-                    <button class="btn btn-success btn-lg btn-block btn-submit" id="btn-save-submit" type="submit" disabled data-toggle="tooltip" title="Lưu thông tin nhân viên mới"><i class="icon icon-save"></i> Lưu</button>
+                    <button class="btn btn-success btn-lg btn-block btn-submit" id="btn-save-submit" type="submit" data-toggle="tooltip" title="Lưu thông tin nhân viên mới"><i class="icon icon-save"></i> Lưu</button>
                 </div>
             </div>
         </div>
@@ -1059,7 +1059,7 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form class="data-form" method="post" action="/hr/nhan-su/phong-ban/tao-moi/" enctype="multipart/form-data">
+            <form class="data-form" method="post" action="/@Constants.LinkHr.Main/@Constants.LinkHr.Department/@Constants.ActionLink.Update/" enctype="multipart/form-data">
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                 <span class="result"></span>
                 <div class="modal-body">
@@ -1090,7 +1090,7 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form class="data-form" method="post" action="/hr/nhan-su/bo-phan/tao-moi/" enctype="multipart/form-data">
+            <form class="data-form" method="post" action="/@Constants.LinkHr.Main/@Constants.LinkHr.Part/@Constants.ActionLink.Update/" enctype="multipart/form-data">
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                 <span class="result"></span>
                 <div class="modal-body">
@@ -1121,8 +1121,7 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form class="data-form" method="post" action="/hr/nhan-su/cong-viec/tao-moi/" enctype="multipart/form-data">
-                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <form method="post" action="/@Constants.LinkHr.Main/@Constants.LinkHr.Title/@Constants.ActionLink.Update" enctype="multipart/form-data">
                 <span class="result"></span>
                 <div class="modal-body">
                     <div class="form-group">
@@ -1152,7 +1151,7 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form class="data-form" method="post" action="/hr/nhan-su/benh-vien/tao-moi/" enctype="multipart/form-data">
+            <form class="data-form" method="post" action="/@Constants.LinkHr.Main/@Constants.LinkHr.Hospital/@Constants.ActionLink.Update/" enctype="multipart/form-data">
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                 <span class="result"></span>
                 <div class="modal-body">

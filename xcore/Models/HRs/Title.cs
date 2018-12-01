@@ -1,9 +1,11 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace Models
 {
+    // SalaryThangBangLuongs
     public class Title
     {
         [BsonId]
@@ -22,5 +24,11 @@ namespace Models
         public int Order { get; set; } = 1;
 
         public bool Enable { get; set; } = true;
+
+        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
+        public DateTime CreatedOn { get; set; } = DateTime.Now;
+
+        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
+        public DateTime UpdatedOn { get; set; } = DateTime.Now;
     }
 }

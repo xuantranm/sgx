@@ -452,7 +452,7 @@ namespace erp.Controllers
                     row.CreateCell(8, CellType.String).SetCellValue(chamcongs);
                     row.CreateCell(9, CellType.String).SetCellValue(thoigianlamviec);
 
-                    row.CreateCell(10, CellType.String).SetCellValue(data.LeaveLevelYear);
+                    row.CreateCell(10, CellType.String).SetCellValue(data.LeaveLevelYear.ToString());
                     row.CreateCell(11, CellType.String).SetCellValue(data.Birthday.ToString("dd/MM/yyyy"));
                     row.CreateCell(12, CellType.String).SetCellValue(data.Gender);
                     row.CreateCell(13, CellType.String).SetCellValue(data.Joinday.ToString("dd/MM/yyyy"));
@@ -1967,65 +1967,6 @@ namespace erp.Controllers
             return File(memory, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", sFileName);
         }
 
-        #region Sub data
-        [HttpPost]
-        [Route("nhan-su/phong-ban/tao-moi/")]
-        public IActionResult Department(Department entity)
-        {
-            entity.Alias = Utility.AliasConvert(entity.Name);
-            bool exist = dbContext.Departments.CountDocuments(m => m.Alias.Equals(entity.Alias)) > 0;
-            if (!exist)
-            {
-                dbContext.Departments.InsertOne(entity);
-                return Json(new { result = true, source = "create", entity, message = "Tạo mới thành công" });
-            }
-            return Json(new { result = false, source = "create", entity, message = "Phòng/ban đã có. Không thể tạo 2 dữ liệu cùng tên." });
-        }
-
-        [HttpPost]
-        [Route("nhan-su/bo-phan/tao-moi/")]
-        public IActionResult Part(Part entity)
-        {
-            entity.Alias = Utility.AliasConvert(entity.Name);
-            bool exist = dbContext.Parts.CountDocuments(m => m.Alias.Equals(entity.Alias)) > 0;
-            if (!exist)
-            {
-                dbContext.Parts.InsertOne(entity);
-                return Json(new { result = true, source = "create", entity, message = "Tạo mới thành công" });
-            }
-            return Json(new { result = false, source = "create", entity, message = "Bộ phận đã có. Không thể tạo 2 dữ liệu cùng tên." });
-        }
-
-        [HttpPost]
-        [Route("nhan-su/cong-viec/tao-moi/")]
-        public IActionResult Title(Title entity)
-        {
-            return Json(new { result = false });
-            //entity.Alias = Utility.AliasConvert(entity.Name);
-            //bool exist = dbContext.Titles.CountDocuments(m => m.Alias.Equals(entity.Alias)) > 0;
-            //if (!exist)
-            //{
-            //    dbContext.Titles.InsertOne(entity);
-            //    return Json(new { result = true, source = "create", entity, message = "Tạo mới thành công" });
-            //}
-            //return Json(new { result = false, source = "create", entity, message = "Công việc đã có. Không thể tạo 2 dữ liệu cùng tên." });
-        }
-
-        [HttpPost]
-        [Route("nhan-su/benh-vien/tao-moi/")]
-        public IActionResult Hospital(BHYTHospital entity)
-        {
-            entity.Alias = Utility.AliasConvert(entity.Name);
-            bool exist = dbContext.BHYTHospitals.CountDocuments(m => m.Alias.Equals(entity.Alias)) > 0;
-            if (!exist)
-            {
-                dbContext.BHYTHospitals.InsertOne(entity);
-                return Json(new { result = true, source = "create", entity, message = "Tạo mới thành công" });
-            }
-            return Json(new { result = false, source = "create", entity, message = "Bệnh viện đã có. Không thể tạo 2 dữ liệu cùng tên." });
-        }
-        #endregion
-
         public string GeneralEmail(string input)
         {
             return Utility.EmailConvert(input);
@@ -2315,5 +2256,68 @@ namespace erp.Controllers
             }
             return entity.Usage > 0 ? false : true;
         }
+
+        #region Sub data
+        [HttpPost]
+        [Route(Constants.LinkHr.Department + " / " + Constants.ActionLink.Update)]
+        public IActionResult Department(Department entity)
+        {
+            entity.Alias = Utility.AliasConvert(entity.Name);
+            bool exist = dbContext.Departments.CountDocuments(m => m.Alias.Equals(entity.Alias)) > 0;
+            if (!exist)
+            {
+                dbContext.Departments.InsertOne(entity);
+                return Json(new { result = true, source = "create", entity, message = "Tạo mới thành công" });
+            }
+            return Json(new { result = false, source = "create", entity, message = "Phòng/ban đã có. Không thể tạo 2 dữ liệu cùng tên." });
+        }
+
+        [HttpPost]
+        [Route(Constants.LinkHr.Part + " / " + Constants.ActionLink.Update)]
+        public IActionResult Part(Part entity)
+        {
+            entity.Alias = Utility.AliasConvert(entity.Name);
+            bool exist = dbContext.Parts.CountDocuments(m => m.Alias.Equals(entity.Alias)) > 0;
+            if (!exist)
+            {
+                dbContext.Parts.InsertOne(entity);
+                return Json(new { result = true, source = "create", entity, message = "Tạo mới thành công" });
+            }
+            return Json(new { result = false, source = "create", entity, message = "Dữ liệu tồn tại. Không thể tạo 2 dữ liệu cùng tên." });
+        }
+
+        [HttpPost]
+        //[Route(Constants.LinkHr.Title + " / " + Constants.ActionLink.Update)]
+        public IActionResult Title(Title entity)
+        {
+            entity.Alias = Utility.AliasConvert(entity.Name);
+            bool exist = dbContext.Titles.CountDocuments(m => m.Alias.Equals(entity.Alias)) > 0;
+            if (!exist)
+            {
+                var lastest = dbContext.Titles.Find(m => m.Enable.Equals(true)).SortByDescending(m => m.Order).FirstOrDefault();
+                var newNo = lastest.Order + 1;
+                var newCode = Constants.System.viTriCodeTBLuong + newNo.ToString("000");
+                entity.Code = newCode;
+                entity.Order = newNo;
+                dbContext.Titles.InsertOne(entity);
+                return Json(new { result = true, source = "create", entity, message = "Tạo mới thành công" });
+            }
+            return Json(new { result = false, source = "create", entity, message = "Dữ liệu tồn tại. Không thể tạo 2 dữ liệu cùng tên." });
+        }
+
+        [HttpPost]
+        [Route(Constants.LinkHr.Hospital + " / " + Constants.ActionLink.Update)]
+        public IActionResult Hospital(BHYTHospital entity)
+        {
+            entity.Alias = Utility.AliasConvert(entity.Name);
+            bool exist = dbContext.BHYTHospitals.CountDocuments(m => m.Alias.Equals(entity.Alias)) > 0;
+            if (!exist)
+            {
+                dbContext.BHYTHospitals.InsertOne(entity);
+                return Json(new { result = true, source = "create", entity, message = "Tạo mới thành công" });
+            }
+            return Json(new { result = false, source = "create", entity, message = "Bệnh viện đã có. Không thể tạo 2 dữ liệu cùng tên." });
+        }
+        #endregion
     }
 }
