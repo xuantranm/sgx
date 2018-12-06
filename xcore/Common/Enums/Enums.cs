@@ -3,6 +3,57 @@ namespace Common.Enums
 {
     public enum Phase { Years, Months, Days, Done }
 
+    public enum EEmailStatus
+    {
+        Send = 0,
+        Ok = 1,
+        Fail = 2,
+        Resend = 3,
+        Schedule = 4,
+        ScheduleASAP = 5
+    }
+
+    public enum EPCPL
+    {
+        PC = 1,
+        PL = 2
+    }
+
+    public enum ESalaryType
+    {
+        VP = 1,
+        NM = 2,
+        SX = 3
+    }
+
+    public enum StatusLeave
+    {
+        New = 0,
+        Accept = 1,
+        Cancel = 2,
+        Pending = 3
+    }
+
+    public enum StatusWork
+    {
+        XacNhanCong = 0,
+        DuCong = 1,
+        DaGuiXacNhan = 2,
+        DongY = 3,
+        TuChoi = 4
+    }
+
+    public enum TimeWork
+    {
+        Normal = 1,
+        Sunday = 2,
+        LeavePhep = 3,
+        LeaveHuongLuong = 4,
+        LeaveKhongHuongLuong = 5,
+        Holiday = 6,
+        Other = 7
+    }
+
     public enum ETexts
     {
         None = 1,

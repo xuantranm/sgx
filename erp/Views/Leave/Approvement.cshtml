@@ -1,0 +1,197 @@
+﻿@using System.Globalization;
+@using Common.Utilities;
+@using Common.Enums;
+@using ViewModels
+@model LeaveViewModel
+
+@{
+    Layout = "~/Views/Shared/_LayoutSocialFb.cshtml";
+}
+
+@if (Model.RightRequest)
+{
+    <div class="form-group">
+        <a href="/@Constants.LinkLeave.Main/@Constants.LinkLeave.HelpLeave" style="cursor:pointer" data-toggle="tooltip" title="Bấm vô tạo nghỉ phép cho nhân viên khác.">
+            <i class="fas fa-hands-helping"></i> Tạo nghỉ phép cho nhân viên khác
+        </a>
+    </div>
+}
+
+
+<h5 class="mb-4">Ngày phép còn lại của nhân viên</h5>
+@if (Model.LeaveEmployees.Count > 0)
+{
+    <div class="row">
+        <div class="col-12 table-responsive-sm">
+            <table class="table table-responsive-sm table-bordered table-striped table-hover floating-header">
+                <thead style="background-color:lightgrey">
+                    <tr>
+                        <th rowspan="2">#</th>
+                        <th rowspan="2">Họ tên</th>
+                        <th rowspan="2">Bộ phận</th>
+                        <th rowspan="2">Chức vụ</th>
+                        <th rowspan="2">Mức phép năm</th>
+                        <th colspan="4">Ngày phép</th>
+                    </tr>
+                    <tr>
+                        <td>Hiện tại</td>
+                        <td>Sử dụng</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        int iP = 1;
+                        foreach (var leave in Model.LeaveEmployees)
+                        {
+                            <tr class="bg-white">
+                                <td>@iP</td>
+                                <td nowrap>@leave.EmployeeName</td>
+                                <td>@leave.Part</td>
+                                <td>@leave.Title</td>
+                                <td>@leave.LeaveLevel</td>
+                                <td>
+                                    @leave.Number
+                                </td>
+                                <td>
+                                    @leave.NumberUsed
+                                </td>
+                            </tr>
+                            iP++;
+                        }
+                    }
+
+                </tbody>
+            </table>
+        </div>
+        <!--end of col-->
+    </div>
+    <!--end of row-->
+}
+else
+{
+    <div class="alert alert-light" role="alert">
+        Không có dữ liệu
+    </div>
+}
+
+<h5 class="mb-4">Lịch sử xác nhận nghỉ phép</h5>
+
+
+
+@if (Model.Leaves.Count > 0)
+{
+    <div class="row">
+        <div class="col-12 table-responsive-sm">
+            <table class="table table-responsive-sm table-bordered table-striped table-hover floating-header">
+                <thead style="background-color:lightgrey">
+                    <tr>
+                        <th scope="col">#</th>
+                        <th>Trạng thái</th>
+                        <th>Ngày duyệt</th>
+                        <th scope="col">Họ tên</th>
+                        <th scope="col">Bộ phận</th>
+                        <th scope="col">Chức vụ</th>
+                        <th>Ngày gửi yêu cầu</th>
+                        <th scope="col">Ngày nghỉ</th>
+                        <th scope="col">Loại phép</th>
+                        <th scope="col">Nội dung</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        int iH = 1;
+                        var linkapprove = Constants.System.domain + "/xacnhan/phep";
+                        foreach (var leave in Model.Leaves)
+                        {
+                    <tr class="bg-white">
+                        <td>@iH</td>
+                        <td>
+                            @{
+                                if (leave.Status == (int)StatusLeave.New || leave.Status == (int)StatusLeave.Pending)
+                                {
+                                    var linkAccept = linkapprove + "?id=" + leave.Id + "&approve=1&secure=" + leave.SecureCode;
+                                    var linkCancel = linkapprove + "?id=" + leave.Id + "&approve=2&secure=" + leave.SecureCode;
+                                    <p>
+                                        <a href="@linkAccept" target="_blank" onClick="javascript:document.location.reload(true)" class="btn btn-sm btn-block btn-success"><i class="far fa-check-circle"></i> Đồng ý</a>
+                                    </p>
+                                    <p>
+                                        <a href="@linkCancel" target="_blank" onClick="javascript:document.location.reload(true)" class="btn btn-sm btn-block btn-danger"><i class="fas fa-ban"></i> Không đồng ý</a>
+                                    </p>
+                                }
+                                else if (leave.Status == (int)StatusLeave.Accept)
+                                {
+                                    <small class="badge badge-success">@Constants.StatusLeave(leave.Status)</small>
+                                }
+                                else
+                                {
+                                    <small class="badge badge-danger">@Constants.StatusLeave(leave.Status)</small>
+                                }
+                            }
+                        </td>
+                        <td>
+                            @{
+                                var dateConfirm = leave.ApprovedOn.ToString("dd/MM/yyyy");
+                                if (leave.Status == (int)StatusLeave.New)
+                                {
+                                    dateConfirm = string.Empty;
+                                }
+                            }
+                            <span class="text-muted">@dateConfirm</span>
+                        </td>
+                        <td>@leave.EmployeeName</td>
+                        <td>@leave.EmployeePart</td>
+                        <td>@leave.EmployeeTitle</td>
+                        <td>
+                            @{
+                                var dateRequest = leave.CreatedOn.ToString("dd/MM/yyyy");
+                            }
+                            <span class="text-muted">@dateRequest</span>
+                        </td>
+                        <td nowrap>
+                            @{
+                                var displayDate = string.Empty;
+                                var displayTime = string.Empty;
+                                if (leave.From.Date == leave.To.Date)
+                                {
+                                    displayDate += leave.From.ToString("dd/MM/yyyy");
+                                    displayTime += leave.From.ToString("HH:mm") + "-" + leave.To.ToString("HH:mm");
+                                }
+                                else
+                                {
+                                    displayDate += leave.From.ToString("dd/MM/yyyy HH:mm");
+                                    displayTime += leave.To.ToString("dd/MM/yyyy HH:mm"); ;
+                                }
+                            }
+                            <small>@displayDate</small>
+                            <br />
+                            <small>@displayTime</small>
+                            <br />
+                            <small class="badge badge-light">@leave.Number ngày</small>
+                        </td>
+                        <td>@leave.TypeName</td>
+                        <td>@leave.Comment</td>
+                    </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+        <!--end of col-->
+    </div>
+    <!--end of row-->
+}
+else
+{
+    <div class="alert alert-light" role="alert">
+        Không có dữ liệu
+    </div>
+}
+
+@section scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+        <script type="text/javascript" src="~/js/leave-approvement.js?@DateTime.Now.Ticks"></script>
+    }
+}
+
+

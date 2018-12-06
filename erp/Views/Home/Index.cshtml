@@ -14,6 +14,12 @@
     }
 }
 
+<h5 class="h3 mb-2">Tin tức</h5>
+<div class="embed-responsive embed-responsive-16by9">
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/2i6oFCa33Ng" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</div>
+<div class="mb-2">Phóng sự nhà máy xử lý bùn thải Sài Gòn Xanh</div>
+
 @{
     if (Model.NotificationCompanies != null && Model.NotificationCompanies.Count > 0)
     {
@@ -53,7 +59,7 @@
     }
 }
 
-        @*<canvas id="genderChart"></canvas>*@
+@*<canvas id="genderChart"></canvas>*@
 
 @{
     if (Model.NotificationExpires != null && Model.NotificationExpires.Count > 0)
@@ -178,7 +184,7 @@
                     </div>
                     <div class="col-12 collapse show" id="leave-approve">
                         <div class="row">
-                            @foreach (var leave in Model.Leaves)
+                            @foreach (var leave in Model.Leaves.Take(5))
                             {
                                 <div class="col-12 leave-item" style="padding:5px 0">
                                     <div class="alert alert-info text-small mb-0" role="alert">
@@ -218,6 +224,11 @@
                                 </div>
                             }
                         </div>
+                        <div class="row">
+                            <div class="text-center">
+                                <a href="/@Constants.LinkLeave.Main/@Constants.LinkLeave.Approvement" class="btn btn-outline-secondary"><i class="fas fa-expand-arrows-alt"></i> Đi đến phép đầy đủ</a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -232,15 +243,15 @@
             <div class="container">
                 <div class="row">
                     <div class="col">
-                        <a href="javascript:;" data-target="#leave-approve" data-toggle="collapse">
-                            <h5><i class="fas fa-clock"></i> Xác nhận công <span class="badge badge-danger leave-approve-total">@Model.TimeKeepers.Count</span><i class="icon-popup"></i></h5>
+                        <a href="javascript:;" data-target="#time-approve" data-toggle="collapse">
+                            <h5><i class="fas fa-clock"></i> Xác nhận công <span class="badge badge-danger time-approve-total">@Model.TimeKeepers.Count</span><i class="icon-popup"></i></h5>
                         </a>
                     </div>
-                    <div class="col-12 collapse show" id="leave-approve">
+                    <div class="col-12 collapse show" id="time-approve">
                         <div class="row">
-                            @foreach (var timeKeeper in Model.TimeKeepers)
+                            @foreach (var timeKeeper in Model.TimeKeepers.Take(5))
                             {
-                                <div class="col-12 leave-item" style="padding:5px 0">
+                                <div class="col-12 time-item" style="padding:5px 0">
                                     <div class="alert alert-info text-small mb-0" role="alert">
                                         <i class="fas fa-fingerprint"></i>
                                         <b>@timeKeeper.EmployeeName</b>
@@ -257,8 +268,8 @@
                                             var detail = string.Empty;
                                             var inTime = timeKeeper.In.HasValue ? timeKeeper.In.Value.ToString(@"hh\:mm") : "trống";
                                             var outTime = timeKeeper.Out.HasValue ? timeKeeper.Out.Value.ToString(@"hh\:mm") : "trống";
-                                            var lateTime = timeKeeper.Late.TotalMilliseconds > 0 ? Math.Round(timeKeeper.Late.TotalMinutes,0).ToString() : string.Empty;
-                                            var earlyTime = timeKeeper.Early.TotalMilliseconds > 0 ? Math.Round(timeKeeper.Early.TotalMinutes,0).ToString() : string.Empty;
+                                            var lateTime = timeKeeper.Late.TotalMilliseconds > 0 ? Math.Round(timeKeeper.Late.TotalMinutes, 0).ToString() : string.Empty;
+                                            var earlyTime = timeKeeper.Early.TotalMilliseconds > 0 ? Math.Round(timeKeeper.Early.TotalMinutes, 0).ToString() : string.Empty;
                                             var sumTime = string.Empty;
                                             if (string.IsNullOrEmpty(inTime) && string.IsNullOrEmpty(outTime))
                                             {
@@ -275,7 +286,7 @@
                                                 {
                                                     sumTime += ", ";
                                                 }
-                                                sumTime += minutesMissing + " phút";
+                                                sumTime += Math.Round(minutesMissing, 0).ToString() + " phút";
                                             }
 
                                             detail = "Ngày: " + timeKeeper.Date.ToString("dd/MM/yyyy") + "; thiếu: " + sumTime + " | giờ vào: " + inTime + "; trễ: " + lateTime + "; giờ ra: " + outTime + "; sớm: " + earlyTime;
@@ -301,13 +312,21 @@
                                         </div>
                                     </div>
                                 </div>
-                                            }
+                            }
                         </div>
+                        @if (Model.TimeKeepers.Count > 5)
+                        {
+                            <div class="row">
+                                <div class="text-center">
+                                    <a href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Approvement" class="btn btn-outline-secondary"><i class="fas fa-expand-arrows-alt"></i> Đi đến công đầy đủ</a>
+                                </div>
+                            </div>
+                        }
                     </div>
                 </div>
             </div>
         </section>
-                                            }
+    }
 }
 
 <!-- BIRTHDAYS NOTIFICATIONS -->
@@ -331,7 +350,7 @@
                         {
                             if (rightHr)
                             {
-                                href = "/" + Constants.LinkHr.Main + "/" + Constants.LinkHr.Human +"/"+ Constants.LinkHr.Information + "/"+ birthday.Id;
+                                href = "/" + Constants.LinkHr.Main + "/" + Constants.LinkHr.Human + "/" + Constants.LinkHr.Information + "/" + birthday.Id;
                             }
                             <div class="col-12 col-md-6">
                                 <a href="@href" alt="@birthday.FullName">

@@ -4,10 +4,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Models
 {
-    public class Title: Common
+    public class Title
     {
         [BsonId]
-        // Mvc don't know how to create ObjectId from string
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
 
@@ -20,8 +19,8 @@ namespace Models
 
         public string Description { get; set; }
 
-        public string Images { get; set; }
+        public int Order { get; set; } = 1;
 
-        public Department Department { get; set; }
+        public bool Enable { get; set; } = true;
     }
 }

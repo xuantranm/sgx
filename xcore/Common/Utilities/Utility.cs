@@ -12,6 +12,7 @@ using Data;
 using MongoDB.Driver;
 using Models;
 using System.Reflection;
+using NPOI.SS.UserModel;
 //using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 
 namespace Common.Utilities
@@ -174,6 +175,7 @@ namespace Common.Utilities
                 return false;
             }
         }
+
         public static string ReadTextFile(string filePath)
         {
             try
@@ -367,6 +369,18 @@ namespace Common.Utilities
             return text;
         }
 
+        public static string UpperCodeConvert(string text)
+        {
+            if (string.IsNullOrEmpty(text)) return string.Empty;
+
+            text = text.Trim().ToLower();
+            RegexOptions options = RegexOptions.None;
+            Regex regex = new Regex("[ ]{2,}", options);
+            text = regex.Replace(text, " ");
+            text = NonUnicode(text);
+            text = RemoveSpecialCharactersNear(text);
+            return text.ToUpper();
+        }
         //public static string RemoveSpecialCharacters(string str)
         //{
         //    StringBuilder sb = new StringBuilder();
@@ -384,6 +398,11 @@ namespace Common.Utilities
         {
             return Regex.Replace(str, "[^0-9a-zA-Z]+", "-");
             //return Regex.Replace(str, "[^a-zA-Z0-9_.]+", "", RegexOptions.Compiled);
+        }
+
+        public static string RemoveSpecialCharactersNear(string str)
+        {
+            return Regex.Replace(str, "[^0-9a-zA-Z]+", "");
         }
 
         public static string LinkConvert(string text)
@@ -454,7 +473,7 @@ namespace Common.Utilities
             {
                 if (!IsHoliday(start, holidays) && !IsSunday(start))
                 {
-                    hour = (endTime - startTime).Hours;
+                    hour = (endTime - startTime).Hours - 1; // 1 h nghi trua
                     bd = hour <= 4 ? Convert.ToDecimal(0.5) : 1;
                 }
             }
@@ -940,5 +959,197 @@ namespace Common.Utilities
 
             return span;
         }
+
+
+        #region EXCEL
+        public static string GetFormattedCellValue(ICell cell)
+        {
+            if (cell != null)
+            {
+                switch (cell.CellType)
+                {
+                    case CellType.String:
+                        return cell.StringCellValue.Trim();
+
+                    case CellType.Numeric:
+                        if (DateUtil.IsCellDateFormatted(cell))
+                        {
+                            //DateTime date = cell.DateCellValue;
+                            //ICellStyle style = cell.CellStyle;
+                            //// Excel uses lowercase m for month whereas .Net uses uppercase
+                            //string format = style.GetDataFormatString().Replace('m', 'M');
+                            //string format = "dd/MM/yyyy hh:mm:ss";
+                            //return date.ToString(format);
+                            return cell.DateCellValue.ToString().Trim();
+                        }
+                        else
+                        {
+                            return cell.NumericCellValue.ToString().Trim();
+                        }
+
+                    case CellType.Boolean:
+                        return cell.BooleanCellValue ? "TRUE" : "FALSE";
+
+                    case CellType.Formula:
+                        switch (cell.CachedFormulaResultType)
+                        {
+                            case CellType.String:
+                                return cell.StringCellValue.Trim();
+                            case CellType.Boolean:
+                                return cell.BooleanCellValue ? "TRUE" : "FALSE";
+                            case CellType.Numeric:
+                                if (DateUtil.IsCellDateFormatted(cell))
+                                {
+                                    DateTime date = cell.DateCellValue;
+                                    ICellStyle style = cell.CellStyle;
+                                    // Excel uses lowercase m for month whereas .Net uses uppercase
+                                    string format = style.GetDataFormatString().Replace('m', 'M');
+                                    return date.ToString(format);
+                                }
+                                else
+                                {
+                                    return cell.NumericCellValue.ToString().Trim();
+                                }
+                        }
+                        return cell.CellFormula.Trim();
+
+                        //case CellType.Error:
+                        //    return FormulaError.ForInt(cell.ErrorCellValue).String;
+                }
+            }
+            // null or blank cell, or unknown cell type
+            return string.Empty;
+        }
+
+        public static string GetFormattedCellValue2(ICell cell, string format)
+        {
+            if (cell != null)
+            {
+                switch (cell.CellType)
+                {
+                    case CellType.String:
+                        return cell.StringCellValue;
+
+                    case CellType.Numeric:
+                        if (DateUtil.IsCellDateFormatted(cell))
+                        {
+                            //DateTime date = cell.DateCellValue;
+                            //ICellStyle style = cell.CellStyle;
+                            //// Excel uses lowercase m for month whereas .Net uses uppercase
+                            //string format = style.GetDataFormatString().Replace('m', 'M');
+                            //string format = "dd/MM/yyyy hh:mm:ss";
+                            //return date.ToString(format);
+                            return cell.DateCellValue.ToString(format);
+                        }
+                        else
+                        {
+                            return cell.NumericCellValue.ToString();
+                        }
+
+                    case CellType.Boolean:
+                        return cell.BooleanCellValue ? "TRUE" : "FALSE";
+
+                    case CellType.Formula:
+                        switch (cell.CachedFormulaResultType)
+                        {
+                            case CellType.String:
+                                return cell.StringCellValue;
+                            case CellType.Boolean:
+                                return cell.BooleanCellValue ? "TRUE" : "FALSE";
+                            case CellType.Numeric:
+                                if (DateUtil.IsCellDateFormatted(cell))
+                                {
+                                    DateTime date = cell.DateCellValue;
+                                    ICellStyle style = cell.CellStyle;
+                                    // Excel uses lowercase m for month whereas .Net uses uppercase
+                                    format = style.GetDataFormatString().Replace('m', 'M');
+                                    return date.ToString(format);
+                                }
+                                else
+                                {
+                                    return cell.NumericCellValue.ToString();
+                                }
+                        }
+                        return cell.CellFormula;
+
+                        //case CellType.Error:
+                        //    return FormulaError.ForInt(cell.ErrorCellValue).String;
+                }
+            }
+            // null or blank cell, or unknown cell type
+            return string.Empty;
+        }
+
+        public static DateTime GetDateCellValue(ICell cell)
+        {
+            if (cell != null)
+            {
+                if (cell.CellType == CellType.Numeric)
+                {
+                    if (DateUtil.IsCellDateFormatted(cell))
+                    {
+                        return cell.DateCellValue;
+                    }
+                }
+                else if (cell.CellType == CellType.Formula)
+                {
+                    if (DateUtil.IsCellDateFormatted(cell))
+                    {
+                        return cell.DateCellValue;
+                    }
+                }
+            }
+            // null or blank cell, or unknown cell type
+            return DateTime.Now;
+        }
+
+        public static DateTime? GetDateCellValue2(ICell cell)
+        {
+            if (cell != null)
+            {
+                if (cell.CellType == CellType.Numeric)
+                {
+                    if (DateUtil.IsCellDateFormatted(cell))
+                    {
+                        return cell.DateCellValue;
+                    }
+                }
+            }
+            return null;
+        }
+
+        public static double GetNumbericCellValue(ICell cell)
+        {
+            if (cell != null)
+            {
+                if (cell.CellType == CellType.Numeric)
+                {
+                    return cell.NumericCellValue;
+                }
+                if (cell.CellType == CellType.Formula)
+                {
+                    return cell.NumericCellValue;
+                }
+            }
+            return 0;
+        }
+
+        public static DateTime ParseExcelDate(string date)
+        {
+            DateTime dt;
+            if (DateTime.TryParse(date, out dt))
+            {
+                return dt;
+            }
+
+            double oaDate;
+            if (double.TryParse(date, out oaDate))
+            {
+                return DateTime.FromOADate(oaDate);
+            }
+
+            return DateTime.MinValue;
+        }
+        #endregion
     }
 }

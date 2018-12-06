@@ -1,0 +1,238 @@
+﻿@using Common.Utilities;
+@using Common.Enums;
+@using ViewModels;
+@model ThangBangLuongViewModel
+@{
+    Layout = "~/Views/Shared/_LayoutSocialFbFS.cshtml";
+    var login = User.Identity.Name;
+    var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+}
+
+<link href="~/assets/wingman/css/big-screen.css" rel="stylesheet" />
+<div class="main-container">
+    <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="/">Trang chủ</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">Thang bảng lương</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="flush-with-above space-0">
+        <div class="bg-white">
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <ul class="nav nav-tabs" id="myTab" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.FactoryProduction/@Constants.LinkSalary.ThangBangLuong">THANG LƯƠNG </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Factory/@Constants.LinkSalary.BangLuong">BẢNG LƯƠNG NHÀ MÁY</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.BangLuong">BẢNG LƯƠNG SẢN XUẤT</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MAIN -->
+    <section class="flush-with-above height-80 d-block">
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="law" role="tabpanel" aria-labelledby="law-tab">
+                <div class="container">
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <a class="btn btn-success btn-edit" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.ThangBangLuong/@Constants.LinkSalary.Update" data-toggle="tooltip" title="Bấm thay đổi thang bảng lương.">
+                                <i class="icon icon-edit"></i>Chỉnh sửa
+                            </a>
+                            <a class="btn btn-info d-none" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.ThangBangLuong/@Constants.LinkSalary.Export" data-toggle="tooltip" title="Xuất ra tài liệu file excel.">
+                                <i class="fas fa-download"></i> Xuất excel
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <b>I/ MỨC LƯƠNG TỐI THIỂU VÙNG:</b> <b>@String.Format("{0:#,###,###}", Math.Round((double)Model.SalaryMucLuongVung.ToiThieuVungQuiDinh / 1000d, 0))</b> đồng/tháng
+                        </div>
+                        <div class="col-12">
+                            Mức lương tối thiểu mà doanh nghiệp đang áp dụng: <b>@String.Format("{0:#,###,###}", Math.Round((double)Model.SalaryMucLuongVung.ToiThieuVungDoanhNghiepApDung / 1000d, 0))</b> đồng/tháng
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <b>
+                                II/ HỆ THỐNG THANG LƯƠNG:
+                            </b>
+                            (ĐVT:  đồng)
+                        </div>
+                        @{
+                            var typelevels = (from p in Model.NgachLuongs
+                                              group p by new
+                                              {
+                                                  p.TypeRole
+                                              }
+                                            into d
+                                              select new
+                                              {
+                                                  TypeRoleName = d.Key.TypeRole,
+                                                  Levels = d.ToList(),
+                                              }).ToList();
+                            var i = 1;
+                            foreach (var typeLevel in typelevels)
+                            {
+                                <div class="col-12">
+                                    <b>@i-@typeLevel.TypeRoleName</b>
+                                </div>
+                                <div class="col-12 table-responsive-sm">
+                                    <table class="table table-responsive-sm table-bordered floating-header">
+                                        @{
+                                            var groupBacLuong = (from s in typeLevel.Levels
+                                                                 group s by new
+                                                                 {
+                                                                     s.ChucDanhCongViec,
+                                                                     s.MaSo
+                                                                 }
+                                            into l
+                                                                 select new
+                                                                 {
+                                                                     Name = l.Key.ChucDanhCongViec,
+                                                                     MaSo = l.Key.MaSo,
+                                                                     CountSalaries = l.Count(),
+                                                                     Salaries = l.ToList(),
+                                                                 }).ToList();
+
+                                            var levelMax = groupBacLuong.OrderByDescending(m => m.CountSalaries).First().CountSalaries;
+                                        }
+                                        <thead style="background-color:lightgrey">
+                                            <tr>
+                                                <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>CHỨC DANH CÔNG VIỆC</th>
+                                                <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>MÃ SỐ</th>
+                                                <td colspan="@levelMax" style="text-align:center;font-weight:bold">BẬC/ HỆ SỐ/ MỨC LƯƠNG</td>
+                                            </tr>
+                                            <tr>
+                                                @for (var ilevel = 1; ilevel <= levelMax; ilevel++)
+                                                {
+                                                    <td style="text-align:center; color:red">@ilevel</td>
+                                                }
+                                            </tr>
+                                        </thead>
+
+                                        <tbody>
+                                            @{
+                                                int iName = 1;
+                                                foreach (var bacLuong in groupBacLuong)
+                                                {
+                                                    int miss = 0;
+                                                    if (levelMax > bacLuong.CountSalaries)
+                                                    {
+                                                        miss = levelMax - bacLuong.CountSalaries;
+                                                    }
+                                                    int numCol = levelMax + 2;
+                                                <tr style="background-color:rgb(0, 176, 240); color:black">
+                                                    <td colspan="@numCol">
+                                                        <b>@iName- @bacLuong.Name</b>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="background-color:white">
+                                                        Hệ số
+                                                    </td>
+                                                    <td style="background-color:rgb(0,211,240);color:black"></td>
+                                                    @{
+                                                            var colorRed = "black";
+                                                            foreach (var heso in bacLuong.Salaries)
+                                                            {
+                                                                if (heso.Bac == 1)
+                                                                {
+                                                                    colorRed = "red";
+                                                                }
+                                                    <td style="text-align:right;background-color:rgb(0,211,240);color:@colorRed">
+                                                        @heso.HeSo.ToString("0.##")
+                                                    </td>
+                                                            }
+                                                            if (miss > 0)
+                                                            {
+                                                                for (var i2 = 1; i2 <= miss; i2++)
+                                                                {
+                                                        <td style="text-align:right;background-color:rgb(0,211,240);color:black"></td>
+                                                                }
+                                                            }
+                                                    }
+                                                </tr>
+                                                <tr>
+                                                    <td style="background-color:white">
+                                                        Mức lương tháng
+                                                    </td>
+                                                    <td style="text-align:center">@bacLuong.MaSo</td>
+                                                    @{
+                                                            foreach (var heso in bacLuong.Salaries)
+                                                            {
+                                                        <td style="background-color:white">
+                                                            @string.Format("{0:n0}", Math.Round((double)heso.MucLuongThang, 0))
+                                                        </td>
+                                                            }
+                                                            if (miss > 0)
+                                                            {
+                                                                for (var i3 = 1; i3 <= miss; i3++)
+                                                                {
+                                                        <td style="background-color:white"></td>
+                                                                }
+                                                            }
+                                                    }
+                                                </tr>
+                                                <tr>
+                                                    <td style="background-color:white">
+                                                        Mức lương ngày
+                                                    </td>
+                                                    <td style="background-color:white"></td>
+                                                    @{
+                                                            foreach (var heso in bacLuong.Salaries)
+                                                            {
+                                                        <td style="background-color:white">
+                                                            @string.Format("{0:n0}", Math.Round((double)heso.MucLuongNgay, 0))
+                                                        </td>
+                                                            }
+                                                            if (miss > 0)
+                                                            {
+                                                                for (var i3 = 1; i3 <= miss; i3++)
+                                                                {
+                                                        <td style="background-color:white"></td>
+                                                                }
+                                                            }
+                                                    }
+                                                </tr>
+                                                    iName++;
+                                                }
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                                i++;
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+@section scripts {
+    <script type="text/javascript" src="~/js/hr/luong/nhamay/thang-bang-luong.js?@DateTime.Now.Ticks"></script>
+}
+
+
+

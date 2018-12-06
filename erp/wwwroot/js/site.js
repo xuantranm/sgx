@@ -2,7 +2,7 @@
 // for details on configuring this project to bundle and minify static web assets.
 
 $(function () {
-    //document.onkeypress = keyPress;
+    document.onkeypress = keyPress;
 
     $(".toggle-password").on('click', function () {
         $(this).toggleClass("fa-eye fa-eye-slash");
@@ -13,6 +13,18 @@ $(function () {
             input.attr("type", "password");
         }
     });
+
+    //$('.btn').on('click', function () {
+    //    var $this = $(this);
+    //    var loadingText = '<i class="fa fa-circle-o-notch fa-spin"></i> đang xử lý...';
+    //    if ($(this).html() !== loadingText) {
+    //        $this.data('original-text', $(this).html());
+    //        $this.html(loadingText);
+    //    }
+    //    setTimeout(function () {
+    //        $this.html($this.data('original-text'));
+    //    }, 2000);
+    //});
 
     $('.btn-language').on('click', function () {
         var language = $(this).attr("data-value");
@@ -88,6 +100,57 @@ $(function () {
         }
     });
 
+    // http://autonumeric.org/configurator
+    // Initialization
+    // No declare common. error if not exist element
+
+
+    // Use jQuery UI datepicker
+    //$(".datepicker").datepicker({
+    //    showOtherMonths: true,
+    //    selectOtherMonths: true
+    //});
+
+
+    //https://uxsolutions.github.io/bootstrap-datepicker/?markup=range&format=dd%2Fmm%2Fyyyy&weekStart=&startDate=&endDate=&startView=0&minViewMode=0&maxViewMode=4&todayBtn=false&clearBtn=false&language=vi&orientation=auto&multidate=&multidateSeparator=&daysOfWeekHighlighted=0&daysOfWeekHighlighted=6&keyboardNavigation=on&forceParse=on#sandbox
+    //$('.datepicker').datepicker({
+    //    language: "vi",
+    //    format: 'dd/mm/yyyy',
+    //    daysOfWeekHighlighted: "0,6",
+    //    todayHighlight: true,
+    //    onSelect: function (dateText, inst) {
+    //        console.log(dateText);
+    //        console.log(inst);
+    //        $('.hidedatepicker', $(this).closest('.form-group')).val(dateText);
+    //    }
+    //    //startDate: '-0d'
+    //});
+
+    //$('.input-daterange').datepicker({
+    //    language: "vi",
+    //    //format: 'dd/mm/yyyy',
+    //    daysOfWeekHighlighted: "0,6",
+    //    todayHighlight: true,
+    //    startDate: '-0d'
+    //});
+
+    //$('.datetimepicker').datetimepicker({
+    //    locale: 'vi'
+    //});
+
+    //$('#datetimepicker4').datetimepicker();
+
+    //$('.datetimepickerfrom').datetimepicker();
+    //$('.datetimepickerto').datetimepicker({
+    //    useCurrent: false //Important! See issue #1075
+    //});
+    //$(".datetimepickerfrom").on("dp.change", function (e) {
+    //    $('.datetimepickerto').data("DateTimePicker").minDate(e.date);
+    //});
+    //$(".datetimepickerto").on("dp.change", function (e) {
+    //    $('.datetimepickerfrom').data("DateTimePicker").maxDate(e.date);
+    //});
+
     $('textarea.js-auto-size').textareaAutoSize();
 
     $("#more").on("hide.bs.collapse", function () {
@@ -113,13 +176,13 @@ $(function () {
     };
 });
 
-//function keyPress(e) {
-//    var x = e || window.event;
-//    var key = x.keyCode || x.which;
-//    if (key === 13 || key === 3) {
-//        formSubmit();
-//    }
-//}
+function keyPress(e) {
+    var x = e || window.event;
+    var key = x.keyCode || x.which;
+    if (key === 13 || key === 3) {
+        formSubmit();
+    }
+}
 
 function formSubmit() {
     document.getElementById("form-main").submit();
@@ -288,9 +351,21 @@ Date.daysBetween = function (date1, date2) {
 
 function setValueDateFormat() {
     $('.datepicker').each(function (i, obj) {
-        var date = moment($(obj).datepicker('getFormattedDate'), 'DD-MM-YYYY')
+        var date = moment($(obj).datepicker('getFormattedDate'), 'DD-MM-YYYY');
         $('.hidedatepicker', $(obj).closest('.date-area')).val(
             date.format('MM-DD-YYYY')
         );
     });
+}
+
+function DateFullToString(date) {
+    var ouputs = date.substring(0, 10).split("-");
+    return ouputs[2] + "/" + ouputs[1] + "/" + ouputs[0];
+}
+
+function NullToText(text) {
+    if (text === null) {
+        text = "--";
+    }
+    return text;
 }

@@ -30,7 +30,25 @@
                     <div class="col">
                         <ul class="nav nav-tabs" id="myTab" role="tablist">
                             <li class="nav-item">
-                                <a class="nav-link active" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.ThangBangLuongReal/@Constants.LinkSalary.Update">THANG LƯƠNG</a>
+                                <a class="nav-link active" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.VanPhong/@Constants.LinkSalary.ThangBangLuong/@Constants.LinkSalary.Update">THANG LƯƠNG</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.VanPhong/@Constants.LinkSalary.BangLuong/@Constants.LinkSalary.Update">BẢNG LƯƠNG</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Timer">CHẤM CÔNG</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Setting">THAM SỐ</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.SaleKPIEmployee/@Constants.LinkSalary.Update">KINH DOANH</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.LogisticEmployeeCong/@Constants.LinkSalary.Update">LOGISTICS</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Credits/@Constants.LinkSalary.Update">VAY & TẠM ỨNG</a>
                             </li>
                         </ul>
                     </div>
@@ -49,7 +67,7 @@
                             <div>
                                 <h6>HỆ THỐNG THANG LƯƠNG</h6>(ĐVT: 1,000 đồng)
                             </div>
-                            <form class="d-flex align-items-center" method="get" action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.ThangBangLuongReal/@Constants.LinkSalary.Update" id="form-main">
+                            <form class="d-flex align-items-center" method="get" action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.VanPhong/@Constants.LinkSalary.ThangBangLuong/@Constants.LinkSalary.Update" id="form-main">
                                 <span class="mr-2 text-muted text-small text-nowrap">Tháng:</span>
                                 <select asp-for="thang" class="custom-select ddl-times">
                                     @{
@@ -63,10 +81,10 @@
                         </div>
                     </div>
 
-                    <form action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.ThangBangLuongReal/@Constants.LinkSalary.Update" method="post" class="data-form">
+                    <form action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.VanPhong/@Constants.LinkSalary.ThangBangLuong/@Constants.LinkSalary.Update" method="post" class="data-form">
                         <div class="d-flex align-items-center">
                             <div class="mr-2">
-                                <a href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.ThangBangLuongReal" class="btn btn-info btn-back" data-toggle="tooltip" title="Bấm trở về thang bảng lương.">
+                                <a href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.VanPhong/@Constants.LinkSalary.ThangBangLuong" class="btn btn-info btn-back" data-toggle="tooltip" title="Bấm trở về thang bảng lương.">
                                     <i class="icon icon-back"></i>Trở về
                                 </a>
                                 <button type="submit" class="btn btn-danger btn-submit" data-toggle="tooltip" title="Bấm cập nhật thang bảng lương."><i class="icon-save"></i>&nbsp;Cập nhật thang bảng lương</button>
@@ -74,7 +92,7 @@
                         </div>
 
                         <input type="hidden" asp-for="thang" value="@Model.thang" />
-                        <input type="hidden" id="hidCalculatorThangBangLuongReal" value="/@Constants.LinkSalary.Main/@Constants.LinkSalary.ThangBangLuongRealCalculator" />
+                        <input type="hidden" id="hidCalculatorThangBangLuongReal" value="/@Constants.LinkSalary.Main/@Constants.LinkSalary.VanPhong/@Constants.LinkSalary.ThangBangLuong/@Constants.LinkSalary.Calculator" />
                         <div class="row mb-3">
                             <div class="col-12">
                                 Mức lương tối thiểu mà doanh nghiệp đang áp dụng (đồng/tháng):
@@ -91,7 +109,7 @@
                                     <table class="table table-responsive-sm table-bordered table-striped table-hover floating-header">
                                         <thead>
                                             <tr style="background-color:yellow!important">
-                                                <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>STT</th>
+                                                <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>#</th>
                                                 <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>VỊ TRÍ</th>
                                                 <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>HỆ SỐ</th>
                                                 <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>ĐIỂM THAM KHẢO</th>

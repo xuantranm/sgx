@@ -5,6 +5,11 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Models
 {
+    /// <summary>
+    /// 1 day, 1 record
+    /// Group by Code base date created
+    /// Form, To is same date.
+    /// </summary>
     public class Leave : Common
     {
         [BsonId]
@@ -30,6 +35,10 @@ namespace Models
         public string EmployeeName { get; set; }
 
         public string EmployeeTitle { get; set; }
+
+        public string EmployeePart { get; set; }
+
+        public string EmployeeDepartment { get; set; }
 
         // 1 cấp xác nhận (trường hợp 2 cấp. ;2.Id)
         // Format 1.Id
@@ -84,7 +93,13 @@ namespace Models
 
         public string WorkingScheduleTime { get; set; }
 
+        public string GroupCode { get; set; } = DateTime.Now.ToString("ddMMyyyy");
+
         // Use link email.
         public string SecureCode { get; set; }
+
+        public int Month { get; set; } = DateTime.Now.Month;
+
+        public int Year { get; set; } = DateTime.Now.Year;
     }
 }

@@ -25,6 +25,8 @@ using MongoDB.Bson;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Common.Enums;
+using NPOI.HSSF.Util;
+using NPOI.SS.Util;
 
 namespace erp.Controllers
 {
@@ -34,7 +36,7 @@ namespace erp.Controllers
     {
         readonly MongoDBContext dbContext = new MongoDBContext();
         private readonly IDistributedCache _cache;
-        IHostingEnvironment _hostingEnvironment;
+        IHostingEnvironment _env;
 
         private readonly ILogger _logger;
 
@@ -44,12 +46,10 @@ namespace erp.Controllers
         {
             _cache = cache;
             Configuration = configuration;
-            _hostingEnvironment = env;
+            _env = env;
             _logger = logger;
         }
 
-        // The luong cua nhan vien
-        [Route(Constants.LinkSalary.Index)]
         public IActionResult Index()
         {
             var loginId = User.Identity.Name;
@@ -62,11 +62,7 @@ namespace erp.Controllers
             return View(viewModel);
         }
 
-        // Current month: base employee. Because if new employee will apply.
-        //      Save data () each month by Hr salary people.
-        //          Save dynamic information.
-        // If previous month. use data in collection "SalaryEmployeeMonths"
-        [Route(Constants.LinkSalary.BangLuongReal)]
+        [Route(Constants.LinkSalary.VanPhong + "/" + Constants.LinkSalary.BangLuong)]
         public async Task<IActionResult> BangLuongReal(string thang)
         {
             #region Authorization
@@ -92,7 +88,7 @@ namespace erp.Controllers
 
             #region DDL
             var monthYears = new List<MonthYear>();
-            var date = new DateTime(2018, 08, 01);
+            var date = new DateTime(2018, 02, 01);
             var endDate = DateTime.Now;
             while (date.Year < endDate.Year || (date.Year == endDate.Year && date.Month <= endDate.Month))
             {
@@ -103,43 +99,41 @@ namespace erp.Controllers
                 });
                 date = date.AddMonths(1);
             }
+            if (endDate.Day > 25)
+            {
+                monthYears.Add(new MonthYear
+                {
+                    Month = endDate.AddMonths(1).Month,
+                    Year = endDate.AddMonths(1).Year
+                });
+            }
             var sortTimes = monthYears.OrderByDescending(x => x.Year).OrderByDescending(x => x.Month).ToList();
             #endregion
 
+            #region Times
             var toDate = Utility.WorkingMonthToDate(thang);
             var fromDate = toDate.AddMonths(-1).AddDays(1);
             if (string.IsNullOrEmpty(thang))
             {
                 toDate = DateTime.Now;
-                fromDate = new DateTime(toDate.AddMonths(-1).Year, toDate.AddMonths(-1).Month, 26);
+                fromDate = toDate.Day > 25 ? new DateTime(toDate.Year, toDate.Month, 26) : new DateTime(toDate.AddMonths(-1).Year, toDate.AddMonths(-1).Month, 26);
             }
-            var year = toDate.Year;
-            var month = toDate.Month;
+            var year = toDate.Day > 25 ? toDate.AddMonths(1).Year : toDate.Year;
+            var month = toDate.Day > 25 ? toDate.AddMonths(1).Month : toDate.Month;
+            thang = string.IsNullOrEmpty(thang) ? month + "-" + year : thang;
 
-            #region Save or no
-            //var isSave = string.IsNullOrEmpty(thang) ? true : false;
-            //if (!isSave)
-            //{
-            //    // Lương tháng trước xem. Khong cap nhat, luu.
-            //    // ?? 26/9 - 04/10 làm lương tháng 9.
-            //    // xác đinh??
-            //    // Lương tháng hiện tại lưu, chỉnh sửa.
-            //    var now = DateTime.Now;
-            //    var times = now.Month + "-" + now.Year;
-            //    if (now.Day > 25)
-            //    {
-            //        var nextMonth = now.AddMonths(1);
-            //        times = nextMonth.Month + "-" + nextMonth.Year;
-            //    }
-            //    var isThisMonth = thang == times ? true : false;
-            //}
+            int yearSale = new DateTime(year, month, 01).AddMonths(-2).Year;
+            int monthSale = new DateTime(year, month, 01).AddMonths(-2).Month;
+            var saleTimes = monthSale + "-" + yearSale;
             #endregion
 
-            var employees = await dbContext.Employees.Find(m => m.Enable.Equals(true) & !m.UserName.Equals(Constants.System.account)).ToListAsync();
+            var employees = await dbContext.Employees.Find(m => m.Enable.Equals(true)
+                                                        && m.SalaryType.Equals((int)ESalaryType.VP)
+                                                        && !m.UserName.Equals(Constants.System.account)).ToListAsync();
             var salaryEmployeeMonths = new List<SalaryEmployeeMonth>();
             foreach (var employee in employees)
             {
-                var salary = GetSalaryEmployeeMonth(thang, employee.Id, null, true);
+                var salary = GetSalaryEmployeeMonth(thang, employee.Id, null, true, monthSale, yearSale, 0, 0);
                 salaryEmployeeMonths.Add(salary);
             }
 
@@ -161,13 +155,14 @@ namespace erp.Controllers
                 SalaryMucLuongVung = mucluongvung,
                 SalaryEmployeeMonths = salaryEmployeeMonths,
                 MonthYears = sortTimes,
-                thang = thang
+                thang = thang,
+                saleTimes = saleTimes
             };
 
             return View(viewModel);
         }
 
-        [Route(Constants.LinkSalary.BangLuongReal + "/" + Constants.LinkSalary.Update)]
+        [Route(Constants.LinkSalary.VanPhong + "/" + Constants.LinkSalary.BangLuong + "/" + Constants.LinkSalary.Update)]
         public async Task<IActionResult> BangLuongRealUpdate(string thang)
         {
             #region Authorization
@@ -193,7 +188,7 @@ namespace erp.Controllers
 
             #region DDL
             var monthYears = new List<MonthYear>();
-            var date = new DateTime(2018, 08, 01);
+            var date = new DateTime(2018, 02, 01);
             var endDate = DateTime.Now;
             while (date.Year < endDate.Year || (date.Year == endDate.Year && date.Month <= endDate.Month))
             {
@@ -204,24 +199,41 @@ namespace erp.Controllers
                 });
                 date = date.AddMonths(1);
             }
+            if (endDate.Day > 25)
+            {
+                monthYears.Add(new MonthYear
+                {
+                    Month = endDate.AddMonths(1).Month,
+                    Year = endDate.AddMonths(1).Year
+                });
+            }
             var sortTimes = monthYears.OrderByDescending(x => x.Year).OrderByDescending(x => x.Month).ToList();
             #endregion
 
+            #region Times
             var toDate = Utility.WorkingMonthToDate(thang);
             var fromDate = toDate.AddMonths(-1).AddDays(1);
             if (string.IsNullOrEmpty(thang))
             {
                 toDate = DateTime.Now;
-                fromDate = new DateTime(toDate.AddMonths(-1).Year, toDate.AddMonths(-1).Month, 26);
+                fromDate = toDate.Day > 25 ? new DateTime(toDate.Year, toDate.Month, 26) : new DateTime(toDate.AddMonths(-1).Year, toDate.AddMonths(-1).Month, 26);
             }
-            var year = toDate.Year;
-            var month = toDate.Month;
+            var year = toDate.Day > 25 ? toDate.AddMonths(1).Year : toDate.Year;
+            var month = toDate.Day > 25 ? toDate.AddMonths(1).Month : toDate.Month;
+            thang = string.IsNullOrEmpty(thang) ? month + "-" + year : thang;
+
+            int yearSale = new DateTime(year, month, 01).AddMonths(-2).Year;
+            int monthSale = new DateTime(year, month, 01).AddMonths(-2).Month;
+            var saleTimes = monthSale + "-" + yearSale;
+            // Do later
+            // if (string.IsNullOrEmpty(sale)) { }
+            #endregion
 
             var employees = await dbContext.Employees.Find(m => m.Enable.Equals(true) & !m.UserName.Equals(Constants.System.account)).ToListAsync();
             var salaryEmployeeMonths = new List<SalaryEmployeeMonth>();
             foreach (var employee in employees)
             {
-                var salary = GetSalaryEmployeeMonth(thang, employee.Id, null, true);
+                var salary = GetSalaryEmployeeMonth(thang, employee.Id, null, true, monthSale, yearSale, 0, 0);
                 salaryEmployeeMonths.Add(salary);
             }
 
@@ -243,14 +255,15 @@ namespace erp.Controllers
                 SalaryMucLuongVung = mucluongvung,
                 SalaryEmployeeMonths = salaryEmployeeMonths,
                 MonthYears = sortTimes,
-                thang = thang
+                thang = thang,
+                saleTimes = monthSale + "-" + yearSale
             };
 
             return View(viewModel);
         }
 
         [HttpPost]
-        [Route(Constants.LinkSalary.BangLuongReal + "/" + Constants.LinkSalary.Update)]
+        [Route(Constants.LinkSalary.VanPhong + "/" + Constants.LinkSalary.BangLuong + "/" + Constants.LinkSalary.Update)]
         public async Task<IActionResult> BangLuongRealUpdate(BangLuongViewModel viewModel)
         {
             #region Authorization
@@ -278,6 +291,7 @@ namespace erp.Controllers
             // For demo: do later
             try
             {
+                #region Times
                 var now = DateTime.Now;
                 var thang = viewModel.thang;
                 var toDate = Utility.WorkingMonthToDate(thang);
@@ -285,10 +299,12 @@ namespace erp.Controllers
                 if (string.IsNullOrEmpty(thang))
                 {
                     toDate = DateTime.Now;
-                    fromDate = new DateTime(toDate.AddMonths(-1).Year, toDate.AddMonths(-1).Month, 26);
+                    fromDate = toDate.Day > 25 ? new DateTime(toDate.Year, toDate.Month, 26) : new DateTime(toDate.AddMonths(-1).Year, toDate.AddMonths(-1).Month, 26);
                 }
-                var year = toDate.Year;
-                var month = toDate.Month;
+                var year = toDate.Day > 25 ? toDate.AddMonths(1).Year : toDate.Year;
+                var month = toDate.Day > 25 ? toDate.AddMonths(1).Month : toDate.Month;
+                thang = string.IsNullOrEmpty(thang) ? month + "-" + year : thang;
+                #endregion
 
                 var models = viewModel.SalaryEmployeeMonths;
                 foreach (var item in models)
@@ -341,7 +357,7 @@ namespace erp.Controllers
             }
         }
 
-        [Route(Constants.LinkSalary.TheLuong)]
+        [Route(Constants.LinkSalary.VanPhong + "/" + Constants.LinkSalary.TheLuong)]
         public async Task<IActionResult> TheLuong(string thang)
         {
             #region Authorization
@@ -365,18 +381,55 @@ namespace erp.Controllers
 
             #endregion
 
+            #region DDL
+            var monthYears = new List<MonthYear>();
+            var date = new DateTime(2018, 02, 01);
+            var endDate = DateTime.Now;
+            while (date.Year < endDate.Year || (date.Year == endDate.Year && date.Month <= endDate.Month))
+            {
+                monthYears.Add(new MonthYear
+                {
+                    Month = date.Month,
+                    Year = date.Year
+                });
+                date = date.AddMonths(1);
+            }
+            if (endDate.Day > 25)
+            {
+                monthYears.Add(new MonthYear
+                {
+                    Month = endDate.AddMonths(1).Month,
+                    Year = endDate.AddMonths(1).Year
+                });
+            }
+            var sortTimes = monthYears.OrderByDescending(x => x.Year).OrderByDescending(x => x.Month).ToList();
+            #endregion
+
+            #region Times
+            var toDate = Utility.WorkingMonthToDate(thang);
+            var fromDate = toDate.AddMonths(-1).AddDays(1);
+            if (string.IsNullOrEmpty(thang))
+            {
+                toDate = DateTime.Now;
+                fromDate = toDate.Day > 25 ? new DateTime(toDate.Year, toDate.Month, 26) : new DateTime(toDate.AddMonths(-1).Year, toDate.AddMonths(-1).Month, 26);
+            }
+            var year = toDate.Day > 25 ? toDate.AddMonths(1).Year : toDate.Year;
+            var month = toDate.Day > 25 ? toDate.AddMonths(1).Month : toDate.Month;
+            thang = string.IsNullOrEmpty(thang) ? month + "-" + year : thang;
+            #endregion
+
             var viewModel = new BangLuongViewModel
             {
-                SalaryEmployeeMonths = await dbContext.SalaryEmployeeMonths.Find(m => m.Enable.Equals(true) & m.FlagReal.Equals(true)).ToListAsync(),
+                SalaryEmployeeMonths = await dbContext.SalaryEmployeeMonths.Find(m => m.Enable.Equals(true) && m.Law.Equals(false)).ToListAsync(),
                 SalaryMucLuongVung = await dbContext.SalaryMucLuongVungs.Find(m => m.Enable.Equals(true)).FirstOrDefaultAsync(),
-                SalaryThangBangLuongReals = await dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true) & m.FlagReal.Equals(true) & m.Law.Equals(false)).ToListAsync(),
-                SalaryThangBangPhuCapPhucLoisReal = await dbContext.SalaryThangBangPhuCapPhucLois.Find(m => m.Enable.Equals(true) & m.FlagReal.Equals(false)).ToListAsync()
+                SalaryThangBangLuongReals = await dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true) && m.Law.Equals(false)).ToListAsync(),
+                SalaryThangBangPhuCapPhucLoisReal = await dbContext.SalaryThangBangPhuCapPhucLois.Find(m => m.Enable.Equals(true) & m.Law.Equals(false)).ToListAsync()
             };
 
             return View(viewModel);
         }
 
-        [Route(Constants.LinkSalary.ThangBangLuongReal)]
+        [Route(Constants.LinkSalary.VanPhong + "/" + Constants.LinkSalary.ThangBangLuong)]
         public async Task<IActionResult> ThangBangLuongReal(string thang)
         {
             #region Authorization
@@ -402,7 +455,7 @@ namespace erp.Controllers
 
             #region DDL
             var monthYears = new List<MonthYear>();
-            var date = new DateTime(2018, 08, 01);
+            var date = new DateTime(2018, 02, 01);
             var endDate = DateTime.Now;
             while (date.Year < endDate.Year || (date.Year == endDate.Year && date.Month <= endDate.Month))
             {
@@ -413,20 +466,31 @@ namespace erp.Controllers
                 });
                 date = date.AddMonths(1);
             }
+            if (endDate.Day > 25)
+            {
+                monthYears.Add(new MonthYear
+                {
+                    Month = endDate.AddMonths(1).Month,
+                    Year = endDate.AddMonths(1).Year
+                });
+            }
             var sortTimes = monthYears.OrderByDescending(x => x.Year).OrderByDescending(x => x.Month).ToList();
             #endregion
 
+            #region Times
             var toDate = Utility.WorkingMonthToDate(thang);
             var fromDate = toDate.AddMonths(-1).AddDays(1);
             if (string.IsNullOrEmpty(thang))
             {
                 toDate = DateTime.Now;
-                fromDate = new DateTime(toDate.AddMonths(-1).Year, toDate.AddMonths(-1).Month, 26);
+                fromDate = toDate.Day > 25 ? new DateTime(toDate.Year, toDate.Month, 26) : new DateTime(toDate.AddMonths(-1).Year, toDate.AddMonths(-1).Month, 26);
             }
-            var year = toDate.Year;
-            var month = toDate.Month;
+            var year = toDate.Day > 25 ? toDate.AddMonths(1).Year : toDate.Year;
+            var month = toDate.Day > 25 ? toDate.AddMonths(1).Month : toDate.Month;
+            thang = string.IsNullOrEmpty(thang) ? month + "-" + year : thang;
+            #endregion
 
-            var mucluongvungs = await dbContext.SalaryMucLuongVungs.Find(m => m.Enable.Equals(true) & m.Month.Equals(month) & m.Year.Equals(year)).FirstOrDefaultAsync();
+            var mucluongvungs = await dbContext.SalaryMucLuongVungs.Find(m => m.Enable.Equals(true) && m.Month.Equals(month) && m.Year.Equals(year)).FirstOrDefaultAsync();
             if (mucluongvungs == null)
             {
                 var lastItemVung = await dbContext.SalaryMucLuongVungs.Find(m => m.Enable.Equals(true)).SortByDescending(m => m.Year).SortByDescending(m => m.Month).FirstOrDefaultAsync();
@@ -440,14 +504,14 @@ namespace erp.Controllers
                 mucluongvungs = await dbContext.SalaryMucLuongVungs.Find(m => m.Enable.Equals(true) & m.Month.Equals(month) & m.Year.Equals(year)).FirstOrDefaultAsync();
             }
 
-            var thangbangluongs = await dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true) & m.FlagReal.Equals(true) & m.Month.Equals(month) & m.Year.Equals(year)).ToListAsync();
+            var thangbangluongs = await dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true) && m.Law.Equals(false) && m.Month.Equals(month) && m.Year.Equals(year)).ToListAsync();
             if (thangbangluongs.Count == 0)
             {
-                var lastItem = await dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true) & m.FlagReal.Equals(true)).SortByDescending(m=>m.Year).SortByDescending(m=>m.Month).FirstOrDefaultAsync();
+                var lastItem = await dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true) && m.Law.Equals(false)).SortByDescending(m => m.Year).SortByDescending(m => m.Month).FirstOrDefaultAsync();
                 var lastMonth = lastItem.Month;
                 var lastYear = lastItem.Year;
-                var lastestThangBangLuongs = await dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true) & m.FlagReal.Equals(true) & m.Month.Equals(lastMonth) & m.Year.Equals(lastYear)).ToListAsync();
-                foreach(var item in lastestThangBangLuongs)
+                var lastestThangBangLuongs = await dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true) && m.Law.Equals(false) && m.Month.Equals(lastMonth) && m.Year.Equals(lastYear)).ToListAsync();
+                foreach (var item in lastestThangBangLuongs)
                 {
                     item.Id = null;
                     item.Month = month;
@@ -457,13 +521,13 @@ namespace erp.Controllers
                 thangbangluongs = lastestThangBangLuongs;
             }
 
-            var pcpls = await dbContext.SalaryThangBangPhuCapPhucLois.Find(m => m.Enable.Equals(true) & m.FlagReal.Equals(true) & m.Month.Equals(month) & m.Year.Equals(year)).ToListAsync();
+            var pcpls = await dbContext.SalaryThangBangPhuCapPhucLois.Find(m => m.Enable.Equals(true) && m.Law.Equals(false) && m.Month.Equals(month) && m.Year.Equals(year)).ToListAsync();
             if (pcpls.Count == 0)
             {
-                var lastItemPC = await dbContext.SalaryThangBangPhuCapPhucLois.Find(m => m.Enable.Equals(true) & m.FlagReal.Equals(true)).SortByDescending(m => m.Year).SortByDescending(m => m.Month).FirstOrDefaultAsync();
+                var lastItemPC = await dbContext.SalaryThangBangPhuCapPhucLois.Find(m => m.Enable.Equals(true) && m.Law.Equals(false)).SortByDescending(m => m.Year).SortByDescending(m => m.Month).FirstOrDefaultAsync();
                 var lastMonthPC = lastItemPC.Month;
                 var lastYearPC = lastItemPC.Year;
-                var lastestPcplss = await dbContext.SalaryThangBangPhuCapPhucLois.Find(m => m.Enable.Equals(true) & m.FlagReal.Equals(true) & m.Month.Equals(lastMonthPC) & m.Year.Equals(lastYearPC)).ToListAsync();
+                var lastestPcplss = await dbContext.SalaryThangBangPhuCapPhucLois.Find(m => m.Enable.Equals(true) && m.Law.Equals(false) && m.Month.Equals(lastMonthPC) && m.Year.Equals(lastYearPC)).ToListAsync();
                 foreach (var item in lastestPcplss)
                 {
                     item.Id = null;
@@ -485,7 +549,7 @@ namespace erp.Controllers
             return View(viewModel);
         }
 
-        [Route(Constants.LinkSalary.ThangBangLuongReal + "/" + Constants.LinkSalary.Update)]
+        [Route(Constants.LinkSalary.VanPhong + "/" + Constants.LinkSalary.ThangBangLuong + "/" + Constants.LinkSalary.Update)]
         public async Task<IActionResult> ThangBangLuongRealUpdate(string thang)
         {
             #region Authorization
@@ -511,7 +575,7 @@ namespace erp.Controllers
 
             #region DDL
             var monthYears = new List<MonthYear>();
-            var date = new DateTime(2018, 08, 01);
+            var date = new DateTime(2018, 02, 01);
             var endDate = DateTime.Now;
             while (date.Year < endDate.Year || (date.Year == endDate.Year && date.Month <= endDate.Month))
             {
@@ -522,19 +586,29 @@ namespace erp.Controllers
                 });
                 date = date.AddMonths(1);
             }
+            if (endDate.Day > 25)
+            {
+                monthYears.Add(new MonthYear
+                {
+                    Month = endDate.AddMonths(1).Month,
+                    Year = endDate.AddMonths(1).Year
+                });
+            }
             var sortTimes = monthYears.OrderByDescending(x => x.Year).OrderByDescending(x => x.Month).ToList();
             #endregion
 
+            #region Times
             var toDate = Utility.WorkingMonthToDate(thang);
             var fromDate = toDate.AddMonths(-1).AddDays(1);
             if (string.IsNullOrEmpty(thang))
             {
                 toDate = DateTime.Now;
-                fromDate = new DateTime(toDate.AddMonths(-1).Year, toDate.AddMonths(-1).Month, 26);
+                fromDate = toDate.Day > 25 ? new DateTime(toDate.Year, toDate.Month, 26) : new DateTime(toDate.AddMonths(-1).Year, toDate.AddMonths(-1).Month, 26);
             }
-            var year = toDate.Year;
-            var month = toDate.Month;
-            thang = string.IsNullOrEmpty(thang) ? month +"-" + year : thang;
+            var year = toDate.Day > 25 ? toDate.AddMonths(1).Year : toDate.Year;
+            var month = toDate.Day > 25 ? toDate.AddMonths(1).Month : toDate.Month;
+            thang = string.IsNullOrEmpty(thang) ? month + "-" + year : thang;
+            #endregion
 
             var mucluongvungs = await dbContext.SalaryMucLuongVungs.Find(m => m.Enable.Equals(true) & m.Month.Equals(month) & m.Year.Equals(year)).FirstOrDefaultAsync();
             if (mucluongvungs == null)
@@ -550,13 +624,13 @@ namespace erp.Controllers
                 mucluongvungs = await dbContext.SalaryMucLuongVungs.Find(m => m.Enable.Equals(true) & m.Month.Equals(month) & m.Year.Equals(year)).FirstOrDefaultAsync(); ;
             }
 
-            var thangbangluongs = await dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true) & m.FlagReal.Equals(true) & m.Month.Equals(month) & m.Year.Equals(year)).ToListAsync();
+            var thangbangluongs = await dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true) & m.Law.Equals(false) & m.Month.Equals(month) & m.Year.Equals(year)).ToListAsync();
             if (thangbangluongs.Count == 0)
             {
-                var lastItem = await dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true) & m.FlagReal.Equals(true)).SortByDescending(m => m.Year).SortByDescending(m => m.Month).FirstOrDefaultAsync();
+                var lastItem = await dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true) & m.Law.Equals(false)).SortByDescending(m => m.Year).SortByDescending(m => m.Month).FirstOrDefaultAsync();
                 var lastMonth = lastItem.Month;
                 var lastYear = lastItem.Year;
-                var lastestThangBangLuongs = await dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true) & m.FlagReal.Equals(true) & m.Month.Equals(lastMonth) & m.Year.Equals(lastYear)).ToListAsync();
+                var lastestThangBangLuongs = await dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true) & m.Law.Equals(false) & m.Month.Equals(lastMonth) & m.Year.Equals(lastYear)).ToListAsync();
                 foreach (var item in lastestThangBangLuongs)
                 {
                     item.Id = null;
@@ -564,16 +638,16 @@ namespace erp.Controllers
                     item.Year = year;
                     dbContext.SalaryThangBangLuongs.InsertOne(item);
                 }
-                thangbangluongs = await dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true) & m.FlagReal.Equals(true) & m.Month.Equals(month) & m.Year.Equals(year)).ToListAsync();
+                thangbangluongs = await dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true) & m.Law.Equals(false) & m.Month.Equals(month) & m.Year.Equals(year)).ToListAsync();
             }
 
-            var pcpls = await dbContext.SalaryThangBangPhuCapPhucLois.Find(m => m.Enable.Equals(true) & m.FlagReal.Equals(true) & m.Month.Equals(month) & m.Year.Equals(year)).ToListAsync();
+            var pcpls = await dbContext.SalaryThangBangPhuCapPhucLois.Find(m => m.Enable.Equals(true) & m.Law.Equals(false) & m.Month.Equals(month) & m.Year.Equals(year)).ToListAsync();
             if (pcpls.Count == 0)
             {
-                var lastItemPC = await dbContext.SalaryThangBangPhuCapPhucLois.Find(m => m.Enable.Equals(true) & m.FlagReal.Equals(true)).SortByDescending(m => m.Year).SortByDescending(m => m.Month).FirstOrDefaultAsync();
+                var lastItemPC = await dbContext.SalaryThangBangPhuCapPhucLois.Find(m => m.Enable.Equals(true) & m.Law.Equals(false)).SortByDescending(m => m.Year).SortByDescending(m => m.Month).FirstOrDefaultAsync();
                 var lastMonthPC = lastItemPC.Month;
                 var lastYearPC = lastItemPC.Year;
-                var lastestPcplss = await dbContext.SalaryThangBangPhuCapPhucLois.Find(m => m.Enable.Equals(true) & m.FlagReal.Equals(true) & m.Month.Equals(lastMonthPC) & m.Year.Equals(lastYearPC)).ToListAsync();
+                var lastestPcplss = await dbContext.SalaryThangBangPhuCapPhucLois.Find(m => m.Enable.Equals(true) & m.Law.Equals(false) & m.Month.Equals(lastMonthPC) & m.Year.Equals(lastYearPC)).ToListAsync();
                 foreach (var item in lastestPcplss)
                 {
                     item.Id = null;
@@ -581,7 +655,7 @@ namespace erp.Controllers
                     item.Year = year;
                     dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(item);
                 }
-                pcpls = await dbContext.SalaryThangBangPhuCapPhucLois.Find(m => m.Enable.Equals(true) & m.FlagReal.Equals(true) & m.Month.Equals(month) & m.Year.Equals(year)).ToListAsync(); ;
+                pcpls = await dbContext.SalaryThangBangPhuCapPhucLois.Find(m => m.Enable.Equals(true) & m.Law.Equals(false) & m.Month.Equals(month) & m.Year.Equals(year)).ToListAsync(); ;
             }
 
             var viewModel = new ThangBangLuongViewModel
@@ -597,7 +671,7 @@ namespace erp.Controllers
         }
 
         [HttpPost]
-        [Route(Constants.LinkSalary.ThangBangLuongReal + "/" + Constants.LinkSalary.Update)]
+        [Route(Constants.LinkSalary.VanPhong + "/" + Constants.LinkSalary.ThangBangLuong + "/" + Constants.LinkSalary.Update)]
         public async Task<IActionResult> ThangBangLuongRealUpdate(ThangBangLuongViewModel viewModel)
         {
             #region Authorization
@@ -642,7 +716,7 @@ namespace erp.Controllers
                 var builderSalaryMucLuongVung = Builders<SalaryMucLuongVung>.Filter;
                 var filterSalaryMucLuongVung = builderSalaryMucLuongVung.Eq(m => m.Id, salaryMucLuongVung.Id);
                 var updateSalaryMucLuongVung = Builders<SalaryMucLuongVung>.Update
-                    .Set(m => m.ToiThieuVungDoanhNghiepApDung, salaryMucLuongVung.ToiThieuVungDoanhNghiepApDung *1000)
+                    .Set(m => m.ToiThieuVungDoanhNghiepApDung, salaryMucLuongVung.ToiThieuVungDoanhNghiepApDung * 1000)
                     .Set(m => m.UpdatedOn, now);
                 dbContext.SalaryMucLuongVungs.UpdateOne(filterSalaryMucLuongVung, updateSalaryMucLuongVung);
                 #endregion
@@ -683,7 +757,7 @@ namespace erp.Controllers
                             {
                                 salaryDeclareTax = heso * salaryDeclareTax;
                             }
-                            var exist = dbContext.SalaryThangBangLuongs.CountDocuments(m => m.ViTriCode.Equals(vitriCode) & m.Bac.Equals(lv) & m.FlagReal.Equals(true) & m.Month.Equals(month) & m.Year.Equals(year));
+                            var exist = dbContext.SalaryThangBangLuongs.CountDocuments(m => m.ViTriCode.Equals(vitriCode) & m.Bac.Equals(lv) & m.Law.Equals(false) & m.Month.Equals(month) & m.Year.Equals(year));
                             if (exist > 0)
                             {
                                 var builderSalaryThangBangLuong = Builders<SalaryThangBangLuong>.Filter;
@@ -709,8 +783,7 @@ namespace erp.Controllers
                                     MucLuong = salaryDeclareTax,
                                     ViTriCode = vitriCode,
                                     ViTriAlias = vitriAlias,
-                                    Law = false,
-                                    FlagReal = true
+                                    Law = false
                                 });
                             }
                         }
@@ -722,7 +795,7 @@ namespace erp.Controllers
                         if (!string.IsNullOrEmpty(vitri))
                         {
                             var vitriAlias = Utility.AliasConvert(group.Salaries[0].ViTri);
-                            string vitriLastCode = dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true) & m.FlagReal.Equals(true)).SortByDescending(m => m.ViTriCode).FirstOrDefault().ViTriCode;
+                            string vitriLastCode = dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true) & m.Law.Equals(false)).SortByDescending(m => m.ViTriCode).FirstOrDefault().ViTriCode;
                             int newCode = Convert.ToInt32(vitriLastCode.Split('-')[1]) + 1;
                             string newCodeFull = Constants.System.viTriCodeTBLuong + newCode.ToString("000");
                             var salaryDeclareTax = group.Salaries[0].MucLuong * 1000;
@@ -748,8 +821,7 @@ namespace erp.Controllers
                                     MucLuong = salaryDeclareTax,
                                     ViTriCode = newCodeFull,
                                     ViTriAlias = vitriAlias,
-                                    Law = false,
-                                    FlagReal = true
+                                    Law = false
                                 });
                             }
                         }
@@ -765,10 +837,9 @@ namespace erp.Controllers
             }
         }
 
-        // LAWS - BAO CAO THUE
-        // AUTOMATIC DATA, BASE EMPLOYEES
-        [Route(Constants.LinkSalary.BangLuongLaw)]
-        public async Task<IActionResult> BangLuongLaw(string thang)
+        #region SALES
+        [Route(Constants.LinkSalary.SaleKPIEmployee)]
+        public async Task<IActionResult> SaleKPIEmployee(string thang)
         {
             #region Authorization
             var login = User.Identity.Name;
@@ -784,16 +855,17 @@ namespace erp.Controllers
                 return RedirectToAction("login", "account");
             }
 
-            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, "nhan-su", (int)ERights.View)))
+            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.LuongVP, (int)ERights.View)))
             {
                 return RedirectToAction("AccessDenied", "Account");
             }
+
 
             #endregion
 
             #region DDL
             var monthYears = new List<MonthYear>();
-            var date = new DateTime(2018, 08, 01);
+            var date = new DateTime(2018, 02, 01);
             var endDate = DateTime.Now;
             while (date.Year < endDate.Year || (date.Year == endDate.Year && date.Month <= endDate.Month))
             {
@@ -804,152 +876,38 @@ namespace erp.Controllers
                 });
                 date = date.AddMonths(1);
             }
+            if (endDate.Day > 25)
+            {
+                monthYears.Add(new MonthYear
+                {
+                    Month = endDate.AddMonths(1).Month,
+                    Year = endDate.AddMonths(1).Year
+                });
+            }
             var sortTimes = monthYears.OrderByDescending(x => x.Year).OrderByDescending(x => x.Month).ToList();
             #endregion
 
+            #region Times
             var toDate = Utility.WorkingMonthToDate(thang);
             var fromDate = toDate.AddMonths(-1).AddDays(1);
-            // override times if null
             if (string.IsNullOrEmpty(thang))
             {
                 toDate = DateTime.Now;
-                fromDate = new DateTime(toDate.AddMonths(-1).Year, toDate.AddMonths(-1).Month, 26);
+                fromDate = toDate.Day > 25 ? new DateTime(toDate.Year, toDate.Month, 26) : new DateTime(toDate.AddMonths(-1).Year, toDate.AddMonths(-1).Month, 26);
             }
-            var year = toDate.Year;
-            var month = toDate.Month;
+            var year = toDate.Day > 25 ? toDate.AddMonths(1).Year : toDate.Year;
+            var month = toDate.Day > 25 ? toDate.AddMonths(1).Month : toDate.Month;
+            thang = string.IsNullOrEmpty(thang) ? month + "-" + year : thang;
+            #endregion
 
-            var mucluongvung = await dbContext.SalaryMucLuongVungs.Find(m => m.Enable.Equals(true) & m.Month.Equals(month) & m.Year.Equals(year)).FirstOrDefaultAsync();
-            var salaryEmployeeMonths = await dbContext.SalaryEmployeeMonths.Find(m => m.Enable.Equals(true) & m.Month.Equals(month) & m.Year.Equals(year) & m.LuongCanBan > 0).ToListAsync();
-            // Because phucap, phuc loi # thuc te
-            // Override phucap-phucloi
-            foreach (var item in salaryEmployeeMonths)
-            {
-                decimal luongCB = 0;
-                decimal nangnhoc = 0;
-                decimal trachnhiem = 0;
-                decimal thamnien = 0;
-                decimal thuhut = 0;
-                decimal dienthoai = 0;
-                decimal xang = 0;
-                decimal com = 0;
-                decimal nhao = 0;
-                decimal kiemnhiem = 0;
-                decimal bhytdacbiet = 0;
-                decimal vitricanknnhieunam = 0;
-                decimal vitridacthu = 0;
-                decimal luongKhac = 0;
-                decimal thiDua = 0;
-                decimal hoTroNgoaiLuong = 0;
-                decimal thuongletet = 0;
-                decimal luongcbbaogomphucap = 0;
-                decimal ngayNghiPhepHuongLuong = 0;
-                decimal ngayNghiLeTetHuongLuong = 0;
-                decimal congCNGio = 0;
-                decimal phutcongCN = 0;
-                decimal congTangCaNgayThuongGio = 0;
-                decimal phutcongTangCaNgayThuong = 0;
-                decimal congLeTet = 0;
-                decimal phutcongLeTet = 0;
-                decimal congTacXa = 0;
-                decimal tongBunBoc = 0;
-                decimal thanhTienBunBoc = 0;
-                decimal mucDatTrongThang = 0;
-                decimal luongTheoDoanhThuDoanhSo = 0;
-                decimal mauSo = item.MauSo;
-                decimal ngayConglamViec = Utility.BusinessDaysUntil(fromDate, toDate);
-                decimal phutconglamviec = ngayConglamViec * 8 * 60;
+            var salekpis = GetSaleKPIs(month, year);
 
-                luongCB = item.LuongThamGiaBHXH;
-                item.LuongCanBan = luongCB;
-                var phucapphuclois = dbContext.SalaryThangBangPhuCapPhucLois.Find(m => m.EmployeeId.Equals(item.EmployeeId) & m.FlagReal.Equals(false)).SortByDescending(m => m.Year).SortByDescending(m => m.Month).ToList();
-                if (phucapphuclois.Find(m => m.Code.Equals("01-001")) != null)
-                {
-                    nangnhoc = phucapphuclois.Find(m => m.Code.Equals("01-001")).Money;
-                    item.NangNhocDocHai = nangnhoc;
-                }
-                if (phucapphuclois.Find(m => m.Code.Equals("01-002")) != null)
-                {
-                    trachnhiem = phucapphuclois.Find(m => m.Code.Equals("01-002")).Money;
-                    item.TrachNhiem = trachnhiem;
-                }
-                if (phucapphuclois.Find(m => m.Code.Equals("01-004")) != null)
-                {
-                    thuhut = phucapphuclois.Find(m => m.Code.Equals("01-004")).Money;
-                    item.ThuHut = thuhut;
-                }
-                if (phucapphuclois.Find(m => m.Code.Equals("02-001")) != null)
-                {
-                    xang = phucapphuclois.Find(m => m.Code.Equals("02-001")).Money;
-                    item.Xang = xang;
-                }
-                if (phucapphuclois.Find(m => m.Code.Equals("02-002")) != null)
-                {
-                    dienthoai = phucapphuclois.Find(m => m.Code.Equals("02-002")).Money;
-                    item.DienThoai = dienthoai;
-                }
-                if (phucapphuclois.Find(m => m.Code.Equals("02-003")) != null)
-                {
-                    com = phucapphuclois.Find(m => m.Code.Equals("02-003")).Money;
-                    item.Com = com;
-                }
-                if (phucapphuclois.Find(m => m.Code.Equals("02-004")) != null)
-                {
-                    kiemnhiem = phucapphuclois.Find(m => m.Code.Equals("02-004")).Money;
-                    item.KiemNhiem = kiemnhiem;
-                }
-                if (phucapphuclois.Find(m => m.Code.Equals("02-005")) != null)
-                {
-                    bhytdacbiet = phucapphuclois.Find(m => m.Code.Equals("02-005")).Money;
-                    item.BhytDacBiet = bhytdacbiet;
-                }
-                if (phucapphuclois.Find(m => m.Code.Equals("02-006")) != null)
-                {
-                    vitricanknnhieunam = phucapphuclois.Find(m => m.Code.Equals("02-006")).Money;
-                    item.ViTriCanKnNhieuNam = vitricanknnhieunam;
-                }
-                if (phucapphuclois.Find(m => m.Code.Equals("02-007")) != null)
-                {
-                    vitridacthu = phucapphuclois.Find(m => m.Code.Equals("02-007")).Money;
-                    item.ViTriDacThu = vitridacthu;
-                }
-                if (phucapphuclois.Find(m => m.Code.Equals("02-008")) != null)
-                {
-                    nhao = phucapphuclois.Find(m => m.Code.Equals("02-008")).Money;
-                    item.NhaO = nhao;
-                }
-                if (item.ThamNien > 0)
-                {
-                    thamnien = luongCB * Convert.ToDecimal(0.03 + (item.ThamNienYear - 3) * 0.01); ;
-                    item.ThamNien = thamnien;
-                }
-
-                luongcbbaogomphucap = luongCB + nangnhoc + trachnhiem + thamnien + thuhut + dienthoai + xang + com + nhao + kiemnhiem + bhytdacbiet + vitricanknnhieunam + vitridacthu;
-                item.LuongCoBanBaoGomPhuCap = luongcbbaogomphucap;
-
-                decimal tongthunhap = luongcbbaogomphucap / mauSo * (ngayConglamViec + congCNGio / 8 * 2 + congTangCaNgayThuongGio / 8 * (decimal)1.5 + congLeTet * 3)
-                                    + luongCB / mauSo * (ngayNghiPhepHuongLuong + ngayNghiLeTetHuongLuong)
-                                    + congTacXa + luongTheoDoanhThuDoanhSo + thanhTienBunBoc + luongKhac + thiDua + hoTroNgoaiLuong;
-                item.TongThuNhap = tongthunhap;
-
-                decimal thunhapbydate = luongcbbaogomphucap / mauSo;
-                decimal thunhapbyminute = thunhapbydate / 8 / 60;
-                decimal tongthunhapminute = thunhapbyminute * (phutconglamviec + (phutcongCN * 2) + (phutcongTangCaNgayThuong * (decimal)1.5) + (phutcongLeTet * 3))
-                                    + luongCB / mauSo * (ngayNghiPhepHuongLuong + ngayNghiLeTetHuongLuong)
-                                    + congTacXa + luongTheoDoanhThuDoanhSo + thanhTienBunBoc + luongKhac + thiDua + hoTroNgoaiLuong;
-                item.TongThuNhapMinute = tongthunhapminute;
-                decimal bhxhbhyt = 0;
-                decimal tamung = item.TamUng;
-                decimal thuclanh = tongthunhap - bhxhbhyt - tamung + thuongletet;
-                item.ThucLanh = thuclanh;
-                decimal thuclanhminute = tongthunhapminute - bhxhbhyt - tamung + thuongletet;
-                item.ThucLanhMinute = thuclanhminute;
-
-            }
+            var saleKPIEmployees = GetSaleKPIEmployees(month, year);
 
             var viewModel = new BangLuongViewModel
             {
-                SalaryEmployeeMonths = salaryEmployeeMonths,
-                SalaryMucLuongVung = mucluongvung,
+                SaleKPIs = salekpis,
+                SaleKPIEmployees = saleKPIEmployees,
                 MonthYears = sortTimes,
                 thang = thang
             };
@@ -957,8 +915,8 @@ namespace erp.Controllers
             return View(viewModel);
         }
 
-        [Route(Constants.LinkSalary.ThangBangLuongLaw)]
-        public async Task<IActionResult> ThangBangLuongLaw()
+        [Route(Constants.LinkSalary.SaleKPIEmployee + "/" + Constants.LinkSalary.Update)]
+        public async Task<IActionResult> SaleKPIEmployeeUpdate(string thang)
         {
             #region Authorization
             var login = User.Identity.Name;
@@ -974,391 +932,7 @@ namespace erp.Controllers
                 return RedirectToAction("login", "account");
             }
 
-            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, "nhan-su", (int)ERights.View)))
-            {
-                return RedirectToAction("AccessDenied", "Account");
-            }
-
-            #endregion
-
-            var viewModel = new ThangBangLuongViewModel
-            {
-                SalaryMucLuongVung = await dbContext.SalaryMucLuongVungs.Find(m => m.Enable.Equals(true)).FirstOrDefaultAsync(),
-                SalaryThangBangLuongLaws = await dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true) & m.FlagReal.Equals(false) & m.Law.Equals(true)).ToListAsync(),
-                SalaryThangBangPhuCapPhucLois = await dbContext.SalaryThangBangPhuCapPhucLois.Find(m => m.Enable.Equals(true) & m.FlagReal.Equals(false)).ToListAsync()
-            };
-
-            return View(viewModel);
-        }
-
-        [Route(Constants.LinkSalary.ThangBangLuongLaw + "/" + Constants.LinkSalary.Update)]
-        public async Task<IActionResult> ThangBangLuongLawUpdate()
-        {
-            #region Authorization
-            var login = User.Identity.Name;
-            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
-            ViewData["LoginUserName"] = loginUserName;
-
-            var loginInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
-            if (loginInformation == null)
-            {
-                #region snippet1
-                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                #endregion
-                return RedirectToAction("login", "account");
-            }
-
-            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, "nhan-su", (int)ERights.View)))
-            {
-                return RedirectToAction("AccessDenied", "Account");
-            }
-
-            #endregion
-
-            var viewModel = new ThangBangLuongViewModel
-            {
-                SalaryMucLuongVung = await dbContext.SalaryMucLuongVungs.Find(m => m.Enable.Equals(true)).FirstOrDefaultAsync(),
-                SalaryThangBangLuongLaws = await dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true) & m.FlagReal.Equals(false) & m.Law.Equals(true)).ToListAsync(),
-                SalaryThangBangPhuCapPhucLois = await dbContext.SalaryThangBangPhuCapPhucLois.Find(m => m.Enable.Equals(true) & m.FlagReal.Equals(false)).ToListAsync()
-            };
-
-            return View(viewModel);
-        }
-
-        [HttpPost]
-        [Route(Constants.LinkSalary.ThangBangLuongLaw + "/" + Constants.LinkSalary.Update)]
-        public async Task<IActionResult> ThangBangLuongLawUpdate(ThangBangLuongViewModel viewModel)
-        {
-            #region Authorization
-            var login = User.Identity.Name;
-            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
-            ViewData["LoginUserName"] = loginUserName;
-
-            var loginInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
-            if (loginInformation == null)
-            {
-                #region snippet1
-                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                #endregion
-                return RedirectToAction("login", "account");
-            }
-
-            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, "nhan-su", (int)ERights.View)))
-            {
-                return RedirectToAction("AccessDenied", "Account");
-            }
-
-            #endregion
-
-            try
-            {
-                var now = DateTime.Now;
-
-                #region ToiThieuVung
-                var salaryMucLuongVung = viewModel.SalaryMucLuongVung;
-                var builderSalaryMucLuongVung = Builders<SalaryMucLuongVung>.Filter;
-                var filterSalaryMucLuongVung = builderSalaryMucLuongVung.Eq(m => m.Id, salaryMucLuongVung.Id);
-                var updateSalaryMucLuongVung = Builders<SalaryMucLuongVung>.Update
-                    .Set(m => m.ToiThieuVungQuiDinh, salaryMucLuongVung.ToiThieuVungQuiDinh)
-                    .Set(m => m.ToiThieuVungDoanhNghiepApDung, salaryMucLuongVung.ToiThieuVungDoanhNghiepApDung)
-                    .Set(m => m.UpdatedOn, now);
-                dbContext.SalaryMucLuongVungs.UpdateOne(filterSalaryMucLuongVung, updateSalaryMucLuongVung);
-                #endregion
-
-                #region SalaryThangBangLuongLaws
-                decimal salaryMin = salaryMucLuongVung.ToiThieuVungDoanhNghiepApDung;
-                var salaryThangBangLuongLaws = viewModel.SalaryThangBangLuongLaws;
-                var groups = (from a in salaryThangBangLuongLaws
-                              group a by new
-                              {
-                                  a.MaSo
-                              }
-                                                    into b
-                              select new
-                              {
-                                  MaSoName = b.Key.MaSo,
-                                  Salaries = b.ToList(),
-                              }).ToList();
-
-                foreach (var group in groups)
-                {
-                    // reset salaryDeclareTax;
-                    var salaryDeclareTax = salaryMin;
-                    if (group.Salaries[0].MucLuong > 0)
-                    {
-                        salaryDeclareTax = group.Salaries[0].MucLuong;
-                    }
-                    foreach (var level in group.Salaries)
-                    {
-                        // bac 1 set manual
-                        if (level.Bac > 1)
-                        {
-                            salaryDeclareTax = level.HeSo * salaryDeclareTax;
-                        }
-                        var builderSalaryThangBangLuong = Builders<SalaryThangBangLuong>.Filter;
-                        var filterSalaryThangBangLuong = builderSalaryThangBangLuong.Eq(m => m.Id, level.Id);
-                        var updateSalaryThangBangLuong = Builders<SalaryThangBangLuong>.Update
-                            .Set(m => m.MucLuong, salaryDeclareTax)
-                            .Set(m => m.HeSo, level.HeSo)
-                            .Set(m => m.UpdatedOn, now);
-                        dbContext.SalaryThangBangLuongs.UpdateOne(filterSalaryThangBangLuong, updateSalaryThangBangLuong);
-                    }
-                }
-                #endregion
-
-                #region SalaryThangBangPhuCapPhucLois
-
-                foreach (var phucap in viewModel.SalaryThangBangPhuCapPhucLois)
-                {
-                    // Update if id not null
-                    if (!string.IsNullOrEmpty(phucap.Id))
-                    {
-                        var builderSalaryThangBangPhuCapPhucLoi = Builders<SalaryThangBangPhuCapPhucLoi>.Filter;
-                        var filterSalaryThangBangPhuCapPhucLoi = builderSalaryThangBangPhuCapPhucLoi.Eq(m => m.Id, phucap.Id);
-                        var updateSalaryThangBangPhuCapPhucLoi = Builders<SalaryThangBangPhuCapPhucLoi>.Update
-                            .Set(m => m.Money, phucap.Money)
-                            .Set(m => m.UpdatedOn, now);
-                        dbContext.SalaryThangBangPhuCapPhucLois.UpdateOne(filterSalaryThangBangPhuCapPhucLoi, updateSalaryThangBangPhuCapPhucLoi);
-                    }
-                    else
-                    {
-                        var phucapInformation = dbContext.SalaryPhuCapPhucLois.Find(m => m.Code.Equals(phucap.Code)).FirstOrDefault();
-                        if (phucapInformation != null)
-                        {
-                            phucap.Name = phucapInformation.Name;
-                        }
-                        dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(phucap);
-                    }
-                }
-                #endregion
-
-                // PROCCESSING
-
-                #region Activities
-                // Update multi, insert multi
-                string s = JsonConvert.SerializeObject(viewModel.SalaryThangBangLuongLaws);
-                var activity = new TrackingUser
-                {
-                    UserId = login,
-                    Function = Constants.Collection.SalaryThangBangLuong,
-                    Action = Constants.Action.Create,
-                    Value = s,
-                    Content = Constants.Action.Create,
-                };
-                await dbContext.TrackingUsers.InsertOneAsync(activity);
-                #endregion
-
-                return Json(new { result = true, source = "create", message = "Thành công" });
-            }
-            catch (Exception ex)
-            {
-                return Json(new { result = false, source = "create", id = string.Empty, message = ex.Message });
-            }
-        }
-
-        #region NHA MAY
-
-        #endregion
-
-        #region SUB DATA (SALES, LOGISTICS,...)
-        [Route(Constants.LinkSalary.Setting + "/" + Constants.LinkSalary.Update)]
-        public async Task<IActionResult> SettingUpdate()
-        {
-            #region Authorization
-            var login = User.Identity.Name;
-            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
-            ViewData["LoginUserName"] = loginUserName;
-
-            var loginInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
-            if (loginInformation == null)
-            {
-                #region snippet1
-                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                #endregion
-                return RedirectToAction("login", "account");
-            }
-
-            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, "nhan-su", (int)ERights.View)))
-            {
-                return RedirectToAction("AccessDenied", "Account");
-            }
-
-
-            #endregion
-
-            var viewModel = new BangLuongViewModel
-            {
-                SalarySettings = await dbContext.SalarySettings.Find(m => m.Enable.Equals(true)).ToListAsync()
-            };
-
-            return View(viewModel);
-        }
-
-        [HttpPost]
-        [Route(Constants.LinkSalary.Setting + "/" + Constants.LinkSalary.Update)]
-        public async Task<IActionResult> SettingUpdate(BangLuongViewModel viewModel)
-        {
-            #region Authorization
-            var login = User.Identity.Name;
-            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
-            ViewData["LoginUserName"] = loginUserName;
-
-            var loginInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
-            if (loginInformation == null)
-            {
-                #region snippet1
-                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                #endregion
-                return RedirectToAction("login", "account");
-            }
-
-            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, "nhan-su", (int)ERights.View)))
-            {
-                return RedirectToAction("AccessDenied", "Account");
-            }
-
-
-            #endregion
-
-            foreach (var item in viewModel.SalarySettings)
-            {
-                var builder = Builders<SalarySetting>.Filter;
-                var filter = builder.Eq(m => m.Id, item.Id);
-                var update = Builders<SalarySetting>.Update
-                    .Set(m => m.Value, item.Value)
-                    .Set(m => m.Description, item.Description)
-                    .Set(m => m.UpdatedOn, DateTime.Now);
-                dbContext.SalarySettings.UpdateOne(filter, update);
-            }
-
-            return Json(new { result = true, source = "update", message = "Thành công" });
-        }
-
-        [Route(Constants.LinkSalary.Credits + "/" + Constants.LinkSalary.Update)]
-        public async Task<IActionResult> CreditUpdate()
-        {
-            #region Authorization
-            var login = User.Identity.Name;
-            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
-            ViewData["LoginUserName"] = loginUserName;
-
-            var loginInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
-            if (loginInformation == null)
-            {
-                #region snippet1
-                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                #endregion
-                return RedirectToAction("login", "account");
-            }
-
-            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, "nhan-su", (int)ERights.View)))
-            {
-                return RedirectToAction("AccessDenied", "Account");
-            }
-
-
-            #endregion
-
-            var credits = new List<SalaryCredit>();
-            var employees = await dbContext.Employees.Find(m => m.Enable.Equals(true) & !m.UserName.Equals(Constants.System.account)).ToListAsync();
-            foreach (var employee in employees)
-            {
-                decimal mucthanhtoanhangthang = 0;
-                var credit = await dbContext.SalaryCredits.Find(m => m.EmployeeId.Equals(employee.Id)).FirstOrDefaultAsync();
-                if (credit != null)
-                {
-                    mucthanhtoanhangthang = credit.MucThanhToanHangThang;
-                    credits.Add(new SalaryCredit
-                    {
-                        Id = credit.Id,
-                        EmployeeId = employee.Id,
-                        MaNhanVien = employee.CodeOld,
-                        FullName = employee.FullName,
-                        ChucVu = employee.SalaryChucVu,
-                        MucThanhToanHangThang = mucthanhtoanhangthang
-                    });
-                }
-                else
-                {
-                    var creditItem = new SalaryCredit
-                    {
-                        EmployeeId = employee.Id,
-                        MaNhanVien = employee.CodeOld,
-                        FullName = employee.FullName,
-                        ChucVu = employee.SalaryChucVu,
-                        MucThanhToanHangThang = mucthanhtoanhangthang
-                    };
-                    credits.Add(creditItem);
-                    dbContext.SalaryCredits.InsertOne(creditItem);
-                }
-            }
-
-            var viewModel = new BangLuongViewModel
-            {
-                SalaryCredits = credits
-            };
-
-            return View(viewModel);
-        }
-
-        [HttpPost]
-        [Route(Constants.LinkSalary.Credits + "/" + Constants.LinkSalary.Update)]
-        public async Task<IActionResult> CreditUpdate(BangLuongViewModel viewModel)
-        {
-            #region Authorization
-            var login = User.Identity.Name;
-            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
-            ViewData["LoginUserName"] = loginUserName;
-
-            var loginInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
-            if (loginInformation == null)
-            {
-                #region snippet1
-                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                #endregion
-                return RedirectToAction("login", "account");
-            }
-
-            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, "nhan-su", (int)ERights.View)))
-            {
-                return RedirectToAction("AccessDenied", "Account");
-            }
-
-
-            #endregion
-
-            foreach (var item in viewModel.SalaryCredits)
-            {
-                var builder = Builders<SalaryCredit>.Filter;
-                var filter = builder.Eq(m => m.Id, item.Id);
-                var update = Builders<SalaryCredit>.Update
-                    .Set(m => m.MucThanhToanHangThang, item.MucThanhToanHangThang * 1000)
-                    .Set(m => m.Status, item.Status)
-                    .Set(m => m.UpdatedOn, DateTime.Now);
-                dbContext.SalaryCredits.UpdateOne(filter, update);
-            }
-
-            return Json(new { result = true, source = "update", message = "Thành công" });
-        }
-
-        [Route(Constants.LinkSalary.LogisticDatas + "/" + Constants.LinkSalary.Update)]
-        public async Task<IActionResult> LogisticDataUpdate(string thang)
-        {
-            #region Authorization
-            var login = User.Identity.Name;
-            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
-            ViewData["LoginUserName"] = loginUserName;
-
-            var loginInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
-            if (loginInformation == null)
-            {
-                #region snippet1
-                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                #endregion
-                return RedirectToAction("login", "account");
-            }
-
-            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, "nhan-su", (int)ERights.View)))
+            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.LuongVP, (int)ERights.View)))
             {
                 return RedirectToAction("AccessDenied", "Account");
             }
@@ -1368,7 +942,7 @@ namespace erp.Controllers
 
             #region DDL
             var monthYears = new List<MonthYear>();
-            var date = new DateTime(2018, 08, 01);
+            var date = new DateTime(2018, 02, 01);
             var endDate = DateTime.Now;
             while (date.Year < endDate.Year || (date.Year == endDate.Year && date.Month <= endDate.Month))
             {
@@ -1379,69 +953,48 @@ namespace erp.Controllers
                 });
                 date = date.AddMonths(1);
             }
+            if (endDate.Day > 25)
+            {
+                monthYears.Add(new MonthYear
+                {
+                    Month = endDate.AddMonths(1).Month,
+                    Year = endDate.AddMonths(1).Year
+                });
+            }
             var sortTimes = monthYears.OrderByDescending(x => x.Year).OrderByDescending(x => x.Month).ToList();
             #endregion
 
-            // If exist, update, no => create 1 month
-            var dataTime = sortTimes[0];
-            if (!string.IsNullOrEmpty(thang))
+            #region Times
+            var toDate = Utility.WorkingMonthToDate(thang);
+            var fromDate = toDate.AddMonths(-1).AddDays(1);
+            if (string.IsNullOrEmpty(thang))
             {
-                dataTime = new MonthYear
-                {
-                    Month = Convert.ToInt32(thang.Split("-")[0]),
-                    Year = Convert.ToInt32(thang.Split("-")[1]),
-                };
+                toDate = DateTime.Now;
+                fromDate = toDate.Day > 25 ? new DateTime(toDate.Year, toDate.Month, 26) : new DateTime(toDate.AddMonths(-1).Year, toDate.AddMonths(-1).Month, 26);
             }
+            var year = toDate.Day > 25 ? toDate.AddMonths(1).Year : toDate.Year;
+            var month = toDate.Day > 25 ? toDate.AddMonths(1).Month : toDate.Month;
+            thang = string.IsNullOrEmpty(thang) ? month + "-" + year : thang;
+            #endregion
 
-            var logisticsData = new List<SalaryLogisticData>();
-            var logisticsDataTemp = dbContext.SalaryLogisticDatas.Find(m => m.Year.Equals(dataTime.Year) & m.Month.Equals(dataTime.Month) & m.Enable.Equals(true)).ToList();
-            if (logisticsDataTemp != null && logisticsDataTemp.Count > 0)
-            {
-                logisticsData = logisticsDataTemp;
-            }
-            else
-            {
-                var employees = await dbContext.Employees.Find(m => m.Enable.Equals(true)
-                & !m.UserName.Equals(Constants.System.account)
-                & (m.CodeOld.Contains("KDG")
-                    || m.CodeOld.Contains("KDPX")
-                    || m.CodeOld.Contains("KDX")
-                    || m.CodeOld.Contains("KDS"))
-                ).ToListAsync();
-                foreach (var employee in employees)
-                {
-                    try
-                    {
-                        logisticsData.Add(new SalaryLogisticData
-                        {
-                            Year = dataTime.Year,
-                            Month = dataTime.Month,
-                            EmployeeId = employee.Id,
-                            MaNhanVien = employee.CodeOld,
-                            FullName = employee.FullName,
-                            ChucVu = employee.SalaryChucVu
-                        });
-                    }
-                    catch (Exception ex)
-                    {
+            var salekpis = GetSaleKPIs(month, year);
 
-                    }
-
-                }
-                dbContext.SalaryLogisticDatas.InsertMany(logisticsData);
-            }
+            var saleKPIEmployees = GetSaleKPIEmployees(month, year);
 
             var viewModel = new BangLuongViewModel
             {
-                SalaryLogisticDatas = logisticsData
+                SaleKPIs = salekpis,
+                SaleKPIEmployees = saleKPIEmployees,
+                MonthYears = sortTimes,
+                thang = thang
             };
 
             return View(viewModel);
         }
 
         [HttpPost]
-        [Route(Constants.LinkSalary.LogisticDatas + "/" + Constants.LinkSalary.Update)]
-        public async Task<IActionResult> LogisticDataUpdate(BangLuongViewModel viewModel)
+        [Route(Constants.LinkSalary.SaleKPIEmployee + "/" + Constants.LinkSalary.Update)]
+        public async Task<IActionResult> SaleKPIEmployeeUpdate(BangLuongViewModel viewModel)
         {
             #region Authorization
             var login = User.Identity.Name;
@@ -1465,20 +1018,42 @@ namespace erp.Controllers
 
             #endregion
 
-            foreach (var item in viewModel.SalaryLogisticDatas)
+            foreach (var item in viewModel.SaleKPIEmployees)
             {
-                var builder = Builders<SalaryLogisticData>.Filter;
-                var filter = builder.Eq(m => m.Id, item.Id);
-                var update = Builders<SalaryLogisticData>.Update
-                    //
+                var itemFull = GetSaleKPIEmployee(item, item.Month + "-" + item.Year);
+                var builder = Builders<SaleKPIEmployee>.Filter;
+                var filter = builder.Eq(m => m.Id, itemFull.Id);
+                var update = Builders<SaleKPIEmployee>.Update
+                    .Set(m => m.ChiTieuDoanhSo, itemFull.ChiTieuDoanhSo)
+                    .Set(m => m.ChiTieuDoanhThu, itemFull.ChiTieuDoanhThu)
+                    .Set(m => m.ChiTieuDoPhu, itemFull.ChiTieuDoPhu)
+                    .Set(m => m.ChiTieuMoMoi, itemFull.ChiTieuMoMoi)
+                    .Set(m => m.ChiTieuNganhHang, itemFull.ChiTieuNganhHang)
+                    .Set(m => m.ThucHienDoanhSo, itemFull.ThucHienDoanhSo)
+                    .Set(m => m.ThucHienDoanhThu, itemFull.ThucHienDoanhThu)
+                    .Set(m => m.ThucHienDoPhu, itemFull.ThucHienDoPhu)
+                    .Set(m => m.ThucHienMoMoi, itemFull.ThucHienMoMoi)
+                    .Set(m => m.ThucHienNganhHang, itemFull.ThucHienNganhHang)
+                    .Set(m => m.ChiTieuThucHienDoanhSo, itemFull.ChiTieuThucHienDoanhSo)
+                    .Set(m => m.ChiTieuThucHienDoanhThu, itemFull.ChiTieuThucHienDoanhThu)
+                    .Set(m => m.ChiTieuThucHienDoPhu, itemFull.ChiTieuThucHienDoPhu)
+                    .Set(m => m.ChiTieuThucHienMoMoi, itemFull.ChiTieuThucHienMoMoi)
+                    .Set(m => m.ChiTieuThucHienNganhHang, itemFull.ChiTieuThucHienNganhHang)
+                    .Set(m => m.ThuongChiTieuThucHienDoanhSo, itemFull.ThuongChiTieuThucHienDoanhSo)
+                    .Set(m => m.ThuongChiTieuThucHienDoanhThu, itemFull.ThuongChiTieuThucHienDoanhThu)
+                    .Set(m => m.ThuongChiTieuThucHienDoPhu, itemFull.ThuongChiTieuThucHienDoPhu)
+                    .Set(m => m.ThuongChiTieuThucHienMoMoi, itemFull.ThuongChiTieuThucHienMoMoi)
+                    .Set(m => m.ThuongChiTieuThucHienNganhHang, itemFull.ThuongChiTieuThucHienNganhHang)
+                    .Set(m => m.TongThuong, itemFull.TongThuong)
+                    .Set(m => m.ThuViec, itemFull.ThuViec)
                     .Set(m => m.UpdatedOn, DateTime.Now);
-                dbContext.SalaryLogisticDatas.UpdateOne(filter, update);
+                dbContext.SaleKPIEmployees.UpdateOne(filter, update);
             }
 
             return Json(new { result = true, source = "update", message = "Thành công" });
         }
 
-        [Route(Constants.LinkSalary.SaleKPIs + "/" + Constants.LinkSalary.Update)]
+        [Route(Constants.LinkSalary.SaleKPI + "/" + Constants.LinkSalary.Update)]
         public async Task<IActionResult> SaleKPIUpdate(string thang)
         {
             #region Authorization
@@ -1495,7 +1070,7 @@ namespace erp.Controllers
                 return RedirectToAction("login", "account");
             }
 
-            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, "nhan-su", (int)ERights.View)))
+            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.LuongVP, (int)ERights.View)))
             {
                 return RedirectToAction("AccessDenied", "Account");
             }
@@ -1505,7 +1080,7 @@ namespace erp.Controllers
 
             #region DDL
             var monthYears = new List<MonthYear>();
-            var date = new DateTime(2018, 08, 01);
+            var date = new DateTime(2018, 02, 01);
             var endDate = DateTime.Now;
             while (date.Year < endDate.Year || (date.Year == endDate.Year && date.Month <= endDate.Month))
             {
@@ -1516,63 +1091,44 @@ namespace erp.Controllers
                 });
                 date = date.AddMonths(1);
             }
+            if (endDate.Day > 25)
+            {
+                monthYears.Add(new MonthYear
+                {
+                    Month = endDate.AddMonths(1).Month,
+                    Year = endDate.AddMonths(1).Year
+                });
+            }
             var sortTimes = monthYears.OrderByDescending(x => x.Year).OrderByDescending(x => x.Month).ToList();
             #endregion
 
-            // If exist, update, no => create 1 month
-            var dataTime = sortTimes[0];
-            if (!string.IsNullOrEmpty(thang))
+            #region Times
+            var toDate = Utility.WorkingMonthToDate(thang);
+            var fromDate = toDate.AddMonths(-1).AddDays(1);
+            if (string.IsNullOrEmpty(thang))
             {
-                dataTime = new MonthYear
-                {
-                    Month = Convert.ToInt32(thang.Split("-")[0]),
-                    Year = Convert.ToInt32(thang.Split("-")[1]),
-                };
+                toDate = DateTime.Now;
+                fromDate = toDate.Day > 25 ? new DateTime(toDate.Year, toDate.Month, 26) : new DateTime(toDate.AddMonths(-1).Year, toDate.AddMonths(-1).Month, 26);
             }
+            var year = toDate.Day > 25 ? toDate.AddMonths(1).Year : toDate.Year;
+            var month = toDate.Day > 25 ? toDate.AddMonths(1).Month : toDate.Month;
+            thang = string.IsNullOrEmpty(thang) ? month + "-" + year : thang;
+            #endregion
 
-            var sales = new List<SalarySaleKPI>();
-            var salesTemp = dbContext.SalarySaleKPIs.Find(m => m.Year.Equals(dataTime.Year) & m.Month.Equals(dataTime.Month) & m.Enable.Equals(true)).ToList();
-            if (salesTemp != null && salesTemp.Count > 0)
-            {
-                sales = salesTemp;
-            }
-            else
-            {
-                var employees = await dbContext.Employees.Find(m => m.Enable.Equals(true)
-                 & !m.UserName.Equals(Constants.System.account)
-                 & (m.CodeOld.Contains("KDS")
-                     || m.CodeOld.Contains("KDV"))
-                 ).ToListAsync();
-                foreach (var employee in employees)
-                {
-                    try
-                    {
-                        sales.Add(new SalarySaleKPI
-                        {
-                            Year = dataTime.Year,
-                            Month = dataTime.Month,
-                            EmployeeId = employee.Id,
-                            MaNhanVien = employee.CodeOld,
-                            FullName = employee.FullName,
-                            ChucVu = employee.SalaryChucVu
-                        });
-                    }
-                    catch (Exception ex) { }
+            var kpis = GetSaleKPIs(month, year);
 
-                }
-                dbContext.SalarySaleKPIs.InsertMany(sales);
-            }
-
-            var viewModel = new BangLuongViewModel
+            var viewModel = new BangLuongViewModel()
             {
-                SalarySaleKPIs = sales
+                SaleKPIs = kpis,
+                MonthYears = sortTimes,
+                thang = thang
             };
 
             return View(viewModel);
         }
 
         [HttpPost]
-        [Route(Constants.LinkSalary.SaleKPIs + "/" + Constants.LinkSalary.Update)]
+        [Route(Constants.LinkSalary.SaleKPI + "/" + Constants.LinkSalary.Update)]
         public async Task<IActionResult> SaleKPIUpdate(BangLuongViewModel viewModel)
         {
             #region Authorization
@@ -1589,7 +1145,7 @@ namespace erp.Controllers
                 return RedirectToAction("login", "account");
             }
 
-            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, "nhan-su", (int)ERights.View)))
+            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.LuongVP, (int)ERights.View)))
             {
                 return RedirectToAction("AccessDenied", "Account");
             }
@@ -1597,82 +1153,19 @@ namespace erp.Controllers
 
             #endregion
 
-            foreach (var item in viewModel.SalarySaleKPIs)
+            #region Times
+            var now = DateTime.Now;
+            var thang = viewModel.thang;
+            var toDate = Utility.WorkingMonthToDate(thang);
+            var fromDate = toDate.AddMonths(-1).AddDays(1);
+            if (string.IsNullOrEmpty(thang))
             {
-                var builder = Builders<SalarySaleKPI>.Filter;
-                var filter = builder.Eq(m => m.Id, item.Id);
-                var update = Builders<SalarySaleKPI>.Update
-                    .Set(m => m.UpdatedOn, DateTime.Now)
-                    .Set(m => m.UpdatedOn, DateTime.Now)
-                    .Set(m => m.UpdatedOn, DateTime.Now);
-                dbContext.SalarySaleKPIs.UpdateOne(filter, update);
+                toDate = DateTime.Now;
+                fromDate = toDate.Day > 25 ? new DateTime(toDate.Year, toDate.Month, 26) : new DateTime(toDate.AddMonths(-1).Year, toDate.AddMonths(-1).Month, 26);
             }
-
-            return Json(new { result = true, source = "update", message = "Thành công" });
-        }
-
-        [Route(Constants.LinkSalary.KPIMonth)]
-        public async Task<IActionResult> KPIMonth()
-        {
-            #region Authorization
-            var login = User.Identity.Name;
-            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
-            ViewData["LoginUserName"] = loginUserName;
-
-            var loginInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
-            if (loginInformation == null)
-            {
-                #region snippet1
-                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                #endregion
-                return RedirectToAction("login", "account");
-            }
-
-            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, "nhan-su", (int)ERights.View)))
-            {
-                return RedirectToAction("AccessDenied", "Account");
-            }
-
-
-            #endregion
-
-            // Get KPI lastest month
-            var kpiLastest = await dbContext.SaleKPIs.Find(m => m.Enable.Equals(true)).SortByDescending(m => m.Year).SortByDescending(m => m.Month).FirstOrDefaultAsync();
-            var lastMonth = kpiLastest.Month;
-            var lastYear = kpiLastest.Year;
-
-            var viewModel = new SalarySaleViewModel()
-            {
-                SaleKPIs = await dbContext.SaleKPIs.Find(m => m.Enable.Equals(true) & m.Year.Equals(lastYear) & m.Month.Equals(lastMonth)).ToListAsync()
-            };
-
-            return View(viewModel);
-        }
-
-        [HttpPost]
-        [Route(Constants.LinkSalary.KPIMonth)]
-        public async Task<IActionResult> KPIMonth(SalarySaleViewModel viewModel)
-        {
-            #region Authorization
-            var login = User.Identity.Name;
-            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
-            ViewData["LoginUserName"] = loginUserName;
-
-            var loginInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
-            if (loginInformation == null)
-            {
-                #region snippet1
-                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                #endregion
-                return RedirectToAction("login", "account");
-            }
-
-            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, "nhan-su", (int)ERights.View)))
-            {
-                return RedirectToAction("AccessDenied", "Account");
-            }
-
-
+            var year = toDate.Day > 25 ? toDate.AddMonths(1).Year : toDate.Year;
+            var month = toDate.Day > 25 ? toDate.AddMonths(1).Month : toDate.Month;
+            thang = string.IsNullOrEmpty(thang) ? month + "-" + year : thang;
             #endregion
 
             foreach (var item in viewModel.SaleKPIs)
@@ -1682,52 +1175,2747 @@ namespace erp.Controllers
                     var builder = Builders<SaleKPI>.Filter;
                     var filter = builder.Eq(m => m.Id, item.Id);
                     var update = Builders<SaleKPI>.Update
-                        .Set(m => m.Value, item.Value)
+                        .Set(m => m.KHMoi, item.KHMoi * 1000)
+                        .Set(m => m.DoPhuTren80, item.DoPhuTren80 * 1000)
+                        .Set(m => m.NganhHangDat704Nganh, item.NganhHangDat704Nganh * 1000)
+                        .Set(m => m.DoanhThuTren80, item.DoanhThuTren80 * 1000)
+                        .Set(m => m.DoanhThuDat100, item.DoanhThuDat100 * 1000)
+                        .Set(m => m.DoanhSoTren80, item.DoanhSoTren80 * 1000)
+                        .Set(m => m.DoanhSoDat100, item.DoanhSoDat100 * 1000)
+                        .Set(m => m.DoanhSoTren120, item.DoanhSoTren120 * 1000)
+                        .Set(m => m.Total, item.Total * 1000)
                         .Set(m => m.UpdatedOn, DateTime.Now);
                     dbContext.SaleKPIs.UpdateOne(filter, update);
                 }
                 else
                 {
-                    // create new kpi
+                    item.Month = month;
+                    item.Year = year;
+                    item.KHMoi = item.KHMoi * 1000;
+                    item.DoPhuTren80 = item.DoPhuTren80 * 1000;
+                    item.NganhHangDat704Nganh = item.NganhHangDat704Nganh * 1000;
+                    item.DoanhThuTren80 = item.DoanhThuTren80 * 1000;
+                    item.DoanhThuDat100 = item.DoanhThuDat100 * 1000;
+                    item.DoanhSoTren80 = item.DoanhSoTren80 * 1000;
+                    item.DoanhSoDat100 = item.DoanhSoDat100 * 1000;
+                    item.DoanhSoTren120 = item.DoanhSoTren120 * 1000;
+                    item.Total = item.Total * 1000;
+                    dbContext.SaleKPIs.InsertOne(item);
                 }
             }
 
             return Json(new { result = true, source = "update", message = "Thành công" });
         }
 
+        [Route(Constants.LinkSalary.SaleKPIEmployeeCalculator)]
+        public IActionResult SaleKPIEmployeeCalculator(BangLuongViewModel viewModel)
+        {
+            var entity = viewModel.SaleKPIEmployees.First();
+            string thang = entity.Month + "-" + entity.Year;
+            var returnEntity = GetSaleKPIEmployee(entity, thang);
+            return Json(new { entity = returnEntity });
+        }
+
+        public SaleKPIEmployee GetSaleKPIEmployee(SaleKPIEmployee newData, string thang)
+        {
+            #region Times
+            var toDate = Utility.WorkingMonthToDate(thang);
+            var fromDate = toDate.AddMonths(-1).AddDays(1);
+            if (string.IsNullOrEmpty(thang))
+            {
+                toDate = DateTime.Now;
+                fromDate = toDate.Day > 25 ? new DateTime(toDate.Year, toDate.Month, 26) : new DateTime(toDate.AddMonths(-1).Year, toDate.AddMonths(-1).Month, 26);
+            }
+            var year = toDate.Day > 25 ? toDate.AddMonths(1).Year : toDate.Year;
+            var month = toDate.Day > 25 ? toDate.AddMonths(1).Month : toDate.Month;
+            thang = string.IsNullOrEmpty(thang) ? month + "-" + year : thang;
+            #endregion
+
+            decimal ChiTieuThucHienDoanhSo = 0;
+            decimal ChiTieuThucHienDoanhThu = 0;
+            decimal ChiTieuThucHienDoPhu = 0;
+            decimal ChiTieuThucHienMoMoi = 0;
+            int ChiTieuThucHienNganhHang = 0;
+
+            if (newData.ChiTieuDoanhSo > 0)
+            {
+                ChiTieuThucHienDoanhSo = (newData.ThucHienDoanhSo / newData.ChiTieuDoanhSo) * 100;
+            }
+            if (newData.ChiTieuDoanhThu > 0)
+            {
+                ChiTieuThucHienDoanhThu = (newData.ThucHienDoanhThu / newData.ChiTieuDoanhThu) * 100;
+            }
+            if (newData.ChiTieuDoPhu > 0)
+            {
+                ChiTieuThucHienDoPhu = (newData.ThucHienDoPhu / newData.ChiTieuDoPhu) * 100;
+            }
+            if (newData.ChiTieuMoMoi > 0)
+            {
+                ChiTieuThucHienMoMoi = (newData.ThucHienMoMoi / newData.ChiTieuMoMoi) * 100;
+            }
+            if (newData.ChiTieuNganhHang > 0)
+            {
+                ChiTieuThucHienNganhHang = (newData.ThucHienNganhHang / newData.ChiTieuNganhHang) * 100;
+            }
+
+            decimal ThuongChiTieuThucHienDoanhSo = 0;
+            decimal ThuongChiTieuThucHienDoanhThu = 0;
+            decimal ThuongChiTieuThucHienDoPhu = 0;
+            decimal ThuongChiTieuThucHienMoMoi = 0;
+            decimal ThuongChiTieuThucHienNganhHang = 0;
+            var kpi = dbContext.SaleKPIs.Find(m => m.Enable.Equals(true) && m.ChucVu.Equals(newData.ChucVu) && m.Month.Equals(month) && m.Year.Equals(year)).FirstOrDefault();
+            // kpi never null.
+            if (kpi != null)
+            {
+                //DOANH SO =IF(N21>120%,3000,IF(N21>=100%,2000,IF(N21>=80%,1000,"")))
+                if (ChiTieuThucHienDoanhSo > 120)
+                {
+                    ThuongChiTieuThucHienDoanhSo = kpi.DoanhSoTren120;
+                }
+                else if (ChiTieuThucHienDoanhSo >= 100)
+                {
+                    ThuongChiTieuThucHienDoanhSo = kpi.DoanhSoDat100;
+                }
+                else if (ChiTieuThucHienDoanhSo >= 80)
+                {
+                    ThuongChiTieuThucHienDoanhSo = kpi.DoanhSoTren80;
+                }
+                //DOANH THU =IF(O21>100%,2000,IF(O21>=80%,1000,0))
+                if (ChiTieuThucHienDoanhThu >= 80)
+                {
+                    ThuongChiTieuThucHienDoanhThu = kpi.DoanhThuTren80;
+                }
+                else if (ChiTieuThucHienDoanhThu > 100)
+                {
+                    ThuongChiTieuThucHienDoanhThu = kpi.DoanhThuDat100;
+                }
+                //DO PHU =IF(P21>80%,1000,0)
+                if (ChiTieuThucHienDoPhu > 80)
+                {
+                    ThuongChiTieuThucHienDoPhu = kpi.DoPhuTren80;
+                }
+                //MO MOI =IF(Q21>=100%,500,0)
+                if (ChiTieuThucHienMoMoi >= 100)
+                {
+                    ThuongChiTieuThucHienMoMoi = kpi.KHMoi;
+                }
+                // NGANH HANG =IF(R21>=100%,500,0)
+                if (ChiTieuThucHienNganhHang >= 100)
+                {
+                    ThuongChiTieuThucHienNganhHang = kpi.NganhHangDat704Nganh;
+                }
+            }
+            newData.ChiTieuThucHienDoanhSo = ChiTieuThucHienDoanhSo;
+            newData.ChiTieuThucHienDoanhThu = ChiTieuThucHienDoanhThu;
+            newData.ChiTieuThucHienDoPhu = ChiTieuThucHienDoPhu;
+            newData.ChiTieuThucHienMoMoi = ChiTieuThucHienMoMoi;
+            newData.ChiTieuThucHienNganhHang = ChiTieuThucHienNganhHang;
+            newData.ThuongChiTieuThucHienDoanhSo = ThuongChiTieuThucHienDoanhSo;
+            newData.ThuongChiTieuThucHienDoanhThu = ThuongChiTieuThucHienDoanhThu;
+            newData.ThuongChiTieuThucHienDoPhu = ThuongChiTieuThucHienDoPhu;
+            newData.ThuongChiTieuThucHienMoMoi = ThuongChiTieuThucHienMoMoi;
+            newData.ThuongChiTieuThucHienNganhHang = ThuongChiTieuThucHienNganhHang;
+            newData.TongThuong = ThuongChiTieuThucHienDoanhSo + ThuongChiTieuThucHienDoanhThu + ThuongChiTieuThucHienDoPhu + ThuongChiTieuThucHienMoMoi + ThuongChiTieuThucHienNganhHang;
+            return newData;
+        }
+
+        private List<SaleKPI> GetSaleKPIs(int month, int year)
+        {
+            var kpis = dbContext.SaleKPIs.Find(m => m.Enable.Equals(true) && m.Month.Equals(month) && m.Year.Equals(year)).ToList();
+            if (kpis.Count == 0)
+            {
+                var checkLast = dbContext.SaleKPIs.CountDocuments(m => m.Enable.Equals(true));
+                if (checkLast == 0)
+                {
+                    // insert empty value
+                    var chucvukinhdoanhs = dbContext.ChucVuKinhDoanhs.Find(m => m.Enable.Equals(true)).ToList();
+                    if (chucvukinhdoanhs.Count == 0)
+                    {
+                        chucvukinhdoanhs = GetChucVuKinhDoanhs();
+                    }
+                    foreach (var chucvu in chucvukinhdoanhs)
+                    {
+                        dbContext.SaleKPIs.InsertOne(new SaleKPI
+                        {
+                            Year = year,
+                            Month = month,
+                            ChucVu = chucvu.Name,
+                            ChucVuCode = chucvu.Code,
+                            ChucVuAlias = chucvu.Alias,
+                            KHMoi = 0,
+                            DoPhuTren80 = 0,
+                            NganhHangDat704Nganh = 0,
+                            DoanhThuTren80 = 0,
+                            DoanhThuDat100 = 0,
+                            DoanhSoTren80 = 0,
+                            DoanhSoDat100 = 0,
+                            DoanhSoTren120 = 0,
+                            Total = 0
+                        });
+                    }
+                }
+                else
+                {
+                    // insert lastest value for new data.
+                    var lastKpis = dbContext.SaleKPIs.Find(m => m.Enable.Equals(true)).SortByDescending(m => m.Year).SortByDescending(m => m.Month).ToList();
+                    foreach (var item in lastKpis)
+                    {
+                        item.Id = null;
+                        item.Year = year;
+                        item.Month = month;
+                        dbContext.SaleKPIs.InsertOne(item);
+                    }
+                }
+                kpis = dbContext.SaleKPIs.Find(m => m.Enable.Equals(true) & m.Month.Equals(month) & m.Year.Equals(year)).ToList();
+            }
+            return kpis;
+        }
+
+        private List<SaleKPIEmployee> GetSaleKPIEmployees(int month, int year)
+        {
+            var datas = dbContext.SaleKPIEmployees.Find(m => m.Enable.Equals(true) && m.Year.Equals(year) && m.Month.Equals(month)).ToList();
+            if (datas.Count == 0)
+            {
+                var employees = dbContext.Employees.Find(m => m.Enable.Equals(true) && !m.UserName.Equals(Constants.System.account)
+                 && (m.CodeOld.Contains("KDS") || m.CodeOld.Contains("KDV"))).ToList();
+                foreach (var employee in employees)
+                {
+                    var salekpiemployee = new SaleKPIEmployee
+                    {
+                        Year = year,
+                        Month = month,
+                        EmployeeId = employee.Id,
+                        MaNhanVien = employee.CodeOld,
+                        FullName = employee.FullName,
+                        ChucVu = employee.SaleChucVu
+                    };
+                    var lastestSaleKPIEmployee = dbContext.SaleKPIEmployees.Find(m => m.Enable.Equals(true) && m.EmployeeId.Equals(employee.Id)).SortByDescending(m => m.Year).SortByDescending(m => m.Month).FirstOrDefault();
+                    if (lastestSaleKPIEmployee != null)
+                    {
+                        salekpiemployee.ChiTieuDoanhSo = lastestSaleKPIEmployee.ChiTieuDoanhSo;
+                        salekpiemployee.ChiTieuDoanhThu = lastestSaleKPIEmployee.ChiTieuDoanhThu;
+                        salekpiemployee.ChiTieuDoPhu = lastestSaleKPIEmployee.ChiTieuDoPhu;
+                        salekpiemployee.ChiTieuMoMoi = lastestSaleKPIEmployee.ChiTieuMoMoi;
+                        salekpiemployee.ChiTieuNganhHang = lastestSaleKPIEmployee.ChiTieuNganhHang;
+                        salekpiemployee.ThucHienDoanhSo = lastestSaleKPIEmployee.ThucHienDoanhSo;
+                        salekpiemployee.ThucHienDoanhThu = lastestSaleKPIEmployee.ThucHienDoanhThu;
+                        salekpiemployee.ThucHienDoPhu = lastestSaleKPIEmployee.ThucHienDoPhu;
+                        salekpiemployee.ThucHienMoMoi = lastestSaleKPIEmployee.ThucHienMoMoi;
+                        salekpiemployee.ThucHienNganhHang = lastestSaleKPIEmployee.ThucHienNganhHang;
+                        salekpiemployee.ChiTieuThucHienDoanhSo = lastestSaleKPIEmployee.ChiTieuThucHienDoanhSo;
+                        salekpiemployee.ChiTieuThucHienDoanhThu = lastestSaleKPIEmployee.ChiTieuThucHienDoanhThu;
+                        salekpiemployee.ChiTieuThucHienDoPhu = lastestSaleKPIEmployee.ChiTieuThucHienDoPhu;
+                        salekpiemployee.ChiTieuThucHienMoMoi = lastestSaleKPIEmployee.ChiTieuThucHienMoMoi;
+                        salekpiemployee.ChiTieuThucHienNganhHang = lastestSaleKPIEmployee.ChiTieuThucHienNganhHang;
+                        salekpiemployee.ThuongChiTieuThucHienDoanhSo = lastestSaleKPIEmployee.ThuongChiTieuThucHienDoanhSo;
+                        salekpiemployee.ThuongChiTieuThucHienDoanhThu = lastestSaleKPIEmployee.ThuongChiTieuThucHienDoanhThu;
+                        salekpiemployee.ThuongChiTieuThucHienDoPhu = lastestSaleKPIEmployee.ThuongChiTieuThucHienDoPhu;
+                        salekpiemployee.ThuongChiTieuThucHienMoMoi = lastestSaleKPIEmployee.ThuongChiTieuThucHienMoMoi;
+                        salekpiemployee.ThuongChiTieuThucHienNganhHang = lastestSaleKPIEmployee.ThuongChiTieuThucHienNganhHang;
+                        salekpiemployee.TongThuong = lastestSaleKPIEmployee.TongThuong;
+                        salekpiemployee.ThuViec = lastestSaleKPIEmployee.ThuViec;
+                        salekpiemployee.ChucVu = lastestSaleKPIEmployee.ChucVu;
+                    }
+                    dbContext.SaleKPIEmployees.InsertOne(salekpiemployee);
+                }
+                datas = dbContext.SaleKPIEmployees.Find(m => m.Enable.Equals(true) && m.Year.Equals(year) && m.Month.Equals(month)).ToList();
+            }
+
+            return datas;
+        }
+
+        [Route(Constants.LinkSalary.SaleKPIEmployeeImport)]
+        [HttpPost]
+        public ActionResult SaleKPIEmployeeImport()
+        {
+            IFormFile file = Request.Form.Files[0];
+            string folderName = Constants.Storage.Hr;
+            string webRootPath = _env.WebRootPath;
+            string newPath = Path.Combine(webRootPath, folderName);
+            if (!Directory.Exists(newPath))
+            {
+                Directory.CreateDirectory(newPath);
+            }
+            if (file.Length > 0)
+            {
+                string sFileExtension = Path.GetExtension(file.FileName).ToLower();
+                ISheet sheet;
+                string fullPath = Path.Combine(newPath, file.FileName);
+                using (var stream = new FileStream(fullPath, FileMode.Create))
+                {
+                    file.CopyTo(stream);
+                    stream.Position = 0;
+                    if (sFileExtension == ".xls")
+                    {
+                        HSSFWorkbook hssfwb = new HSSFWorkbook(stream); //This will read the Excel 97-2000 formats  
+                        sheet = hssfwb.GetSheetAt(0);
+                    }
+                    else
+                    {
+                        XSSFWorkbook hssfwb = new XSSFWorkbook(stream); //This will read 2007 Excel format  
+                        sheet = hssfwb.GetSheetAt(0); //get first sheet from workbook   
+                    }
+
+                    var timeRow = sheet.GetRow(1);
+                    var month = Convert.ToInt32(Utility.GetNumbericCellValue(timeRow.GetCell(1)));
+                    var year = Convert.ToInt32(Utility.GetNumbericCellValue(timeRow.GetCell(3)));
+                    if (month == 0)
+                    {
+                        month = DateTime.Now.Month;
+                    }
+                    if (year == 0)
+                    {
+                        year = DateTime.Now.Year;
+                    }
+
+                    for (int i = 4; i <= sheet.LastRowNum; i++)
+                    {
+                        IRow row = sheet.GetRow(i);
+                        if (row == null) continue;
+                        if (row.Cells.All(d => d.CellType == CellType.Blank)) continue;
+                        if (row.Cells.All(d => d.CellType == CellType.Error)) continue;
+                        if (row.Cells.All(d => d.CellType == CellType.Unknown)) continue;
+
+                        var code = Utility.GetFormattedCellValue(row.GetCell(1));
+                        var fullName = Utility.GetFormattedCellValue(row.GetCell(2));
+                        var alias = Utility.AliasConvert(fullName);
+                        var title = Utility.GetFormattedCellValue(row.GetCell(3));
+                        var chitieudanhso = Utility.GetNumbericCellValue(row.GetCell(4));
+                        var chitieudanhthu = Utility.GetNumbericCellValue(row.GetCell(5));
+                        var chitieudophu = Utility.GetNumbericCellValue(row.GetCell(6));
+                        var chitieumomoi = Utility.GetNumbericCellValue(row.GetCell(7));
+                        var chitieunganhhang = Convert.ToInt32(Utility.GetNumbericCellValue(row.GetCell(8)) * 100);
+                        var thuchiendoanhso = Utility.GetNumbericCellValue(row.GetCell(9));
+                        var thuchiendoanhthu = Utility.GetNumbericCellValue(row.GetCell(10));
+                        var thuchiendophu = Utility.GetNumbericCellValue(row.GetCell(11));
+                        var thuchienmomoi = Utility.GetNumbericCellValue(row.GetCell(12));
+                        var thuchiennganhhang = Convert.ToInt32(Utility.GetNumbericCellValue(row.GetCell(13)) * 100);
+                        var employee = new Employee();
+                        if (!string.IsNullOrEmpty(alias))
+                        {
+                            employee = dbContext.Employees.Find(m => m.Enable.Equals(true) & m.AliasFullName.Equals(alias)).FirstOrDefault();
+                        }
+                        if (employee == null)
+                        {
+                            if (!string.IsNullOrEmpty(fullName))
+                            {
+                                employee = dbContext.Employees.Find(m => m.Enable.Equals(true) & m.FullName.Equals(fullName)).FirstOrDefault();
+                            }
+                        }
+                        if (employee == null)
+                        {
+                            if (!string.IsNullOrEmpty(code))
+                            {
+                                employee = dbContext.Employees.Find(m => m.Enable.Equals(true) & m.CodeOld.Equals(code)).FirstOrDefault();
+                            }
+                        }
+
+                        if (employee != null)
+                        {
+                            // check exist to update
+                            var existEntity = dbContext.SaleKPIEmployees.Find(m => m.Enable.Equals(true) && m.EmployeeId.Equals(employee.Id) && m.Month.Equals(month) && m.Year.Equals(year)).FirstOrDefault();
+                            if (existEntity != null)
+                            {
+                                var salekpiemployee = new SaleKPIEmployee
+                                {
+                                    Id = existEntity.Id,
+                                    Year = year,
+                                    Month = month,
+                                    EmployeeId = employee.Id,
+                                    MaNhanVien = employee.CodeOld,
+                                    FullName = employee.FullName,
+                                    ChucVu = employee.SaleChucVu,
+                                    ChiTieuDoanhSo = (decimal)chitieudanhso,
+                                    ChiTieuDoanhThu = (decimal)chitieudanhthu,
+                                    ChiTieuDoPhu = (decimal)chitieudophu,
+                                    ChiTieuMoMoi = (decimal)chitieumomoi,
+                                    ChiTieuNganhHang = chitieunganhhang,
+                                    ThucHienDoanhSo = (decimal)thuchiendoanhso,
+                                    ThucHienDoanhThu = (decimal)thuchiendoanhthu,
+                                    ThucHienDoPhu = (decimal)thuchiendophu,
+                                    ThucHienMoMoi = (decimal)thuchienmomoi,
+                                    ThucHienNganhHang = thuchiennganhhang
+                                };
+                                var itemFull = GetSaleKPIEmployee(salekpiemployee, month + "-" + year);
+                                var builder = Builders<SaleKPIEmployee>.Filter;
+                                var filter = builder.Eq(m => m.Id, itemFull.Id);
+                                var update = Builders<SaleKPIEmployee>.Update
+                                    .Set(m => m.ChiTieuDoanhSo, itemFull.ChiTieuDoanhSo)
+                                    .Set(m => m.ChiTieuDoanhThu, itemFull.ChiTieuDoanhThu)
+                                    .Set(m => m.ChiTieuDoPhu, itemFull.ChiTieuDoPhu)
+                                    .Set(m => m.ChiTieuMoMoi, itemFull.ChiTieuMoMoi)
+                                    .Set(m => m.ChiTieuNganhHang, itemFull.ChiTieuNganhHang)
+                                    .Set(m => m.ThucHienDoanhSo, itemFull.ThucHienDoanhSo)
+                                    .Set(m => m.ThucHienDoanhThu, itemFull.ThucHienDoanhThu)
+                                    .Set(m => m.ThucHienDoPhu, itemFull.ThucHienDoPhu)
+                                    .Set(m => m.ThucHienMoMoi, itemFull.ThucHienMoMoi)
+                                    .Set(m => m.ThucHienNganhHang, itemFull.ThucHienNganhHang)
+                                    .Set(m => m.ChiTieuThucHienDoanhSo, itemFull.ChiTieuThucHienDoanhSo)
+                                    .Set(m => m.ChiTieuThucHienDoanhThu, itemFull.ChiTieuThucHienDoanhThu)
+                                    .Set(m => m.ChiTieuThucHienDoPhu, itemFull.ChiTieuThucHienDoPhu)
+                                    .Set(m => m.ChiTieuThucHienMoMoi, itemFull.ChiTieuThucHienMoMoi)
+                                    .Set(m => m.ChiTieuThucHienNganhHang, itemFull.ChiTieuThucHienNganhHang)
+                                    .Set(m => m.ThuongChiTieuThucHienDoanhSo, itemFull.ThuongChiTieuThucHienDoanhSo)
+                                    .Set(m => m.ThuongChiTieuThucHienDoanhThu, itemFull.ThuongChiTieuThucHienDoanhThu)
+                                    .Set(m => m.ThuongChiTieuThucHienDoPhu, itemFull.ThuongChiTieuThucHienDoPhu)
+                                    .Set(m => m.ThuongChiTieuThucHienMoMoi, itemFull.ThuongChiTieuThucHienMoMoi)
+                                    .Set(m => m.ThuongChiTieuThucHienNganhHang, itemFull.ThuongChiTieuThucHienNganhHang)
+                                    .Set(m => m.TongThuong, itemFull.TongThuong)
+                                    .Set(m => m.ThuViec, itemFull.ThuViec)
+                                    .Set(m => m.UpdatedOn, DateTime.Now);
+                                dbContext.SaleKPIEmployees.UpdateOne(filter, update);
+                            }
+                            else
+                            {
+                                var salekpiemployee = new SaleKPIEmployee
+                                {
+                                    Year = year,
+                                    Month = month,
+                                    EmployeeId = employee.Id,
+                                    MaNhanVien = employee.CodeOld,
+                                    FullName = employee.FullName,
+                                    ChucVu = employee.SaleChucVu,
+                                    ChiTieuDoanhSo = (decimal)chitieudanhso,
+                                    ChiTieuDoanhThu = (decimal)chitieudanhthu,
+                                    ChiTieuDoPhu = (decimal)chitieudophu,
+                                    ChiTieuMoMoi = (decimal)chitieumomoi,
+                                    ChiTieuNganhHang = chitieunganhhang,
+                                    ThucHienDoanhSo = (decimal)thuchiendoanhso,
+                                    ThucHienDoanhThu = (decimal)thuchiendoanhthu,
+                                    ThucHienDoPhu = (decimal)thuchiendophu,
+                                    ThucHienMoMoi = (decimal)thuchienmomoi,
+                                    ThucHienNganhHang = thuchiennganhhang
+                                };
+                                var fullEntity = GetSaleKPIEmployee(salekpiemployee, month + "-" + year);
+                                dbContext.SaleKPIEmployees.InsertOne(fullEntity);
+                            }
+                        }
+                        else
+                        {
+                            dbContext.Misss.InsertOne(new Miss
+                            {
+                                Type = "sale-kpi-import",
+                                Object = code + "-" + fullName + "-" + title + " ,dòng " + i,
+                                Error = "No import data",
+                                DateTime = DateTime.Now.ToString()
+                            });
+                        }
+                    }
+                }
+            }
+            return Json(new { url = "/" + Constants.LinkSalary.Main + "/" + Constants.LinkSalary.SaleKPIEmployee + "/" + Constants.LinkSalary.Update });
+        }
+
+        [Route(Constants.LinkSalary.SaleKPIEmployeeTemplate)]
+        public async Task<IActionResult> SaleKPIEmployeeTemplate(string fileName)
+        {
+            string exportFolder = Path.Combine(_env.WebRootPath, "exports");
+            string sFileName = @"du-lieu-kinh-doanh-thang-" + DateTime.Now.Month + "-V" + DateTime.Now.ToString("ddMMyyyyHHmmss") + ".xlsx";
+            string URL = string.Format("{0}://{1}/{2}", Request.Scheme, Request.Host, sFileName);
+            FileInfo file = new FileInfo(Path.Combine(exportFolder, sFileName));
+            var memory = new MemoryStream();
+            using (var fs = new FileStream(Path.Combine(exportFolder, sFileName), FileMode.Create, FileAccess.Write))
+            {
+                IWorkbook workbook = new XSSFWorkbook();
+                #region Styling
+                var cellStyleBorder = workbook.CreateCellStyle();
+                cellStyleBorder.BorderBottom = BorderStyle.Thin;
+                cellStyleBorder.BorderLeft = BorderStyle.Thin;
+                cellStyleBorder.BorderRight = BorderStyle.Thin;
+                cellStyleBorder.BorderTop = BorderStyle.Thin;
+                cellStyleBorder.Alignment = HorizontalAlignment.Center;
+                cellStyleBorder.VerticalAlignment = VerticalAlignment.Center;
+
+                var cellStyleHeader = workbook.CreateCellStyle();
+                //cellStyleHeader.CloneStyleFrom(cellStyleBorder);
+                //cellStyleHeader.FillForegroundColor = HSSFColor.Blue.Index2;
+                cellStyleHeader.FillForegroundColor = HSSFColor.Grey25Percent.Index;
+                cellStyleHeader.FillPattern = FillPattern.SolidForeground;
+
+                var font = workbook.CreateFont();
+                font.FontHeightInPoints = 11;
+                //font.FontName = "Calibri";
+                font.Boldweight = (short)FontBoldWeight.Bold;
+                #endregion
+
+                ISheet sheet1 = workbook.CreateSheet("KPI T" + DateTime.Now.Month.ToString("00"));
+                sheet1.AddMergedRegion(new CellRangeAddress(2, 2, 3, 7));
+                sheet1.AddMergedRegion(new CellRangeAddress(2, 2, 8, 13));
+
+                var rowIndex = 0;
+                IRow row = sheet1.CreateRow(rowIndex);
+                row.CreateCell(0, CellType.String).SetCellValue("KPI");
+                rowIndex++;
+
+                row = sheet1.CreateRow(rowIndex);
+                row.CreateCell(0, CellType.String).SetCellValue("Tháng");
+                row.CreateCell(1, CellType.Numeric).SetCellValue(DateTime.Now.Month);
+                row.CreateCell(2, CellType.String).SetCellValue("Năm");
+                row.CreateCell(3, CellType.Numeric).SetCellValue(DateTime.Now.Year);
+                // Set style
+                for (int i = 0; i <= 3; i++)
+                {
+                    row.Cells[i].CellStyle = cellStyleHeader;
+                }
+                row.Cells[1].CellStyle.SetFont(font);
+                row.Cells[3].CellStyle.SetFont(font);
+                rowIndex++;
+                //https://stackoverflow.com/questions/51681846/rowspan-and-colspan-in-apache-poi
+                row = sheet1.CreateRow(rowIndex);
+                var cell = row.CreateCell(3, CellType.String);
+                cell.SetCellValue("Chỉ tiêu");
+                //CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.ALIGNMENT, HorizontalAlignment.Center);
+                cell = row.CreateCell(8, CellType.String);
+                cell.SetCellValue("Thực hiện");
+                //CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.ALIGNMENT, HorizontalAlignment.Center);
+
+                //row.CreateCell(4, CellType.String).SetCellValue("Chỉ tiêu");
+                //row.CreateCell(9, CellType.String).SetCellValue("Thực hiện");
+                rowIndex++;
+
+                row = sheet1.CreateRow(rowIndex);
+                row.CreateCell(0, CellType.String).SetCellValue("#");
+                row.CreateCell(1, CellType.String).SetCellValue("Mã");
+                row.CreateCell(2, CellType.String).SetCellValue("Họ tên");
+                row.CreateCell(3, CellType.String).SetCellValue("Chức vụ sale");
+                row.CreateCell(4, CellType.String).SetCellValue("Doanh số");
+                row.CreateCell(5, CellType.String).SetCellValue("Doanh thu");
+                row.CreateCell(6, CellType.String).SetCellValue("Độ phủ");
+                row.CreateCell(7, CellType.String).SetCellValue("Mở mới");
+                row.CreateCell(8, CellType.String).SetCellValue("Ngành hàng");
+                row.CreateCell(9, CellType.String).SetCellValue("Doanh số");
+                row.CreateCell(10, CellType.String).SetCellValue("Doanh thu");
+                row.CreateCell(11, CellType.String).SetCellValue("Độ phủ");
+                row.CreateCell(12, CellType.String).SetCellValue("Mở mới");
+                row.CreateCell(13, CellType.String).SetCellValue("Ngành hàng");
+                // Set style
+                for (int i = 0; i <= 13; i++)
+                {
+                    row.Cells[i].CellStyle = cellStyleHeader;
+                }
+
+
+                for (int i = 1; i <= 50; i++)
+                {
+                    row = sheet1.CreateRow(rowIndex + 1);
+                    //row.CreateCell(0, CellType.Numeric).SetCellValue(i);
+                    row.CreateCell(1, CellType.String).SetCellValue(string.Empty);
+                    row.CreateCell(2, CellType.String).SetCellValue(string.Empty);
+                    row.CreateCell(3, CellType.String).SetCellValue(string.Empty);
+                    row.CreateCell(4, CellType.Numeric).SetCellValue(string.Empty);
+                    row.CreateCell(5, CellType.Numeric).SetCellValue(string.Empty);
+                    row.CreateCell(6, CellType.Numeric).SetCellValue(string.Empty);
+                    row.CreateCell(7, CellType.Numeric).SetCellValue(string.Empty);
+                    row.CreateCell(8, CellType.Numeric).SetCellValue(string.Empty);
+                    row.CreateCell(9, CellType.Numeric).SetCellValue(string.Empty);
+                    row.CreateCell(10, CellType.Numeric).SetCellValue(string.Empty);
+                    row.CreateCell(11, CellType.Numeric).SetCellValue(string.Empty);
+                    row.CreateCell(12, CellType.Numeric).SetCellValue(string.Empty);
+                    row.CreateCell(13, CellType.Numeric).SetCellValue(string.Empty);
+                    rowIndex++;
+                }
+
+                workbook.Write(fs);
+            }
+            using (var stream = new FileStream(Path.Combine(exportFolder, sFileName), FileMode.Open))
+            {
+                await stream.CopyToAsync(memory);
+            }
+            memory.Position = 0;
+            return File(memory, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", sFileName);
+        }
+
+        #endregion
+
+        #region LOGISTICS
+        [Route(Constants.LinkSalary.LogisticEmployeeCong)]
+        public async Task<IActionResult> LogisticEmployeeCong(string thang)
+        {
+            #region Authorization
+            var login = User.Identity.Name;
+            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+            ViewData["LoginUserName"] = loginUserName;
+
+            var loginInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
+            if (loginInformation == null)
+            {
+                #region snippet1
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                #endregion
+                return RedirectToAction("login", "account");
+            }
+
+            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.LuongVP, (int)ERights.View)))
+            {
+                return RedirectToAction("AccessDenied", "Account");
+            }
+
+
+            #endregion
+
+            #region DDL
+            var monthYears = new List<MonthYear>();
+            var date = new DateTime(2018, 02, 01);
+            var endDate = DateTime.Now;
+            while (date.Year < endDate.Year || (date.Year == endDate.Year && date.Month <= endDate.Month))
+            {
+                monthYears.Add(new MonthYear
+                {
+                    Month = date.Month,
+                    Year = date.Year
+                });
+                date = date.AddMonths(1);
+            }
+            if (endDate.Day > 25)
+            {
+                monthYears.Add(new MonthYear
+                {
+                    Month = endDate.AddMonths(1).Month,
+                    Year = endDate.AddMonths(1).Year
+                });
+            }
+            var sortTimes = monthYears.OrderByDescending(x => x.Year).OrderByDescending(x => x.Month).ToList();
+            #endregion
+
+            #region Times
+            var toDate = Utility.WorkingMonthToDate(thang);
+            var fromDate = toDate.AddMonths(-1).AddDays(1);
+            if (string.IsNullOrEmpty(thang))
+            {
+                toDate = DateTime.Now;
+                fromDate = toDate.Day > 25 ? new DateTime(toDate.Year, toDate.Month, 26) : new DateTime(toDate.AddMonths(-1).Year, toDate.AddMonths(-1).Month, 26);
+            }
+            var year = toDate.Day > 25 ? toDate.AddMonths(1).Year : toDate.Year;
+            var month = toDate.Day > 25 ? toDate.AddMonths(1).Month : toDate.Month;
+            thang = string.IsNullOrEmpty(thang) ? month + "-" + year : thang;
+            #endregion
+
+            var giachuyenxes = GetLogisticGiaChuyenXe(month, year);
+
+            var logisticEmployeeCongs = GetLogisticEmployeeCongs(month, year);
+
+            decimal dongiabun = GetLogisticGiaBun(thang);
+
+            var viewModel = new BangLuongViewModel
+            {
+                LogisticGiaChuyenXes = giachuyenxes,
+                LogisticEmployeeCongs = logisticEmployeeCongs,
+                MonthYears = sortTimes,
+                thang = thang,
+                DonGiaBun = dongiabun
+            };
+
+            return View(viewModel);
+        }
+
+        [Route(Constants.LinkSalary.LogisticEmployeeCong + "/" + Constants.LinkSalary.Update)]
+        public async Task<IActionResult> LogisticEmployeeCongUpdate(string thang)
+        {
+            #region Authorization
+            var login = User.Identity.Name;
+            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+            ViewData["LoginUserName"] = loginUserName;
+
+            var loginInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
+            if (loginInformation == null)
+            {
+                #region snippet1
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                #endregion
+                return RedirectToAction("login", "account");
+            }
+
+            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.LuongVP, (int)ERights.View)))
+            {
+                return RedirectToAction("AccessDenied", "Account");
+            }
+
+
+            #endregion
+
+            #region DDL
+            var monthYears = new List<MonthYear>();
+            var date = new DateTime(2018, 02, 01);
+            var endDate = DateTime.Now;
+            while (date.Year < endDate.Year || (date.Year == endDate.Year && date.Month <= endDate.Month))
+            {
+                monthYears.Add(new MonthYear
+                {
+                    Month = date.Month,
+                    Year = date.Year
+                });
+                date = date.AddMonths(1);
+            }
+            if (endDate.Day > 25)
+            {
+                monthYears.Add(new MonthYear
+                {
+                    Month = endDate.AddMonths(1).Month,
+                    Year = endDate.AddMonths(1).Year
+                });
+            }
+            var sortTimes = monthYears.OrderByDescending(x => x.Year).OrderByDescending(x => x.Month).ToList();
+            #endregion
+
+            #region Times
+            var toDate = Utility.WorkingMonthToDate(thang);
+            var fromDate = toDate.AddMonths(-1).AddDays(1);
+            if (string.IsNullOrEmpty(thang))
+            {
+                toDate = DateTime.Now;
+                fromDate = toDate.Day > 25 ? new DateTime(toDate.Year, toDate.Month, 26) : new DateTime(toDate.AddMonths(-1).Year, toDate.AddMonths(-1).Month, 26);
+            }
+            var year = toDate.Day > 25 ? toDate.AddMonths(1).Year : toDate.Year;
+            var month = toDate.Day > 25 ? toDate.AddMonths(1).Month : toDate.Month;
+            thang = string.IsNullOrEmpty(thang) ? month + "-" + year : thang;
+            #endregion
+
+            var giachuyenxes = GetLogisticGiaChuyenXe(month, year);
+
+            var logisticEmployeeCongs = GetLogisticEmployeeCongs(month, year);
+
+            decimal dongiabun = GetLogisticGiaBun(thang);
+
+            var viewModel = new BangLuongViewModel
+            {
+                LogisticGiaChuyenXes = giachuyenxes,
+                LogisticEmployeeCongs = logisticEmployeeCongs,
+                MonthYears = sortTimes,
+                thang = thang,
+                DonGiaBun = dongiabun
+            };
+
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        [Route(Constants.LinkSalary.LogisticEmployeeCong + "/" + Constants.LinkSalary.Update)]
+        public async Task<IActionResult> LogisticEmployeeCongUpdate(BangLuongViewModel viewModel)
+        {
+            #region Authorization
+            var login = User.Identity.Name;
+            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+            ViewData["LoginUserName"] = loginUserName;
+
+            var loginInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
+            if (loginInformation == null)
+            {
+                #region snippet1
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                #endregion
+                return RedirectToAction("login", "account");
+            }
+
+            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, "nhan-su", (int)ERights.View)))
+            {
+                return RedirectToAction("AccessDenied", "Account");
+            }
+
+
+            #endregion
+
+            foreach (var item in viewModel.LogisticEmployeeCongs)
+            {
+                var itemFull = GetLogisticEmployeeCong(item, item.Month + "-" + item.Year);
+                var builder = Builders<LogisticEmployeeCong>.Filter;
+                var filter = builder.Eq(m => m.Id, itemFull.Id);
+                var update = Builders<LogisticEmployeeCong>.Update
+                    .Set(m => m.DoanhThu, itemFull.DoanhThu)
+                    .Set(m => m.LuongTheoDoanhThuDoanhSo, itemFull.LuongTheoDoanhThuDoanhSo)
+                    .Set(m => m.Chuyen1HcmXeNho, itemFull.Chuyen1HcmXeNho)
+                    .Set(m => m.Chuyen2HcmXeNho, itemFull.Chuyen2HcmXeNho)
+                    .Set(m => m.Chuyen3HcmXeNho, itemFull.Chuyen3HcmXeNho)
+                    .Set(m => m.Chuyen4HcmXeNho, itemFull.Chuyen4HcmXeNho)
+                    .Set(m => m.Chuyen5HcmXeNho, itemFull.Chuyen5HcmXeNho)
+                    .Set(m => m.Chuyen1HcmXeLon, itemFull.Chuyen1HcmXeLon)
+                    .Set(m => m.Chuyen2HcmXeLon, itemFull.Chuyen2HcmXeLon)
+                    .Set(m => m.Chuyen3HcmXeLon, itemFull.Chuyen3HcmXeLon)
+                    .Set(m => m.Chuyen4HcmXeLon, itemFull.Chuyen4HcmXeLon)
+                    .Set(m => m.Chuyen5HcmXeLon, itemFull.Chuyen5HcmXeLon)
+                    .Set(m => m.Chuyen1BinhDuongXeNho, itemFull.Chuyen1BinhDuongXeNho)
+                    .Set(m => m.Chuyen2BinhDuongXeNho, itemFull.Chuyen2BinhDuongXeNho)
+                    .Set(m => m.Chuyen3BinhDuongXeNho, itemFull.Chuyen3BinhDuongXeNho)
+                    .Set(m => m.Chuyen4BinhDuongXeNho, itemFull.Chuyen4BinhDuongXeNho)
+                    .Set(m => m.Chuyen5BinhDuongXeNho, itemFull.Chuyen5BinhDuongXeNho)
+                    .Set(m => m.Chuyen1BinhDuongXeLon, itemFull.Chuyen1BinhDuongXeLon)
+                    .Set(m => m.Chuyen2BinhDuongXeLon, itemFull.Chuyen2BinhDuongXeLon)
+                    .Set(m => m.Chuyen3BinhDuongXeLon, itemFull.Chuyen3BinhDuongXeLon)
+                    .Set(m => m.Chuyen4BinhDuongXeLon, itemFull.Chuyen4BinhDuongXeLon)
+                    .Set(m => m.Chuyen5BinhDuongXeLon, itemFull.Chuyen5BinhDuongXeLon)
+                    .Set(m => m.Chuyen1BienHoaXeNho, itemFull.Chuyen1BienHoaXeNho)
+                    .Set(m => m.Chuyen2BienHoaXeNho, itemFull.Chuyen2BienHoaXeNho)
+                    .Set(m => m.Chuyen3BienHoaXeNho, itemFull.Chuyen3BienHoaXeNho)
+                    .Set(m => m.Chuyen4BienHoaXeNho, itemFull.Chuyen4BienHoaXeNho)
+                    .Set(m => m.Chuyen5BienHoaXeNho, itemFull.Chuyen5BienHoaXeNho)
+                    .Set(m => m.Chuyen1BienHoaXeLon, itemFull.Chuyen1BienHoaXeLon)
+                    .Set(m => m.Chuyen2BienHoaXeLon, itemFull.Chuyen2BienHoaXeLon)
+                    .Set(m => m.Chuyen3BienHoaXeLon, itemFull.Chuyen3BienHoaXeLon)
+                    .Set(m => m.Chuyen4BienHoaXeLon, itemFull.Chuyen4BienHoaXeLon)
+                    .Set(m => m.Chuyen5BienHoaXeLon, itemFull.Chuyen5BienHoaXeLon)
+                    .Set(m => m.VungTauXeNho, itemFull.VungTauXeNho)
+                    .Set(m => m.VungTauXeLon, itemFull.VungTauXeLon)
+                    .Set(m => m.BinhThuanXeNho, itemFull.BinhThuanXeNho)
+                    .Set(m => m.BinhThuanXeLon, itemFull.BinhThuanXeLon)
+                    .Set(m => m.CanThoXeLon, itemFull.CanThoXeLon)
+                    .Set(m => m.VinhLongXeLon, itemFull.VinhLongXeLon)
+                    .Set(m => m.LongAnXeNho, itemFull.LongAnXeNho)
+                    .Set(m => m.LongAnXeLon, itemFull.LongAnXeLon)
+                    .Set(m => m.TienGiangXeNho, itemFull.TienGiangXeNho)
+                    .Set(m => m.TienGiangXeLon, itemFull.TienGiangXeLon)
+                    .Set(m => m.DongNaiXeNho, itemFull.DongNaiXeNho)
+                    .Set(m => m.DongNaiXeLon, itemFull.DongNaiXeLon)
+                    .Set(m => m.TongSoChuyen, itemFull.TongSoChuyen)
+                    .Set(m => m.TienChuyen, itemFull.TienChuyen)
+                    .Set(m => m.CongTacXa, itemFull.CongTacXa)
+                    .Set(m => m.KhoiLuongBun, itemFull.KhoiLuongBun)
+                    .Set(m => m.ThanhTienBun, itemFull.ThanhTienBun)
+                    .Set(m => m.UpdatedOn, DateTime.Now);
+                dbContext.LogisticEmployeeCongs.UpdateOne(filter, update);
+            }
+
+            return Json(new { result = true, source = "update", message = "Thành công" });
+        }
+
+        [Route(Constants.LinkSalary.LogisticGiaChuyenXe + "/" + Constants.LinkSalary.Update)]
+        public async Task<IActionResult> LogisticGiaChuyenXeUpdate(string thang)
+        {
+            #region Authorization
+            var login = User.Identity.Name;
+            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+            ViewData["LoginUserName"] = loginUserName;
+
+            var loginInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
+            if (loginInformation == null)
+            {
+                #region snippet1
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                #endregion
+                return RedirectToAction("login", "account");
+            }
+
+            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.LuongVP, (int)ERights.View)))
+            {
+                return RedirectToAction("AccessDenied", "Account");
+            }
+
+
+            #endregion
+
+            #region DDL
+            var monthYears = new List<MonthYear>();
+            var date = new DateTime(2018, 02, 01);
+            var endDate = DateTime.Now;
+            while (date.Year < endDate.Year || (date.Year == endDate.Year && date.Month <= endDate.Month))
+            {
+                monthYears.Add(new MonthYear
+                {
+                    Month = date.Month,
+                    Year = date.Year
+                });
+                date = date.AddMonths(1);
+            }
+            if (endDate.Day > 25)
+            {
+                monthYears.Add(new MonthYear
+                {
+                    Month = endDate.AddMonths(1).Month,
+                    Year = endDate.AddMonths(1).Year
+                });
+            }
+            var sortTimes = monthYears.OrderByDescending(x => x.Year).OrderByDescending(x => x.Month).ToList();
+            #endregion
+
+            #region Times
+            var toDate = Utility.WorkingMonthToDate(thang);
+            var fromDate = toDate.AddMonths(-1).AddDays(1);
+            if (string.IsNullOrEmpty(thang))
+            {
+                toDate = DateTime.Now;
+                fromDate = toDate.Day > 25 ? new DateTime(toDate.Year, toDate.Month, 26) : new DateTime(toDate.AddMonths(-1).Year, toDate.AddMonths(-1).Month, 26);
+            }
+            var year = toDate.Day > 25 ? toDate.AddMonths(1).Year : toDate.Year;
+            var month = toDate.Day > 25 ? toDate.AddMonths(1).Month : toDate.Month;
+            thang = string.IsNullOrEmpty(thang) ? month + "-" + year : thang;
+            #endregion
+
+            var giachuyenxes = GetLogisticGiaChuyenXe(month, year);
+
+            var viewModel = new BangLuongViewModel()
+            {
+                LogisticGiaChuyenXes = giachuyenxes,
+                MonthYears = sortTimes,
+                thang = thang
+            };
+
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        [Route(Constants.LinkSalary.LogisticGiaChuyenXe + "/" + Constants.LinkSalary.Update)]
+        public async Task<IActionResult> LogisticGiaChuyenXeUpdate(BangLuongViewModel viewModel)
+        {
+            #region Authorization
+            var login = User.Identity.Name;
+            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+            ViewData["LoginUserName"] = loginUserName;
+
+            var loginInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
+            if (loginInformation == null)
+            {
+                #region snippet1
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                #endregion
+                return RedirectToAction("login", "account");
+            }
+
+            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.LuongVP, (int)ERights.View)))
+            {
+                return RedirectToAction("AccessDenied", "Account");
+            }
+
+
+            #endregion
+
+            #region Times
+            var now = DateTime.Now;
+            var thang = viewModel.thang;
+            var toDate = Utility.WorkingMonthToDate(thang);
+            var fromDate = toDate.AddMonths(-1).AddDays(1);
+            if (string.IsNullOrEmpty(thang))
+            {
+                toDate = DateTime.Now;
+                fromDate = toDate.Day > 25 ? new DateTime(toDate.Year, toDate.Month, 26) : new DateTime(toDate.AddMonths(-1).Year, toDate.AddMonths(-1).Month, 26);
+            }
+            var year = toDate.Day > 25 ? toDate.AddMonths(1).Year : toDate.Year;
+            var month = toDate.Day > 25 ? toDate.AddMonths(1).Month : toDate.Month;
+            thang = string.IsNullOrEmpty(thang) ? month + "-" + year : thang;
+            #endregion
+
+            #region DonGiaBun
+            var dongiabun = viewModel.DonGiaBun;
+            var existbun = dbContext.LogisticGiaBuns.Find(m => m.Enable.Equals(true) && m.Month.Equals(month) && m.Year.Equals(year)).FirstOrDefault();
+            if (existbun != null)
+            {
+                var builderB = Builders<LogisticGiaBun>.Filter;
+                var filterB = builderB.Eq(m => m.Id, existbun.Id);
+                var updateB = Builders<LogisticGiaBun>.Update
+                    .Set(m => m.Price, dongiabun);
+                dbContext.LogisticGiaBuns.UpdateOne(filterB, updateB);
+            }
+            else
+            {
+                dbContext.LogisticGiaBuns.InsertOne(new LogisticGiaBun()
+                {
+                    Month = month,
+                    Year = year,
+                    Name = "Bùn",
+                    Alias = "bun",
+                    Code = "BUN",
+                    Price = dongiabun
+                });
+            }
+            #endregion
+
+            foreach (var item in viewModel.LogisticGiaChuyenXes)
+            {
+                if (!string.IsNullOrEmpty(item.Id))
+                {
+                    var builder = Builders<LogisticGiaChuyenXe>.Filter;
+                    var filter = builder.Eq(m => m.Id, item.Id);
+                    var update = Builders<LogisticGiaChuyenXe>.Update
+                        .Set(m => m.LuongNangSuatChuyenCom, item.LuongNangSuatChuyenCom)
+                        .Set(m => m.HoTroTienComTinh, item.HoTroTienComTinh)
+                        .Set(m => m.LuongNangSuatChuyen, item.LuongNangSuatChuyen)
+                        .Set(m => m.Chuyen1, item.Chuyen1)
+                        .Set(m => m.Chuyen2, item.Chuyen2)
+                        .Set(m => m.Chuyen3, item.Chuyen3)
+                        .Set(m => m.Chuyen4, item.Chuyen4)
+                        .Set(m => m.Chuyen5, item.Chuyen5)
+                        .Set(m => m.HoTroChuyenDem, item.HoTroChuyenDem)
+                        .Set(m => m.UpdatedOn, DateTime.Now);
+                    dbContext.LogisticGiaChuyenXes.UpdateOne(filter, update);
+                }
+                else
+                {
+                    item.Month = month;
+                    item.Year = year;
+                    dbContext.LogisticGiaChuyenXes.InsertOne(item);
+                }
+            }
+
+            return Json(new { result = true, source = "update", message = "Thành công" });
+        }
+
+        [Route(Constants.LinkSalary.LogisticEmployeeCongCalculator)]
+        public IActionResult LogisticEmployeeCongCalculator(BangLuongViewModel viewModel)
+        {
+            if (viewModel.LogisticEmployeeCongs != null)
+            {
+                var entity = viewModel.LogisticEmployeeCongs.First();
+                string thang = entity.Month + "-" + entity.Year;
+                var returnEntity = GetLogisticEmployeeCong(entity, thang);
+                return Json(new { result = true, entity = returnEntity });
+            }
+            else
+            {
+                return Json(new { result = false });
+            }
+        }
+
+        public LogisticEmployeeCong GetLogisticEmployeeCong(LogisticEmployeeCong newData, string thang)
+        {
+            #region Times
+            var toDate = Utility.WorkingMonthToDate(thang);
+            var fromDate = toDate.AddMonths(-1).AddDays(1);
+            if (string.IsNullOrEmpty(thang))
+            {
+                toDate = DateTime.Now;
+                fromDate = toDate.Day > 25 ? new DateTime(toDate.Year, toDate.Month, 26) : new DateTime(toDate.AddMonths(-1).Year, toDate.AddMonths(-1).Month, 26);
+            }
+            var year = toDate.Day > 25 ? toDate.AddMonths(1).Year : toDate.Year;
+            var month = toDate.Day > 25 ? toDate.AddMonths(1).Month : toDate.Month;
+            thang = string.IsNullOrEmpty(thang) ? month + "-" + year : thang;
+            #endregion
+
+            var prices = GetLogisticGiaChuyenXe(month, year);
+            var priceHOCHIMINHN = prices.Find(m => m.TuyenCode.Equals("HOCHIMINH") && m.LoaiXeCode.Equals("XN"));
+            var priceHOCHIMINHL = prices.Find(m => m.TuyenCode.Equals("HOCHIMINH") && m.LoaiXeCode.Equals("XL"));
+            var priceBINHDUONGN = prices.Find(m => m.TuyenCode.Equals("BINHDUONG") && m.LoaiXeCode.Equals("XN"));
+            var priceBINHDUONGL = prices.Find(m => m.TuyenCode.Equals("BINHDUONG") && m.LoaiXeCode.Equals("XL"));
+            var priceBIENHOAN = prices.Find(m => m.TuyenCode.Equals("BIENHOA") && m.LoaiXeCode.Equals("XN"));
+            var priceBIENHOAL = prices.Find(m => m.TuyenCode.Equals("BIENHOA") && m.LoaiXeCode.Equals("XL"));
+            var priceVUNGTAUN = prices.Find(m => m.TuyenCode.Equals("VUNGTAU") && m.LoaiXeCode.Equals("XN"));
+            var priceVUNGTAUL = prices.Find(m => m.TuyenCode.Equals("VUNGTAU") && m.LoaiXeCode.Equals("XL"));
+            var priceBINHTHUANN = prices.Find(m => m.TuyenCode.Equals("BINHTHUAN") && m.LoaiXeCode.Equals("XN"));
+            var priceBINHTHUANL = prices.Find(m => m.TuyenCode.Equals("BINHTHUAN") && m.LoaiXeCode.Equals("XL"));
+            var priceCANTHON = prices.Find(m => m.TuyenCode.Equals("CANTHO") && m.LoaiXeCode.Equals("XN"));
+            var priceCANTHOL = prices.Find(m => m.TuyenCode.Equals("CANTHO") && m.LoaiXeCode.Equals("XL"));
+            var priceVINHLONGN = prices.Find(m => m.TuyenCode.Equals("VINHLONG") && m.LoaiXeCode.Equals("XN"));
+            var priceVINHLONGL = prices.Find(m => m.TuyenCode.Equals("VINHLONG") && m.LoaiXeCode.Equals("XL"));
+            var priceLONGANN = prices.Find(m => m.TuyenCode.Equals("LONGAN") && m.LoaiXeCode.Equals("XN"));
+            var priceLONGANL = prices.Find(m => m.TuyenCode.Equals("LONGAN") && m.LoaiXeCode.Equals("XL"));
+            var priceTIENGIANGN = prices.Find(m => m.TuyenCode.Equals("TIENGIANG") && m.LoaiXeCode.Equals("XN"));
+            var priceTIENGIANGL = prices.Find(m => m.TuyenCode.Equals("TIENGIANG") && m.LoaiXeCode.Equals("XL"));
+            var priceDONGNAIN = prices.Find(m => m.TuyenCode.Equals("DONGNAI") && m.LoaiXeCode.Equals("XN"));
+            var priceDONGNAIL = prices.Find(m => m.TuyenCode.Equals("DONGNAI") && m.LoaiXeCode.Equals("XL"));
+
+            decimal LuongTheoDoanhThuDoanhSo = newData.DoanhThu * ((decimal)1.2 / 100);
+            decimal Chuyen1HcmXeNho = newData.Chuyen1HcmXeNho;
+            decimal Chuyen2HcmXeNho = newData.Chuyen2HcmXeNho;
+            decimal Chuyen3HcmXeNho = newData.Chuyen3HcmXeNho;
+            decimal Chuyen4HcmXeNho = newData.Chuyen4HcmXeNho;
+            decimal Chuyen5HcmXeNho = newData.Chuyen5HcmXeNho;
+            decimal Chuyen1HcmXeLon = newData.Chuyen1HcmXeLon;
+            decimal Chuyen2HcmXeLon = newData.Chuyen2HcmXeLon;
+            decimal Chuyen3HcmXeLon = newData.Chuyen3HcmXeLon;
+            decimal Chuyen4HcmXeLon = newData.Chuyen4HcmXeLon;
+            decimal Chuyen5HcmXeLon = newData.Chuyen5HcmXeLon;
+            decimal Chuyen1BinhDuongXeNho = newData.Chuyen1BinhDuongXeNho;
+            decimal Chuyen2BinhDuongXeNho = newData.Chuyen2BinhDuongXeNho;
+            decimal Chuyen3BinhDuongXeNho = newData.Chuyen3BinhDuongXeNho;
+            decimal Chuyen4BinhDuongXeNho = newData.Chuyen4BinhDuongXeNho;
+            decimal Chuyen5BinhDuongXeNho = newData.Chuyen5BinhDuongXeNho;
+            decimal Chuyen1BinhDuongXeLon = newData.Chuyen1BinhDuongXeLon;
+            decimal Chuyen2BinhDuongXeLon = newData.Chuyen2BinhDuongXeLon;
+            decimal Chuyen3BinhDuongXeLon = newData.Chuyen3BinhDuongXeLon;
+            decimal Chuyen4BinhDuongXeLon = newData.Chuyen4BinhDuongXeLon;
+            decimal Chuyen5BinhDuongXeLon = newData.Chuyen5BinhDuongXeLon;
+            decimal Chuyen1BienHoaXeNho = newData.Chuyen1BienHoaXeNho;
+            decimal Chuyen2BienHoaXeNho = newData.Chuyen2BienHoaXeNho;
+            decimal Chuyen3BienHoaXeNho = newData.Chuyen3BienHoaXeNho;
+            decimal Chuyen4BienHoaXeNho = newData.Chuyen4BienHoaXeNho;
+            decimal Chuyen5BienHoaXeNho = newData.Chuyen5BienHoaXeNho;
+            decimal Chuyen1BienHoaXeLon = newData.Chuyen1BienHoaXeLon;
+            decimal Chuyen2BienHoaXeLon = newData.Chuyen2BienHoaXeLon;
+            decimal Chuyen3BienHoaXeLon = newData.Chuyen3BienHoaXeLon;
+            decimal Chuyen4BienHoaXeLon = newData.Chuyen4BienHoaXeLon;
+            decimal Chuyen5BienHoaXeLon = newData.Chuyen5BienHoaXeLon;
+            decimal VungTauXeNho = newData.VungTauXeNho;
+            decimal VungTauXeLon = newData.VungTauXeLon;
+            decimal BinhThuanXeNho = newData.BinhThuanXeNho;
+            decimal BinhThuanXeLon = newData.BinhThuanXeLon;
+            decimal CanTHoXeLon = newData.CanThoXeLon;
+            decimal VinhLongXeLon = newData.VinhLongXeLon;
+            decimal LongAnXeNho = newData.LongAnXeNho;
+            decimal LongAnXeLon = newData.LongAnXeLon;
+            decimal TienGiangXeNho = newData.TienGiangXeNho;
+            decimal TienGiangXeLon = newData.TienGiangXeLon;
+            decimal DongNaiXeNho = newData.DongNaiXeNho;
+            decimal DongNaiXeLon = newData.DongNaiXeLon;
+
+            decimal TongSoChuyen = 0;
+            TongSoChuyen += Chuyen1HcmXeNho;
+            TongSoChuyen += Chuyen2HcmXeNho;
+            TongSoChuyen += Chuyen3HcmXeNho;
+            TongSoChuyen += Chuyen4HcmXeNho;
+            TongSoChuyen += Chuyen5HcmXeNho;
+            TongSoChuyen += Chuyen1HcmXeLon;
+            TongSoChuyen += Chuyen2HcmXeLon;
+            TongSoChuyen += Chuyen3HcmXeLon;
+            TongSoChuyen += Chuyen4HcmXeLon;
+            TongSoChuyen += Chuyen5HcmXeLon;
+            TongSoChuyen += Chuyen1BinhDuongXeNho;
+            TongSoChuyen += Chuyen2BinhDuongXeNho;
+            TongSoChuyen += Chuyen3BinhDuongXeNho;
+            TongSoChuyen += Chuyen4BinhDuongXeNho;
+            TongSoChuyen += Chuyen5BinhDuongXeNho;
+            TongSoChuyen += Chuyen1BinhDuongXeLon;
+            TongSoChuyen += Chuyen2BinhDuongXeLon;
+            TongSoChuyen += Chuyen3BinhDuongXeLon;
+            TongSoChuyen += Chuyen4BinhDuongXeLon;
+            TongSoChuyen += Chuyen5BinhDuongXeLon;
+            TongSoChuyen += Chuyen1BienHoaXeNho;
+            TongSoChuyen += Chuyen2BienHoaXeNho;
+            TongSoChuyen += Chuyen3BienHoaXeNho;
+            TongSoChuyen += Chuyen4BienHoaXeNho;
+            TongSoChuyen += Chuyen5BienHoaXeNho;
+            TongSoChuyen += Chuyen1BienHoaXeLon;
+            TongSoChuyen += Chuyen2BienHoaXeLon;
+            TongSoChuyen += Chuyen3BienHoaXeLon;
+            TongSoChuyen += Chuyen4BienHoaXeLon;
+            TongSoChuyen += Chuyen5BienHoaXeLon;
+            TongSoChuyen += VungTauXeNho;
+            TongSoChuyen += VungTauXeLon;
+            TongSoChuyen += BinhThuanXeNho;
+            TongSoChuyen += BinhThuanXeLon;
+            TongSoChuyen += CanTHoXeLon;
+            TongSoChuyen += VinhLongXeLon;
+            TongSoChuyen += LongAnXeNho;
+            TongSoChuyen += LongAnXeLon;
+            TongSoChuyen += TienGiangXeNho;
+            TongSoChuyen += TienGiangXeLon;
+            TongSoChuyen += DongNaiXeNho;
+            TongSoChuyen += DongNaiXeLon;
+
+            decimal TienChuyen = 0;
+            TienChuyen += Chuyen1HcmXeNho * priceHOCHIMINHN.Chuyen1;
+            TienChuyen += Chuyen2HcmXeNho * priceHOCHIMINHN.Chuyen2;
+            TienChuyen += Chuyen3HcmXeNho * priceHOCHIMINHN.Chuyen3;
+            TienChuyen += Chuyen4HcmXeNho * priceHOCHIMINHN.Chuyen4;
+            TienChuyen += Chuyen5HcmXeNho * priceHOCHIMINHN.Chuyen5;
+            TienChuyen += Chuyen1HcmXeLon * priceHOCHIMINHL.Chuyen1;
+            TienChuyen += Chuyen2HcmXeLon * priceHOCHIMINHL.Chuyen2;
+            TienChuyen += Chuyen3HcmXeLon * priceHOCHIMINHL.Chuyen3;
+            TienChuyen += Chuyen4HcmXeLon * priceHOCHIMINHL.Chuyen4;
+            TienChuyen += Chuyen5HcmXeLon * priceHOCHIMINHL.Chuyen5;
+
+            TienChuyen += Chuyen1BinhDuongXeNho * priceBINHDUONGN.Chuyen1;
+            TienChuyen += Chuyen2BinhDuongXeNho * priceBINHDUONGN.Chuyen2;
+            TienChuyen += Chuyen3BinhDuongXeNho * priceBINHDUONGN.Chuyen3;
+            TienChuyen += Chuyen4BinhDuongXeNho * priceBINHDUONGN.Chuyen4;
+            TienChuyen += Chuyen5BinhDuongXeNho * priceBINHDUONGN.Chuyen5;
+            TienChuyen += Chuyen1BinhDuongXeLon * priceBINHDUONGL.Chuyen1;
+            TienChuyen += Chuyen2BinhDuongXeLon * priceBINHDUONGL.Chuyen2;
+            TienChuyen += Chuyen3BinhDuongXeLon * priceBINHDUONGL.Chuyen3;
+            TienChuyen += Chuyen4BinhDuongXeLon * priceBINHDUONGL.Chuyen4;
+            TienChuyen += Chuyen5BinhDuongXeLon * priceBINHDUONGL.Chuyen5;
+
+            TienChuyen += Chuyen1BienHoaXeNho * priceBIENHOAN.Chuyen1;
+            TienChuyen += Chuyen2BienHoaXeNho * priceBIENHOAN.Chuyen2;
+            TienChuyen += Chuyen3BienHoaXeNho * priceBIENHOAN.Chuyen3;
+            TienChuyen += Chuyen4BienHoaXeNho * priceBIENHOAN.Chuyen4;
+            TienChuyen += Chuyen5BienHoaXeNho * priceBIENHOAN.Chuyen5;
+            TienChuyen += Chuyen1BienHoaXeLon * priceBIENHOAL.Chuyen1;
+            TienChuyen += Chuyen2BienHoaXeLon * priceBIENHOAL.Chuyen2;
+            TienChuyen += Chuyen3BienHoaXeLon * priceBIENHOAL.Chuyen3;
+            TienChuyen += Chuyen4BienHoaXeLon * priceBIENHOAL.Chuyen4;
+            TienChuyen += Chuyen5BienHoaXeLon * priceBIENHOAL.Chuyen5;
+
+            TienChuyen += VungTauXeNho * priceVUNGTAUN.Chuyen2;
+            TienChuyen += VungTauXeLon * priceVUNGTAUL.Chuyen2;
+            TienChuyen += BinhThuanXeNho * priceBINHTHUANN.Chuyen2;
+            TienChuyen += BinhThuanXeLon * priceBINHTHUANL.Chuyen2;
+
+            TienChuyen += CanTHoXeLon * priceCANTHOL.Chuyen2;
+            TienChuyen += VinhLongXeLon * priceVINHLONGL.Chuyen2;
+            TienChuyen += LongAnXeNho * priceLONGANN.Chuyen2;
+            TienChuyen += LongAnXeLon * priceLONGANL.Chuyen2;
+            TienChuyen += TienGiangXeNho * priceTIENGIANGN.Chuyen2;
+            TienChuyen += TienGiangXeLon * priceTIENGIANGL.Chuyen2;
+            TienChuyen += DongNaiXeNho * priceDONGNAIN.Chuyen2;
+            TienChuyen += DongNaiXeLon * priceDONGNAIL.Chuyen2;
+
+            if (newData.ChucVu != "Tài xế")
+            {
+                TienChuyen = 0;
+            }
+            decimal CongTacXa = newData.CongTacXa;
+            CongTacXa += Chuyen1HcmXeNho * priceHOCHIMINHN.HoTroTienComTinh;
+            CongTacXa += Chuyen2HcmXeNho * priceHOCHIMINHN.HoTroTienComTinh;
+            CongTacXa += Chuyen3HcmXeNho * priceHOCHIMINHN.HoTroTienComTinh;
+            CongTacXa += Chuyen4HcmXeNho * priceHOCHIMINHN.HoTroTienComTinh;
+            CongTacXa += Chuyen5HcmXeNho * priceHOCHIMINHN.HoTroTienComTinh;
+            CongTacXa += Chuyen1HcmXeLon * priceHOCHIMINHL.HoTroTienComTinh;
+            CongTacXa += Chuyen2HcmXeLon * priceHOCHIMINHL.HoTroTienComTinh;
+            CongTacXa += Chuyen3HcmXeLon * priceHOCHIMINHL.HoTroTienComTinh;
+            CongTacXa += Chuyen4HcmXeLon * priceHOCHIMINHL.HoTroTienComTinh;
+            CongTacXa += Chuyen5HcmXeLon * priceHOCHIMINHL.HoTroTienComTinh;
+
+            CongTacXa += Chuyen1BinhDuongXeNho * priceBINHDUONGN.HoTroTienComTinh;
+            CongTacXa += Chuyen2BinhDuongXeNho * priceBINHDUONGN.HoTroTienComTinh;
+            CongTacXa += Chuyen3BinhDuongXeNho * priceBINHDUONGN.HoTroTienComTinh;
+            CongTacXa += Chuyen4BinhDuongXeNho * priceBINHDUONGN.HoTroTienComTinh;
+            CongTacXa += Chuyen5BinhDuongXeNho * priceBINHDUONGN.HoTroTienComTinh;
+            CongTacXa += Chuyen1BinhDuongXeLon * priceBINHDUONGL.HoTroTienComTinh;
+            CongTacXa += Chuyen2BinhDuongXeLon * priceBINHDUONGL.HoTroTienComTinh;
+            CongTacXa += Chuyen3BinhDuongXeLon * priceBINHDUONGL.HoTroTienComTinh;
+            CongTacXa += Chuyen4BinhDuongXeLon * priceBINHDUONGL.HoTroTienComTinh;
+            CongTacXa += Chuyen5BinhDuongXeLon * priceBINHDUONGL.HoTroTienComTinh;
+
+            CongTacXa += Chuyen1BienHoaXeNho * priceBIENHOAN.HoTroTienComTinh;
+            CongTacXa += Chuyen2BienHoaXeNho * priceBIENHOAN.HoTroTienComTinh;
+            CongTacXa += Chuyen3BienHoaXeNho * priceBIENHOAN.HoTroTienComTinh;
+            CongTacXa += Chuyen4BienHoaXeNho * priceBIENHOAN.HoTroTienComTinh;
+            CongTacXa += Chuyen5BienHoaXeNho * priceBIENHOAN.HoTroTienComTinh;
+            CongTacXa += Chuyen1BienHoaXeLon * priceBIENHOAL.HoTroTienComTinh;
+            CongTacXa += Chuyen2BienHoaXeLon * priceBIENHOAL.HoTroTienComTinh;
+            CongTacXa += Chuyen3BienHoaXeLon * priceBIENHOAL.HoTroTienComTinh;
+            CongTacXa += Chuyen4BienHoaXeLon * priceBIENHOAL.HoTroTienComTinh;
+            CongTacXa += Chuyen5BienHoaXeLon * priceBIENHOAL.HoTroTienComTinh;
+
+            CongTacXa += VungTauXeNho * priceVUNGTAUN.HoTroTienComTinh;
+            CongTacXa += VungTauXeLon * priceVUNGTAUL.HoTroTienComTinh;
+            CongTacXa += BinhThuanXeNho * priceBINHTHUANN.HoTroTienComTinh;
+            CongTacXa += BinhThuanXeLon * priceBINHTHUANL.HoTroTienComTinh;
+
+            CongTacXa += CanTHoXeLon * priceCANTHOL.HoTroTienComTinh;
+            CongTacXa += VinhLongXeLon * priceVINHLONGL.HoTroTienComTinh;
+            CongTacXa += LongAnXeNho * priceLONGANN.HoTroTienComTinh;
+            CongTacXa += LongAnXeLon * priceLONGANL.HoTroTienComTinh;
+            CongTacXa += TienGiangXeNho * priceTIENGIANGN.HoTroTienComTinh;
+            CongTacXa += TienGiangXeLon * priceTIENGIANGL.HoTroTienComTinh;
+            CongTacXa += DongNaiXeNho * priceDONGNAIN.HoTroTienComTinh;
+            CongTacXa += DongNaiXeLon * priceDONGNAIL.HoTroTienComTinh;
+
+            decimal KhoiLuongBun = newData.KhoiLuongBun;
+            decimal dongiabun = GetLogisticGiaBun(thang);
+            decimal ThanhTienBun = KhoiLuongBun * dongiabun;
+
+            newData.LuongTheoDoanhThuDoanhSo = Math.Round(LuongTheoDoanhThuDoanhSo, 0);
+            newData.TongSoChuyen = TongSoChuyen;
+            newData.TienChuyen = Math.Round(TienChuyen, 0);
+            newData.CongTacXa = Math.Round(CongTacXa, 0);
+            newData.ThanhTienBun = Math.Round(ThanhTienBun, 0);
+
+            return newData;
+        }
+
+        public decimal GetLogisticGiaBun(string thang)
+        {
+            #region Times
+            var toDate = Utility.WorkingMonthToDate(thang);
+            var fromDate = toDate.AddMonths(-1).AddDays(1);
+            if (string.IsNullOrEmpty(thang))
+            {
+                toDate = DateTime.Now;
+                fromDate = toDate.Day > 25 ? new DateTime(toDate.Year, toDate.Month, 26) : new DateTime(toDate.AddMonths(-1).Year, toDate.AddMonths(-1).Month, 26);
+            }
+            var year = toDate.Day > 25 ? toDate.AddMonths(1).Year : toDate.Year;
+            var month = toDate.Day > 25 ? toDate.AddMonths(1).Month : toDate.Month;
+            thang = string.IsNullOrEmpty(thang) ? month + "-" + year : thang;
+            #endregion
+
+            var existbun = dbContext.LogisticGiaBuns.Find(m => m.Enable.Equals(true) && m.Month.Equals(month) && m.Year.Equals(year)).FirstOrDefault();
+            if (existbun != null)
+            {
+                return existbun.Price;
+            }
+            else
+            {
+                var lastest = dbContext.LogisticGiaBuns.Find(m => m.Enable.Equals(true)).SortByDescending(m => m.Year).SortByDescending(m => m.Month).FirstOrDefault();
+                if (lastest != null)
+                {
+                    lastest.Id = null;
+                    lastest.Month = month;
+                    lastest.Year = year;
+                    dbContext.LogisticGiaBuns.InsertOne(lastest);
+                    return lastest.Price;
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+        }
+
+        private List<LogisticGiaChuyenXe> GetLogisticGiaChuyenXe(int month, int year)
+        {
+            var datas = dbContext.LogisticGiaChuyenXes.Find(m => m.Enable.Equals(true) && m.Month.Equals(month) && m.Year.Equals(year)).ToList();
+            if (datas.Count == 0)
+            {
+                var checkLast = dbContext.LogisticGiaChuyenXes.CountDocuments(m => m.Enable.Equals(true));
+                if (checkLast == 0)
+                {
+                    // insert empty value
+                    var locations = dbContext.LogisticsLocations.Find(m => m.Enable.Equals(true)).ToList();
+                    if (locations.Count == 0)
+                    {
+                        locations = GetLogisticsLocations();
+                    }
+                    var xes = dbContext.LogisticsLoaiXes.Find(m => m.Enable.Equals(true)).ToList();
+                    if (xes.Count == 0)
+                    {
+                        xes = GetLogisticsLoaiXes();
+                    }
+                    foreach (var location in locations)
+                    {
+                        foreach (var xe in xes)
+                        {
+                            dbContext.LogisticGiaChuyenXes.InsertOne(new LogisticGiaChuyenXe
+                            {
+                                Year = year,
+                                Month = month,
+                                Tuyen = location.Name,
+                                TuyenAlias = location.Alias,
+                                TuyenCode = location.Code,
+                                LoaiXe = xe.Name,
+                                LoaiXeAlias = xe.Alias,
+                                LoaiXeCode = xe.Code
+                            });
+                        }
+                    }
+                }
+                else
+                {
+                    // insert lastest value for new data.
+                    var lastKpi = dbContext.LogisticGiaChuyenXes.Find(m => m.Enable.Equals(true)).SortByDescending(m => m.Year).SortByDescending(m => m.Month).FirstOrDefault();
+                    var lastMonth = lastKpi.Month;
+                    var lastYear = lastKpi.Year;
+                    var lastKpis = dbContext.LogisticGiaChuyenXes.Find(m => m.Enable.Equals(true) && m.Month.Equals(lastMonth) && m.Year.Equals(lastYear)).ToList();
+                    foreach (var item in lastKpis)
+                    {
+                        item.Id = null;
+                        item.Year = year;
+                        item.Month = month;
+                        dbContext.LogisticGiaChuyenXes.InsertOne(item);
+                    }
+                }
+                datas = dbContext.LogisticGiaChuyenXes.Find(m => m.Enable.Equals(true) & m.Month.Equals(month) & m.Year.Equals(year)).ToList();
+            }
+            return datas;
+        }
+
+        private List<LogisticEmployeeCong> GetLogisticEmployeeCongs(int month, int year)
+        {
+            var datas = dbContext.LogisticEmployeeCongs.Find(m => m.Enable.Equals(true) && m.Year.Equals(year) && m.Month.Equals(month)).ToList();
+            if (datas.Count == 0)
+            {
+                var employees = dbContext.Employees.Find(m => m.Enable.Equals(true) && !m.UserName.Equals(Constants.System.account)
+                 && (m.CodeOld.Contains("KDG")
+                    || m.CodeOld.Contains("KDPX")
+                    || m.CodeOld.Contains("KDX")
+                    || m.CodeOld.Contains("KDS"))).ToList();
+                foreach (var employee in employees)
+                {
+                    var logisticCong = new LogisticEmployeeCong
+                    {
+                        Year = year,
+                        Month = month,
+                        EmployeeId = employee.Id,
+                        MaNhanVien = employee.CodeOld,
+                        FullName = employee.FullName,
+                        ChucVu = employee.LogisticChucVu
+                    };
+                    var lastestLogisticCong = dbContext.LogisticEmployeeCongs.Find(m => m.Enable.Equals(true) && m.EmployeeId.Equals(employee.Id)).SortByDescending(m => m.Year).SortByDescending(m => m.Month).FirstOrDefault();
+                    if (lastestLogisticCong != null)
+                    {
+                        // go to common
+                        lastestLogisticCong.Id = null;
+                        lastestLogisticCong.Year = year;
+                        lastestLogisticCong.Month = month;
+                        logisticCong = GetLogisticEmployeeCong(lastestLogisticCong, month + "-" + year);
+                    }
+                    dbContext.LogisticEmployeeCongs.InsertOne(logisticCong);
+                }
+                datas = dbContext.LogisticEmployeeCongs.Find(m => m.Enable.Equals(true) && m.Year.Equals(year) && m.Month.Equals(month)).ToList();
+            }
+
+            return datas;
+        }
+
+        [Route(Constants.LinkSalary.LogisticEmployeeImport)]
+        [HttpPost]
+        public ActionResult LogisticEmployeeImport()
+        {
+            IFormFile file = Request.Form.Files[0];
+            string folderName = Constants.Storage.Hr;
+            string webRootPath = _env.WebRootPath;
+            string newPath = Path.Combine(webRootPath, folderName);
+            if (!Directory.Exists(newPath))
+            {
+                Directory.CreateDirectory(newPath);
+            }
+            if (file.Length > 0)
+            {
+                string sFileExtension = Path.GetExtension(file.FileName).ToLower();
+                ISheet sheet;
+                string fullPath = Path.Combine(newPath, file.FileName);
+                using (var stream = new FileStream(fullPath, FileMode.Create))
+                {
+                    file.CopyTo(stream);
+                    stream.Position = 0;
+                    if (sFileExtension == ".xls")
+                    {
+                        HSSFWorkbook hssfwb = new HSSFWorkbook(stream); //This will read the Excel 97-2000 formats  
+                        sheet = hssfwb.GetSheetAt(0);
+                    }
+                    else
+                    {
+                        XSSFWorkbook hssfwb = new XSSFWorkbook(stream); //This will read 2007 Excel format  
+                        sheet = hssfwb.GetSheetAt(0); //get first sheet from workbook   
+                    }
+
+                    var timeRow = sheet.GetRow(1);
+                    var month = Convert.ToInt32(Utility.GetNumbericCellValue(timeRow.GetCell(1)));
+                    var year = Convert.ToInt32(Utility.GetNumbericCellValue(timeRow.GetCell(3)));
+                    if (month == 0)
+                    {
+                        month = DateTime.Now.Month;
+                    }
+                    if (year == 0)
+                    {
+                        year = DateTime.Now.Year;
+                    }
+                    var bunrow = sheet.GetRow(2);
+                    var dongiabun = (decimal)Utility.GetNumbericCellValue(bunrow.GetCell(1));
+                    var existbun = dbContext.LogisticGiaBuns.Find(m => m.Enable.Equals(true) && m.Month.Equals(month) && m.Year.Equals(year)).FirstOrDefault();
+                    if (existbun != null)
+                    {
+                        var builderB = Builders<LogisticGiaBun>.Filter;
+                        var filterB = builderB.Eq(m => m.Id, existbun.Id);
+                        var updateB = Builders<LogisticGiaBun>.Update
+                            .Set(m => m.Price, dongiabun);
+                        dbContext.LogisticGiaBuns.UpdateOne(filterB, updateB);
+                    }
+                    else
+                    {
+                        dbContext.LogisticGiaBuns.InsertOne(new LogisticGiaBun()
+                        {
+                            Month = month,
+                            Year = year,
+                            Name = "Bùn",
+                            Alias = "bun",
+                            Code = "BUN",
+                            Price = dongiabun
+                        });
+                    }
+
+                    for (int i = 6; i <= sheet.LastRowNum; i++)
+                    {
+                        IRow row = sheet.GetRow(i);
+                        if (row == null) continue;
+                        if (row.Cells.All(d => d.CellType == CellType.Blank)) continue;
+                        if (row.Cells.All(d => d.CellType == CellType.Error)) continue;
+                        if (row.Cells.All(d => d.CellType == CellType.Unknown)) continue;
+
+                        var code = Utility.GetFormattedCellValue(row.GetCell(1));
+                        var fullName = Utility.GetFormattedCellValue(row.GetCell(2));
+                        var alias = Utility.AliasConvert(fullName);
+                        var title = Utility.GetFormattedCellValue(row.GetCell(3)).Trim();
+
+                        var entity = new LogisticEmployeeCong
+                        {
+                            Year = year,
+                            Month = month
+                        };
+
+                        entity.DoanhThu = Math.Round((decimal)Utility.GetNumbericCellValue(row.GetCell(4)), 0);
+                        entity.Chuyen1HcmXeNho = (decimal)Utility.GetNumbericCellValue(row.GetCell(5));
+                        entity.Chuyen2HcmXeNho = (decimal)Utility.GetNumbericCellValue(row.GetCell(6));
+                        entity.Chuyen3HcmXeNho = (decimal)Utility.GetNumbericCellValue(row.GetCell(7));
+                        entity.Chuyen4HcmXeNho = (decimal)Utility.GetNumbericCellValue(row.GetCell(8));
+                        entity.Chuyen5HcmXeNho = (decimal)Utility.GetNumbericCellValue(row.GetCell(9));
+                        entity.Chuyen1HcmXeLon = (decimal)Utility.GetNumbericCellValue(row.GetCell(10));
+                        entity.Chuyen2HcmXeLon = (decimal)Utility.GetNumbericCellValue(row.GetCell(11));
+                        entity.Chuyen3HcmXeLon = (decimal)Utility.GetNumbericCellValue(row.GetCell(12));
+                        entity.Chuyen4HcmXeLon = (decimal)Utility.GetNumbericCellValue(row.GetCell(13));
+                        entity.Chuyen5HcmXeLon = (decimal)Utility.GetNumbericCellValue(row.GetCell(14));
+                        entity.Chuyen1BinhDuongXeNho = (decimal)Utility.GetNumbericCellValue(row.GetCell(15));
+                        entity.Chuyen2BinhDuongXeNho = (decimal)Utility.GetNumbericCellValue(row.GetCell(16));
+                        entity.Chuyen3BinhDuongXeNho = (decimal)Utility.GetNumbericCellValue(row.GetCell(17));
+                        entity.Chuyen4BinhDuongXeNho = (decimal)Utility.GetNumbericCellValue(row.GetCell(18));
+                        entity.Chuyen5BinhDuongXeNho = (decimal)Utility.GetNumbericCellValue(row.GetCell(19));
+                        entity.Chuyen1BinhDuongXeLon = (decimal)Utility.GetNumbericCellValue(row.GetCell(20));
+                        entity.Chuyen2BinhDuongXeLon = (decimal)Utility.GetNumbericCellValue(row.GetCell(21));
+                        entity.Chuyen3BinhDuongXeLon = (decimal)Utility.GetNumbericCellValue(row.GetCell(22));
+                        entity.Chuyen4BinhDuongXeLon = (decimal)Utility.GetNumbericCellValue(row.GetCell(23));
+                        entity.Chuyen5BinhDuongXeLon = (decimal)Utility.GetNumbericCellValue(row.GetCell(24));
+                        entity.Chuyen1BienHoaXeNho = (decimal)Utility.GetNumbericCellValue(row.GetCell(25));
+                        entity.Chuyen2BienHoaXeNho = (decimal)Utility.GetNumbericCellValue(row.GetCell(26));
+                        entity.Chuyen3BienHoaXeNho = (decimal)Utility.GetNumbericCellValue(row.GetCell(27));
+                        entity.Chuyen4BienHoaXeNho = (decimal)Utility.GetNumbericCellValue(row.GetCell(28));
+                        entity.Chuyen5BienHoaXeNho = (decimal)Utility.GetNumbericCellValue(row.GetCell(29));
+                        entity.Chuyen1BienHoaXeLon = (decimal)Utility.GetNumbericCellValue(row.GetCell(30));
+                        entity.Chuyen2BienHoaXeLon = (decimal)Utility.GetNumbericCellValue(row.GetCell(31));
+                        entity.Chuyen3BienHoaXeLon = (decimal)Utility.GetNumbericCellValue(row.GetCell(32));
+                        entity.Chuyen4BienHoaXeLon = (decimal)Utility.GetNumbericCellValue(row.GetCell(33));
+                        entity.Chuyen5BienHoaXeLon = (decimal)Utility.GetNumbericCellValue(row.GetCell(34));
+                        entity.VungTauXeNho = (decimal)Utility.GetNumbericCellValue(row.GetCell(35));
+                        entity.VungTauXeLon = (decimal)Utility.GetNumbericCellValue(row.GetCell(36));
+                        entity.BinhThuanXeNho = (decimal)Utility.GetNumbericCellValue(row.GetCell(37));
+                        entity.BinhThuanXeLon = (decimal)Utility.GetNumbericCellValue(row.GetCell(38));
+                        entity.CanThoXeLon = (decimal)Utility.GetNumbericCellValue(row.GetCell(39));
+                        entity.VinhLongXeLon = (decimal)Utility.GetNumbericCellValue(row.GetCell(40));
+                        entity.LongAnXeNho = (decimal)Utility.GetNumbericCellValue(row.GetCell(41));
+                        entity.LongAnXeLon = (decimal)Utility.GetNumbericCellValue(row.GetCell(42));
+                        entity.TienGiangXeNho = (decimal)Utility.GetNumbericCellValue(row.GetCell(43));
+                        entity.TienGiangXeLon = (decimal)Utility.GetNumbericCellValue(row.GetCell(44));
+                        entity.DongNaiXeNho = (decimal)Utility.GetNumbericCellValue(row.GetCell(45));
+                        entity.DongNaiXeLon = (decimal)Utility.GetNumbericCellValue(row.GetCell(46));
+                        entity.KhoiLuongBun = (decimal)Utility.GetNumbericCellValue(row.GetCell(47));
+
+                        var employee = new Employee();
+                        if (!string.IsNullOrEmpty(alias))
+                        {
+                            employee = dbContext.Employees.Find(m => m.Enable.Equals(true) & m.AliasFullName.Equals(alias)).FirstOrDefault();
+                        }
+                        if (employee == null)
+                        {
+                            if (!string.IsNullOrEmpty(fullName))
+                            {
+                                employee = dbContext.Employees.Find(m => m.Enable.Equals(true) & m.FullName.Equals(fullName)).FirstOrDefault();
+                            }
+                        }
+                        if (employee == null)
+                        {
+                            if (!string.IsNullOrEmpty(code))
+                            {
+                                employee = dbContext.Employees.Find(m => m.Enable.Equals(true) & m.CodeOld.Equals(code)).FirstOrDefault();
+                            }
+                        }
+
+                        if (employee != null)
+                        {
+                            entity.EmployeeId = employee.Id;
+                            entity.MaNhanVien = employee.CodeOld;
+                            entity.FullName = employee.FullName;
+
+                            // Update logistic title
+                            var builderE = Builders<Employee>.Filter;
+                            var filterE = builderE.Eq(m => m.Id, employee.Id);
+                            var updateE = Builders<Employee>.Update
+                                .Set(m => m.LogisticChucVu, title);
+                            dbContext.Employees.UpdateOne(filterE, updateE);
+
+                            entity.ChucVu = title;
+                            var itemFull = GetLogisticEmployeeCong(entity, month + "-" + year);
+                            var exist = dbContext.LogisticEmployeeCongs.Find(m => m.Enable.Equals(true) && m.EmployeeId.Equals(employee.Id) && m.Month.Equals(month) && m.Year.Equals(year)).FirstOrDefault();
+                            if (exist != null)
+                            {
+                                itemFull.Id = exist.Id;
+                                var builder = Builders<LogisticEmployeeCong>.Filter;
+                                var filter = builder.Eq(m => m.Id, itemFull.Id);
+                                var update = Builders<LogisticEmployeeCong>.Update
+                                    .Set(m => m.ChucVu, itemFull.ChucVu)
+                                    .Set(m => m.DoanhThu, itemFull.DoanhThu)
+                                    .Set(m => m.LuongTheoDoanhThuDoanhSo, itemFull.LuongTheoDoanhThuDoanhSo)
+                                    .Set(m => m.Chuyen1HcmXeNho, itemFull.Chuyen1HcmXeNho)
+                                    .Set(m => m.Chuyen2HcmXeNho, itemFull.Chuyen2HcmXeNho)
+                                    .Set(m => m.Chuyen3HcmXeNho, itemFull.Chuyen3HcmXeNho)
+                                    .Set(m => m.Chuyen4HcmXeNho, itemFull.Chuyen4HcmXeNho)
+                                    .Set(m => m.Chuyen5HcmXeNho, itemFull.Chuyen5HcmXeNho)
+                                    .Set(m => m.Chuyen1HcmXeLon, itemFull.Chuyen1HcmXeLon)
+                                    .Set(m => m.Chuyen2HcmXeLon, itemFull.Chuyen2HcmXeLon)
+                                    .Set(m => m.Chuyen3HcmXeLon, itemFull.Chuyen3HcmXeLon)
+                                    .Set(m => m.Chuyen4HcmXeLon, itemFull.Chuyen4HcmXeLon)
+                                    .Set(m => m.Chuyen5HcmXeLon, itemFull.Chuyen5HcmXeLon)
+                                    .Set(m => m.Chuyen1BinhDuongXeNho, itemFull.Chuyen1BinhDuongXeNho)
+                                    .Set(m => m.Chuyen2BinhDuongXeNho, itemFull.Chuyen2BinhDuongXeNho)
+                                    .Set(m => m.Chuyen3BinhDuongXeNho, itemFull.Chuyen3BinhDuongXeNho)
+                                    .Set(m => m.Chuyen4BinhDuongXeNho, itemFull.Chuyen4BinhDuongXeNho)
+                                    .Set(m => m.Chuyen5BinhDuongXeNho, itemFull.Chuyen5BinhDuongXeNho)
+                                    .Set(m => m.Chuyen1BinhDuongXeLon, itemFull.Chuyen1BinhDuongXeLon)
+                                    .Set(m => m.Chuyen2BinhDuongXeLon, itemFull.Chuyen2BinhDuongXeLon)
+                                    .Set(m => m.Chuyen3BinhDuongXeLon, itemFull.Chuyen3BinhDuongXeLon)
+                                    .Set(m => m.Chuyen4BinhDuongXeLon, itemFull.Chuyen4BinhDuongXeLon)
+                                    .Set(m => m.Chuyen5BinhDuongXeLon, itemFull.Chuyen5BinhDuongXeLon)
+                                    .Set(m => m.Chuyen1BienHoaXeNho, itemFull.Chuyen1BienHoaXeNho)
+                                    .Set(m => m.Chuyen2BienHoaXeNho, itemFull.Chuyen2BienHoaXeNho)
+                                    .Set(m => m.Chuyen3BienHoaXeNho, itemFull.Chuyen3BienHoaXeNho)
+                                    .Set(m => m.Chuyen4BienHoaXeNho, itemFull.Chuyen4BienHoaXeNho)
+                                    .Set(m => m.Chuyen5BienHoaXeNho, itemFull.Chuyen5BienHoaXeNho)
+                                    .Set(m => m.Chuyen1BienHoaXeLon, itemFull.Chuyen1BienHoaXeLon)
+                                    .Set(m => m.Chuyen2BienHoaXeLon, itemFull.Chuyen2BienHoaXeLon)
+                                    .Set(m => m.Chuyen3BienHoaXeLon, itemFull.Chuyen3BienHoaXeLon)
+                                    .Set(m => m.Chuyen4BienHoaXeLon, itemFull.Chuyen4BienHoaXeLon)
+                                    .Set(m => m.Chuyen5BienHoaXeLon, itemFull.Chuyen5BienHoaXeLon)
+                                    .Set(m => m.VungTauXeNho, itemFull.VungTauXeNho)
+                                    .Set(m => m.VungTauXeLon, itemFull.VungTauXeLon)
+                                    .Set(m => m.BinhThuanXeNho, itemFull.BinhThuanXeNho)
+                                    .Set(m => m.BinhThuanXeLon, itemFull.BinhThuanXeLon)
+                                    .Set(m => m.CanThoXeLon, itemFull.CanThoXeLon)
+                                    .Set(m => m.VinhLongXeLon, itemFull.VinhLongXeLon)
+                                    .Set(m => m.LongAnXeNho, itemFull.LongAnXeNho)
+                                    .Set(m => m.LongAnXeLon, itemFull.LongAnXeLon)
+                                    .Set(m => m.TienGiangXeNho, itemFull.TienGiangXeNho)
+                                    .Set(m => m.TienGiangXeLon, itemFull.TienGiangXeLon)
+                                    .Set(m => m.DongNaiXeNho, itemFull.DongNaiXeNho)
+                                    .Set(m => m.DongNaiXeLon, itemFull.DongNaiXeLon)
+                                    .Set(m => m.TongSoChuyen, itemFull.TongSoChuyen)
+                                    .Set(m => m.TienChuyen, itemFull.TienChuyen)
+                                    .Set(m => m.CongTacXa, itemFull.CongTacXa)
+                                    .Set(m => m.KhoiLuongBun, itemFull.KhoiLuongBun)
+                                    .Set(m => m.ThanhTienBun, itemFull.ThanhTienBun)
+                                    .Set(m => m.UpdatedOn, DateTime.Now);
+                                dbContext.LogisticEmployeeCongs.UpdateOne(filter, update);
+                            }
+                            else
+                            {
+                                dbContext.LogisticEmployeeCongs.InsertOne(itemFull);
+                            }
+                        }
+                        else
+                        {
+                            dbContext.Misss.InsertOne(new Miss
+                            {
+                                Type = "logistics-cong-import",
+                                Object = code + "-" + fullName + "-" + title + " ,dòng " + i,
+                                Error = "No import data",
+                                DateTime = DateTime.Now.ToString()
+                            });
+                        }
+                    }
+                }
+            }
+            return Json(new { url = "/" + Constants.LinkSalary.Main + "/" + Constants.LinkSalary.LogisticEmployeeCong + "/" + Constants.LinkSalary.Update });
+        }
+
+        //https://stackoverflow.com/questions/51681846/rowspan-and-colspan-in-apache-poi
+        [Route(Constants.LinkSalary.LogisticEmployeeTemplate)]
+        public async Task<IActionResult> LogisticEmployeeTemplate(string fileName)
+        {
+            string exportFolder = Path.Combine(_env.WebRootPath, "exports");
+            string sFileName = @"du-lieu-logistic-thang-" + DateTime.Now.Month + "-V" + DateTime.Now.ToString("ddMMyyyyHHmmss") + ".xlsx";
+            string URL = string.Format("{0}://{1}/{2}", Request.Scheme, Request.Host, sFileName);
+            FileInfo file = new FileInfo(Path.Combine(exportFolder, sFileName));
+            var memory = new MemoryStream();
+            using (var fs = new FileStream(Path.Combine(exportFolder, sFileName), FileMode.Create, FileAccess.Write))
+            {
+                IWorkbook workbook = new XSSFWorkbook();
+                #region Styling
+                var cellStyleBorder = workbook.CreateCellStyle();
+                cellStyleBorder.BorderBottom = BorderStyle.Thin;
+                cellStyleBorder.BorderLeft = BorderStyle.Thin;
+                cellStyleBorder.BorderRight = BorderStyle.Thin;
+                cellStyleBorder.BorderTop = BorderStyle.Thin;
+                cellStyleBorder.Alignment = HorizontalAlignment.Center;
+                cellStyleBorder.VerticalAlignment = VerticalAlignment.Center;
+
+                var cellStyleHeader = workbook.CreateCellStyle();
+                //cellStyleHeader.CloneStyleFrom(cellStyleBorder);
+                //cellStyleHeader.FillForegroundColor = HSSFColor.Blue.Index2;
+                cellStyleHeader.FillForegroundColor = HSSFColor.Grey25Percent.Index;
+                cellStyleHeader.FillPattern = FillPattern.SolidForeground;
+
+                var font = workbook.CreateFont();
+                font.FontHeightInPoints = 11;
+                //font.FontName = "Calibri";
+                font.Boldweight = (short)FontBoldWeight.Bold;
+                #endregion
+
+                ISheet sheet1 = workbook.CreateSheet("LOGISTIC-T" + DateTime.Now.Month.ToString("00"));
+                var rowIndex = 0;
+                IRow row = sheet1.CreateRow(rowIndex);
+                var cell = row.CreateCell(0, CellType.String); // cell A1
+                cell.SetCellValue("TỔNG KẾT");
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+                rowIndex++;
+
+                row = sheet1.CreateRow(rowIndex);
+                cell = row.CreateCell(0, CellType.String);
+                cell.SetCellValue("Tháng");
+                cell = row.CreateCell(1, CellType.Numeric);
+                cell.SetCellValue(DateTime.Now.Month);
+                cell = row.CreateCell(2, CellType.String);
+                cell.SetCellValue("Năm");
+                cell = row.CreateCell(3, CellType.Numeric);
+                cell.SetCellValue(DateTime.Now.Year);
+                rowIndex++;
+
+                row = sheet1.CreateRow(rowIndex);
+                cell = row.CreateCell(0, CellType.String);
+                cell.SetCellValue("Đơn giá bùn (tấn)");
+                cell = row.CreateCell(1, CellType.Numeric);
+                cell.SetCellValue(22500);
+                rowIndex++;
+
+                row = sheet1.CreateRow(rowIndex);
+                sheet1.AddMergedRegion(new CellRangeAddress(3, 5, 0, 0));
+                cell = row.CreateCell(0, CellType.String);
+                cell.SetCellValue("#");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                sheet1.AddMergedRegion(new CellRangeAddress(3, 5, 1, 1));
+                cell = row.CreateCell(1, CellType.String);
+                cell.SetCellValue("Mã NV");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                sheet1.AddMergedRegion(new CellRangeAddress(3, 5, 2, 2));
+                cell = row.CreateCell(2, CellType.String);
+                cell.SetCellValue("Họ tên");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                sheet1.AddMergedRegion(new CellRangeAddress(3, 5, 3, 3));
+                cell = row.CreateCell(3, CellType.String);
+                cell.SetCellValue("Chức vụ");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                sheet1.AddMergedRegion(new CellRangeAddress(3, 5, 4, 4));
+                cell = row.CreateCell(4, CellType.String);
+                cell.SetCellValue("Doanh thu");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                sheet1.AddMergedRegion(new CellRangeAddress(3, 3, 5, 9));
+                cell = row.CreateCell(5, CellType.String);
+                cell.SetCellValue("TP.HCM Xe nhỏ 1.7 tấn");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                sheet1.AddMergedRegion(new CellRangeAddress(3, 3, 10, 14));
+                cell = row.CreateCell(10, CellType.String);
+                cell.SetCellValue("TP.HCM Xe lớn ben và 8 tấn");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                sheet1.AddMergedRegion(new CellRangeAddress(3, 3, 15, 19));
+                cell = row.CreateCell(15, CellType.String);
+                cell.SetCellValue("BÌNH DƯƠNG Xe nhỏ");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                sheet1.AddMergedRegion(new CellRangeAddress(3, 3, 20, 24));
+                cell = row.CreateCell(20, CellType.String);
+                cell.SetCellValue("BÌNH DƯƠNG Xe lớn");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                sheet1.AddMergedRegion(new CellRangeAddress(3, 3, 25, 29));
+                cell = row.CreateCell(25, CellType.String);
+                cell.SetCellValue("BIÊN HÒA Xe nhỏ");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                sheet1.AddMergedRegion(new CellRangeAddress(3, 3, 30, 34));
+                cell = row.CreateCell(30, CellType.String);
+                cell.SetCellValue("BIÊN HÒA Xe lớn");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                sheet1.AddMergedRegion(new CellRangeAddress(3, 3, 35, 36));
+                cell = row.CreateCell(35, CellType.String);
+                cell.SetCellValue("Vũng Tàu");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                sheet1.AddMergedRegion(new CellRangeAddress(3, 3, 37, 38));
+                cell = row.CreateCell(37, CellType.String);
+                cell.SetCellValue("Bình Thuận");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                sheet1.AddMergedRegion(new CellRangeAddress(3, 3, 39, 39));
+                cell = row.CreateCell(39, CellType.String);
+                cell.SetCellValue("Cần Thơ");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                sheet1.AddMergedRegion(new CellRangeAddress(3, 3, 40, 40));
+                cell = row.CreateCell(40, CellType.String);
+                cell.SetCellValue("Vĩnh Long");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                sheet1.AddMergedRegion(new CellRangeAddress(3, 3, 41, 42));
+                cell = row.CreateCell(41, CellType.String);
+                cell.SetCellValue("Long An");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                sheet1.AddMergedRegion(new CellRangeAddress(3, 3, 43, 44));
+                cell = row.CreateCell(43, CellType.String);
+                cell.SetCellValue("Tiền Giang");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                sheet1.AddMergedRegion(new CellRangeAddress(3, 3, 45, 46));
+                cell = row.CreateCell(45, CellType.String);
+                cell.SetCellValue("Đồng Nai");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                sheet1.AddMergedRegion(new CellRangeAddress(3, 3, 47, 47));
+                cell = row.CreateCell(47, CellType.String);
+                cell.SetCellValue("Khối lượng bùn");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+                rowIndex++;
+
+                row = sheet1.CreateRow(rowIndex);
+                sheet1.AddMergedRegion(new CellRangeAddress(4, 4, 5, 9));
+                cell = row.CreateCell(5, CellType.String);
+                cell.SetCellValue("Trợ cấp");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                sheet1.AddMergedRegion(new CellRangeAddress(4, 4, 10, 14));
+                cell = row.CreateCell(10, CellType.String);
+                cell.SetCellValue("Trợ cấp");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                sheet1.AddMergedRegion(new CellRangeAddress(4, 4, 15, 19));
+                cell = row.CreateCell(15, CellType.String);
+                cell.SetCellValue("Trợ cấp");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                sheet1.AddMergedRegion(new CellRangeAddress(4, 4, 20, 24));
+                cell = row.CreateCell(20, CellType.String);
+                cell.SetCellValue("Trợ cấp");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                sheet1.AddMergedRegion(new CellRangeAddress(4, 4, 25, 29));
+                cell = row.CreateCell(25, CellType.String);
+                cell.SetCellValue("Trợ cấp");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                sheet1.AddMergedRegion(new CellRangeAddress(4, 4, 30, 34));
+                cell = row.CreateCell(30, CellType.String);
+                cell.SetCellValue("Trợ cấp");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                cell = row.CreateCell(35, CellType.String);
+                cell.SetCellValue("Xe nhỏ");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                cell = row.CreateCell(36, CellType.String);
+                cell.SetCellValue("Xe lớn");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                cell = row.CreateCell(37, CellType.String);
+                cell.SetCellValue("Xe nhỏ");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                cell = row.CreateCell(38, CellType.String);
+                cell.SetCellValue("Xe lớn");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                cell = row.CreateCell(39, CellType.String);
+                cell.SetCellValue("Xe lớn");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                cell = row.CreateCell(40, CellType.String);
+                cell.SetCellValue("Xe lớn");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                cell = row.CreateCell(41, CellType.String);
+                cell.SetCellValue("Xe nhỏ");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                cell = row.CreateCell(42, CellType.String);
+                cell.SetCellValue("Xe lớn");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                cell = row.CreateCell(43, CellType.String);
+                cell.SetCellValue("Xe nhỏ");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                cell = row.CreateCell(44, CellType.String);
+                cell.SetCellValue("Xe lớn");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                cell = row.CreateCell(45, CellType.String); cell.SetCellValue("Xe nhỏ");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                cell = row.CreateCell(46, CellType.String);
+                cell.SetCellValue("Xe lớn");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+                rowIndex++;
+
+                row = sheet1.CreateRow(rowIndex);
+                cell = row.CreateCell(5, CellType.String); cell.SetCellValue("Chuyến 1"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(6, CellType.String); cell.SetCellValue("Chuyến 2"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(7, CellType.String); cell.SetCellValue("Chuyến 3"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(8, CellType.String); cell.SetCellValue("Chuyến 4"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(9, CellType.String); cell.SetCellValue("Chuyến 5"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(10, CellType.String); cell.SetCellValue("Chuyến 1"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(11, CellType.String); cell.SetCellValue("Chuyến 2"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(12, CellType.String); cell.SetCellValue("Chuyến 3"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(13, CellType.String); cell.SetCellValue("Chuyến 4"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(14, CellType.String); cell.SetCellValue("Chuyến 5"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(15, CellType.String); cell.SetCellValue("Chuyến 1"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(16, CellType.String); cell.SetCellValue("Chuyến 2"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(17, CellType.String); cell.SetCellValue("Chuyến 3"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(18, CellType.String); cell.SetCellValue("Chuyến 4"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(19, CellType.String); cell.SetCellValue("Chuyến 5"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(20, CellType.String); cell.SetCellValue("Chuyến 1"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(21, CellType.String); cell.SetCellValue("Chuyến 2"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(22, CellType.String); cell.SetCellValue("Chuyến 3"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(23, CellType.String); cell.SetCellValue("Chuyến 4"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(24, CellType.String); cell.SetCellValue("Chuyến 5"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(25, CellType.String); cell.SetCellValue("Chuyến 1"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(26, CellType.String); cell.SetCellValue("Chuyến 2"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(27, CellType.String); cell.SetCellValue("Chuyến 3"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(28, CellType.String); cell.SetCellValue("Chuyến 4"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(29, CellType.String); cell.SetCellValue("Chuyến 5"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(30, CellType.String); cell.SetCellValue("Chuyến 1"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(31, CellType.String); cell.SetCellValue("Chuyến 2"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(32, CellType.String); cell.SetCellValue("Chuyến 3"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(33, CellType.String); cell.SetCellValue("Chuyến 4"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(34, CellType.String); cell.SetCellValue("Chuyến 5"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(35, CellType.String); cell.SetCellValue("VT"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(36, CellType.String); cell.SetCellValue("VT"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(37, CellType.String); cell.SetCellValue("BT"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(38, CellType.String); cell.SetCellValue("BT"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(39, CellType.String); cell.SetCellValue("CT"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(40, CellType.String); cell.SetCellValue("VL"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(41, CellType.String); cell.SetCellValue("LA"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(42, CellType.String); cell.SetCellValue("LA"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(43, CellType.String); cell.SetCellValue("TG"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(44, CellType.String); cell.SetCellValue("TG"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(45, CellType.String); cell.SetCellValue("ĐN"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(46, CellType.String); cell.SetCellValue("ĐN"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                rowIndex++;
+
+                workbook.Write(fs);
+            }
+            using (var stream = new FileStream(Path.Combine(exportFolder, sFileName), FileMode.Open))
+            {
+                await stream.CopyToAsync(memory);
+            }
+            memory.Position = 0;
+            return File(memory, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", sFileName);
+        }
+
+        [Route(Constants.LinkSalary.LogisticEmployeeCong + "/" + Constants.LinkSalary.Export)]
+        public async Task<IActionResult> LogisticEmployeeCongExport(string fileName)
+        {
+            string exportFolder = Path.Combine(_env.WebRootPath, "exports");
+            string sFileName = @"du-lieu-logistic-thang-" + DateTime.Now.Month + "-V" + DateTime.Now.ToString("ddMMyyyyHHmmss") + ".xlsx";
+            string URL = string.Format("{0}://{1}/{2}", Request.Scheme, Request.Host, sFileName);
+            FileInfo file = new FileInfo(Path.Combine(exportFolder, sFileName));
+            var memory = new MemoryStream();
+            using (var fs = new FileStream(Path.Combine(exportFolder, sFileName), FileMode.Create, FileAccess.Write))
+            {
+                IWorkbook workbook = new XSSFWorkbook();
+                #region Styling
+                var cellStyleBorder = workbook.CreateCellStyle();
+                cellStyleBorder.BorderBottom = BorderStyle.Thin;
+                cellStyleBorder.BorderLeft = BorderStyle.Thin;
+                cellStyleBorder.BorderRight = BorderStyle.Thin;
+                cellStyleBorder.BorderTop = BorderStyle.Thin;
+                cellStyleBorder.Alignment = HorizontalAlignment.Center;
+                cellStyleBorder.VerticalAlignment = VerticalAlignment.Center;
+
+                var cellStyleHeader = workbook.CreateCellStyle();
+                //cellStyleHeader.CloneStyleFrom(cellStyleBorder);
+                //cellStyleHeader.FillForegroundColor = HSSFColor.Blue.Index2;
+                cellStyleHeader.FillForegroundColor = HSSFColor.Grey25Percent.Index;
+                cellStyleHeader.FillPattern = FillPattern.SolidForeground;
+
+                var font = workbook.CreateFont();
+                font.FontHeightInPoints = 11;
+                //font.FontName = "Calibri";
+                font.Boldweight = (short)FontBoldWeight.Bold;
+                #endregion
+
+                ISheet sheet1 = workbook.CreateSheet("LOGISTIC-T" + DateTime.Now.Month.ToString("00"));
+                var rowIndex = 0;
+                IRow row = sheet1.CreateRow(rowIndex);
+                var cell = row.CreateCell(0, CellType.String); // cell A1
+                cell.SetCellValue("TỔNG KẾT");
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+                rowIndex++;
+
+                row = sheet1.CreateRow(rowIndex);
+                cell = row.CreateCell(0, CellType.String);
+                cell.SetCellValue("Tháng");
+                cell = row.CreateCell(1, CellType.Numeric);
+                cell.SetCellValue(DateTime.Now.Month);
+                cell = row.CreateCell(2, CellType.String);
+                cell.SetCellValue("Năm");
+                cell = row.CreateCell(3, CellType.Numeric);
+                cell.SetCellValue(DateTime.Now.Year);
+                rowIndex++;
+
+                row = sheet1.CreateRow(rowIndex);
+                cell = row.CreateCell(0, CellType.String);
+                cell.SetCellValue("Đơn giá bùn (tấn)");
+                cell = row.CreateCell(1, CellType.Numeric);
+                cell.SetCellValue(22500);
+                rowIndex++;
+
+                row = sheet1.CreateRow(rowIndex);
+                sheet1.AddMergedRegion(new CellRangeAddress(3, 5, 0, 0));
+                cell = row.CreateCell(0, CellType.String);
+                cell.SetCellValue("#");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                sheet1.AddMergedRegion(new CellRangeAddress(3, 5, 1, 1));
+                cell = row.CreateCell(1, CellType.String);
+                cell.SetCellValue("Mã NV");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                sheet1.AddMergedRegion(new CellRangeAddress(3, 5, 2, 2));
+                cell = row.CreateCell(2, CellType.String);
+                cell.SetCellValue("Họ tên");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                sheet1.AddMergedRegion(new CellRangeAddress(3, 5, 3, 3));
+                cell = row.CreateCell(3, CellType.String);
+                cell.SetCellValue("Chức vụ");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                sheet1.AddMergedRegion(new CellRangeAddress(3, 5, 4, 4));
+                cell = row.CreateCell(4, CellType.String);
+                cell.SetCellValue("Doanh thu");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                sheet1.AddMergedRegion(new CellRangeAddress(3, 5, 5, 5));
+                cell = row.CreateCell(5, CellType.String);
+                cell.SetCellValue("Lương theo doanh thu/doanh số");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                sheet1.AddMergedRegion(new CellRangeAddress(3, 3, 6, 10));
+                cell = row.CreateCell(6, CellType.String);
+                cell.SetCellValue("TP.HCM Xe nhỏ 1.7 tấn");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                sheet1.AddMergedRegion(new CellRangeAddress(3, 3, 11, 15));
+                cell = row.CreateCell(11, CellType.String);
+                cell.SetCellValue("TP.HCM Xe lớn ben và 8 tấn");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                sheet1.AddMergedRegion(new CellRangeAddress(3, 3, 16, 20));
+                cell = row.CreateCell(16, CellType.String);
+                cell.SetCellValue("BÌNH DƯƠNG Xe nhỏ");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                sheet1.AddMergedRegion(new CellRangeAddress(3, 3, 21, 25));
+                cell = row.CreateCell(21, CellType.String);
+                cell.SetCellValue("BÌNH DƯƠNG Xe lớn");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                sheet1.AddMergedRegion(new CellRangeAddress(3, 3, 26, 30));
+                cell = row.CreateCell(26, CellType.String);
+                cell.SetCellValue("BIÊN HÒA Xe nhỏ");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                sheet1.AddMergedRegion(new CellRangeAddress(3, 3, 31, 35));
+                cell = row.CreateCell(31, CellType.String);
+                cell.SetCellValue("BIÊN HÒA Xe lớn");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                sheet1.AddMergedRegion(new CellRangeAddress(3, 3, 36, 37));
+                cell = row.CreateCell(36, CellType.String);
+                cell.SetCellValue("Vũng Tàu");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                sheet1.AddMergedRegion(new CellRangeAddress(3, 3, 38, 39));
+                cell = row.CreateCell(38, CellType.String);
+                cell.SetCellValue("Bình Thuận");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                sheet1.AddMergedRegion(new CellRangeAddress(3, 3, 40, 40));
+                cell = row.CreateCell(40, CellType.String);
+                cell.SetCellValue("Cần Thơ");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                sheet1.AddMergedRegion(new CellRangeAddress(3, 3, 41, 41));
+                cell = row.CreateCell(41, CellType.String);
+                cell.SetCellValue("Vĩnh Long");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                sheet1.AddMergedRegion(new CellRangeAddress(3, 3, 42, 43));
+                cell = row.CreateCell(42, CellType.String);
+                cell.SetCellValue("Long An");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                sheet1.AddMergedRegion(new CellRangeAddress(3, 3, 44, 45));
+                cell = row.CreateCell(44, CellType.String);
+                cell.SetCellValue("Tiền Giang");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                sheet1.AddMergedRegion(new CellRangeAddress(3, 3, 46, 47));
+                cell = row.CreateCell(46, CellType.String);
+                cell.SetCellValue("Đồng Nai");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                sheet1.AddMergedRegion(new CellRangeAddress(3, 3, 48, 48));
+                cell = row.CreateCell(48, CellType.String);
+                cell.SetCellValue("Khối lượng bùn");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+                rowIndex++;
+
+                row = sheet1.CreateRow(rowIndex);
+                sheet1.AddMergedRegion(new CellRangeAddress(4, 4, 6, 10));
+                cell = row.CreateCell(6, CellType.String);
+                cell.SetCellValue("Trợ cấp");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                sheet1.AddMergedRegion(new CellRangeAddress(4, 4, 11, 15));
+                cell = row.CreateCell(11, CellType.String);
+                cell.SetCellValue("Trợ cấp");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                sheet1.AddMergedRegion(new CellRangeAddress(4, 4, 16, 20));
+                cell = row.CreateCell(16, CellType.String);
+                cell.SetCellValue("Trợ cấp");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                sheet1.AddMergedRegion(new CellRangeAddress(4, 4, 21, 25));
+                cell = row.CreateCell(21, CellType.String);
+                cell.SetCellValue("Trợ cấp");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                sheet1.AddMergedRegion(new CellRangeAddress(4, 4, 26, 30));
+                cell = row.CreateCell(26, CellType.String);
+                cell.SetCellValue("Trợ cấp");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                sheet1.AddMergedRegion(new CellRangeAddress(4, 4, 31, 35));
+                cell = row.CreateCell(31, CellType.String);
+                cell.SetCellValue("Trợ cấp");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                cell = row.CreateCell(36, CellType.String);
+                cell.SetCellValue("Xe nhỏ");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                cell = row.CreateCell(37, CellType.String);
+                cell.SetCellValue("Xe lớn");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                cell = row.CreateCell(38, CellType.String);
+                cell.SetCellValue("Xe nhỏ");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                cell = row.CreateCell(39, CellType.String);
+                cell.SetCellValue("Xe lớn");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                cell = row.CreateCell(40, CellType.String);
+                cell.SetCellValue("Xe lớn");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                cell = row.CreateCell(41, CellType.String);
+                cell.SetCellValue("Xe lớn");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                cell = row.CreateCell(42, CellType.String);
+                cell.SetCellValue("Xe nhỏ");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                cell = row.CreateCell(43, CellType.String);
+                cell.SetCellValue("Xe lớn");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                cell = row.CreateCell(44, CellType.String);
+                cell.SetCellValue("Xe nhỏ");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                cell = row.CreateCell(45, CellType.String);
+                cell.SetCellValue("Xe lớn");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                cell = row.CreateCell(46, CellType.String); cell.SetCellValue("Xe nhỏ");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+
+                cell = row.CreateCell(47, CellType.String);
+                cell.SetCellValue("Xe lớn");
+                cell.CellStyle = cellStyleHeader;
+                cell.CellStyle.SetFont(font);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+                rowIndex++;
+
+                row = sheet1.CreateRow(rowIndex);
+                cell = row.CreateCell(6, CellType.String); cell.SetCellValue("Chuyến 1"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(7, CellType.String); cell.SetCellValue("Chuyến 2"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(8, CellType.String); cell.SetCellValue("Chuyến 3"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(9, CellType.String); cell.SetCellValue("Chuyến 4"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(10, CellType.String); cell.SetCellValue("Chuyến 5"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(11, CellType.String); cell.SetCellValue("Chuyến 1"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(12, CellType.String); cell.SetCellValue("Chuyến 2"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(13, CellType.String); cell.SetCellValue("Chuyến 3"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(14, CellType.String); cell.SetCellValue("Chuyến 4"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(15, CellType.String); cell.SetCellValue("Chuyến 5"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(16, CellType.String); cell.SetCellValue("Chuyến 1"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(17, CellType.String); cell.SetCellValue("Chuyến 2"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(18, CellType.String); cell.SetCellValue("Chuyến 3"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(19, CellType.String); cell.SetCellValue("Chuyến 4"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(20, CellType.String); cell.SetCellValue("Chuyến 5"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(21, CellType.String); cell.SetCellValue("Chuyến 1"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(22, CellType.String); cell.SetCellValue("Chuyến 2"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(23, CellType.String); cell.SetCellValue("Chuyến 3"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(24, CellType.String); cell.SetCellValue("Chuyến 4"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(25, CellType.String); cell.SetCellValue("Chuyến 5"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(26, CellType.String); cell.SetCellValue("Chuyến 1"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(27, CellType.String); cell.SetCellValue("Chuyến 2"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(28, CellType.String); cell.SetCellValue("Chuyến 3"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(29, CellType.String); cell.SetCellValue("Chuyến 4"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(30, CellType.String); cell.SetCellValue("Chuyến 5"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(31, CellType.String); cell.SetCellValue("Chuyến 1"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(32, CellType.String); cell.SetCellValue("Chuyến 2"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(33, CellType.String); cell.SetCellValue("Chuyến 3"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(34, CellType.String); cell.SetCellValue("Chuyến 4"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(35, CellType.String); cell.SetCellValue("Chuyến 5"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(36, CellType.String); cell.SetCellValue("VT"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(37, CellType.String); cell.SetCellValue("VT"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(38, CellType.String); cell.SetCellValue("BT"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(39, CellType.String); cell.SetCellValue("BT"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(40, CellType.String); cell.SetCellValue("CT"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(41, CellType.String); cell.SetCellValue("VL"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(42, CellType.String); cell.SetCellValue("LA"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(43, CellType.String); cell.SetCellValue("LA"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(44, CellType.String); cell.SetCellValue("TG"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(45, CellType.String); cell.SetCellValue("TG"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(46, CellType.String); cell.SetCellValue("ĐN"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                cell = row.CreateCell(47, CellType.String); cell.SetCellValue("ĐN"); cell.CellStyle = cellStyleHeader; cell.CellStyle.SetFont(font);
+                rowIndex++;
+
+                workbook.Write(fs);
+            }
+            using (var stream = new FileStream(Path.Combine(exportFolder, sFileName), FileMode.Open))
+            {
+                await stream.CopyToAsync(memory);
+            }
+            memory.Position = 0;
+            return File(memory, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", sFileName);
+        }
+
+        [Route(Constants.LinkSalary.LogisticGiaChuyenXeImport)]
+        [HttpPost]
+        public ActionResult LogisticGiaChuyenXeImport()
+        {
+            IFormFile file = Request.Form.Files[0];
+            string folderName = Constants.Storage.Hr;
+            string webRootPath = _env.WebRootPath;
+            string newPath = Path.Combine(webRootPath, folderName);
+            if (!Directory.Exists(newPath))
+            {
+                Directory.CreateDirectory(newPath);
+            }
+            if (file.Length > 0)
+            {
+                string sFileExtension = Path.GetExtension(file.FileName).ToLower();
+                ISheet sheet;
+                string fullPath = Path.Combine(newPath, file.FileName);
+                using (var stream = new FileStream(fullPath, FileMode.Create))
+                {
+                    file.CopyTo(stream);
+                    stream.Position = 0;
+                    if (sFileExtension == ".xls")
+                    {
+                        HSSFWorkbook hssfwb = new HSSFWorkbook(stream); //This will read the Excel 97-2000 formats  
+                        sheet = hssfwb.GetSheetAt(0);
+                    }
+                    else
+                    {
+                        XSSFWorkbook hssfwb = new XSSFWorkbook(stream); //This will read 2007 Excel format  
+                        sheet = hssfwb.GetSheetAt(0); //get first sheet from workbook   
+                    }
+
+                    var timeRow = sheet.GetRow(1);
+                    var month = Convert.ToInt32(Utility.GetNumbericCellValue(timeRow.GetCell(1)));
+                    var year = Convert.ToInt32(Utility.GetNumbericCellValue(timeRow.GetCell(3)));
+                    if (month == 0)
+                    {
+                        month = DateTime.Now.Month;
+                    }
+                    if (year == 0)
+                    {
+                        year = DateTime.Now.Year;
+                    }
+
+                    for (int i = 3; i <= sheet.LastRowNum; i++)
+                    {
+                        IRow row = sheet.GetRow(i);
+                        if (row == null) continue;
+                        if (row.Cells.All(d => d.CellType == CellType.Blank)) continue;
+                        if (row.Cells.All(d => d.CellType == CellType.Error)) continue;
+                        if (row.Cells.All(d => d.CellType == CellType.Unknown)) continue;
+
+                        var tuyen = Utility.GetFormattedCellValue(row.GetCell(1));
+                        var tuyenalias = Utility.AliasConvert(tuyen);
+                        var tuyencode = Utility.UpperCodeConvert(tuyen);
+                        var xe = Utility.GetFormattedCellValue(row.GetCell(2));
+                        var xealias = Utility.AliasConvert(xe);
+                        var xecode = Utility.UpperCodeConvert(xe);
+
+                        var luongnangsuatchuyencom = (decimal)Utility.GetNumbericCellValue(row.GetCell(3));
+                        var hotrocomtinh = (decimal)Utility.GetNumbericCellValue(row.GetCell(4));
+                        var luongnangsuatchuyen = (decimal)Utility.GetNumbericCellValue(row.GetCell(5));
+                        var chuyen1 = (decimal)Utility.GetNumbericCellValue(row.GetCell(6));
+                        var chuyen2 = (decimal)Utility.GetNumbericCellValue(row.GetCell(7));
+                        var chuyen3 = (decimal)Utility.GetNumbericCellValue(row.GetCell(8));
+                        var chuyen4 = (decimal)Utility.GetNumbericCellValue(row.GetCell(9));
+                        var chuyen5 = (decimal)Utility.GetNumbericCellValue(row.GetCell(10));
+                        var hotrochuyendem = (decimal)Utility.GetNumbericCellValue(row.GetCell(11));
+
+                        var gia = dbContext.LogisticGiaChuyenXes.Find(m => m.Enable.Equals(true) && m.Tuyen.Equals(tuyen.Trim()) && m.LoaiXe.Equals(xe.Trim()) && m.Month.Equals(month) && m.Year.Equals(year)).FirstOrDefault();
+                        if (gia != null)
+                        {
+                            var builder = Builders<LogisticGiaChuyenXe>.Filter;
+                            var filter = builder.Eq(m => m.Id, gia.Id);
+                            var update = Builders<LogisticGiaChuyenXe>.Update
+                                .Set(m => m.LuongNangSuatChuyenCom, luongnangsuatchuyencom)
+                                .Set(m => m.HoTroTienComTinh, hotrocomtinh)
+                                .Set(m => m.LuongNangSuatChuyen, luongnangsuatchuyen)
+                                .Set(m => m.Chuyen1, chuyen1)
+                                .Set(m => m.Chuyen2, chuyen2)
+                                .Set(m => m.Chuyen3, chuyen3)
+                                .Set(m => m.Chuyen4, chuyen4)
+                                .Set(m => m.Chuyen5, chuyen5)
+                                .Set(m => m.HoTroChuyenDem, hotrochuyendem)
+                                .Set(m => m.UpdatedOn, DateTime.Now);
+                            dbContext.LogisticGiaChuyenXes.UpdateOne(filter, update);
+                        }
+                        else
+                        {
+                            dbContext.LogisticGiaChuyenXes.InsertOne(new LogisticGiaChuyenXe
+                            {
+                                Year = year,
+                                Month = month,
+                                Tuyen = tuyen,
+                                TuyenAlias = tuyenalias,
+                                TuyenCode = tuyencode,
+                                LoaiXe = xe,
+                                LoaiXeAlias = xealias,
+                                LoaiXeCode = xecode,
+                                LuongNangSuatChuyenCom = luongnangsuatchuyencom,
+                                HoTroTienComTinh = hotrocomtinh,
+                                LuongNangSuatChuyen = luongnangsuatchuyen,
+                                Chuyen1 = chuyen1,
+                                Chuyen2 = chuyen2,
+                                Chuyen3 = chuyen3,
+                                Chuyen4 = chuyen4,
+                                Chuyen5 = chuyen5,
+                                HoTroChuyenDem = (decimal)hotrochuyendem
+                            });
+                        }
+                    }
+                }
+            }
+            return Json(new { url = "/" + Constants.LinkSalary.Main + "/" + Constants.LinkSalary.LogisticGiaChuyenXe + "/" + Constants.LinkSalary.Update });
+        }
+
+        [Route(Constants.LinkSalary.LogisticGiaChuyenXeTemplate)]
+        public async Task<IActionResult> LogisticGiaChuyenXeTemplate(string fileName)
+        {
+            string exportFolder = Path.Combine(_env.WebRootPath, "exports");
+            string sFileName = @"du-lieu-logistic-gia-chuyen-xe-thang-" + DateTime.Now.Month + "-V" + DateTime.Now.ToString("ddMMyyyyHHmmss") + ".xlsx";
+            string URL = string.Format("{0}://{1}/{2}", Request.Scheme, Request.Host, sFileName);
+            FileInfo file = new FileInfo(Path.Combine(exportFolder, sFileName));
+            var memory = new MemoryStream();
+            using (var fs = new FileStream(Path.Combine(exportFolder, sFileName), FileMode.Create, FileAccess.Write))
+            {
+                IWorkbook workbook = new XSSFWorkbook();
+                #region Styling
+                var cellStyleBorder = workbook.CreateCellStyle();
+                cellStyleBorder.BorderBottom = BorderStyle.Thin;
+                cellStyleBorder.BorderLeft = BorderStyle.Thin;
+                cellStyleBorder.BorderRight = BorderStyle.Thin;
+                cellStyleBorder.BorderTop = BorderStyle.Thin;
+                cellStyleBorder.Alignment = HorizontalAlignment.Center;
+                cellStyleBorder.VerticalAlignment = VerticalAlignment.Center;
+
+                var cellStyleHeader = workbook.CreateCellStyle();
+                //cellStyleHeader.CloneStyleFrom(cellStyleBorder);
+                //cellStyleHeader.FillForegroundColor = HSSFColor.Blue.Index2;
+                cellStyleHeader.FillForegroundColor = HSSFColor.Grey25Percent.Index;
+                cellStyleHeader.FillPattern = FillPattern.SolidForeground;
+
+                var font = workbook.CreateFont();
+                font.FontHeightInPoints = 11;
+                //font.FontName = "Calibri";
+                font.Boldweight = (short)FontBoldWeight.Bold;
+                #endregion
+
+                ISheet sheet1 = workbook.CreateSheet("BANG-GIA-CHUYEN-XE-T" + DateTime.Now.Month.ToString("00"));
+
+                var rowIndex = 0;
+                IRow row = sheet1.CreateRow(rowIndex);
+                row.CreateCell(0, CellType.String).SetCellValue("BẢNG GIÁ CHUYẾN XE");
+                rowIndex++;
+
+                row = sheet1.CreateRow(rowIndex);
+                row.CreateCell(0, CellType.String).SetCellValue("Tháng");
+                row.CreateCell(1, CellType.Numeric).SetCellValue(DateTime.Now.Month);
+                row.CreateCell(2, CellType.String).SetCellValue("Năm");
+                row.CreateCell(3, CellType.Numeric).SetCellValue(DateTime.Now.Year);
+                // Set style
+                for (int i = 0; i <= 3; i++)
+                {
+                    row.Cells[i].CellStyle = cellStyleHeader;
+                }
+                row.Cells[1].CellStyle.SetFont(font);
+                row.Cells[3].CellStyle.SetFont(font);
+                rowIndex++;
+
+                row = sheet1.CreateRow(rowIndex);
+                row.CreateCell(0, CellType.String).SetCellValue("#");
+                row.CreateCell(1, CellType.String).SetCellValue("Tuyến");
+                row.CreateCell(2, CellType.String).SetCellValue("Mã");
+                row.CreateCell(3, CellType.String).SetCellValue("Lương năng suất chuyến + cơm");
+                row.CreateCell(4, CellType.String).SetCellValue("Hỗ trợ tiền cơm tỉnh");
+                row.CreateCell(5, CellType.String).SetCellValue("Lương năng suất chuyến(trừ cơm)");
+                row.CreateCell(6, CellType.String).SetCellValue("Chuyến 1");
+                row.CreateCell(7, CellType.String).SetCellValue("Chuyến 2");
+                row.CreateCell(8, CellType.String).SetCellValue("Chuyến 3");
+                row.CreateCell(9, CellType.String).SetCellValue("Chuyến 4");
+                row.CreateCell(10, CellType.String).SetCellValue("Chuyến 5");
+                row.CreateCell(11, CellType.String).SetCellValue("Hỗ trợ chuyến đêm");
+                // Set style
+                for (int i = 0; i <= 11; i++)
+                {
+                    row.Cells[i].CellStyle = cellStyleHeader;
+                }
+                rowIndex++;
+
+                var locations = GetLogisticsLocations();
+                var xes = GetLogisticsLoaiXes();
+                var no = 1;
+                foreach (var location in locations)
+                {
+                    foreach (var xe in xes)
+                    {
+                        row = sheet1.CreateRow(rowIndex);
+                        row.CreateCell(0, CellType.Numeric).SetCellValue(no);
+                        row.CreateCell(1, CellType.String).SetCellValue(location.Name);
+                        row.CreateCell(2, CellType.String).SetCellValue(xe.Name + " " + xe.Description);
+                        row.CreateCell(3, CellType.Numeric).SetCellValue(string.Empty);
+                        row.CreateCell(4, CellType.Numeric).SetCellValue(string.Empty);
+                        row.CreateCell(5, CellType.Numeric).SetCellValue(string.Empty);
+                        row.CreateCell(6, CellType.Numeric).SetCellValue(string.Empty);
+                        row.CreateCell(7, CellType.Numeric).SetCellValue(string.Empty);
+                        row.CreateCell(8, CellType.Numeric).SetCellValue(string.Empty);
+                        row.CreateCell(9, CellType.Numeric).SetCellValue(string.Empty);
+                        row.CreateCell(10, CellType.Numeric).SetCellValue(string.Empty);
+                        row.CreateCell(11, CellType.Numeric).SetCellValue(string.Empty);
+                        row.CreateCell(12, CellType.Numeric).SetCellValue(string.Empty);
+                        row.CreateCell(13, CellType.Numeric).SetCellValue(string.Empty);
+                        rowIndex++;
+                        no++;
+                    }
+                }
+
+                workbook.Write(fs);
+            }
+            using (var stream = new FileStream(Path.Combine(exportFolder, sFileName), FileMode.Open))
+            {
+                await stream.CopyToAsync(memory);
+            }
+            memory.Position = 0;
+            return File(memory, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", sFileName);
+        }
+
+        [Route(Constants.LinkSalary.LogisticGiaBunPost)]
+        [HttpPost]
+        public ActionResult LogisticGiaBunPost(string thang, decimal price)
+        {
+            #region Times
+            var toDate = Utility.WorkingMonthToDate(thang);
+            var fromDate = toDate.AddMonths(-1).AddDays(1);
+            if (string.IsNullOrEmpty(thang))
+            {
+                toDate = DateTime.Now;
+                fromDate = toDate.Day > 25 ? new DateTime(toDate.Year, toDate.Month, 26) : new DateTime(toDate.AddMonths(-1).Year, toDate.AddMonths(-1).Month, 26);
+            }
+            var year = toDate.Day > 25 ? toDate.AddMonths(1).Year : toDate.Year;
+            var month = toDate.Day > 25 ? toDate.AddMonths(1).Month : toDate.Month;
+            thang = string.IsNullOrEmpty(thang) ? month + "-" + year : thang;
+            #endregion
+
+            var existbun = dbContext.LogisticGiaBuns.Find(m => m.Enable.Equals(true) && m.Month.Equals(month) && m.Year.Equals(year)).FirstOrDefault();
+            if (existbun != null)
+            {
+                var builderB = Builders<LogisticGiaBun>.Filter;
+                var filterB = builderB.Eq(m => m.Id, existbun.Id);
+                var updateB = Builders<LogisticGiaBun>.Update
+                    .Set(m => m.Price, price);
+                dbContext.LogisticGiaBuns.UpdateOne(filterB, updateB);
+            }
+            else
+            {
+                dbContext.LogisticGiaBuns.InsertOne(new LogisticGiaBun()
+                {
+                    Month = month,
+                    Year = year,
+                    Name = "Bùn",
+                    Alias = "bun",
+                    Code = "BUN",
+                    Price = price
+                });
+            }
+            return Json(new { result = true });
+        }
+
+        private List<LogisticsLocation> GetLogisticsLocations()
+        {
+            var results = new List<LogisticsLocation>
+            {
+                 new LogisticsLocation
+                {
+                    Name = "Hồ Chí Minh",
+                    Code ="HOCHIMINH"
+                },
+                  new LogisticsLocation
+                {
+                    Name = "Bình Dương",
+                    Code = "BINHDUONG"
+                },
+                  new LogisticsLocation
+                {
+                    Name = "Biên Hòa",
+                    Code = "BIENHOA"
+                },
+                  new LogisticsLocation
+                {
+                    Name = "Vũng Tàu",
+                    Code = "VUNGTAU"
+                },
+                  new LogisticsLocation
+                {
+                    Name = "Bình Thuận",
+                    Code = "BINHTHUAN"
+                },
+                  new LogisticsLocation
+                {
+                    Name = "Cần Thơ",
+                    Code = "CANTHO"
+                },
+                  new LogisticsLocation
+                {
+                    Name = "Vĩnh Long",
+                    Code = "VINHLONG"
+                },
+                  new LogisticsLocation
+                {
+                    Name = "Long An",
+                    Code = "LONGAN"
+                },
+                  new LogisticsLocation
+                {
+                    Name = "Tiền Giang",
+                    Code = "TIENGIANG"
+                },
+                  new LogisticsLocation
+                {
+                    Name = "Đồng Nai",
+                    Code = "DONGNAI"
+                }
+            };
+            var list = new List<LogisticsLocation>();
+            foreach (var item in results)
+            {
+                item.Alias = Utility.AliasConvert(item.Name);
+                dbContext.LogisticsLocations.InsertOne(item);
+                list.Add(item);
+            }
+            return list;
+        }
+
+        private List<LogisticsLoaiXe> GetLogisticsLoaiXes()
+        {
+            var results = new List<LogisticsLoaiXe>
+            {
+                 new LogisticsLoaiXe
+                {
+                    Name = "Xe lớn",
+                    Code ="XL"
+                },
+                  new LogisticsLoaiXe
+                {
+                    Name = "Xe nhỏ",
+                    Code = "XN"
+                }
+            };
+            var list = new List<LogisticsLoaiXe>();
+            foreach (var item in results)
+            {
+                item.Alias = Utility.AliasConvert(item.Name);
+                dbContext.LogisticsLoaiXes.InsertOne(item);
+                list.Add(item);
+            }
+            return list;
+        }
         #endregion
 
         #region Sub
-        [Route(Constants.LinkSalary.LuongCalculator)]
+        [Route(Constants.LinkSalary.BangLuong + "/" + Constants.LinkSalary.Calculator)]
         public IActionResult LuongCalculator(BangLuongViewModel viewModel)
         {
             var entity = viewModel.SalaryEmployeeMonths.First();
+
             string thang = entity.Month + "-" + entity.Year;
-            var returnEntity = GetSalaryEmployeeMonth(thang, entity.EmployeeId, entity, true);
+            var returnEntity = GetSalaryEmployeeMonth(thang, entity.EmployeeId, entity, true, 0, 0, 0, 0);
 
             return Json(new { entity = returnEntity });
         }
 
-        public SalaryEmployeeMonth GetSalaryEmployeeMonth(string thang, string employeeId, SalaryEmployeeMonth newSalary, bool save)
+        public SalaryEmployeeMonth GetSalaryEmployeeMonth(string thang, string employeeId, SalaryEmployeeMonth newSalary, bool save, int saleMonth, int saleYear, int logisticMonth, int logisticYear)
         {
+            #region Times
+            var toDate = Utility.WorkingMonthToDate(thang);
+            var fromDate = toDate.AddMonths(-1).AddDays(1);
+            if (string.IsNullOrEmpty(thang))
+            {
+                toDate = DateTime.Now;
+                fromDate = toDate.Day > 25 ? new DateTime(toDate.Year, toDate.Month, 26) : new DateTime(toDate.AddMonths(-1).Year, toDate.AddMonths(-1).Month, 26);
+            }
+            var year = toDate.Day > 25 ? toDate.AddMonths(1).Year : toDate.Year;
+            var month = toDate.Day > 25 ? toDate.AddMonths(1).Month : toDate.Month;
+            thang = string.IsNullOrEmpty(thang) ? month + "-" + year : thang;
+            var pre2thang = new DateTime(year, month, 1).AddMonths(-2);
+
+            saleMonth = saleMonth > 0 ? saleMonth : pre2thang.Month;
+            saleYear = saleYear > 0 ? saleYear : pre2thang.Year;
+            logisticMonth = logisticMonth > 0 ? logisticMonth : month;
+            logisticYear = logisticYear > 0 ? logisticYear : year;
+            #endregion
+
             var thamsoEntity = dbContext.SalarySettings.Find(m => m.Enable.Equals(true)).ToList();
             var mauSo = Convert.ToDecimal(thamsoEntity.Find(m => m.Key.Equals("mau-so-lam-viec")).Value);
             var mauSoBaoVe = Convert.ToDecimal(thamsoEntity.Find(m => m.Key.Equals("mau-so-bao-ve")).Value);
             var tyledongbh = Convert.ToDecimal(thamsoEntity.Find(m => m.Key.Equals("ty-le-dong-bh")).Value);
 
-            var toDate = Utility.WorkingMonthToDate(thang);
-            var fromDate = toDate.AddMonths(-1).AddDays(1);
-
-            if (string.IsNullOrEmpty(thang))
+            var dayworking = Utility.BusinessDaysUntil(fromDate, toDate);
+            if (toDate > DateTime.Now.Date)
             {
-                toDate = DateTime.Now;
-                fromDate = new DateTime(toDate.AddMonths(-1).Year, toDate.AddMonths(-1).Month, 26);
+                dayworking = Utility.BusinessDaysUntil(fromDate, DateTime.Now);
             }
-
-            var year = toDate.Year;
-            var month = toDate.Month;
-
-            decimal ngayConglamViec = Utility.BusinessDaysUntil(fromDate, toDate);
+            decimal ngayConglamViec = dayworking;
             decimal phutconglamviec = ngayConglamViec * 8 * 60;
 
             var employee = dbContext.Employees.Find(m => m.Id.Equals(employeeId)).FirstOrDefault();
@@ -1742,18 +3930,22 @@ namespace erp.Controllers
             }
             else
             {
+                var lastestSalary = dbContext.SalaryEmployeeMonths.Find(m => m.EmployeeId.Equals(employee.Id)).SortByDescending(m => m.Year).SortByDescending(m => m.Month).FirstOrDefault();
                 currentSalary.Year = year;
                 currentSalary.Month = month;
+                currentSalary.YearSale = saleYear;
+                currentSalary.MonthSale = saleMonth;
                 currentSalary.EmployeeId = employee.Id;
                 currentSalary.MaNhanVien = employee.CodeOld;
                 currentSalary.FullName = employee.FullName;
-                currentSalary.NoiLamViec = employee.SalaryNoiLamViec;
+                currentSalary.NoiLamViec = Constants.Location(employee.SalaryType);
                 currentSalary.NoiLamViecOrder = employee.SalaryNoiLamViecOrder;
-                currentSalary.PhongBan = employee.SalaryPhongBan;
+                currentSalary.PhongBan = employee.Department;
                 currentSalary.PhongBanOrder = employee.SalaryPhongBanOrder;
                 currentSalary.ChucVu = employee.SalaryChucVu;
                 currentSalary.ChucVuOrder = employee.SalaryChucVuOrder;
                 currentSalary.ViTriCode = employee.SalaryChucVuViTriCode;
+                currentSalary.SalaryMaSoChucDanhCongViec = employee.NgachLuong;
                 currentSalary.ThamNienLamViec = employee.Joinday;
                 currentSalary.ThamNienYear = dateSpan.Years;
                 currentSalary.ThamNienMonth = dateSpan.Months;
@@ -1805,32 +3997,40 @@ namespace erp.Controllers
                 {
                     currentSalary.NhaO = phucapphuclois.Find(m => m.Code.Equals("02-008")).Money;
                 }
+
+                // bhxh dong : get lastest
+                currentSalary.LuongThamGiaBHXH = lastestSalary != null ? lastestSalary.LuongThamGiaBHXH : 0;
             }
 
             int bac = GetBacLuong(employee.Id);
             currentSalary.Bac = bac;
             if (newSalary != null)
             {
+                // because in browser by 1000vnd.
                 currentSalary.Bac = newSalary.Bac;
-                currentSalary.NangNhocDocHai = newSalary.NangNhocDocHai;
-                currentSalary.TrachNhiem = newSalary.TrachNhiem;
-                currentSalary.ThuHut = newSalary.ThuHut;
-                currentSalary.DienThoai = newSalary.DienThoai;
-                currentSalary.Xang = newSalary.Xang;
-                currentSalary.Com = newSalary.Com;
-                currentSalary.NhaO = newSalary.NhaO;
-                currentSalary.KiemNhiem = newSalary.KiemNhiem;
-                currentSalary.BhytDacBiet = newSalary.BhytDacBiet;
-                currentSalary.ViTriCanKnNhieuNam = newSalary.ViTriCanKnNhieuNam;
-                currentSalary.ViTriDacThu = newSalary.ViTriDacThu;
-                currentSalary.LuongKhac = newSalary.LuongKhac;
-                currentSalary.ThiDua = newSalary.ThiDua;
-                currentSalary.HoTroNgoaiLuong = newSalary.HoTroNgoaiLuong;
-                currentSalary.ThuongLeTet = newSalary.ThuongLeTet;
-                currentSalary.LuongThamGiaBHXH = newSalary.LuongThamGiaBHXH;
+                currentSalary.NangNhocDocHai = newSalary.NangNhocDocHai * 1000;
+                currentSalary.TrachNhiem = newSalary.TrachNhiem * 1000;
+                currentSalary.ThuHut = newSalary.ThuHut * 1000;
+                currentSalary.DienThoai = newSalary.DienThoai * 1000;
+                currentSalary.Xang = newSalary.Xang * 1000;
+                currentSalary.Com = newSalary.Com * 1000;
+                currentSalary.NhaO = newSalary.NhaO * 1000;
+                currentSalary.KiemNhiem = newSalary.KiemNhiem * 1000;
+                currentSalary.BhytDacBiet = newSalary.BhytDacBiet * 1000;
+                currentSalary.ViTriCanKnNhieuNam = newSalary.ViTriCanKnNhieuNam * 1000;
+                currentSalary.ViTriDacThu = newSalary.ViTriDacThu * 1000;
+                currentSalary.LuongKhac = newSalary.LuongKhac * 1000;
+                currentSalary.ThiDua = newSalary.ThiDua * 1000;
+                currentSalary.HoTroNgoaiLuong = newSalary.HoTroNgoaiLuong * 1000;
+                currentSalary.ThuongLeTet = newSalary.ThuongLeTet * 1000;
+                currentSalary.LuongThamGiaBHXH = newSalary.LuongThamGiaBHXH * 1000;
             }
 
             //decimal luongCB = GetLuongCB(employee.Id, bac, month, year);
+            //if (employee.Id == "5b6bb22fe73a301f941c5889")
+            //{
+            //    var debug = true;
+            //}
             decimal luongCB = GetLuongCB(employee.SalaryChucVuViTriCode, employee.Id, currentSalary.Bac, month, year);
             decimal nangnhoc = currentSalary.NangNhocDocHai;
             decimal trachnhiem = currentSalary.TrachNhiem;
@@ -1869,20 +4069,34 @@ namespace erp.Controllers
             decimal mucDatTrongThang = 0;
             decimal luongTheoDoanhThuDoanhSo = 0;
 
-            var chamCong = dbContext.EmployeeWorkTimeMonthLogs.Find(m => m.EmployeeId.Equals(employee.Id) & m.Year.Equals(year) & m.Month.Equals(month)).FirstOrDefault();
-            var logisticData = dbContext.SalaryLogisticDatas.Find(m => m.EmployeeId.Equals(employee.Id) & m.Year.Equals(year) & m.Month.Equals(month)).FirstOrDefault();
-            var saleData = dbContext.SalarySaleKPIs.Find(m => m.EmployeeId.Equals(employee.Id) & m.Year.Equals(year) & m.Month.Equals(month)).FirstOrDefault();
-            if (chamCong != null)
+            var chamCongs = dbContext.EmployeeWorkTimeMonthLogs.Find(m => m.EmployeeId.Equals(employee.Id) & m.Year.Equals(year) & m.Month.Equals(month)).ToList();
+
+            var logisticData = dbContext.LogisticEmployeeCongs.Find(m => m.EmployeeId.Equals(employee.Id) & m.Year.Equals(logisticYear) & m.Month.Equals(logisticMonth)).FirstOrDefault();
+            var saleData = dbContext.SaleKPIEmployees.Find(m => m.EmployeeId.Equals(employee.Id) & m.Year.Equals(saleYear) & m.Month.Equals(saleMonth)).FirstOrDefault();
+            if (chamCongs != null & chamCongs.Count > 0)
             {
-                ngayConglamViec = (decimal)chamCong.Workday;
-                phutconglamviec = (decimal)Math.Round(TimeSpan.FromMilliseconds(chamCong.WorkTime).TotalMinutes, 0);
-                ngayNghiPhepHuongLuong = (decimal)chamCong.NgayNghiHuongLuong;
-                ngayNghiLeTetHuongLuong = (decimal)chamCong.NgayNghiLeTetHuongLuong;
-                congCNGio = (decimal)chamCong.CongCNGio;
-                phutcongCN = congCNGio * 60;
-                congTangCaNgayThuongGio = (decimal)chamCong.CongTangCaNgayThuongGio;
-                phutcongTangCaNgayThuong = congTangCaNgayThuongGio * 60;
-                congLeTet = (decimal)chamCong.CongLeTet;
+                ngayConglamViec = 0;
+                phutconglamviec = 0;
+                ngayNghiPhepHuongLuong = 0;
+                ngayNghiLeTetHuongLuong = 0;
+                congCNGio = 0;
+                phutcongCN = 0;
+                congTangCaNgayThuongGio = 0;
+                phutcongTangCaNgayThuong = 0;
+                congLeTet = 0;
+                phutcongLeTet = 0;
+                foreach (var chamCong in chamCongs)
+                {
+                    ngayConglamViec += (decimal)chamCong.Workday;
+                    phutconglamviec += (decimal)Math.Round(TimeSpan.FromMilliseconds(chamCong.WorkTime).TotalMinutes, 0);
+                    ngayNghiPhepHuongLuong += (decimal)chamCong.NghiPhepNam + (decimal)chamCong.NghiHuongLuong;
+                    ngayNghiLeTetHuongLuong += (decimal)chamCong.NghiLe;
+                    congCNGio += (decimal)chamCong.CongCNGio;
+                    congTangCaNgayThuongGio += (decimal)chamCong.CongTangCaNgayThuongGio;
+                    phutcongTangCaNgayThuong += congTangCaNgayThuongGio * 60;
+                    congLeTet += (decimal)chamCong.CongLeTet;
+                }
+                phutcongCN += congCNGio * 60;
                 phutcongLeTet = congLeTet * 60;
             }
             if (logisticData != null)
@@ -1890,8 +4104,18 @@ namespace erp.Controllers
                 congTacXa = logisticData.CongTacXa;
                 tongBunBoc = logisticData.KhoiLuongBun;
                 thanhTienBunBoc = logisticData.ThanhTienBun;
-                mucDatTrongThang = logisticData.TongSoChuyen;
-                luongTheoDoanhThuDoanhSo = logisticData.TienChuyen;
+
+                if (logisticData.ChucVu == "Tài xế")
+                {
+                    mucDatTrongThang = logisticData.TongSoChuyen;
+                    luongTheoDoanhThuDoanhSo = logisticData.TienChuyen;
+                }
+                else
+                {
+                    mucDatTrongThang = logisticData.DoanhThu / 1000;
+                    luongTheoDoanhThuDoanhSo = logisticData.LuongTheoDoanhThuDoanhSo;
+                }
+
             }
             if (saleData != null)
             {
@@ -1903,6 +4127,11 @@ namespace erp.Controllers
             decimal tongthunhap = luongcbbaogomphucap / mauSo * (ngayConglamViec + congCNGio / 8 * 2 + congTangCaNgayThuongGio / 8 * (decimal)1.5 + congLeTet * 3)
                                 + luongCB / mauSo * (ngayNghiPhepHuongLuong + ngayNghiLeTetHuongLuong)
                                 + congTacXa + luongTheoDoanhThuDoanhSo + thanhTienBunBoc + luongKhac + thiDua + hoTroNgoaiLuong;
+
+            if (logisticData != null && logisticData.ChucVu != "Tài xế")
+            {
+                tongthunhap = tongthunhap + mucDatTrongThang;
+            }
 
             decimal thunhapbydate = luongcbbaogomphucap / mauSo;
             decimal thunhapbyminute = thunhapbydate / 8 / 60;
@@ -1922,7 +4151,6 @@ namespace erp.Controllers
             decimal thuclanhminute = tongthunhapminute - bhxhbhyt - tamung + thuongletet;
 
             #region update field to currentSalary
-            //currentSalary.Bac = bac;
             currentSalary.LuongCanBan = luongCB;
             currentSalary.ThamNien = thamnien;
             currentSalary.LuongCoBanBaoGomPhuCap = luongcbbaogomphucap;
@@ -1957,6 +4185,7 @@ namespace erp.Controllers
             currentSalary.ThucLanhMinute = thuclanhminute;
             #endregion
 
+            // Save common information
             if (save)
             {
                 if (existSalary)
@@ -1986,6 +4215,8 @@ namespace erp.Controllers
                         .Set(m => m.CongLeTet, currentSalary.CongLeTet)
                         .Set(m => m.CongTacXa, currentSalary.CongTacXa)
                         .Set(m => m.MucDatTrongThang, currentSalary.MucDatTrongThang)
+                        .Set(m => m.MonthSale, saleMonth)
+                        .Set(m => m.YearSale, saleYear)
                         .Set(m => m.LuongTheoDoanhThuDoanhSo, currentSalary.LuongTheoDoanhThuDoanhSo)
                         .Set(m => m.TongBunBoc, currentSalary.TongBunBoc)
                         .Set(m => m.ThanhTienBunBoc, currentSalary.ThanhTienBunBoc)
@@ -2041,6 +4272,15 @@ namespace erp.Controllers
             if (!string.IsNullOrEmpty(maViTri))
             {
                 var salaryThangBangLuong = dbContext.SalaryThangBangLuongs.Find(m => m.ViTriCode.Equals(maViTri) & m.Bac.Equals(bac) & m.Year.Equals(year) & m.Month.Equals(month)).FirstOrDefault();
+                if (salaryThangBangLuong == null)
+                {
+                    var lastItem = dbContext.SalaryThangBangLuongs.Find(m => m.ViTriCode.Equals(maViTri) & m.Bac.Equals(bac)).SortByDescending(m => m.Year).SortByDescending(m => m.Month).FirstOrDefault();
+                    lastItem.Id = null;
+                    lastItem.Month = month;
+                    lastItem.Year = year;
+                    dbContext.SalaryThangBangLuongs.InsertOne(lastItem);
+                    salaryThangBangLuong = lastItem;
+                }
                 luongCB = salaryThangBangLuong != null ? salaryThangBangLuong.MucLuong : 0;
             }
 
@@ -2050,7 +4290,7 @@ namespace erp.Controllers
             //// Mỗi tháng 1 record [SalaryThangBacLuongEmployees]
             //// Get lastest information base year, month.
             //var level = dbContext.SalaryThangBacLuongEmployees
-            //    .Find(m => m.EmployeeId.Equals(employeeId) & m.FlagReal.Equals(true) & m.Enable.Equals(true)
+            //    .Find(m => m.EmployeeId.Equals(employeeId) & m.Law.Equals(false) & m.Enable.Equals(true)
             //    & m.Year.Equals(year) & m.Month.Equals(month))
             //    .FirstOrDefault();
             //if (level != null)
@@ -2061,7 +4301,7 @@ namespace erp.Controllers
             //{
             //    // Get lastest
             //    var lastLevel = dbContext.SalaryThangBacLuongEmployees
-            //    .Find(m => m.EmployeeId.Equals(employeeId) & m.FlagReal.Equals(true) & m.Enable.Equals(true))
+            //    .Find(m => m.EmployeeId.Equals(employeeId) & m.Law.Equals(false) & m.Enable.Equals(true))
             //    .SortByDescending(m => m.Year).SortByDescending(m => m.Month).FirstOrDefault();
 
             //    if (lastLevel != null)
@@ -2091,15 +4331,18 @@ namespace erp.Controllers
 
         public bool GetCalBhxh(string thang)
         {
+            #region Times
             var toDate = Utility.WorkingMonthToDate(thang);
             var fromDate = toDate.AddMonths(-1).AddDays(1);
             if (string.IsNullOrEmpty(thang))
             {
                 toDate = DateTime.Now;
-                fromDate = new DateTime(toDate.AddMonths(-1).Year, toDate.AddMonths(-1).Month, 26);
+                fromDate = toDate.Day > 25 ? new DateTime(toDate.Year, toDate.Month, 26) : new DateTime(toDate.AddMonths(-1).Year, toDate.AddMonths(-1).Month, 26);
             }
-            var year = toDate.Year;
-            var month = toDate.Month;
+            var year = toDate.Day > 25 ? toDate.AddMonths(1).Year : toDate.Year;
+            var month = toDate.Day > 25 ? toDate.AddMonths(1).Month : toDate.Month;
+            thang = string.IsNullOrEmpty(thang) ? month + "-" + year : thang;
+            #endregion
 
             var calBHXH = true;
             if (DateTime.Now.Day < 26 && DateTime.Now.Month == month)
@@ -2109,112 +4352,21 @@ namespace erp.Controllers
             return calBHXH;
         }
 
-        [Route(Constants.LinkSalary.ThangBangLuongLawCalculator)]
-        public IActionResult ThangBangLuongLawCalculator(decimal money, decimal heso, string id)
+        [Route(Constants.LinkSalary.ThangBangLuong + "/" + Constants.LinkSalary.VanPhong + "/" + Constants.LinkSalary.Calculator)]
+        public IActionResult ThangBangLuongCalculator(string thang, string id, decimal heso, decimal money)
         {
-            var list = new List<IdMoney>();
-            decimal salaryMin = dbContext.SalaryMucLuongVungs.Find(m => m.Enable.Equals(true)).First().ToiThieuVungDoanhNghiepApDung; // use reset
-            if (money > 0)
-            {
-                salaryMin = money;
-            }
-
-            // if id null: calculator all.
-            // else: get information by id=> calculator from [Bac] and return by group.
-            if (!string.IsNullOrEmpty(id))
-            {
-                var currentLevel = dbContext.SalaryThangBangLuongs.Find(m => m.Id.Equals(id)).FirstOrDefault();
-                if (currentLevel != null)
-                {
-                    var bac = currentLevel.Bac;
-                    var maso = currentLevel.MaSo;
-                    if (heso == 0)
-                    {
-                        heso = currentLevel.HeSo;
-                    }
-                    var salaryDeclareTax = heso * salaryMin;
-                    if (bac > 1)
-                    {
-                        var previousBac = bac - 1;
-                        var previousBacEntity = dbContext.SalaryThangBangLuongs.Find(m => m.MaSo.Equals(maso) & m.Bac.Equals(previousBac)).FirstOrDefault();
-                        if (previousBacEntity != null)
-                        {
-                            salaryDeclareTax = heso * previousBacEntity.MucLuong;
-                        }
-                    }
-                    // Add current change
-                    list.Add(new IdMoney
-                    {
-                        Id = currentLevel.Id,
-                        Money = salaryDeclareTax,
-                        Rate = heso
-                    });
-                    var levels = dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true) & m.Law.Equals(true) & m.MaSo.Equals(maso)).ToList();
-
-                    foreach (var level in levels)
-                    {
-                        if (level.Bac > bac)
-                        {
-                            salaryDeclareTax = level.HeSo * salaryDeclareTax;
-                            list.Add(new IdMoney
-                            {
-                                Id = level.Id,
-                                Money = salaryDeclareTax,
-                                Rate = level.HeSo
-                            });
-                        }
-                    }
-                }
-            }
-            else
-            {
-                var levels = dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true) & m.Law.Equals(true)).ToList();
-                // group by MaSo
-                var groups = (from s in levels
-                              group s by new
-                              {
-                                  s.MaSo
-                              }
-                                                    into l
-                              select new
-                              {
-                                  MaSoName = l.Key.MaSo,
-                                  Salaries = l.ToList(),
-                              }).ToList();
-
-                foreach (var group in groups)
-                {
-                    // reset salaryDeclareTax;
-                    var salaryDeclareTax = salaryMin;
-                    foreach (var level in group.Salaries)
-                    {
-                        salaryDeclareTax = level.HeSo * salaryDeclareTax;
-                        list.Add(new IdMoney
-                        {
-                            Id = level.Id,
-                            Money = salaryDeclareTax,
-                            Rate = level.HeSo
-                        });
-                    }
-                }
-            }
-
-            return Json(new { result = true, list });
-        }
-
-        [Route(Constants.LinkSalary.ThangBangLuongRealCalculator)]
-        public IActionResult ThangBangLuongRealCalculator(string thang, string id, decimal heso, decimal money)
-        {
+            #region Times
             var toDate = Utility.WorkingMonthToDate(thang);
             var fromDate = toDate.AddMonths(-1).AddDays(1);
-
             if (string.IsNullOrEmpty(thang))
             {
                 toDate = DateTime.Now;
-                fromDate = new DateTime(toDate.AddMonths(-1).Year, toDate.AddMonths(-1).Month, 26);
+                fromDate = toDate.Day > 25 ? new DateTime(toDate.Year, toDate.Month, 26) : new DateTime(toDate.AddMonths(-1).Year, toDate.AddMonths(-1).Month, 26);
             }
-            var year = toDate.Year;
-            var month = toDate.Month;
+            var year = toDate.Day > 25 ? toDate.AddMonths(1).Year : toDate.Year;
+            var month = toDate.Day > 25 ? toDate.AddMonths(1).Month : toDate.Month;
+            thang = string.IsNullOrEmpty(thang) ? month + "-" + year : thang;
+            #endregion
 
             var list = new List<IdMoney>();
             decimal salaryMin = dbContext.SalaryMucLuongVungs.Find(m => m.Enable.Equals(true) & m.Month.Equals(month) & m.Year.Equals(year)).First().ToiThieuVungDoanhNghiepApDung; // use reset
@@ -2237,7 +4389,7 @@ namespace erp.Controllers
                             heso = currentLevel.HeSo;
                         }
                         var salaryDeclareTax = Math.Round(salaryMin, 0);
-                        var levels = dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true) & m.FlagReal.Equals(true) & m.ViTriCode.Equals(vitriCode) & m.Month.Equals(month) & m.Year.Equals(year)).ToList();
+                        var levels = dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true) & m.Law.Equals(false) & m.ViTriCode.Equals(vitriCode) & m.Month.Equals(month) & m.Year.Equals(year)).ToList();
                         foreach (var level in levels)
                         {
                             if (level.Bac > bac)
@@ -2282,7 +4434,7 @@ namespace erp.Controllers
             else
             {
                 // Ap dung nếu hệ số bậc là 1 + Muc Luong is min.
-                var levels = dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true) & m.FlagReal.Equals(true) & m.Bac.Equals(1) & m.Month.Equals(month) & m.Year.Equals(year) & m.MucLuong.Equals(salaryMinApDung)).ToList();
+                var levels = dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true) & m.Law.Equals(false) & m.Bac.Equals(1) & m.Month.Equals(month) & m.Year.Equals(year) & m.MucLuong.Equals(salaryMinApDung)).ToList();
 
                 // group by VITRI
                 var groups = (from s in levels
@@ -2320,1391 +4472,52 @@ namespace erp.Controllers
             return Json(new { result = true, list });
         }
 
-        [Route(Constants.LinkSalary.UpdateData)]
-        public IActionResult UpdateData()
+        private List<ChucVuKinhDoanh> GetChucVuKinhDoanhs()
         {
-            InitCaiDat();
-            InitChucVuSale();
-            InitKPI();
-
-
-
-            InitLuongToiThieuVung();
-            InitLuongFeeLaw();
-            InitThangBangLuong();
-            InitSalaryPhuCapPhucLoi();
-            InitSalaryThangBangPhuCapPhucLoi();
-            InitChucDanhCongViec();
-
-            return Json(new { result = true });
-        }
-
-        private void InitCaiDat()
-        {
-            dbContext.SalarySettings.DeleteMany(new BsonDocument());
-            dbContext.SalarySettings.InsertOne(new SalarySetting()
+            var results = new List<ChucVuKinhDoanh>
             {
-                Key = "mau-so-lam-viec",
-                Value = "26",
-                Title = "Ngày làm việc"
-            });
-
-            dbContext.SalarySettings.InsertOne(new SalarySetting()
-            {
-                Key = "mau-so-khac",
-                Value = "27",
-                Title = "Ngày làm việc"
-            });
-            dbContext.SalarySettings.InsertOne(new SalarySetting()
-            {
-                Key = "mau-so-bao-ve",
-                Value = "30",
-                Title = "Ngày làm việc"
-            });
-
-            dbContext.SalarySettings.InsertOne(new SalarySetting()
-            {
-                Key = "ty-le-dong-bh",
-                Value = "0.105",
-                Title = "Tỷ lệ đóng BH"
-            });
-        }
-
-        // Init sale chuc vu
-        private void InitChucVuSale()
-        {
-            dbContext.ChucVuSales.DeleteMany(new BsonDocument());
-            var chucvu = "ĐDKD HCM";
-            int i = 1;
-            dbContext.ChucVuSales.InsertOne(new ChucVuSale()
-            {
-                Name = chucvu,
-                Alias = Utility.AliasConvert(chucvu),
-                Code = Constants.System.chucVuSaleCode + i.ToString("00")
-            });
-            i++;
-
-            chucvu = "TKD HCM";
-            dbContext.ChucVuSales.InsertOne(new ChucVuSale()
-            {
-                Name = chucvu,
-                Alias = Utility.AliasConvert(chucvu),
-                Code = Constants.System.chucVuSaleCode + i.ToString("00")
-            });
-            i++;
-
-            chucvu = "ĐDKD TỈNH";
-            dbContext.ChucVuSales.InsertOne(new ChucVuSale()
-            {
-                Name = chucvu,
-                Alias = Utility.AliasConvert(chucvu),
-                Code = Constants.System.chucVuSaleCode + i.ToString("00")
-            });
-            i++;
-
-            chucvu = "TKD TỈNH";
-            dbContext.ChucVuSales.InsertOne(new ChucVuSale()
-            {
-                Name = chucvu,
-                Alias = Utility.AliasConvert(chucvu),
-                Code = Constants.System.chucVuSaleCode + i.ToString("00")
-            });
-            i++;
-
-            chucvu = "ADMIN";
-            dbContext.ChucVuSales.InsertOne(new ChucVuSale()
-            {
-                Name = chucvu,
-                Alias = Utility.AliasConvert(chucvu),
-                Code = Constants.System.chucVuSaleCode + i.ToString("00")
-            });
-            i++;
-
-            chucvu = "ĐDKD BÙN";
-            dbContext.ChucVuSales.InsertOne(new ChucVuSale()
-            {
-                Name = chucvu,
-                Alias = Utility.AliasConvert(chucvu),
-                Code = Constants.System.chucVuSaleCode + i.ToString("00")
-            });
-            i++;
-
-            chucvu = "TKD BÙN";
-            dbContext.ChucVuSales.InsertOne(new ChucVuSale()
-            {
-                Name = chucvu,
-                Alias = Utility.AliasConvert(chucvu),
-                Code = Constants.System.chucVuSaleCode + i.ToString("00")
-            });
-            i++;
-        }
-
-        private void InitKPI()
-        {
-            dbContext.SaleKPIs.DeleteMany(new BsonDocument());
-            var typeKHM = "KH Mới";
-            var typeKHMAlias = Utility.AliasConvert(typeKHM);
-            var typeKHMCode = Constants.System.kPITypeCode + 1.ToString("00");
-            var conditionKHM = string.Empty;
-            var conditionKHMValue = string.Empty;
-
-            var typeDP = "Độ phủ";
-            var typeDPAlias = Utility.AliasConvert(typeDP);
-            var typeDPCode = Constants.System.kPITypeCode + 2.ToString("00");
-            var conditionDP = "Trên 80%";
-            var conditionDPValue = "80";
-
-            var typeNH = "Ngành hàng";
-            var typeNHAlias = Utility.AliasConvert(typeNH);
-            var typeNHCode = Constants.System.kPITypeCode + 3.ToString("00");
-            var conditionNH = "Đạt 70% 4 ngành";
-            var conditionNHValue = "70";
-
-            var typeDT = "Doanh thu";
-            var typeDTAlias = Utility.AliasConvert(typeDT);
-            var typeDTCode = Constants.System.kPITypeCode + 4.ToString("00");
-            var conditionDT1 = "80%-99%";
-            var conditionDT1Value = "80-99";
-            var conditionDT2 = "Trên 100%";
-            var conditionDT2Value = "100";
-
-
-            var typeDS = "Doanh số";
-            var typeDSAlias = Utility.AliasConvert(typeDS);
-            var typeDSCode = Constants.System.kPITypeCode + 5.ToString("00");
-            var conditionDS1 = "80%-99%";
-            var conditionDS1Value = "80-99";
-            var conditionDS2 = "Trên 100%";
-            var conditionDS2Value = "100-119";
-            var conditionDS3 = "Trên 120%";
-            var conditionDS3Value = "120";
-
-
-            var chucvus = dbContext.ChucVuSales.Find(m => m.Enable.Equals(true)).ToList();
-            // Update value later.
-            foreach (var item in chucvus)
-            {
-                // KH Mới
-                dbContext.SaleKPIs.InsertOne(new SaleKPI()
+                new ChucVuKinhDoanh
                 {
-                    Year = 2018,
-                    Month = 6,
-                    ChucVu = item.Name,
-                    ChucVuAlias = item.Alias,
-                    ChucVuCode = item.Code,
-                    Type = typeKHM,
-                    TypeAlias = typeKHMAlias,
-                    TypeCode = typeKHMCode,
-                    Condition = conditionKHM,
-                    ConditionValue = conditionKHMValue,
-                    Value = "500"
-                });
-
-                // DP
-                dbContext.SaleKPIs.InsertOne(new SaleKPI()
+                    Name = "ĐDKD HCM"
+                },
+                new ChucVuKinhDoanh
                 {
-                    Year = 2018,
-                    Month = 6,
-                    ChucVu = item.Name,
-                    ChucVuAlias = item.Alias,
-                    ChucVuCode = item.Code,
-                    Type = typeDP,
-                    TypeAlias = typeDPAlias,
-                    TypeCode = typeDPCode,
-                    Condition = conditionDP,
-                    ConditionValue = conditionDPValue,
-                    Value = "1000"
-                });
-
-                // Ngành hàng
-                dbContext.SaleKPIs.InsertOne(new SaleKPI()
+                    Name = "TKD HCM"
+                },
+                new ChucVuKinhDoanh
                 {
-                    Year = 2018,
-                    Month = 6,
-                    ChucVu = item.Name,
-                    ChucVuAlias = item.Alias,
-                    ChucVuCode = item.Code,
-                    Type = typeNH,
-                    TypeAlias = typeNHAlias,
-                    TypeCode = typeNHCode,
-                    Condition = conditionNH,
-                    ConditionValue = conditionNHValue,
-                    Value = "500"
-                });
-
-                // Doanh thu
-                dbContext.SaleKPIs.InsertOne(new SaleKPI()
+                    Name = "ĐDKD TỈNH"
+                },
+                new ChucVuKinhDoanh
                 {
-                    Year = 2018,
-                    Month = 6,
-                    ChucVu = item.Name,
-                    ChucVuAlias = item.Alias,
-                    ChucVuCode = item.Code,
-                    Type = typeDT,
-                    TypeAlias = typeDTAlias,
-                    TypeCode = typeDTCode,
-                    Condition = conditionDT1,
-                    ConditionValue = conditionDT1Value,
-                    Value = "1000"
-                });
-
-                dbContext.SaleKPIs.InsertOne(new SaleKPI()
+                    Name = "TKD TỈNH"
+                },
+                 new ChucVuKinhDoanh
                 {
-                    Year = 2018,
-                    Month = 6,
-                    ChucVu = item.Name,
-                    ChucVuAlias = item.Alias,
-                    ChucVuCode = item.Code,
-                    Type = typeDT,
-                    TypeAlias = typeDTAlias,
-                    TypeCode = typeDTCode,
-                    Condition = conditionDT2,
-                    ConditionValue = conditionDT2Value,
-                    Value = "2000"
-                });
-
-                // DS
-                dbContext.SaleKPIs.InsertOne(new SaleKPI()
+                    Name = "ADMIN"
+                },
+                 new ChucVuKinhDoanh
                 {
-                    Year = 2018,
-                    Month = 6,
-                    ChucVu = item.Name,
-                    ChucVuAlias = item.Alias,
-                    ChucVuCode = item.Code,
-                    Type = typeDS,
-                    TypeAlias = typeDSAlias,
-                    TypeCode = typeDPCode,
-                    Condition = conditionDS1,
-                    ConditionValue = conditionDS1Value,
-                    Value = "1000"
-                });
-                dbContext.SaleKPIs.InsertOne(new SaleKPI()
+                    Name = "ĐDKD BÙN"
+                },
+                new ChucVuKinhDoanh
                 {
-                    Year = 2018,
-                    Month = 6,
-                    ChucVu = item.Name,
-                    ChucVuAlias = item.Alias,
-                    ChucVuCode = item.Code,
-                    Type = typeDS,
-                    TypeAlias = typeDSAlias,
-                    TypeCode = typeDPCode,
-                    Condition = conditionDS2,
-                    ConditionValue = conditionDS2Value,
-                    Value = "3000"
-                });
-                dbContext.SaleKPIs.InsertOne(new SaleKPI()
-                {
-                    Year = 2018,
-                    Month = 6,
-                    ChucVu = item.Name,
-                    ChucVuAlias = item.Alias,
-                    ChucVuCode = item.Code,
-                    Type = typeDS,
-                    TypeAlias = typeDSAlias,
-                    TypeCode = typeDPCode,
-                    Condition = conditionDS3,
-                    ConditionValue = conditionDS3Value,
-                    Value = "4000"
-                });
-            }
-        }
-
-        private void InitLogistics()
-        {
-            // CityXeGiaoNhan
-            dbContext.CityGiaoNhans.DeleteMany(new BsonDocument());
-            var listLocationGiaoNhan = new List<string>
-            {
-                "TP.HCM",
-                "Bình Dương",
-                "Biên Hòa",
-                "Vũng Tàu",
-                "BìnhThuận",
-                "Cần Thơ"
-                ,"Vĩnh Long"
-                ,"Long An"
-                ,"Tiền Giang"
-                ,"Đồng Nai"
+                    Name = "TKD BÙN"
+                }
             };
-            // Code update later...
-            foreach (var item in listLocationGiaoNhan)
+            var list = new List<ChucVuKinhDoanh>();
+            int code = 1;
+            foreach (var item in results)
             {
-                dbContext.CityGiaoNhans.InsertOne(new CityGiaoNhan
-                {
-                    City = item
-                });
+                item.Alias = Utility.AliasConvert(item.Name);
+                item.Code = "CVKD-" + code.ToString("00");
+                item.Order = code;
+                dbContext.ChucVuKinhDoanhs.InsertOne(item);
+                list.Add(item);
+                code++;
             }
-            var xes = new List<string>()
-            {
-                "Xe nhỏ",
-                "Xe lớn"
-            };
-            // Don gia chuyen xe
-            dbContext.DonGiaChuyenXes.DeleteMany(new BsonDocument());
-
-            foreach (var item in listLocationGiaoNhan)
-            {
-                if (item == "TP.HCM")
-                {
-                    var xe2s = new List<string>()
-                    {
-                        "Xe nhỏ 1.7 tấn",
-                        "Xe lớn ben và 8 tấn"
-                    };
-                    foreach (var xe in xe2s)
-                    {
-                        for (var i = 1; i <= 5; i++)
-                        {
-                            dbContext.DonGiaChuyenXes.InsertOne(new DonGiaChuyenXe
-                            {
-                                Year = 2018,
-                                Month = 8
-
-                            });
-                        }
-                    }
-                }
-                else if (item == "Bình Dương" || item == "Biên Hòa")
-                {
-                    foreach (var xe in xes)
-                    {
-                        for (var i = 1; i <= 5; i++)
-                        {
-
-                        }
-                    }
-                }
-                else
-                {
-                    foreach (var xe in xes)
-                    {
-
-                    }
-                }
-            }
-
-
-            // Ho tro cong tac xa
-            dbContext.HoTroCongTacXas.DeleteMany(new BsonDocument());
+            return list;
         }
-
-        private void InitLuongToiThieuVung()
-        {
-            dbContext.SalaryMucLuongVungs.DeleteMany(new BsonDocument());
-            dbContext.SalaryMucLuongVungs.InsertOne(new SalaryMucLuongVung()
-            {
-                ToiThieuVungQuiDinh = 3980000,
-                TiLeMucDoanhNghiepApDung = (decimal)1.07,
-                ToiThieuVungDoanhNghiepApDung = 3980000 * (decimal)1.07,
-                Month = 8,
-                Year = 2018
-            });
-        }
-
-        private void InitLuongFeeLaw()
-        {
-            dbContext.SalaryFeeLaws.DeleteMany(new BsonDocument());
-            dbContext.SalaryFeeLaws.InsertOne(new SalaryFeeLaw()
-            {
-                Name = "Bảo hiểm xã hội",
-                NameAlias = Utility.AliasConvert("Bảo hiểm xã hội"),
-                TiLeDong = (decimal)0.105,
-                Description = "Bao gồm: BHXH (8%), BHYT(1.5%), Thất nghiệp (1%). Theo Quyết định 595/QĐ-BHXH."
-            });
-        }
-
-        private void InitThangBangLuong()
-        {
-            dbContext.SalaryThangBangLuongs.DeleteMany(mbox => mbox.FlagReal.Equals(false));
-            // default muc luong = toi thieu, HR update later.
-            decimal salaryMin = 3980000 * (decimal)1.07; // use reset
-            decimal salaryDeclareTax = salaryMin;
-            // Company no use now. sử dụng từng vị trí đặc thù. Hi vong tương lai áp dụng.
-            decimal salaryReal = salaryDeclareTax; // First set real salary default, update later
-
-            var name = string.Empty;
-            var nameAlias = string.Empty;
-            var maso = string.Empty;
-            var typeRole = string.Empty;
-            var typeRoleAlias = string.Empty;
-            var typeRoleCode = string.Empty;
-
-            #region 1- BẢNG LƯƠNG CHỨC VỤ QUẢN LÝ DOANH NGHIỆP
-            typeRole = "CHỨC VỤ QUẢN LÝ DOANH NGHIỆP";
-            typeRoleAlias = Utility.AliasConvert(typeRole);
-            typeRoleCode = "C";
-            // 01- TỔNG GIÁM ĐỐC 
-            name = "TỔNG GIÁM ĐỐC";
-            maso = "C.01";
-            nameAlias = Utility.AliasConvert(name);
-            salaryDeclareTax = salaryMin;
-            salaryReal = salaryMin;
-            for (int i = 0; i <= 10; i++)
-            {
-                decimal heso = 1;
-                if (i > 1)
-                {
-                    heso = (decimal)1.05;
-                }
-                salaryDeclareTax = salaryDeclareTax * heso;
-                salaryReal = salaryReal * heso;
-                // Theo thuế
-                dbContext.SalaryThangBangLuongs.InsertOne(new SalaryThangBangLuong()
-                {
-                    Name = name,
-                    MaSo = maso,
-                    TypeRole = typeRole,
-                    Bac = i,
-                    HeSo = heso,
-                    MucLuong = salaryDeclareTax,
-                    NameAlias = nameAlias,
-                    TypeRoleAlias = typeRoleAlias,
-                    TypeRoleCode = typeRoleCode
-                });
-                // Thuc te
-                dbContext.SalaryThangBangLuongs.InsertOne(new SalaryThangBangLuong()
-                {
-                    Name = name,
-                    MaSo = maso,
-                    TypeRole = typeRole,
-                    Bac = i,
-                    HeSo = heso,
-                    MucLuong = salaryReal,
-                    NameAlias = nameAlias,
-                    TypeRoleAlias = typeRoleAlias,
-                    TypeRoleCode = typeRoleCode,
-                    Law = false
-                });
-            }
-
-            // 02-GIÁM ĐỐC/TRƯỞNG BAN
-            name = "GIÁM ĐỐC/TRƯỞNG BAN";
-            maso = "C.02";
-            nameAlias = Utility.AliasConvert(name);
-            salaryDeclareTax = salaryMin;
-            salaryReal = salaryMin;
-            for (int i = 0; i <= 10; i++)
-            {
-                decimal heso = 1;
-                if (i > 0)
-                {
-                    heso = (decimal)1.05;
-                    if (i == 1)
-                    {
-                        heso = (decimal)1.8;
-                    }
-                }
-                salaryDeclareTax = salaryDeclareTax * heso;
-                salaryReal = salaryReal * heso;
-                // Theo thuế
-                dbContext.SalaryThangBangLuongs.InsertOne(new SalaryThangBangLuong()
-                {
-                    Name = name,
-                    MaSo = maso,
-                    TypeRole = typeRole,
-                    Bac = i,
-                    HeSo = heso,
-                    MucLuong = salaryDeclareTax,
-                    NameAlias = nameAlias,
-                    TypeRoleAlias = typeRoleAlias,
-                    TypeRoleCode = typeRoleCode
-                });
-                // Thuc te
-                dbContext.SalaryThangBangLuongs.InsertOne(new SalaryThangBangLuong()
-                {
-                    Name = name,
-                    MaSo = maso,
-                    TypeRole = typeRole,
-                    Bac = i,
-                    HeSo = heso,
-                    MucLuong = salaryReal,
-                    NameAlias = nameAlias,
-                    TypeRoleAlias = typeRoleAlias,
-                    TypeRoleCode = typeRoleCode,
-                    Law = false
-                });
-            }
-
-            // 03- KẾ TOÁN TRƯỞNG/ PHÓ GIÁM ĐỐC
-            name = "KẾ TOÁN TRƯỞNG/ PHÓ GIÁM ĐỐC";
-            maso = "C.03";
-            nameAlias = Utility.AliasConvert(name);
-            salaryDeclareTax = salaryMin;
-            salaryReal = salaryMin;
-            for (int i = 0; i <= 10; i++)
-            {
-                decimal heso = 1;
-                if (i > 0)
-                {
-                    heso = (decimal)1.05;
-                    if (i == 1)
-                    {
-                        heso = (decimal)1.7;
-                    }
-                }
-                salaryDeclareTax = salaryDeclareTax * heso;
-                salaryReal = salaryReal * heso;
-                // Theo thuế
-                dbContext.SalaryThangBangLuongs.InsertOne(new SalaryThangBangLuong()
-                {
-                    Name = name,
-                    MaSo = maso,
-                    TypeRole = typeRole,
-                    Bac = i,
-                    HeSo = heso,
-                    MucLuong = salaryDeclareTax,
-                    NameAlias = nameAlias,
-                    TypeRoleAlias = typeRoleAlias,
-                    TypeRoleCode = typeRoleCode
-                });
-                // Thuc te
-                dbContext.SalaryThangBangLuongs.InsertOne(new SalaryThangBangLuong()
-                {
-                    Name = name,
-                    MaSo = maso,
-                    TypeRole = typeRole,
-                    Bac = i,
-                    HeSo = heso,
-                    MucLuong = salaryReal,
-                    NameAlias = nameAlias,
-                    TypeRoleAlias = typeRoleAlias,
-                    TypeRoleCode = typeRoleCode,
-                    Law = false
-                });
-            }
-            #endregion
-
-            #region 2- BẢNG LƯƠNG VIÊN CHỨC CHUYÊN MÔN, THỪA HÀNH, PHỤC VỤ
-            typeRole = "VIÊN CHỨC CHUYÊN MÔN, THỪA HÀNH, PHỤC VỤ";
-            typeRoleAlias = Utility.AliasConvert(typeRole);
-            typeRoleCode = "D";
-            // 01- TRƯỞNG BP THIẾT KẾ, TRƯỞNG BP GS KT, KẾ TOÁN TỔNG HỢP, QUẢN LÝ THUẾ…
-            name = "TRƯỞNG BP THIẾT KẾ, TRƯỞNG BP GS KT, KẾ TOÁN TỔNG HỢP, QUẢN LÝ THUẾ…";
-            maso = "D.01";
-            nameAlias = Utility.AliasConvert(name);
-            salaryDeclareTax = salaryMin;
-            salaryReal = salaryMin;
-            for (int i = 0; i <= 10; i++)
-            {
-                decimal heso = 1;
-                if (i > 1)
-                {
-                    heso = (decimal)1.05;
-                }
-                salaryDeclareTax = salaryDeclareTax * heso;
-                salaryReal = salaryReal * heso;
-                // Theo thuế
-                dbContext.SalaryThangBangLuongs.InsertOne(new SalaryThangBangLuong()
-                {
-                    Name = name,
-                    MaSo = maso,
-                    TypeRole = typeRole,
-                    Bac = i,
-                    HeSo = heso,
-                    MucLuong = salaryDeclareTax,
-                    NameAlias = nameAlias,
-                    TypeRoleAlias = typeRoleAlias,
-                    TypeRoleCode = typeRoleCode
-                });
-                // Thuc te
-                dbContext.SalaryThangBangLuongs.InsertOne(new SalaryThangBangLuong()
-                {
-                    Name = name,
-                    MaSo = maso,
-                    TypeRole = typeRole,
-                    Bac = i,
-                    HeSo = heso,
-                    MucLuong = salaryReal,
-                    NameAlias = nameAlias,
-                    TypeRoleAlias = typeRoleAlias,
-                    TypeRoleCode = typeRoleCode,
-                    Law = false
-                });
-            }
-
-            // 02- TRƯỞNG SALE, NHÂN VIÊN NHÂN SỰ, CV THU MUA, CV PHÁP CHẾ, CV KẾ HOẠCH TỔNG HỢP, CV MÔI TRƯỜNG, CV NC KHCN, CV PHÒNG TN….
-            name = "TRƯỞNG SALE, NHÂN VIÊN NHÂN SỰ, CV THU MUA, CV PHÁP CHẾ, CV KẾ HOẠCH TỔNG HỢP, CV MÔI TRƯỜNG, CV NC KHCN, CV PHÒNG TN…";
-            maso = "D.02";
-            nameAlias = Utility.AliasConvert(name);
-            salaryDeclareTax = salaryMin;
-            salaryReal = salaryMin;
-            for (int i = 0; i <= 10; i++)
-            {
-                decimal heso = 1;
-                if (i > 1)
-                {
-                    heso = (decimal)1.05;
-                }
-                salaryDeclareTax = salaryDeclareTax * heso;
-                salaryReal = salaryReal * heso;
-                // Theo thuế
-                dbContext.SalaryThangBangLuongs.InsertOne(new SalaryThangBangLuong()
-                {
-                    Name = name,
-                    MaSo = maso,
-                    TypeRole = typeRole,
-                    Bac = i,
-                    HeSo = heso,
-                    MucLuong = salaryDeclareTax,
-                    NameAlias = nameAlias,
-                    TypeRoleAlias = typeRoleAlias,
-                    TypeRoleCode = typeRoleCode
-                });
-                // Thuc te
-                dbContext.SalaryThangBangLuongs.InsertOne(new SalaryThangBangLuong()
-                {
-                    Name = name,
-                    MaSo = maso,
-                    TypeRole = typeRole,
-                    Bac = i,
-                    HeSo = heso,
-                    MucLuong = salaryReal,
-                    NameAlias = nameAlias,
-                    TypeRoleAlias = typeRoleAlias,
-                    TypeRoleCode = typeRoleCode,
-                    Law = false
-                });
-            }
-            // 03- NV KINH DOANH, SALE ADMIN, NV HÀNH CHÍNH, NV KẾ TOÁN, THỦ QUỸ, NV DỰ ÁN, NV KỸ THUẬT, …
-            name = "NV KINH DOANH, SALE ADMIN, NV HÀNH CHÍNH, NV KẾ TOÁN, THỦ QUỸ, NV DỰ ÁN, NV KỸ THUẬT,…";
-            maso = "D.03";
-            nameAlias = Utility.AliasConvert(name);
-            salaryDeclareTax = salaryMin;
-            salaryReal = salaryMin;
-            for (int i = 0; i <= 10; i++)
-            {
-                decimal heso = 1;
-                if (i > 1)
-                {
-                    heso = (decimal)1.05;
-                }
-                salaryDeclareTax = salaryDeclareTax * heso;
-                salaryReal = salaryReal * heso;
-                // Theo thuế
-                dbContext.SalaryThangBangLuongs.InsertOne(new SalaryThangBangLuong()
-                {
-                    Name = name,
-                    MaSo = maso,
-                    TypeRole = typeRole,
-                    Bac = i,
-                    HeSo = heso,
-                    MucLuong = salaryDeclareTax,
-                    NameAlias = nameAlias,
-                    TypeRoleAlias = typeRoleAlias,
-                    TypeRoleCode = typeRoleCode
-                });
-                // Thuc te
-                dbContext.SalaryThangBangLuongs.InsertOne(new SalaryThangBangLuong()
-                {
-                    Name = name,
-                    MaSo = maso,
-                    TypeRole = typeRole,
-                    Bac = i,
-                    HeSo = heso,
-                    MucLuong = salaryReal,
-                    NameAlias = nameAlias,
-                    TypeRoleAlias = typeRoleAlias,
-                    TypeRoleCode = typeRoleCode,
-                    Law = false
-                });
-            }
-            #endregion
-
-            #region 3- BẢNG LƯƠNG NHÂN VIÊN TRỰC TIẾP SẢN XUẤT KINH DOANH VÀ PHỤC VỤ
-            typeRole = "NHÂN VIÊN TRỰC TIẾP SẢN XUẤT KINH DOANH VÀ PHỤC VỤ";
-            typeRoleAlias = Utility.AliasConvert(typeRole);
-            typeRoleCode = "B";
-            // 01- TRƯỞNG BP -NM…
-            name = "TRƯỞNG BP -NM…";
-            maso = "B.01";
-            nameAlias = Utility.AliasConvert(name);
-            salaryDeclareTax = salaryMin;
-            salaryReal = salaryMin;
-            for (int i = 0; i <= 10; i++)
-            {
-                decimal heso = 1;
-                if (i > 1)
-                {
-                    heso = (decimal)1.05;
-                }
-                salaryDeclareTax = salaryDeclareTax * heso;
-                salaryReal = salaryReal * heso;
-                // Theo thuế
-                dbContext.SalaryThangBangLuongs.InsertOne(new SalaryThangBangLuong()
-                {
-                    Name = name,
-                    MaSo = maso,
-                    TypeRole = typeRole,
-                    Bac = i,
-                    HeSo = heso,
-                    MucLuong = salaryDeclareTax,
-                    NameAlias = nameAlias,
-                    TypeRoleAlias = typeRoleAlias,
-                    TypeRoleCode = typeRoleCode
-                });
-                // Thuc te
-                dbContext.SalaryThangBangLuongs.InsertOne(new SalaryThangBangLuong()
-                {
-                    Name = name,
-                    MaSo = maso,
-                    TypeRole = typeRole,
-                    Bac = i,
-                    HeSo = heso,
-                    MucLuong = salaryReal,
-                    NameAlias = nameAlias,
-                    TypeRoleAlias = typeRoleAlias,
-                    TypeRoleCode = typeRoleCode,
-                    Law = false
-                });
-            }
-
-            // 02- TỔ TRƯỞNG NM, TỔ PHÓ NM, TỔ TRƯỞNG LOGISTICS, QUẢN LÝ TRẠM CÂN…
-            name = "TỔ TRƯỞNG NM, TỔ PHÓ NM, TỔ TRƯỞNG LOGISTICS, QUẢN LÝ TRẠM CÂN…";
-            maso = "B.02";
-            nameAlias = Utility.AliasConvert(name);
-            salaryDeclareTax = salaryMin;
-            salaryReal = salaryMin;
-            for (int i = 0; i <= 10; i++)
-            {
-                decimal heso = 1;
-                if (i > 1)
-                {
-                    heso = (decimal)1.05;
-                }
-                salaryDeclareTax = salaryDeclareTax * heso;
-                salaryReal = salaryReal * heso;
-                // Theo thuế
-                dbContext.SalaryThangBangLuongs.InsertOne(new SalaryThangBangLuong()
-                {
-                    Name = name,
-                    MaSo = maso,
-                    TypeRole = typeRole,
-                    Bac = i,
-                    HeSo = heso,
-                    MucLuong = salaryDeclareTax,
-                    NameAlias = nameAlias,
-                    TypeRoleAlias = typeRoleAlias,
-                    TypeRoleCode = typeRoleCode
-                });
-                // Thuc te
-                dbContext.SalaryThangBangLuongs.InsertOne(new SalaryThangBangLuong()
-                {
-                    Name = name,
-                    MaSo = maso,
-                    TypeRole = typeRole,
-                    Bac = i,
-                    HeSo = heso,
-                    MucLuong = salaryReal,
-                    NameAlias = nameAlias,
-                    TypeRoleAlias = typeRoleAlias,
-                    TypeRoleCode = typeRoleCode,
-                    Law = false
-                });
-            }
-
-            // 03- TÀI XẾ, NV KHO, NV ĐIỀU ĐỘ, NV CẢNH QUAN, NV BẢO TRÌ, NV TRẠM CÂN…
-            name = "TÀI XẾ, NV KHO, NV ĐIỀU ĐỘ, NV CẢNH QUAN, NV BẢO TRÌ, NV TRẠM CÂN…";
-            maso = "B.03";
-            nameAlias = Utility.AliasConvert(name);
-            salaryDeclareTax = salaryMin;
-            salaryReal = salaryMin;
-            for (int i = 0; i <= 10; i++)
-            {
-                decimal heso = 1;
-                if (i > 1)
-                {
-                    heso = (decimal)1.05;
-                }
-                salaryDeclareTax = salaryDeclareTax * heso;
-                salaryReal = salaryReal * heso;
-                // Theo thuế
-                dbContext.SalaryThangBangLuongs.InsertOne(new SalaryThangBangLuong()
-                {
-                    Name = name,
-                    MaSo = maso,
-                    TypeRole = typeRole,
-                    Bac = i,
-                    HeSo = heso,
-                    MucLuong = salaryDeclareTax,
-                    NameAlias = nameAlias,
-                    TypeRoleAlias = typeRoleAlias,
-                    TypeRoleCode = typeRoleCode
-                });
-                // Thuc te
-                dbContext.SalaryThangBangLuongs.InsertOne(new SalaryThangBangLuong()
-                {
-                    Name = name,
-                    MaSo = maso,
-                    TypeRole = typeRole,
-                    Bac = i,
-                    HeSo = heso,
-                    MucLuong = salaryReal,
-                    NameAlias = nameAlias,
-                    TypeRoleAlias = typeRoleAlias,
-                    TypeRoleCode = typeRoleCode,
-                    Law = false
-                });
-            }
-
-            // 04- GIAO NHẬN, PHỤ XE, BẢO VỆ, CÔNG NHÂN…
-            name = "GIAO NHẬN, PHỤ XE, BẢO VỆ, CÔNG NHÂN…";
-            maso = "B.04";
-            nameAlias = Utility.AliasConvert(name);
-            salaryDeclareTax = salaryMin;
-            salaryReal = salaryMin;
-            for (int i = 0; i <= 10; i++)
-            {
-                decimal heso = 1;
-                if (i > 1)
-                {
-                    heso = (decimal)1.05;
-                }
-                salaryDeclareTax = salaryDeclareTax * heso;
-                salaryReal = salaryReal * heso;
-                // Theo thuế
-                dbContext.SalaryThangBangLuongs.InsertOne(new SalaryThangBangLuong()
-                {
-                    Name = name,
-                    MaSo = maso,
-                    TypeRole = typeRole,
-                    Bac = i,
-                    HeSo = heso,
-                    MucLuong = salaryDeclareTax,
-                    NameAlias = nameAlias,
-                    TypeRoleAlias = typeRoleAlias,
-                    TypeRoleCode = typeRoleCode
-                });
-                // Thuc te
-                dbContext.SalaryThangBangLuongs.InsertOne(new SalaryThangBangLuong()
-                {
-                    Name = name,
-                    MaSo = maso,
-                    TypeRole = typeRole,
-                    Bac = i,
-                    HeSo = heso,
-                    MucLuong = salaryReal,
-                    NameAlias = nameAlias,
-                    TypeRoleAlias = typeRoleAlias,
-                    TypeRoleCode = typeRoleCode,
-                    Law = false
-                });
-            }
-            #endregion
-        }
-
-        private void InitSalaryPhuCapPhucLoi()
-        {
-            dbContext.SalaryPhuCapPhucLois.DeleteMany(new BsonDocument());
-
-            TextInfo textInfo = new CultureInfo("en-US", false).TextInfo;
-            #region Phu Cap
-            int type = 1; // phu-cap
-            var name = string.Empty;
-            int i = 1;
-
-            name = "NẶNG NHỌC ĐỘC HẠI";
-            dbContext.SalaryPhuCapPhucLois.InsertOne(new SalaryPhuCapPhucLoi()
-            {
-                Type = type,
-                Order = i,
-                Name = textInfo.ToTitleCase(name.ToLower()),
-                NameAlias = Utility.AliasConvert(name),
-                Code = type.ToString("00") + "-" + i.ToString("000"),
-            });
-            i++;
-            name = "TRÁCH NHIỆM";
-            dbContext.SalaryPhuCapPhucLois.InsertOne(new SalaryPhuCapPhucLoi()
-            {
-                Type = type,
-                Order = i,
-                Name = textInfo.ToTitleCase(name.ToLower()),
-                NameAlias = Utility.AliasConvert(name),
-                Code = type.ToString("00") + "-" + i.ToString("000"),
-            });
-            i++;
-
-            name = "THÂM NIÊN";
-            dbContext.SalaryPhuCapPhucLois.InsertOne(new SalaryPhuCapPhucLoi()
-            {
-                Type = type,
-                Order = i,
-                Name = textInfo.ToTitleCase(name.ToLower()),
-                NameAlias = Utility.AliasConvert(name),
-                Code = type.ToString("00") + "-" + i.ToString("000"),
-            });
-            i++;
-
-            name = "THU HÚT";
-            dbContext.SalaryPhuCapPhucLois.InsertOne(new SalaryPhuCapPhucLoi()
-            {
-                Type = type,
-                Order = i,
-                Name = textInfo.ToTitleCase(name.ToLower()),
-                NameAlias = Utility.AliasConvert(name),
-                Code = type.ToString("00") + "-" + i.ToString("000"),
-            });
-            i++;
-            #endregion
-
-            #region Phuc Loi
-            type = 2; // phuc-loi
-            i = 1;
-
-            name = "XĂNG";
-            dbContext.SalaryPhuCapPhucLois.InsertOne(new SalaryPhuCapPhucLoi()
-            {
-                Type = type,
-                Order = i,
-                Name = textInfo.ToTitleCase(name.ToLower()),
-                NameAlias = Utility.AliasConvert(name),
-                Code = type.ToString("00") + "-" + i.ToString("000"),
-            });
-            i++;
-
-            name = "ĐIỆN THOẠI";
-            dbContext.SalaryPhuCapPhucLois.InsertOne(new SalaryPhuCapPhucLoi()
-            {
-                Type = type,
-                Order = i,
-                Name = textInfo.ToTitleCase(name.ToLower()),
-                NameAlias = Utility.AliasConvert(name),
-                Code = type.ToString("00") + "-" + i.ToString("000"),
-            });
-            i++;
-
-            name = "CƠM";
-            dbContext.SalaryPhuCapPhucLois.InsertOne(new SalaryPhuCapPhucLoi()
-            {
-                Type = type,
-                Order = i,
-                Name = textInfo.ToTitleCase(name.ToLower()),
-                NameAlias = Utility.AliasConvert(name),
-                Code = type.ToString("00") + "-" + i.ToString("000"),
-            });
-            i++;
-
-            name = "Kiêm nhiệm";
-            dbContext.SalaryPhuCapPhucLois.InsertOne(new SalaryPhuCapPhucLoi()
-            {
-                Type = type,
-                Order = i,
-                Name = textInfo.ToTitleCase(name.ToLower()),
-                NameAlias = Utility.AliasConvert(name),
-                Code = type.ToString("00") + "-" + i.ToString("000"),
-            });
-            i++;
-
-            name = "BHYT ĐẶC BIỆT";
-            dbContext.SalaryPhuCapPhucLois.InsertOne(new SalaryPhuCapPhucLoi()
-            {
-                Type = type,
-                Order = i,
-                Name = textInfo.ToTitleCase(name.ToLower()),
-                NameAlias = Utility.AliasConvert(name),
-                Code = type.ToString("00") + "-" + i.ToString("000"),
-            });
-
-            name = "VỊ TRÍ CẦN KN NHIỀU NĂM";
-            dbContext.SalaryPhuCapPhucLois.InsertOne(new SalaryPhuCapPhucLoi()
-            {
-                Type = type,
-                Order = i,
-                Name = textInfo.ToTitleCase(name.ToLower()),
-                NameAlias = Utility.AliasConvert(name),
-                Code = type.ToString("00") + "-" + i.ToString("000"),
-            });
-
-            name = "Vị trí đặc thù";
-            dbContext.SalaryPhuCapPhucLois.InsertOne(new SalaryPhuCapPhucLoi()
-            {
-                Type = type,
-                Order = i,
-                Name = textInfo.ToTitleCase(name.ToLower()),
-                NameAlias = Utility.AliasConvert(name),
-                Code = type.ToString("00") + "-" + i.ToString("000"),
-            });
-
-            name = "Nhà ở";
-            dbContext.SalaryPhuCapPhucLois.InsertOne(new SalaryPhuCapPhucLoi()
-            {
-                Type = type,
-                Order = i,
-                Name = textInfo.ToTitleCase(name.ToLower()),
-                NameAlias = Utility.AliasConvert(name),
-                Code = type.ToString("00") + "-" + i.ToString("000"),
-            });
-            i++;
-            #endregion
-        }
-
-        private void InitSalaryThangBangPhuCapPhucLoi()
-        {
-            dbContext.SalaryThangBangPhuCapPhucLois.DeleteMany(m => m.FlagReal.Equals(false));
-            #region TGD
-            // Trach nhiem 01-002
-            dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
-            {
-                Code = "01-002",
-                Name = "Trách nhiệm",
-                MaSo = "C.01",
-                Money = 500000
-            });
-            // Dien thoai 02-002
-            dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
-            {
-                Code = "02-002",
-                Name = "Điện thoại",
-                MaSo = "C.01",
-                Money = 500000
-            });
-            // Xang 02-001
-            dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
-            {
-                Code = "02-001",
-                Name = "Xăng",
-                MaSo = "C.01",
-                Money = 500000
-            });
-            // Com 02-003
-            dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
-            {
-                Code = "02-003",
-                Name = "Cơm",
-                MaSo = "C.01",
-                Money = 500000
-            });
-            // Nha o 02-008
-            dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
-            {
-                Code = "02-008",
-                Name = "Nhà ở",
-                MaSo = "C.01",
-                Money = 0
-            });
-            #endregion
-
-            #region GĐ/PGĐ
-            dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
-            {
-                Code = "01-002",
-                Name = "Trách nhiệm",
-                MaSo = "C.02",
-                Money = 300000
-            });
-
-            // Dien thoai 02-002
-            dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
-            {
-                Code = "02-002",
-                Name = "Điện thoại",
-                MaSo = "C.02",
-                Money = 400000
-            });
-            // Xang 02-001
-            dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
-            {
-                Code = "02-001",
-                Name = "Xăng",
-                MaSo = "C.02",
-                Money = 300000
-            });
-            // Com 02-003
-            dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
-            {
-                Code = "02-003",
-                Name = "Cơm",
-                MaSo = "C.02",
-                Money = 400000
-            });
-            // Nha o 02-008
-            dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
-            {
-                Code = "02-008",
-                Name = "Nhà ở",
-                MaSo = "C.02",
-                Money = 0
-            });
-            #endregion
-
-            #region KT trưởng
-            dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
-            {
-                Code = "01-002",
-                Name = "Trách nhiệm",
-                MaSo = "C.03",
-                Money = 300000
-            });
-
-            // Dien thoai 02-002
-            dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
-            {
-                Code = "02-002",
-                Name = "Điện thoại",
-                MaSo = "C.03",
-                Money = 400000
-            });
-            // Xang 02-001
-            dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
-            {
-                Code = "02-001",
-                Name = "Xăng",
-                MaSo = "C.03",
-                Money = 300000
-            });
-            // Com 02-003
-            dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
-            {
-                Code = "02-003",
-                Name = "Cơm",
-                MaSo = "C.03",
-                Money = 400000
-            });
-            // Nha o 02-008
-            dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
-            {
-                Code = "02-008",
-                Name = "Nhà ở",
-                MaSo = "C.03",
-                Money = 0
-            });
-            #endregion
-
-            #region Trưởng BP
-            dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
-            {
-                Code = "01-002",
-                Name = "Trách nhiệm",
-                MaSo = "D.01",
-                Money = 200000
-            });
-
-            // Dien thoai 02-002
-            dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
-            {
-                Code = "02-002",
-                Name = "Điện thoại",
-                MaSo = "D.01",
-                Money = 300000
-            });
-            // Xang 02-001
-            dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
-            {
-                Code = "02-001",
-                Name = "Xăng",
-                MaSo = "D.01",
-                Money = 200000
-            });
-            // Com 02-003
-            dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
-            {
-                Code = "02-003",
-                Name = "Cơm",
-                MaSo = "D.01",
-                Money = 300000
-            });
-            // Nha o 02-008
-            dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
-            {
-                Code = "02-008",
-                Name = "Nhà ở",
-                MaSo = "D.01",
-                Money = 0
-            });
-            dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
-            {
-                Code = "01-002",
-                Name = "Trách nhiệm",
-                MaSo = "B.01",
-                Money = 200000
-            });
-            // Dien thoai 02-002
-            dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
-            {
-                Code = "02-002",
-                Name = "Điện thoại",
-                MaSo = "B.01",
-                Money = 300000
-            });
-            // Xang 02-001
-            dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
-            {
-                Code = "02-001",
-                Name = "Xăng",
-                MaSo = "B.01",
-                Money = 200000
-            });
-            // Com 02-003
-            dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
-            {
-                Code = "02-003",
-                Name = "Cơm",
-                MaSo = "B.01",
-                Money = 300000
-            });
-            // Nha o 02-008
-            dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
-            {
-                Code = "02-008",
-                Name = "Nhà ở",
-                MaSo = "B.01",
-                Money = 0
-            });
-            #endregion
-
-            #region Tổ trưởng
-            dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
-            {
-                Code = "01-002",
-                Name = "Trách nhiệm",
-                MaSo = "D.02",
-                Money = 100000
-            });
-            // Dien thoai 02-002
-            dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
-            {
-                Code = "02-002",
-                Name = "Điện thoại",
-                MaSo = "D.02",
-                Money = 300000
-            });
-            // Xang 02-001
-            dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
-            {
-                Code = "02-001",
-                Name = "Xăng",
-                MaSo = "D.02",
-                Money = 200000
-            });
-            // Com 02-003
-            dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
-            {
-                Code = "02-003",
-                Name = "Cơm",
-                MaSo = "D.02",
-                Money = 300000
-            });
-            // Nha o 02-008
-            dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
-            {
-                Code = "02-008",
-                Name = "Nhà ở",
-                MaSo = "D.02",
-                Money = 0
-            });
-            dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
-            {
-                Code = "01-002",
-                Name = "Trách nhiệm",
-                MaSo = "B.02",
-                Money = 100000
-            });
-            // Dien thoai 02-002
-            dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
-            {
-                Code = "02-002",
-                Name = "Điện thoại",
-                MaSo = "B.02",
-                Money = 300000
-            });
-            // Xang 02-001
-            dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
-            {
-                Code = "02-001",
-                Name = "Xăng",
-                MaSo = "B.02",
-                Money = 200000
-            });
-            // Com 02-003
-            dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
-            {
-                Code = "02-003",
-                Name = "Cơm",
-                MaSo = "B.02",
-                Money = 300000
-            });
-            // Nha o 02-008
-            dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
-            {
-                Code = "02-008",
-                Name = "Nhà ở",
-                MaSo = "B.02",
-                Money = 0
-            });
-            #endregion
-
-            #region Tổ phó
-            // B.02
-            #endregion
-
-            #region Others
-            dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
-            {
-                Code = "01-002",
-                Name = "Trách nhiệm",
-                MaSo = "D.03",
-                Money = 0
-            });
-            dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
-            {
-                Code = "02-008",
-                Name = "Nhà ở",
-                MaSo = "D.03",
-                Money = 200000
-            });
-            dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
-            {
-                Code = "01-002",
-                Name = "Trách nhiệm",
-                MaSo = "B.03",
-                Money = 0
-            });
-            dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
-            {
-                Code = "02-008",
-                Name = "Nhà ở",
-                MaSo = "B.03",
-                Money = 200000
-            });
-            dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
-            {
-                Code = "01-002",
-                Name = "Trách nhiệm",
-                MaSo = "B.04",
-                Money = 0
-            });
-            dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(new SalaryThangBangPhuCapPhucLoi()
-            {
-                Code = "02-008",
-                Name = "Nhà ở",
-                MaSo = "B.04",
-                Money = 200000
-            });
-            #endregion
-        }
-
-        // Base on ThangBangLuong. Do later
-        private void InitChucDanhCongViec()
-        {
-            dbContext.ChucDanhCongViecs.DeleteMany(new BsonDocument());
-            var listTemp = dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true) && m.Law.Equals(true)).ToList();
-            foreach (var item in listTemp)
-            {
-                if (!(dbContext.ChucDanhCongViecs.CountDocuments(m => m.Code.Equals(item.MaSo)) > 0))
-                {
-                    dbContext.ChucDanhCongViecs.InsertOne(new ChucDanhCongViec()
-                    {
-                        Name = item.Name,
-                        Alias = item.NameAlias,
-                        Code = item.MaSo,
-                        Type = item.TypeRole,
-                        TypeAlias = item.TypeRoleAlias,
-                        TypeCode = item.TypeRoleCode
-                    });
-                }
-            }
-        }
-
         #endregion
-
     }
 }

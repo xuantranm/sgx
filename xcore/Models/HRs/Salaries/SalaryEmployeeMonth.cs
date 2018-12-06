@@ -8,7 +8,6 @@ namespace Models
     public class SalaryEmployeeMonth
     {
         [BsonId]
-        // Mvc don't know how to create ObjectId from string
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
 
@@ -40,6 +39,9 @@ namespace Models
         // base chucvu
         public string ViTriCode { get; set; }
 
+        // NgachLuong
+        public string SalaryMaSoChucDanhCongViec { get; set; }
+
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime ThamNienLamViec { get; set; }
 
@@ -49,8 +51,50 @@ namespace Models
 
         public int ThamNienDay { get; set; } = 0;
 
+        #region Nha May
+        // 3 năm đầu ko tăng, bắt đầu năm thứ 4 sẽ có thâm niên 3%, thêm 1 năm tăng 1%
+        public int HeSoThamNien { get; set; } = 0;
+
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal LuongToiThieu { get; set; } = 0;
+
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal LuongCanBanCu { get; set; } = 0;
+
+        // =LuongCanBan/MauSo*NgayCongLamViec
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal LuongDinhMuc { get; set; } = 0;
+
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal ThanhTienLuongCanBan { get; set; } = 0;
+
+        // Cong thuc
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal LuongVuotDinhMuc { get; set; } = 0;
+
+        // Cong thuc
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal PhuCapChuyenCan { get; set; } = 0;
+
+        // Nhap tay
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal PhuCapKhac { get; set; } = 0;
+
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal TongPhuCap { get; set; } = 0;
+
+        //Nha May: =ROUND(ThuLanh,-3)+LuongKhac+ComKD+ComSX
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal ThucLanhTronSo { get; set; } = 0;
+
+        #endregion
+        // 1. Get direct [Employees]
+        // If view History. Use [SalaryEmployeeMonths]
+        // No use: [SalaryThangBacLuongEmployees]
+        // He So Luong
         public int Bac { get; set; }
 
+        // NhaMay, San Xuat dua vao thang bang luong moi theo Ngach Luong, He So Luong
         [BsonRepresentation(BsonType.Decimal128)]
         public decimal LuongCanBan { get; set; } = 0;
 
@@ -80,6 +124,12 @@ namespace Models
         [BsonRepresentation(BsonType.Decimal128)]
         public decimal Com { get; set; } = 0;
 
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal ComSX { get; set; } = 0;
+
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal ComKD { get; set; } = 0;
+
         // Chua ap dung
         [BsonRepresentation(BsonType.Decimal128)]
         public decimal NhaO { get; set; } = 0;
@@ -107,6 +157,10 @@ namespace Models
         public decimal PhutCongLamViec { get; set; } = 0;
 
         [BsonRepresentation(BsonType.Decimal128)]
+        public decimal NgayNghiPhepNam { get; set; } = 0;
+
+        // Thai san, dam cuoi,...
+        [BsonRepresentation(BsonType.Decimal128)]
         public decimal NgayNghiPhepHuongLuong { get; set; } = 0;
 
         [BsonRepresentation(BsonType.Decimal128)]
@@ -131,6 +185,17 @@ namespace Models
         public decimal CongLeTetPhut { get; set; } = 0;
 
         [BsonRepresentation(BsonType.Decimal128)]
+        public decimal TienPhepNamLeTet { get; set; } = 0;
+
+        public int YearLogistic { get; set; }  = DateTime.Now.Year;
+
+        public int MonthLogistic { get; set; } = DateTime.Now.Month;
+
+        public int YearSale { get; set; } = DateTime.Now.Year;
+
+        public int MonthSale { get; set; } = DateTime.Now.Month;
+
+        [BsonRepresentation(BsonType.Decimal128)]
         public decimal CongTacXa { get; set; } = 0;
 
         [BsonRepresentation(BsonType.Decimal128)]
@@ -145,12 +210,14 @@ namespace Models
         [BsonRepresentation(BsonType.Decimal128)]
         public decimal ThanhTienBunBoc { get; set; } = 0;
 
+        // Ho Tro Them
         [BsonRepresentation(BsonType.Decimal128)]
         public decimal LuongKhac { get; set; } = 0;
 
         [BsonRepresentation(BsonType.Decimal128)]
         public decimal ThiDua { get; set; } = 0;
 
+        // Ho tro them
         [BsonRepresentation(BsonType.Decimal128)]
         public decimal HoTroNgoaiLuong { get; set; } = 0;
 
@@ -167,10 +234,20 @@ namespace Models
         public decimal TongThuNhapMinute { get; set; } = 0;
 
         [BsonRepresentation(BsonType.Decimal128)]
-        public decimal BHXHBHYT { get; set; } = 0;
+        public decimal LuongThamGiaBHXH { get; set; } = 0;
 
         [BsonRepresentation(BsonType.Decimal128)]
-        public decimal LuongThamGiaBHXH { get; set; } = 0;
+        public decimal BHXH { get; set; } = 0;
+
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal BHYT { get; set; } = 0;
+
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal BHTN { get; set; } = 0;
+
+        // Tong BHXH-BHYT-BHTN
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal BHXHBHYT { get; set; } = 0;
 
         [BsonRepresentation(BsonType.Decimal128)]
         public decimal TamUng { get; set; } = 0;
@@ -178,6 +255,8 @@ namespace Models
         [BsonRepresentation(BsonType.Decimal128)]
         public decimal ThuongLeTet { get; set; } = 0;
 
+        // NHA MAY: = TONG THU NHAP - VAYTAMUNG - BHXH
+        // SAN XUAT:
         [BsonRepresentation(BsonType.Decimal128)]
         public decimal ThucLanh { get; set; } = 0;
 
@@ -205,6 +284,5 @@ namespace Models
 
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime UpdatedOn { get; set; } = DateTime.Now;
-
     }
 }

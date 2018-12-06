@@ -9,28 +9,29 @@
 
 @Html.ValidationSummary()
 
-<form method="get" action="/@Constants.LinkSystem.Main/@Constants.LinkSystem.Mail">
+<form method="get" action="/@Constants.LinkSystem.Main/@Constants.LinkSystem.Mail" id="form-main">
     <div class="form-row mb-3">
         <div class="col-md-4 col-xs-12">
             <label class="control-label">Tình trạng</label>
-            <select asp-for="status" class="form-control">
+            <select asp-for="status" class="form-control form-control-lg">
                 <option value="2">Lỗi</option>
                 <option value="1">Thành công</option>
+                <option value="3">Đã gửi lại</option>
             </select>
         </div>
         <div class="col-md-4 col-xs-12">
             <label class="control-label">Mã</label>
-            <input asp-for="id" class="form-control" />
+            <input asp-for="id" class="form-control form-control-lg" />
         </div>
         <div class="col-md-4 col-xs-12">
             <label class="control-label">Email</label>
-            <input asp-for="toemail" class="form-control" />
+            <input asp-for="toemail" class="form-control form-control-lg" />
         </div>
     </div>
     <div class="form-row mb-3">
         <div class="col-md-2">
             <label class="control-label">Dòng</label>
-            <select asp-for="size" class="form-control">
+            <select asp-for="size" class="form-control form-control-lg">
                 <option value="100">100</option>
                 <option value="200">200</option>
                 <option value="500">500</option>
@@ -39,7 +40,7 @@
         </div>
         <div class="col-md-2">
             <label class="control-label">Trang</label>
-            <select asp-for="page" class="form-control">
+            <select asp-for="page" class="form-control form-control-lg">
                 @{
                     var pages = Model.Pages;
                     for (var i = 1; i <= pages; i++)
@@ -51,77 +52,64 @@
         </div>
         <div class="col-md-8">
             <label class="control-label"><small>Bấm nút hoặc Enter</small></label>
-            <button class="btn btn-primary form-control" type="submit"><i class="icon-magnifying-glass"></i> Tìm kiếm</button>
+            <button class="btn btn-primary btn-block btn-lg" type="submit"><i class="icon-magnifying-glass"></i> Tìm kiếm</button>
         </div>
     </div>
 </form>
 <small><span class="badge badge-info">@Model.Records</span> được tìm thấy.</small>
+<input type="hidden" id="hidUrlGetItem" value="/@Constants.LinkSystem.Main/@Constants.LinkSystem.Mail/@Constants.LinkSystem.Item" />
 
 @if (Model.ScheduleEmails.Count > 0)
 {
-    <form method="post" action="/@Constants.LinkSystem.Main/@Constants.LinkSystem.Mail/@Constants.LinkSystem.Resend" class="data-form">
-        <div class="row mb-3">
-            <div class="col">
-                <button type="submit" class="btn btn-lg btn-block btn-danger btn-submit">GỬI LẠI</button>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-12 table-responsive-sm">
-                <table class="table table-responsive-sm table-bordered table-striped table-hover floating-header">
-                    <thead>
-                        <tr>
-                            <th>
-                                <input type="checkbox" class="checkbox-all" /> Tất cả
-                            </th>
-                            <th>Mã</th>
-                            <th>Ngày</th>
-                            <th>Loại</th>
-                            <th>Tiêu đề</th>
-                            <th>Người nhận</th>
-                            <th>Trạng thái</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @{
-                            int i = 0;
-                            foreach (var item in Model.ScheduleEmails)
-                            {
-                                <tr>
-                                    <td>
-                                        <input type="checkbox" class="checkbox-item" />
-                                        <input type="hidden" value="@item.Id" name="ScheduleEmails[@i].Id" />
-                                        <input type="hidden" value="@item.Status" name="ScheduleEmails[@i].Status" class="status-item" />
-                                    </td>
-                                    <td><code>@item.Id</code></td>
-                                    <td>@item.UpdatedOn</td>
-                                    <td>@item.Type</td>
-                                    <td>@item.Title</td>
-                                    <td>
-                                        @foreach (var toItem in item.To)
+    <div class="row">
+        <div class="col-12 table-responsive-sm">
+            <table class="table table-responsive-sm table-bordered table-striped table-hover floating-header">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Ngày</th>
+                        <th>Loại</th>
+                        <th>Tiêu đề</th>
+                        <th>Người nhận</th>
+                        <th>Trạng thái</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        int i = 0;
+                        foreach (var item in Model.ScheduleEmails)
+                        {
+                            <tr>
+                                <td nowrap>
+                                    <a href="#" data-toggle="modal" data-target="#emailModal" data-id="@item.Id"><code>@item.Id</code></a>
+                                </td>
+                                <td>@item.UpdatedOn</td>
+                                <td>@item.Type</td>
+                                <td>@item.Title</td>
+                                <td>
+                                    @foreach (var toItem in item.To)
+                                    {
+                                        <small>Tên <b>@toItem.Name</b> - Email: <b>@toItem.Address</b></small>
+                                    }
+                                </td>
+                                <td>
+                                    @{
+                                        var result = "Gửi thành công";
+                                        if (item.Status == 2)
                                         {
-                                            <small>Tên <b>@toItem.Name</b> - Email: <b>@toItem.Address</b></small>
+                                            result = "Lỗi: " + item.Error;
                                         }
-                                    </td>
-                                    <td>
-                                        @{
-                                            var result = "Gửi thành công";
-                                            if (item.Status == 2)
-                                            {
-                                                result = "Lỗi: " + item.Error;
-                                            }
-                                            <span>@result</span>
-                                        }
-                                    </td>
-                                </tr>
-                                i++;
-                            }
+                                        <span>@result</span>
+                                    }
+                                </td>
+                            </tr>
+                            i++;
                         }
-                    </tbody>
-                </table>
-            </div>
+                    }
+                </tbody>
+            </table>
         </div>
-    </form>
-
+    </div>
 }
 else
 {
@@ -129,6 +117,46 @@ else
         Không thấy dữ liệu...
     </div>
 }
+
+<div class="modal fade" id="emailModal" tabindex="-1" role="dialog" aria-labelledby="emailModal" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editItemModalLabel">Nội dung email</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Đóng">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form method="post" action="/@Constants.LinkSystem.Main/@Constants.LinkSystem.Mail/@Constants.LinkSystem.Resend" class="data-form">
+                <input type="hidden" id="hidId" name="id"/>
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <div class="modal-body">
+                    @*<div class="form-group">
+                        <label class="control-label">From</label>
+                        <input class="form-control form-control-lg" name="fromEmail" />
+                    </div>*@
+                    <div class="form-group">
+                        <label class="control-label">To</label>
+                        <input class="form-control form-control-lg" name="toEmail" />
+                        <small>các email cách nhau bằng ký tự <code>;</code></small>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">CC <small>(nếu có)</small></label>
+                        <input class="form-control form-control-lg" name="ccEmail" />
+                        <small>các email cách nhau bằng ký tự <code>;</code></small>
+                    </div>
+                    <div class="row">
+                        <div class="col-12 content-email-modal"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fas fa-times"></i>Hủy và đóng</button>
+                    <button type="submit" class="btn btn-primary width140 btn-submit"><i class="icon-save"></i>&nbsp;Gửi lại</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 @section scripts {
     <script type="text/javascript" src="~/js/system-mail.js?@DateTime.Now.Ticks"></script>

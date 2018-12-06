@@ -1,10 +1,15 @@
 ﻿$(function () {
-    $('.left-menu').addClass('d-none');
+    var $table = $('table.floating-header');
+    $table.floatThead();
 
     $('.js-select2-basic-single').select2(
         {
             theme: "bootstrap"
         });
+
+    $('#thang').on('change', function (e) {
+        $('#filter-form').submit();
+    });
 
     registerAutoNumeric();
 
@@ -54,58 +59,9 @@
     function enableNumeric(element) {
         var code = $(element).data('id');
         newInstall = new AutoNumeric('.' + code, { decimalPlaces: 0 });
-        $('.' + code).on('keyup', function () {
-            calculatorData(code.split('-')[1]);
-        });
-    }
-
-    function calculatorData(code) {
-        var chitieudoanhso = Math.round($('.chitieudoanhso-' + code).val().replace(/\D(\d{2})$/, '.$1').replace(/[^\d.]+/g, ""));
-        var chitieudoanhthu = Math.round($('.chitieudoanhthu-' + code).val().replace(/\D(\d{2})$/, '.$1').replace(/[^\d.]+/g, ""));
-        var chitieudophu = Math.round($('.chitieudophu-' + code).val().replace(/\D(\d{2})$/, '.$1').replace(/[^\d.]+/g, ""));
-        var chitieumomoi = Math.round($('.chitieumomoi-' + code).val().replace(/\D(\d{2})$/, '.$1').replace(/[^\d.]+/g, ""));
-        var chitieunganhhang = Math.round($('.chitieunganhhang-' + code).val().replace(/\D(\d{2})$/, '.$1').replace(/[^\d.]+/g, ""));
-
-        var thuchiendoanhso = Math.round($('.thuchiendoanhso-' + code).val().replace(/\D(\d{2})$/, '.$1').replace(/[^\d.]+/g, ""));
-        var thuchiendoanhthu = Math.round($('.thuchiendoanhthu-' + code).val().replace(/\D(\d{2})$/, '.$1').replace(/[^\d.]+/g, ""));
-        var thuchiendophu = Math.round($('.thuchiendophu-' + code).val().replace(/\D(\d{2})$/, '.$1').replace(/[^\d.]+/g, ""));
-        var thuchienmomoi = Math.round($('.thuchienmomoi-' + code).val().replace(/\D(\d{2})$/, '.$1').replace(/[^\d.]+/g, ""));
-        var thuchiennganhhang = Math.round($('.thuchiennganhhang-' + code).val().replace(/\D(\d{2})$/, '.$1').replace(/[^\d.]+/g, ""));
-        
-        //$('.luongcbbaogomphucap-' + code).html(accounting.formatNumber(luongcbbaogomphucap));
-        // ajax get
-        $.ajax({
-            type: "post",
-            url: $('#hidCalculatorDataKPI').val(),
-            data: {
-                id: $('.tr-' + code).data('id'),
-                chitieudoanhso,
-                chitieudoanhthu,
-                chitieudophu,
-                chitieumomoi,
-                chitieunganhhang,
-                thuchiendoanhso,
-                thuchiendoanhthu,
-                thuchiendophu,
-                thuchienmomoi,
-                thuchiennganhhang
-            },
-            success: function (data) {
-                console.log(data);
-                if (data.result === true) {
-                    //$('.leave-duration').text(data.date);
-                }
-                else {
-                    //$('.leave-duration').text(data.message);
-                }
-            }
-        });
-
-        //var tongthunhap = luongcbbaogomphucap + 0;
-        //$('.tongthunhap-' + code).html(accounting.formatNumber(tongthunhap));
-        //// ajax get
-        //var thuclanh = tongthunhap;
-        //$('.thuclanh-' + code).html(accounting.formatNumber(thuclanh));
+        //$('.' + code).on('keyup', function () {
+        //    calculatorLuong(code.split('-')[1]);
+        //});
     }
 });
 

@@ -1,4 +1,5 @@
 ﻿using Common.Utilities;
+using Common.Enums;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System;
@@ -149,6 +150,7 @@ namespace Models
 
         [Display(Name = "Ngày nghỉ việc")]
         [DataType(DataType.Date)]
+        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime? Leaveday { get; set; }
 
         [Display(Name = "Lý do nghỉ việc")]
@@ -184,11 +186,19 @@ namespace Models
         [Display(Name = "Nước")]
         public string CountryTemporary { get; set; }
 
+        [Display(Name = "Phòng/ban")]
+        public string Department { get; set; }
+
+        public string DepartmentId { get; set; }
+
+        public string DepartmentAlias { get; set; }
+
         [Display(Name = "Bộ phận")]
         public string Part { get; set; }
 
-        [Display(Name = "Phòng/ban")]
-        public string Department { get; set; }
+        public string PartId { get; set; }
+
+        public string PartAlias { get; set; }
 
         public string ManagerId { get; set; }
 
@@ -209,13 +219,19 @@ namespace Models
 
         public bool ConfirmEmail { get; set; } = true;
 
-        // Auto + base on Contractday
+        // Fast get data
+        // data on LeaveEmployees
         [Display(Name = "Ngày phép sẵn có")]
         [BsonRepresentation(BsonType.Decimal128)]
         public decimal LeaveDayAvailable { get; set; } = 0;
 
+        // Text
         [Display(Name = "Công việc")]
         public string Title { get; set; }
+
+        public string TitleId { get; set; }
+
+        public string TitleAlias { get; set; }
 
         // No use now. use title
         [Display(Name = "Chức vụ")]
@@ -289,19 +305,6 @@ namespace Models
         public IList<Contract> Contracts { get; set; }
 
         public IList<StorePaper> StorePapers { get; set; }
-
-        public int LevelSalary { get; set; } = 0;
-
-        // 0: hand, 1: bank
-        public int SalaryPayMethod { get; set; } = 0;
-
-        // Mức lương của nv. Ex: nv A có thu nhập 8t/tháng. (nghĩa là sumarry salary)
-        // Get data from : SalaryContent, SalaryContentType
-        // Quản lý lương theo tháng : xử lý trong collection EmployeeSalaryMonth
-        public IList<Salary> Salaries { get; set; }
-
-        [BsonRepresentation(BsonType.Decimal128)]
-        public decimal Salary { get; set; } = 0;
 
         #region BHXH
         public bool BhxhEnable { get; set; } = true;
@@ -390,340 +393,52 @@ namespace Models
         //public IList<Notification> Notifications { get; set; }
 
         #region SALARIES
-        public string SalaryNoiLamViec { get; set; }
-        public string SalaryPhongBan { get; set; }
+        /// <summary>
+        /// Because chance employee. Manager here.
+        /// Base [SalaryType]
+        /// </summary>
+        public int SalaryType { get; set; } = (int)ESalaryType.VP;
+
+        // Update on future: 0: hand, 1: bank
+        public int SalaryPayMethod { get; set; } = 0;
+
+        // Get newest from [SalaryEmployeeMonth]
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal Salary { get; set; } = 0;
+
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal LuongBHXH { get; set; } = 0;
+
+        // Tổng dư nợ hiện tại.
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal Credit { get; set; } = 0;
+
+        // Use Title.
         public string SalaryChucVu { get; set; }
+
         public string SalaryChucVuViTriCode { get; set; }
+
         public int SalaryNoiLamViecOrder { get; set; } = 0;
+
         public int SalaryPhongBanOrder { get; set; } = 0;
+
         public int SalaryChucVuOrder { get; set; } = 0;
+
         // nhóm vào chức vụ
-        public string SalaryMaSoChucDanhCongViec { get; set; }
+        public string NgachLuong { get; set; }
+
+        // Faster get data. base newest from [SalaryEmployeeMonth]
+        public int SalaryLevel { get; set; } = 1;
+
         public double SalaryMauSo { get; set; } = 26;
         #endregion
-    }
 
-    public class EmployeeBank
-    {
-        [Display(Name="Số tài khoản")]
-        public string BankAccount { get; set; }
-        [Display(Name = "Tên người hưởng")]
-        public string BankHolder { get; set; }
-        [Display(Name = "Tên ngân hàng")]
-        public string BankName { get; set; }
-        [Display(Name = "Chi nhánh")]
-        public string BankLocation { get; set; }
-        public bool Enable { get; set; }
-    }
+        #region SALES
+        public string SaleChucVu { get; set; }
+        #endregion
 
-    public class BhxhHistory
-    {
-        [Display(Name = "Tác vụ")]
-        public string Task { get; set; }
-
-        public string TaskDisplay { get; set; }
-
-        [Display(Name = "Ngày thực hiện")]
-        [DataType(DataType.Date)]
-        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
-        public DateTime? DateAction { get; set; }
-
-        [Display(Name = "Ngày trả kết quả")]
-        [DataType(DataType.Date)]
-        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
-        public DateTime? DateResult { get; set; }
-
-        [Display(Name = "Trạng thái")]
-        // 0: Moi, 1: Cho, 2: Hoan thanh,...
-        public int Status { get; set; }
-    }
-
-    public class Workplace
-    {
-        // Example: NM, VP
-        [Display(Name="Mã")]
-        public string Code { get; set; }
-        [Display(Name = "Tên")]
-        public string Name { get; set; }
-        [Display(Name = "Mã chấm công")]
-        public string Fingerprint { get; set; }
-
-        [Display(Name = "Thời gian làm việc")]
-        public string WorkingScheduleTime { get; set; }
-
-        public bool Enable { get; set; } = true;
-        public string Language { get; set; } = Constants.Languages.Vietnamese;
-    }
-
-    public class EmployeeRole
-    {
-        public string Function { get; set; }
-        // 0: None; 1:Read ; 2:Create ; 3:Edit ; 4:Disable; 5:Delete; 6:Max ; 7: xxx; 8: sys
-        public int Right { get; set; }
-    }
-
-    public class EmployeeCheck
-    {
-        public int No { get; set; }
-        public string EmployeeCode { get; set; }
-        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
-        public DateTime Date { get; set; } = DateTime.Now;
-    }
-
-    public class EmployeeDocument
-    {
-        public string Name { get; set; }
-        public string Content { get;set; }
-    }
-
-    public class EmployeeContactRelate
-    {
-        public int No { get; set; }
-        public string FullName { get; set; }
-        public string Mobile { get; set; }
-    }
-
-    public class EmployeeFamily
-    {
-        // Chong:1, Vo:2, Con:3
-        public int? Relation { get; set; }
-        public string FullName { get; set; }
-
-        [DataType(DataType.Date)]
-        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
-        public DateTime? Birthday { get; set; }
-    }
-
-    public class EmployeePower
-    {
-        public int Year { get; set; }
-        public string Value { get; set; }
-        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
-        public DateTime Date { get; set; } = DateTime.Now;
-    }
-
-    public class EmployeeDiscipline
-    {
-        public int No { get; set; }
-        public string Content { get; set; }
-        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
-        public DateTime Date { get; set; } = DateTime.Now;
-    }
-
-    public class EmployeeAward
-    {
-        public int No { get; set; }
-        public string Content { get; set; }
-        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
-        public DateTime Date { get; set; } = DateTime.Now;
-    }
-
-    public class EmployeeMovement
-    {
-        public int No { get; set; }
-        public string Content { get; set; }
-        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
-        public DateTime Date { get; set; } = DateTime.Now;
-    }
-
-    public class EmployeeEducation
-    {
-        public int No { get; set; }
-        public string Content { get; set; }
-        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
-        public DateTime Date { get; set; } = DateTime.Now;
-    }
-
-    public class Salary
-    {
-        [Display(Name = "Mã tham chiếu")]
-        public string Code { get; set; }
-
-        [Display(Name = "Loại")]
-        public string Type { get; set; }
-
-        [Display(Name = "Nội dung lương")]
-        public string Title { get; set; }
-
-        [Display(Name = "Mức")]
-        public decimal Money { get; set; } = 0;
-
-        public int Order { get; set; } = 0;
-
-        [DataType(DataType.Date)]
-        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
-        [Display(Name = "Ngày cập nhật")]
-        public DateTime Date { get; set; } = DateTime.Now;
-    }
-
-    public class StorePaper
-    {
-        public string Type { get; set; }
-        public string Description { get; set; }
-        public int Count { get; set; }
-        public string Unit { get; set; }
-        // Multi languages use texts
-    }
-
-    public class EmployeeMobile
-    {
-        [Display(Name = "Loại")]
-        public string Type { get; set; }
-
-        [Display(Name ="Số điện thoại")]
-        [DataType(DataType.PhoneNumber)]
-        public string Number { get; set; }
-    }
-
-    public class Card
-    {
-        [Display(Name = "Loại giấy tờ")]
-        [Required]
-        public string Type { get; set; }
-
-        [Display(Name = "Số")]
-        [Required]
-        public string Code { get; set; }
-
-        [Display(Name = "Ngày cấp")]
-        [DataType(DataType.Date)]
-        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
-        public DateTime? Created { get; set; }
-
-        [Display(Name = "Nơi cấp")]
-        public string Location { get; set; }
-
-        [Display(Name = "Chi tiết")]
-        public string Description { get; set; }
-
-        // if null => Vô thời hạn
-        [Display(Name = "Thời hạn")]
-        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
-        public DateTime? Expired { get; set; }
-
-        [Display(Name = "Hình ảnh")]
-        // fullpath and each image divide ';'
-        public string Images { get; set; }
-
-        public bool Enable { get; set; } = true;
-    }
-
-    public class Certificate
-    {
-        [Display(Name = "Loại bằng cấp")]
-        public string Type { get; set; }
-
-        [Display(Name = "Nơi cấp")]
-        public string Location { get; set; }
-
-        [Display(Name = "Số")]
-        public string Code { get; set; }
-
-        [Display(Name = "Chi tiết")]
-        public string Description { get; set; }
-
-        [Display(Name = "Ngày cấp")]
-        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
-        public DateTime? Created { get; set; }
-
-        // if null => Vô thời hạn
-        [Display(Name = "Thời hạn")]
-        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
-        public DateTime? Expired { get; set; }
-
-        [Display(Name = "Hình ảnh")]
-        // fullpath and each image divide ';'
-        public string Images { get; set; }
-
-        public bool Enable { get; set; } = true;
-    }
-
-    public class Contract
-    {
-        [Display(Name = "Loại hợp đồng")]
-        [Required]
-        public string Type { get; set; }
-
-        public string TypeName { get; set; }
-
-        [Display(Name = "Số")]
-        [Required]
-        public string Code { get; set; }
-
-        [Display(Name = "PLHĐ")]
-        public string PLHD { get; set; }
-
-        [Display(Name = " Phụ lục điều chỉnh lương")]
-        public string PhuLucDieuChinhLuong { get; set; }
-
-        public string Description { get; set; }
-
-        [Display(Name = "Ngày hiệu lực")]
-        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
-        public DateTime? Start { get; set; }
-
-        // if null => Vô thời hạn
-        [Display(Name = "Ngày hết hiệu lực")]
-        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
-        public DateTime? End { get; set; }
-
-        [Display(Name = "Số năm")]
-        [BsonRepresentation(BsonType.Decimal128)]
-        public decimal? Duration { get; set; }
-
-        [Display(Name = "Hình ảnh")]
-        // fullpath and each image divide ';'
-        public string Images { get; set; }
-
-        public bool Enable { get; set; } = true;
-
-        public DateTime NextContract
-        {
-            get
-            {
-                return End.HasValue ? End.Value.AddDays(1) : Constants.MinDate;
-            }
-        }
-
-        public int RemainingContract
-        {
-            get
-            {
-                if (End.HasValue)
-                {
-                    DateTime today = DateTime.Today;
-                    DateTime next = End.Value;
-
-                    TimeSpan difference = next - DateTime.Today;
-
-                    return Convert.ToInt32(difference.TotalDays);
-                }
-                else
-                {
-                    return 0;
-                }
-            }
-        }
-    }
-
-    public class Children
-    {
-        [Display(Name = "Mối quan hệ")]
-        [Required]
-        public string Type { get; set; }
-
-        [Display(Name = "Họ và tên")]
-        [Required]
-        public string FullName { get; set; }
-
-        [Display(Name = "Ngày sinh")]
-        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
-        public DateTime Birthday { get; set; }
-
-        [Display(Name = "Hình ảnh")]
-        // fullpath and each image divide ';'
-        public string Images { get; set; }
-
-        public bool Enable { get; set; } = true;
+        #region LOGISTICS
+        public string LogisticChucVu { get; set; }
+        #endregion
     }
 }

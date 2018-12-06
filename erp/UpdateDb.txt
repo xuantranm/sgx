@@ -28,3 +28,169 @@ db.Employees.update({},
 {$set : {"ManagerId": null}},
 {upsert:false,
 multi:true})
+
+db.Employees.update({},
+{$set : {"SaleChucVu": null}},
+{upsert:false,
+multi:true})
+
+db.Employees.update({},
+{$set : {"LogisticChucVu": null}},
+{upsert:false,
+multi:true})
+
+db.EmployeeWorkTimeLogs.update({},
+{$set : {"ReasonDetail": null}},
+{upsert:false,
+multi:true})
+
+db.EmployeeWorkTimeLogs.update({},
+{$set : {"Part": null}},
+{upsert:false,
+multi:true})
+
+db.EmployeeWorkTimeLogs.update({},
+{$set : {"Department": null}},
+{upsert:false,
+multi:true})
+
+
+
+db.EmployeeWorkTimeLogs.update({},
+{$set : {"Mode": 1}},
+{upsert:false,
+multi:true})
+
+db.Leaves.update({},
+{$set : {"GroupCode": null}},
+{upsert:false,
+multi:true})
+
+//
+// 26.11.2018
+//
+db.Employees.update({}, {$unset: {Salaries:1}}, false, true);
+db.Employees.update({}, {$unset: {LevelSalary:1}}, false, true);
+db.Employees.update({},
+{$set : {"SalaryType": 1}},
+{upsert:false,
+multi:true})
+db.Employees.update({}, {$rename:{"SalaryMaSoChucDanhCongViec":"NgachLuong"}}, false, true);
+db.Employees.update({}, {$unset: {SalaryNoiLamViec:1}}, false, true);
+db.Employees.update({}, {$unset: {SalaryPhongBan:1}}, false, true);
+
+
+db.EmployeeHistories.update({}, {$unset: {Salaries:1}}, false, true);
+db.EmployeeHistories.update({}, {$unset: {LevelSalary:1}}, false, true);
+db.EmployeeHistories.update({},
+{$set : {"SalaryType": 1}},
+{upsert:false,
+multi:true})
+db.EmployeeHistories.update({}, {$rename:{"SalaryMaSoChucDanhCongViec":"NgachLuong"}}, false, true);
+db.EmployeeHistories.update({}, {$unset: {SalaryNoiLamViec:1}}, false, true);
+db.EmployeeHistories.update({}, {$unset: {SalaryPhongBan:1}}, false, true);
+
+db.SalaryThangBangPhuCapPhucLois.update({}, {$unset: {FlagReal:1}}, false, true);
+db.SalaryThangBangPhuCapPhucLois.update({}, {$unset: {Start:1}}, false, true);
+db.SalaryThangBangLuongs.update({}, {$unset: {FlagReal:1}}, false, true);
+db.SalaryThangBangLuongs.update({}, {$unset: {Start:1}}, false, true);
+db.SalaryMucLuongVungs.update({}, {$unset: {Start:1}}, false, true);
+
+// 01.12.2018
+// Run link: /fix/phong-ban-bo-phan/
+// Cap nhat khoi tinh luong + ngach luong + he so luong cho nhan vien (file bang-luong-nha-may-072018-edit | bang-luong-san-xuat-072018-edit)
+            // 1. Tai lieu nhan vien nha may: lg/tai-lieu/nhan-vien-khoi-nha-may
+            // 2. Tai lieu nhan vien san xuat : lg/tai-lieu/nhan-vien-khoi-san-xuat
+// Cap nhat cong tong cho thang 7->12
+			// Link: /lg/nha-may/cong-tong/cap-nhat
+
+
+
+db.Employees.update({},
+{$set : {"DepartmentId": null}},
+{upsert:false,
+multi:true})
+db.Employees.update({},
+{$set : {"PartId": null}},
+{upsert:false,
+multi:true})
+db.Employees.update({},
+{$set : {"TitleId": null}},
+{upsert:false,
+multi:true})
+db.Employees.update({},
+{$set : {"DepartmentAlias": null}},
+{upsert:false,
+multi:true})
+db.Employees.update({},
+{$set : {"PartAlias": null}},
+{upsert:false,
+multi:true})
+db.Employees.update({},
+{$set : {"TitleAlias": null}},
+{upsert:false,
+multi:true})
+
+db.EmployeeHistories.update({},
+{$set : {"DepartmentId": null}},
+{upsert:false,
+multi:true})
+db.EmployeeHistories.update({},
+{$set : {"PartId": null}},
+{upsert:false,
+multi:true})
+db.EmployeeHistories.update({},
+{$set : {"TitleId": null}},
+{upsert:false,
+multi:true})
+db.EmployeeHistories.update({},
+{$set : {"DepartmentAlias": null}},
+{upsert:false,
+multi:true})
+db.EmployeeHistories.update({},
+{$set : {"PartAlias": null}},
+{upsert:false,
+multi:true})
+db.EmployeeHistories.update({},
+{$set : {"TitleAlias": null}},
+{upsert:false,
+multi:true})
+
+db.EmployeeWorkTimeMonthLogs.update({}, {$rename:{"NghiPhep":"NghiPhepNam"}}, false, true);
+db.EmployeeWorkTimeMonthLogs.update({}, {$rename:{"NghiPhepDuyet":"NghiViecRieng"}}, false, true);
+db.EmployeeWorkTimeMonthLogs.update({}, {$rename:{"NghiPhepKhongDuyet":"NghiBenh"}}, false, true);
+db.EmployeeWorkTimeMonthLogs.update({}, {$rename:{"NghiHuongLuong":"NghiKhongPhep"}}, false, true);
+db.EmployeeWorkTimeMonthLogs.update({}, {$rename:{"NghiKhongHuongLuong":"NghiHuongLuong"}}, false, true);
+
+db.SalaryCredits.update({},
+{$set : {"PhongBan": null}},
+{upsert:false,
+multi:true})
+
+db.Employees.update({}, {$rename:{"MucThanhToanHangThang":"UngLuong"}}, false, true);
+
+db.SalaryCredits.update({},{$set : {"KhoanVay": 0}},{upsert:false,multi:true})
+db.SalaryCredits.update({},{$set : {"NgayVay": null}},{upsert:false,multi:true})
+db.SalaryCredits.update({},{$set : {"ThoiHanVay": 0}},{upsert:false,multi:true})
+db.SalaryCredits.update({},{$set : {"MucThanhToanHangThang": 0}},{upsert:false,multi:true})
+db.SalaryCredits.update({},{$set : {"SoLanTra": 0}},{upsert:false,multi:true})
+db.SalaryCredits.update({},{$set : {"SoLanTraCham": 0}},{upsert:false,multi:true})
+db.SalaryCredits.update({},{$set : {"SoLanKhongTra": 0}},{upsert:false,multi:true})
+
+db.Employees.update({},{$set : {"LuongBHXH": 0}},{upsert:false,multi:true})
+db.EmployeeHistories.update({},{$set : {"LuongBHXH": 0}},{upsert:false,multi:true})
+db.Employees.update({},{$set : {"Credit": 0}},{upsert:false,multi:true})
+db.EmployeeHistories.update({},{$set : {"Credit": 0}},{upsert:false,multi:true})
+
+db.SalaryEmployeeMonths.update({},{$set : {"TienPhepNamLeTet": 0}},{upsert:false,multi:true})
+db.SalaryEmployeeMonths.update({},{$set : {"BHXH": 0}},{upsert:false,multi:true})
+db.SalaryEmployeeMonths.update({},{$set : {"BHYT": 0}},{upsert:false,multi:true})
+db.SalaryEmployeeMonths.update({},{$set : {"BHTN": 0}},{upsert:false,multi:true})
+--> Runned 03.12.2018 13:11
+
+03.12.2018
+// Drop SalaryThangBangLuongs
+// Link: /lg/tai-lieu/van-phong/thang-bang-luong  (update bacluong file)
+Runned 04.12.2018 12:28
+
+

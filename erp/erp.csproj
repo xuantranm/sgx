@@ -7,6 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="wwwroot\images\**" />
+    <Content Remove="wwwroot\images\**" />
+    <EmbeddedResource Remove="wwwroot\images\**" />
+    <None Remove="wwwroot\images\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Remove="Controllers\OrderController.cs" />
     <Compile Remove="Controllers\ReceiveController.cs" />
     <Compile Remove="Controllers\ReleaseController.cs" />
@@ -41,6 +48,11 @@
     <None Include="Views\File\Index.cshtml" />
     <None Include="Views\File\NhanVien.cshtml" />
     <None Include="Views\Setting\Index.cshtml" />
+    <None Include="wwwroot\hr\DANH SACH NHAN SU 2017.xlsx" />
+    <None Include="wwwroot\hr\DANH SACH NHAN SU 2018_X.xlsx" />
+    <None Include="wwwroot\hr\KCB BHYT 2017_X.xls" />
+    <None Include="wwwroot\hr\MaChamCong.xlsx" />
+    <None Include="wwwroot\hr\Phep den thang 09.xlsx" />
     <None Include="wwwroot\lib\animate\.editorconfig" />
     <None Include="wwwroot\lib\animate\.gitignore" />
     <None Include="wwwroot\lib\animate\.prettierignore" />
@@ -715,7 +727,7 @@
   <ItemGroup>
     <PackageReference Include="DotNetCore.NPOI" Version="1.2.1" />
     <PackageReference Include="EPPlus.Core" Version="1.5.4" />
-    <PackageReference Include="MailKit" Version="2.0.6" />
+    <PackageReference Include="MailKit" Version="2.0.7" />
     <PackageReference Include="MaxMind.GeoIP2" Version="3.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.4" PrivateAssets="All" />
@@ -728,6 +740,12 @@
 
   <ItemGroup>
     <Content Update="Views\Account\UpdatePassword.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Credit\CreditNM.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Credit\CreditNMUpdate.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
     <Content Update="Views\Doc\Timer.cshtml">
@@ -745,10 +763,19 @@
     <Content Update="Views\Factory\DinhMucXCG.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
+    <Content Update="Views\File\SaleChucVu.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
     <Content Update="Views\File\MaChamCong.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
     <Content Update="Views\File\NgayPhep.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Leave\Approvement.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Leave\Manage.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
     <Content Update="Views\Leave\HelpLeave.cshtml">
@@ -760,28 +787,79 @@
     <Content Update="Views\Role\Index.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
+    <Content Update="Views\SalaryProduction\BangLuong.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\SalaryProduction\BangLuongUpdate.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\SalaryProduction\CongTong.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\SalaryProduction\CongTongUpdate.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\SalarySetting\NhanVienKhoiNhaMay.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\SalarySetting\ThangLuongVP.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\SalarySetting\NhanVienKhoiSanXuat.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\SalaryFactoryProduction\ThangBangLuong.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\SalaryFactoryProduction\ThangLuongTaiLieu.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\SalaryFactory\BangLuongUpdate.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\SalaryFactory\BangLuong.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\SalaryFactory\CongTong.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\SalaryFactory\CongTongUpdate.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Salary\BangLuongReal-Minutes.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Salary\BangLuongRealUpdate-Minutes.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
     <Content Update="Views\Salary\BangLuongRealUpdate.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
     <Content Update="Views\Salary\BangLuongReal.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
-    <Content Update="Views\Salary\Setting.cshtml">
+    <Content Update="Views\Credit\Credit.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Salary\LogisticEmployeeCong.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
     <Content Update="Views\Salary\SaleKPIUpdate.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
-    <Content Update="Views\Salary\CreditUpdate.cshtml">
+    <Content Update="Views\SalarySetting\Setting.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
-    <Content Update="Views\Salary\LogisticDataUpdate.cshtml">
+    <Content Update="Views\Credit\CreditUpdate.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
-    <Content Update="Views\Salary\ThangBangLuongLawUpdate.cshtml">
+    <Content Update="Views\SalaryLaw\ThangBangLuongLaw.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
-    <Content Update="Views\Salary\ThangBangLuongLaw.cshtml">
+    <Content Update="Views\Salary\SaleKPIEmployee.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\TimeKeeper\BangChamCong.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
     <Content Update="Views\Salary\ThangBangLuongRealUpdate.cshtml">
@@ -800,6 +878,9 @@
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
     <Content Update="Views\TimeKeeper\HelpTime.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\TimeKeeper\Approvement.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
     <Content Update="Views\TimeKeeper\Manage.cshtml">

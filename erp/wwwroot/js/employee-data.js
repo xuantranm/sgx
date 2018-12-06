@@ -1,5 +1,60 @@
 ﻿$(function () {
     setValue();
+    var optionsborn = {
+        // Thanh pho
+        types: ['(cities)'],
+        // phuong
+        //types: ["(regions)"]
+        componentRestrictions: { country: 'vn' }
+    };
+    var bornplace = new google.maps.places.Autocomplete($("#Employee_Bornplace")[0], { componentRestrictions: { country: 'vn' }});
+    google.maps.event.addListener(bornplace, 'place_changed', function () {
+        var place = bornplace.getPlace();
+        //console.log(place.address_components);
+    });
+
+    var addressResident = new google.maps.places.Autocomplete($("#Employee_AddressResident")[0], { componentRestrictions: { country: 'vn' } });
+    google.maps.event.addListener(addressResident, 'place_changed', function () {
+        var place = addressResident.getPlace();
+        //console.log(place.address_components);
+    });
+
+    var addressTemporary = new google.maps.places.Autocomplete($("#Employee_AddressTemporary")[0], {});
+    google.maps.event.addListener(addressTemporary, 'place_changed', function () {
+        var place = addressTemporary.getPlace();
+        //console.log(place.address_components);
+    });
+
+    $('.avatar-current').on('click', function () {
+        if ($('#avatar-name-1').val() !== "") {
+            $('#avatarShow').attr("src", $('#avatar-path-1').val() + $('#avatar-name-1').val());
+        }
+    });
+
+    $('.avatar-new').on('click', function () {
+        if ($('#avatar-name-2').val() !== "") {
+            $('#avatarShow').attr("src", $('#avatar-path-2').val() + $('#avatar-name-2').val());
+        }
+        $(this).addClass('d-none');
+        $('.confirm-avatar-cancel').removeClass('d-none');
+        $('#Employee_Avatar_Path').val($('#avatar-path-2').val());
+        $('#Employee_Avatar_FileName').val($('#avatar-name-2').val());
+        $('#Employee_Avatar_OrginalName').val($('#avatar-orginal-2').val());
+    });
+
+    $('.confirm-avatar-cancel').on('click', function () {
+        if ($('#avatar-name-1').val() !== "") {
+            $('#avatarShow').attr("src", $('#avatar-path-1').val() + $('#avatar-name-1').val());
+        }
+        else {
+            $('#avatarShow').attr("src", window.location.origin + "/images/placeholder/120x120.png");
+        }
+        $(this).addClass('d-none');
+        $('.avatar-new').removeClass('d-none');
+        $('#Employee_Avatar_Path').val('');
+        $('#Employee_Avatar_FileName').val('');
+        $('#Employee_Avatar_OrginalName').val('');
+    });
 
     $('.btn-change-data').on('click', function () {
         $('input', $(this).closest('.form-group')).val($(this).data('value'));
@@ -41,8 +96,8 @@
                     }
                     else {
                         if (data.length !== 0) {
-                            $('input[name*="UserName"]').val(data.userName);
-                            $('input[name*="Email"]').val(data.email);
+                            $('input[name="Employee.UserName"]').val(data.userName);
+                            $('input[name="Employee.Email"]').val(data.email);
                         }
                     }
                 }
@@ -141,15 +196,14 @@
     $('select[name="Employee.Department"]').on('change', function () {
         shortManagerPeople();
     });
-    $('select[name="Employee.Title"]').on('change', function () {
-        shortManagerPeople();
-    });
 
     $('#check-timekeeper').on('change', function () {
         if ($(this).is(':checked')) {
             $('input[name="Employee.IsTimeKeeper"]').val(true);
+            $('.time-working').addClass('d-none');
         } else {
             $('input[name="Employee.IsTimeKeeper"]').val(false);
+            $('.time-working').removeClass('d-none');
         }
     });
 
@@ -466,7 +520,7 @@
                 }
             })
             .fail(function () {
-                toastr.error(data.message);
+                //toastr.error(data.message);
                 resetForm();
             });
         event.preventDefault();

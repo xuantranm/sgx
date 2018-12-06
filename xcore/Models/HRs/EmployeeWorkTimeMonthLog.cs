@@ -11,27 +11,31 @@ namespace Models
     public class EmployeeWorkTimeMonthLog
     {
         [BsonId]
-        // Mvc don't know how to create ObjectId from string
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
 
         public string EmployeeId { get; set; }
 
+        public string EmployeeName { get; set; }
+
+        public string Part { get; set; }
+
+        public string Department { get; set; }
+
+        public string Title { get; set; }
+
         public string EnrollNumber { get; set; }
+
+        public string WorkplaceCode { get; set; }
 
         public int Year { get; set; } = DateTime.Now.Year;
 
         public int Month { get; set; } = DateTime.Now.Month;
 
-        // Update normal. If want get no approve, use employeeworktime records.
         public double Workday { get; set; }
 
         // store miliseconds
-        public double WorkTime { get; set; }
-
-        public double NgayNghiHuongLuong { get; set; } = 0;
-
-        public double NgayNghiLeTetHuongLuong { get; set; } = 0;
+        public double WorkTime { get; set; } = 0;
 
         public double CongCNGio { get; set; } = 0;
 
@@ -43,52 +47,22 @@ namespace Models
 
         public double Early { get; set; }
 
-        public double LateApprove { get; set; }
+        public double NghiPhepNam { get; set; } = 0;
 
-        public double EarlyApprove { get; set; }
+        public double NghiViecRieng { get; set; } = 0;
 
-        // Số phút cho phép thiếu trong tháng
-        public double MissingMinuteAllow { get; set; } = 0;
+        public double NghiBenh { get; set; } = 0;
 
-        public double MissingMinuteAllowUsed { get; set; } = 0;
+        public double NghiKhongPhep { get; set; } = 0;
 
-        public int MissingMinuteAllowUsedCount { get; set; } = 0;
+        // thai san, dam cuoi
+        public double NghiHuongLuong { get; set; } = 0;
 
-        // số lần cho phép trể trong tháng
-        public int LateCountAllow { get; set; }
+        public double NghiLe { get; set; } = 0;
 
-        // số phút cho phép trể 1 lần
-        public int LateMinuteAllow { get; set; }
+        public double KhongChamCong { get; set; } = 0;
 
-        // số lần dùng cho phép trể trong tháng
-        public int LateCountAllowUsed { get; set; }
-
-        // Số lần đi trễ trong tháng
-        public int LateCount { get; set; }
-
-        // số lần cho phép về sớm trong tháng
-        public int EarlyCountAllow { get; set; }
-
-        // số phút cho phép về sớm 1 lần
-        public int EarlyMinuteAllow { get; set; }
-
-        // số lần dùng cho phép về sớm trong tháng
-        public int EarlyCountAllowUsed { get; set; }
-
-        // Số lần về sớm trong tháng
-        public int EarlyCount { get; set; }
-
-        public double Sunday { get; set; }
-
-        public double Holiday { get; set; }
-
-        public double LeaveDate { get; set; }
-
-        public double LeaveDateNotApprove { get; set; }
-
-        public double LeaveDateApproved { get; set; }
-
-        public int NoFingerDate { get; set; } = 0;
+        public double ChuNhat { get; set; } = 0;
 
         public string Rule { get; set; } = "26-25";
 

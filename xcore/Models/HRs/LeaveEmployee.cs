@@ -27,8 +27,21 @@ namespace Models
         [Display(Name = "Tên nhân viên")]
         public string EmployeeName { get; set; }
 
+        // So ngay phep hien tai
         [Display(Name = "Số ngày")]
         [BsonRepresentation(BsonType.Decimal128)]
         public decimal Number { get; set; } = 0;
+
+        public string Department { get; set; }
+
+        public string Part { get; set; }
+
+        public string Title { get; set; }
+
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal LeaveLevel { get; set; } = 12;
+
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal NumberUsed { get; set; } = 0;
     }
 }

@@ -5,6 +5,7 @@
     var login = User.Identity.Name;
     var leaveShow = "";
     var expand = "d-none";
+
 }
 
 <div class="card">
@@ -14,7 +15,7 @@
 </div>
 
 <div class="card card-sm">
-    <form method="get" action="/@Constants.LinkHr.Main/@Constants.LinkHr.Human" id="form-search">
+    <form method="get" action="/@Constants.LinkHr.Main/@Constants.LinkHr.Human" id="form-main">
         <div class="card-header bg-secondary d-flex justify-content-between align-items-center">
             <div>
                 <h6>Danh sách nhân viên <span class="badge badge-info">@Model.Records</span></h6>
@@ -35,7 +36,7 @@
         <div class="search-area">
             @{
                 var showFilter = "";
-                if (!string.IsNullOrEmpty(Model.ten) || !string.IsNullOrEmpty(Model.code) || !string.IsNullOrEmpty(Model.finger) || !string.IsNullOrEmpty(Model.nl))
+                if (!string.IsNullOrEmpty(Model.id) || !string.IsNullOrEmpty(Model.ten) || !string.IsNullOrEmpty(Model.code) || !string.IsNullOrEmpty(Model.finger) || !string.IsNullOrEmpty(Model.nl))
                 {
                     showFilter = "show";
                     leaveShow = "d-none";
@@ -52,7 +53,23 @@
                     <div class="col-md-4 col-sm-6 col-12">
                         <div class="form-group">
                             <label class="control-label">Tên</label>
-                            <input asp-for="ten" class="form-control form-control-lg autocomplete" />
+                            <select asp-for="id" class="form-control form-control-lg js-select2-basic-single ddlEmployeeId">
+                                <option value="">Chọn</option>
+                                @foreach (var employee in Model.EmployeesDdl)
+                                {
+                                    string displayTitle = string.Empty;
+                                    if (!string.IsNullOrEmpty(employee.Title))
+                                    {
+                                        displayTitle += "[" + employee.Title + "]";
+                                    }
+                                    if (!string.IsNullOrEmpty(employee.Email))
+                                    {
+                                        displayTitle += "- " + employee.Email + "";
+                                    }
+                                    <option value="@employee.Id">@employee.FullName @displayTitle</option>
+                                }
+                            </select>
+                            @*<input asp-for="ten" class="form-control form-control-lg autocomplete" />*@
                         </div>
                     </div>
                     <div class="col-md-4 col-sm-6 col-12">
@@ -71,7 +88,7 @@
                 <div class="row mb-3">
                     <div class="col-md-2">
                         <label class="control-label">Nơi làm việc</label>
-                        <select asp-for="nl" class="form-control">
+                        <select asp-for="nl" class="form-control form-control-lg">
                             <option value="">Tất cả</option>
                             <option value="VP">Văn phòng (Phú Nhuận)</option>
                             <option value="NM">Nhà máy (Đa Phước)</option>
@@ -79,7 +96,7 @@
                     </div>
                     <div class="col-md-2">
                         <label class="control-label">Dòng</label>
-                        <select asp-for="size" class="form-control">
+                        <select asp-for="size" class="form-control form-control-lg">
                             <option value="50">50</option>
                             <option value="100">100</option>
                             <option value="500">500</option>
@@ -88,7 +105,7 @@
                     </div>
                     <div class="col-md-2">
                         <label class="control-label">Trang</label>
-                        <select asp-for="page" class="form-control">
+                        <select asp-for="page" class="form-control form-control-lg">
                             @{
                                 var pages = Model.Pages;
                                 for (var i = 1; i <= pages; i++)
@@ -113,11 +130,11 @@
         <div id="export" class="col-12 collapse">
             <div class="row mb-3">
                 <div class="col-12">
-                    <a class="ce ko" href="/@Constants.LinkHr.Main/@Constants.LinkHr.Human/@Constants.LinkHr.Export/@Constants.LinkHr.List">
+                    <a class="ce ko" href="/@Constants.LinkHr.Main/@Constants.LinkHr.Human/@Constants.LinkHr.List/@Constants.LinkHr.Export">
                         <i class="fas fa-book-reader"></i>
-                        Danh sách
+                        Danh sách nhân sự
                     </a>
-                    <a class="ce ko" style="margin-left:10px" href="/@Constants.LinkHr.Main/@Constants.LinkHr.Human/@Constants.LinkHr.Export/@Constants.LinkHr.Children">
+                    <a class="ce ko" style="margin-left:10px" href="/@Constants.LinkHr.Main/@Constants.LinkHr.ChildrenReport/@Constants.LinkHr.Export">
                         <i class="fab fa-fort-awesome-alt"></i>
                         Danh sách con
                     </a>
@@ -157,7 +174,6 @@
                             {
                                 <img class="avatar" src="holder.js/72x72" alt="@item.FullName" />
                             }
-
                             <div class="media-body">
                                 <div>
                                     <span class="badge badge-primary">@item.Code</span>
@@ -191,71 +207,70 @@
                                             }
                                         </li>
                                     </ul>
-                                        <ul class="list-inline text-small text-muted">
-                                            <li class="list-inline-item">
-                                                <div class="dropdown">
-                                                    <button class="btn btn-sm btn-outline-primary dropdown-toggle dropdown-toggle-no-arrow" type="button" id="dropdownMenuButton-1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Bấm xem thông tin, chỉnh sửa...">
-                                                        <i class="icon-dots-three-horizontal"></i>
-                                                    </button>
-                                                    <div class="dropdown-menu dropdown-menu-sm" aria-labelledby="dropdownMenuButton">
-                                                        <a class="dropdown-item detail-item" href="/hr/nhan-su/thong-tin/@item.Id">Xem thông tin</a>
-                                                        <a class="dropdown-item edit-item" href="/hr/nhan-su/cap-nhat/@item.Id">Chỉnh sửa</a>
-                                                        @{
-                                                            if (item.Workplaces != null && item.Workplaces.Count > 0)
+                                    <ul class="list-inline text-small text-muted">
+                                        <li class="list-inline-item">
+                                            <div class="dropdown">
+                                                <button class="btn btn-sm btn-outline-primary dropdown-toggle dropdown-toggle-no-arrow" type="button" id="dropdownMenuButton-1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Bấm xem thông tin, chỉnh sửa...">
+                                                    <i class="icon-dots-three-horizontal"></i>
+                                                </button>
+                                                <div class="dropdown-menu dropdown-menu-sm" aria-labelledby="dropdownMenuButton">
+                                                    <a class="dropdown-item detail-item" href="/hr/nhan-su/thong-tin/@item.Id">Xem thông tin</a>
+                                                    <a class="dropdown-item edit-item" href="/hr/nhan-su/cap-nhat/@item.Id">Chỉnh sửa</a>
+                                                    @{
+                                                        if (item.Workplaces != null && item.Workplaces.Count > 0)
+                                                        {
+                                                            var enableFinger = false;
+                                                            foreach (var finger in item.Workplaces)
                                                             {
-                                                                var enableFinger = false;
-                                                                foreach (var finger in item.Workplaces)
+                                                                if (!string.IsNullOrEmpty(finger.Fingerprint))
                                                                 {
-                                                                    if (!string.IsNullOrEmpty(finger.Fingerprint))
-                                                                    {
-                                                                        enableFinger = true;
-                                                                    }
-                                                                }
-                                                                if (enableFinger)
-                                                                {
-                                                                    <div class="dropdown-divider"></div>
-                                                                    <a class="dropdown-item disable-item" href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Index?id=@item.Id">Chấm công</a>
+                                                                    enableFinger = true;
                                                                 }
                                                             }
+                                                            if (enableFinger)
+                                                            {
+                                                                <div class="dropdown-divider"></div>
+                                                                <a class="dropdown-item disable-item" href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Index?id=@item.Id">Chấm công</a>
+                                                            }
                                                         }
-
-                                                        @if (ViewBag.LoginUserName == Constants.System.account)
-                                                        {
-                                                            <div class="dropdown-divider"></div>
-                                                            <form action="/sys/login-as/" method="post" class="navbar-right">
-                                                                <input name="userName" type="hidden" value="@item.UserName" />
-                                                                <button type="submit" class="btn btn-link dropdown-item disable-item">Đăng nhập</button>
-                                                            </form>
-                                                        }
-                                                    </div>
-                                                </div>
-                                            </li>
-                                            
-                                            <li class="list-inline-item">
-                                                <i class="fas fa-code"></i> @item.CodeOld
-                                            </li>
-                                            @if (item.Workplaces != null && item.Workplaces.Count > 0)
-                                            {
-                                                @foreach (var workplace in item.Workplaces)
-                                                {
-                                                    <li class="list-inline-item">
-                                                        <i class="icon-location mr-1"></i>
-                                                        <span>@workplace.Name</span>
-                                                    </li>
-                                                    @if (!string.IsNullOrEmpty(workplace.Fingerprint))
-                                                    {
-                                                        <li class="list-inline-item"><i class="icon-fingerprint mr-1"></i>@workplace.Fingerprint</li>
                                                     }
+
+                                                    @if (ViewBag.LoginUserName == Constants.System.account)
+                                                    {
+                                                        <div class="dropdown-divider"></div>
+                                                        <form action="/sys/login-as/" method="post" class="navbar-right">
+                                                            <input name="userName" type="hidden" value="@item.UserName" />
+                                                            <button type="submit" class="btn btn-link dropdown-item disable-item">Đăng nhập</button>
+                                                        </form>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </li>
+
+                                        <li class="list-inline-item">
+                                            <i class="fas fa-code"></i> @item.CodeOld
+                                        </li>
+                                        @if (item.Workplaces != null && item.Workplaces.Count > 0)
+                                        {
+                                            @foreach (var workplace in item.Workplaces)
+                                            {
+                                                <li class="list-inline-item">
+                                                    <i class="icon-location mr-1"></i>
+                                                    <span>@workplace.Name</span>
+                                                </li>
+                                                @if (!string.IsNullOrEmpty(workplace.Fingerprint))
+                                                {
+                                                    <li class="list-inline-item"><i class="icon-fingerprint mr-1"></i>@workplace.Fingerprint</li>
                                                 }
                                             }
-                                            <li class="list-inline-item">
-                                                <small>Cập nhật: @item.UpdatedOn.ToString("dd/MM/yyyy HH:mm")</small>
-                                            </li>
-                                        </ul>
+                                        }
+                                        <li class="list-inline-item">
+                                            <small>Cập nhật: @item.UpdatedOn.ToString("dd/MM/yyyy HH:mm")</small>
+                                        </li>
+                                    </ul>
                                 </div>
                             </div>
                         </div>
-
                     </div>
                 }
             </div>

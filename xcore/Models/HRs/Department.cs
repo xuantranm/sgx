@@ -6,20 +6,14 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Models
 {
-    public class Department: Extension
+    // Phòng/ban
+    public class Department
     {
         [BsonId]
-        // Mvc don't know how to create ObjectId from string
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
 
-        public int Code { get; set; }
-
-        public string ParentCode { get; set; }
-
-        public string PartCode { get; set; }
-
-        public string PartName { get; set; }
+        public string Code { get; set; }
 
         [Required]
         public string Name { get; set; }
@@ -31,6 +25,8 @@ namespace Models
         public IList<Image> Images { get; set; }
 
         public int Order { get; set; } = 1;
+
+        public string ParentCode { get; set; }
 
         public string Language { get; set; } = Constants.Languages.Vietnamese;
 

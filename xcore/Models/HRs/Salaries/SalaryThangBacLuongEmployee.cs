@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Models
 {
+    /// ??? Delete or no. Use or no. later...
     /// <summary>
     /// Quản lý lương nhân viên: nhân viên ở Vị Trí lương, Bac + Thoi gian
     /// Nếu cập nhật, tạo thêm records.

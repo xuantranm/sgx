@@ -64,7 +64,7 @@ namespace erp.Controllers
 
         // No paging this, small data
         [Route(Constants.LinkHr.Human)]
-        public async Task<IActionResult> Index(string ten, string code, string finger, string nl, /*int? page, int? size,*/ string sortBy)
+        public async Task<IActionResult> Index(string id, string ten, string code, string finger, string nl, /*int? page, int? size,*/ string sortBy)
         {
             #region Authorization
             var login = User.Identity.Name;
@@ -105,27 +105,33 @@ namespace erp.Controllers
             var sortParts = Builders<Part>.Sort.Ascending(m => m.Order);
             var parts = dbContext.Parts.Find(m => m.Enable.Equals(true)).Sort(sortParts).ToList();
             ViewData["Parts"] = parts;
+
+            var employeeDdl = await dbContext.Employees.Find(m => m.Enable.Equals(true) && !m.UserName.Equals(Constants.System.account)).SortBy(m => m.FullName).ToListAsync();
             #endregion
 
             #region Filter
             var builder = Builders<Employee>.Filter;
             var filter = builder.Eq(m => m.Enable, true);
-            if (!String.IsNullOrEmpty(ten))
+            if (!string.IsNullOrEmpty(ten))
             {
-                filter = filter & (builder.Eq(x => x.Email, ten) | builder.Regex(x => x.FullName, ten));
+                filter = filter & (builder.Eq(x => x.Email, ten.Trim()) | builder.Regex(x => x.FullName, ten.Trim()));
             }
-            if (!String.IsNullOrEmpty(code))
+            if (!string.IsNullOrEmpty(id))
             {
-                filter = filter & builder.Regex(m => m.Code, code);
+                filter = filter & builder.Eq(x => x.Id, id.Trim());
             }
-            if (!String.IsNullOrEmpty(finger))
+            if (!string.IsNullOrEmpty(code))
             {
-                filter = filter & builder.Where(m => m.Workplaces.Any(c => c.Fingerprint == finger));
+                filter = filter & builder.Regex(m => m.Code, code.Trim());
+            }
+            if (!string.IsNullOrEmpty(finger))
+            {
+                filter = filter & builder.Where(m => m.Workplaces.Any(c => c.Fingerprint == finger.Trim()));
                 // Eq("Related._id", "b125");
             }
-            if (!String.IsNullOrEmpty(nl))
+            if (!string.IsNullOrEmpty(nl))
             {
-                filter = filter & builder.Where(m => m.Workplaces.Any(c => c.Code == nl));
+                filter = filter & builder.Where(m => m.Workplaces.Any(c => c.Code == nl.Trim()));
                 // Eq("Related._id", "b125");
             }
             if (bhxh)
@@ -175,17 +181,22 @@ namespace erp.Controllers
                     if (match == null)
                     {
                         var department = departments.Find(m => m.Name.Equals(employee.Department));
-                        departmentsFilter.Add(department);
+                        if (department != null)
+                        {
+                            departmentsFilter.Add(department);
+                        }
                     }
                 }
             }
 
             var viewModel = new EmployeeViewModel
             {
+                EmployeesDdl = employeeDdl,
                 Employees = results,
                 Departments = departmentsFilter,
                 EmployeesDisable = leaves,
                 Records = (int)records,
+                id = id,
                 ten = ten,
                 code = code,
                 finger = finger,
@@ -195,7 +206,7 @@ namespace erp.Controllers
             return View(viewModel);
         }
 
-        [Route(Constants.LinkHr.Human + "/" + Constants.LinkHr.Export + "/" + Constants.LinkHr.List)]
+        [Route(Constants.LinkHr.Human + "/" + Constants.LinkHr.List + "/" + Constants.LinkHr.Export)]
         public async Task<IActionResult> Export(string ten, string code, string finger, string nl, /*int? page, int? size,*/ string sortBy)
         {
             #region Authorization
@@ -345,10 +356,37 @@ namespace erp.Controllers
                 row.CreateCell(1, CellType.String).SetCellValue("Mã");
                 row.CreateCell(2, CellType.String).SetCellValue("Họ tên");
                 row.CreateCell(3, CellType.String).SetCellValue("Email");
-                row.CreateCell(4, CellType.String).SetCellValue("Phòng ban");
-                row.CreateCell(5, CellType.String).SetCellValue("Số ngày phép còn lại");
+                row.CreateCell(4, CellType.String).SetCellValue("Điện thoại bàn");
+                row.CreateCell(5, CellType.String).SetCellValue("Điện thoại");
+                row.CreateCell(6, CellType.String).SetCellValue("Nơi làm việc");
+                row.CreateCell(7, CellType.String).SetCellValue("Chấm công");
+                row.CreateCell(8, CellType.String).SetCellValue("Mã chấm công");
+                row.CreateCell(9, CellType.String).SetCellValue("Thời gian làm việc");
+                row.CreateCell(10, CellType.String).SetCellValue("Mức phép năm");
+                row.CreateCell(11, CellType.String).SetCellValue("Ngày sinh");
+                row.CreateCell(12, CellType.String).SetCellValue("Giới tính");
+                row.CreateCell(13, CellType.String).SetCellValue("Ngày vào làm");
+                row.CreateCell(14, CellType.String).SetCellValue("Nguyên quán");
+                row.CreateCell(15, CellType.String).SetCellValue("Thường trú");
+                row.CreateCell(16, CellType.String).SetCellValue("Tạm trú");
+                row.CreateCell(17, CellType.String).SetCellValue("Bộ phận");
+                row.CreateCell(18, CellType.String).SetCellValue("Phòng ban");
+                row.CreateCell(19, CellType.String).SetCellValue("Chức vụ");
+                row.CreateCell(20, CellType.String).SetCellValue("CMND");
+                row.CreateCell(21, CellType.String).SetCellValue("Ngày cấp");
+                row.CreateCell(22, CellType.String).SetCellValue("Nơi cấp");
+                row.CreateCell(23, CellType.String).SetCellValue("Số Hộ khẩu");
+                row.CreateCell(24, CellType.String).SetCellValue("Chủ hộ");
+                row.CreateCell(25, CellType.String).SetCellValue("Dân tộc");
+                row.CreateCell(26, CellType.String).SetCellValue("Tôn giáo");
+                row.CreateCell(27, CellType.String).SetCellValue("Số xổ BHXH");
+                row.CreateCell(28, CellType.String).SetCellValue("Mã số BHXH");
+                row.CreateCell(29, CellType.String).SetCellValue("Nơi KCB ban đầu");
+                row.CreateCell(30, CellType.String).SetCellValue("Cơ quan BHXH");
+                row.CreateCell(31, CellType.String).SetCellValue("Mã số BHYT");
+                row.CreateCell(32, CellType.String).SetCellValue("Quản lý");
                 // Set style
-                for (int i = 0; i <= 5; i++)
+                for (int i = 0; i <= 31; i++)
                 {
                     row.Cells[i].CellStyle = cellStyleHeader;
                 }
@@ -358,11 +396,95 @@ namespace erp.Controllers
                 {
                     row = sheet1.CreateRow(rowIndex);
                     row.CreateCell(0, CellType.Numeric).SetCellValue(rowIndex);
-                    row.CreateCell(1, CellType.String).SetCellValue(data.CodeOld);
+                    row.CreateCell(1, CellType.String).SetCellValue(data.CodeOld + " (" + data.Code + ")");
                     row.CreateCell(2, CellType.String).SetCellValue(data.FullName);
                     row.CreateCell(3, CellType.String).SetCellValue(data.Email);
-                    row.CreateCell(4, CellType.String).SetCellValue(data.Department);
-                    row.CreateCell(5, CellType.Numeric).SetCellValue((double)data.LeaveDayAvailable);
+                    row.CreateCell(4, CellType.String).SetCellValue(data.Tel);
+                    var mobiles = string.Empty;
+                    if (data.Mobiles != null && data.Mobiles.Count > 0)
+                    {
+                        foreach (var mobile in data.Mobiles)
+                        {
+                            if (!string.IsNullOrEmpty(mobiles))
+                            {
+                                mobiles += " - ";
+                            }
+                            mobiles += mobile.Number;
+                        }
+                    }
+                    row.CreateCell(5, CellType.String).SetCellValue(mobiles);
+
+                    var workplaces = string.Empty;
+                    var chamcongs = string.Empty;
+                    var thoigianlamviec = string.Empty;
+                    if (data.Workplaces != null && data.Workplaces.Count > 0)
+                    {
+                        foreach (var workplace in data.Workplaces)
+                        {
+                            if (!string.IsNullOrEmpty(workplace.Name))
+                            {
+                                if (!string.IsNullOrEmpty(workplaces))
+                                {
+                                    workplaces += " - ";
+                                }
+                                workplaces += workplace.Name;
+                            }
+                            if (!string.IsNullOrEmpty(workplace.Fingerprint))
+                            {
+                                if (!string.IsNullOrEmpty(chamcongs))
+                                {
+                                    chamcongs += " - ";
+                                }
+                                chamcongs += workplace.Fingerprint;
+                            }
+                            if (!string.IsNullOrEmpty(workplace.WorkingScheduleTime))
+                            {
+                                if (!string.IsNullOrEmpty(thoigianlamviec))
+                                {
+                                    thoigianlamviec += " - ";
+                                }
+                                thoigianlamviec += workplace.WorkingScheduleTime;
+                            }
+                        }
+                    }
+                    row.CreateCell(6, CellType.String).SetCellValue(workplaces);
+                    row.CreateCell(7, CellType.String).SetCellValue(data.IsTimeKeeper ? "Không" : "Có");
+                    row.CreateCell(8, CellType.String).SetCellValue(chamcongs);
+                    row.CreateCell(9, CellType.String).SetCellValue(thoigianlamviec);
+
+                    row.CreateCell(10, CellType.String).SetCellValue(data.LeaveLevelYear);
+                    row.CreateCell(11, CellType.String).SetCellValue(data.Birthday.ToString("dd/MM/yyyy"));
+                    row.CreateCell(12, CellType.String).SetCellValue(data.Gender);
+                    row.CreateCell(13, CellType.String).SetCellValue(data.Joinday.ToString("dd/MM/yyyy"));
+                    row.CreateCell(14, CellType.String).SetCellValue(data.Bornplace);
+                    row.CreateCell(15, CellType.String).SetCellValue(data.AddressResident);
+                    row.CreateCell(16, CellType.String).SetCellValue(data.AddressTemporary);
+
+                    row.CreateCell(17, CellType.String).SetCellValue(data.Part);
+                    row.CreateCell(18, CellType.String).SetCellValue(data.Department);
+                    row.CreateCell(19, CellType.String).SetCellValue(data.Title);
+                    row.CreateCell(20, CellType.String).SetCellValue(data.IdentityCard);
+                    row.CreateCell(21, CellType.String).SetCellValue(data.IdentityCardDate.HasValue ? data.IdentityCardDate.Value.ToString("dd/MM/yyyy") : string.Empty);
+                    row.CreateCell(22, CellType.String).SetCellValue(data.IdentityCardPlace);
+                    row.CreateCell(23, CellType.String).SetCellValue(data.HouseHold);
+                    row.CreateCell(24, CellType.String).SetCellValue(data.HouseHoldOwner);
+                    row.CreateCell(25, CellType.String).SetCellValue(data.Nation);
+                    row.CreateCell(26, CellType.String).SetCellValue(data.Religion);
+                    row.CreateCell(27, CellType.String).SetCellValue(data.BhxhBookNo);
+                    row.CreateCell(28, CellType.String).SetCellValue(data.BhxhCode);
+                    row.CreateCell(29, CellType.String).SetCellValue(data.BhxhHospital);
+                    row.CreateCell(30, CellType.String).SetCellValue(data.BhxhLocation);
+                    row.CreateCell(31, CellType.String).SetCellValue(data.BhytCode);
+                    var manage = string.Empty;
+                    if (!string.IsNullOrEmpty(data.ManagerId))
+                    {
+                        var managerEntity = dbContext.Employees.Find(m => m.Id.Equals(data.ManagerId)).FirstOrDefault();
+                        if (managerEntity != null)
+                        {
+                            manage = managerEntity.FullName;
+                        }
+                    }
+                    row.CreateCell(31, CellType.String).SetCellValue(manage);
                     //sheet1.AutoSizeColumn(0);
                     rowIndex++;
                 }
@@ -392,19 +514,6 @@ namespace erp.Controllers
             }
             memory.Position = 0;
             return File(memory, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", sFileName);
-
-            //var viewModel = new EmployeeViewModel
-            //{
-            //    Employees = results,
-            //    Departments = departmentsFilter,
-            //    EmployeesDisable = leaves,
-            //    Records = (int)records,
-            //    ten = ten,
-            //    code = code,
-            //    finger = finger,
-            //    nl = nl
-            //};
-            //return View(viewModel);
         }
 
         [Route(Constants.LinkHr.Birthday + "/" + Constants.LinkHr.List)]
@@ -461,7 +570,7 @@ namespace erp.Controllers
                     {
                         new Claim("UserName", result.UserName),
                         new Claim(ClaimTypes.Name, result.Id),
-                        new Claim(ClaimTypes.Email, result.Email),
+                        new Claim(ClaimTypes.Email, string.IsNullOrEmpty(result.Email)? string.Empty : result.Email),
                         new Claim("FullName", result.FullName),
                         new Claim(ClaimTypes.AuthenticationMethod, "sys")
                     };
@@ -506,7 +615,7 @@ namespace erp.Controllers
         }
 
         // GET: Users/Details/5
-        [Route(Constants.LinkHr.Human + "/"+ Constants.LinkHr.Information+ "/"+ "{id}")]
+        [Route(Constants.LinkHr.Human + "/" + Constants.LinkHr.Information + "/" + "{id}")]
         public async Task<ActionResult> Details(string id)
         {
             if (string.IsNullOrEmpty(id))
@@ -671,7 +780,6 @@ namespace erp.Controllers
 
             #endregion
 
-
             #region Dropdownlist
             var parts = dbContext.Parts.Find(m => m.Enable.Equals(true)).ToList();
             ViewData["Parts"] = parts;
@@ -690,25 +798,9 @@ namespace erp.Controllers
             var banks = dbContext.Banks.Find(m => m.Enable.Equals(true)).ToList();
             ViewData["Banks"] = banks;
             #endregion
-            var salaries = new List<Salary>();
-            var salariesContent = dbContext.SalaryContents.Find(m => m.Enable.Equals(true)).SortBy(m => m.Order).ToList();
-            foreach (var salaryContent in salariesContent)
-            {
-                salaries.Add(new Salary
-                {
-                    Type = salaryContent.SalaryType,
-                    Title = salaryContent.Name,
-                    Money = 0,
-                    Order = salaryContent.Order
-                });
-            }
-
             var employee = new Employee
             {
-                //Birthday = DateTime.Now.AddYears(-18),
-                Joinday = DateTime.Now,
-                Salaries = salaries
-                //IdentityCardDate = DateTime.Now.AddYears(-18)
+                Joinday = DateTime.Now
             };
 
             var sortEmployee = Builders<Employee>.Sort.Ascending(m => m.FullName);
@@ -811,6 +903,12 @@ namespace erp.Controllers
                 entity.ApprovedBy = login;
 
                 var settings = dbContext.Settings.Find(m => true).ToList();
+                var sendMail = true;
+                var emailEntity = settings.Where(m => m.Key.Equals("email-tao-nhan-vien")).FirstOrDefault();
+                if (emailEntity != null)
+                {
+                    sendMail = emailEntity.Value == "true" ? true : false;
+                }
                 // always have value
                 var identityCardExpired = Convert.ToInt32(settings.Where(m => m.Key.Equals("identityCardExpired")).First().Value);
                 var employeeCodeFirst = settings.Where(m => m.Key.Equals("employeeCodeFirst")).First().Value;
@@ -903,18 +1001,24 @@ namespace erp.Controllers
                 }
                 #endregion
 
+                #region Trim Data
+                entity.Email = !string.IsNullOrEmpty(entity.Email) ? entity.Email.Trim() : string.Empty;
+                entity.FullName = !string.IsNullOrEmpty(entity.FullName) ? entity.FullName.Trim() : string.Empty;
+                entity.Bornplace = !string.IsNullOrEmpty(entity.Bornplace) ? entity.Bornplace.Trim() : string.Empty;
+                entity.AddressResident = !string.IsNullOrEmpty(entity.AddressResident) ? entity.AddressResident.Trim() : string.Empty;
+                entity.AddressTemporary = !string.IsNullOrEmpty(entity.AddressTemporary) ? entity.AddressTemporary.Trim() : string.Empty;
+                entity.EmailPersonal = !string.IsNullOrEmpty(entity.EmailPersonal) ? entity.EmailPersonal.Trim() : string.Empty;
+                entity.IdentityCard = !string.IsNullOrEmpty(entity.IdentityCard) ? entity.IdentityCard.Trim() : string.Empty;
+                entity.Passport = !string.IsNullOrEmpty(entity.Passport) ? entity.Passport.Trim() : string.Empty;
+                entity.PassportCode = !string.IsNullOrEmpty(entity.PassportCode) ? entity.PassportCode.Trim() : string.Empty;
+                entity.PassportPlace = !string.IsNullOrEmpty(entity.PassportPlace) ? entity.PassportPlace.Trim() : string.Empty;
+                entity.HouseHold = !string.IsNullOrEmpty(entity.HouseHold) ? entity.HouseHold.Trim() : string.Empty;
+                entity.HouseHoldOwner = !string.IsNullOrEmpty(entity.HouseHoldOwner) ? entity.HouseHoldOwner.Trim() : string.Empty;
+                #endregion
+
                 entity.Code = sysCode;
                 entity.Password = sysPassword;
                 entity.AliasFullName = Utility.AliasConvert(entity.FullName);
-                decimal totalSalary = 0;
-                if (entity.Salaries != null && entity.Salaries.Count > 0)
-                {
-                    foreach (var salaryItem in entity.Salaries)
-                    {
-                        totalSalary += salaryItem.Money;
-                    }
-                }
-                entity.Salary = totalSalary;
                 dbContext.Employees.InsertOne(entity);
                 var newUserId = entity.Id;
 
@@ -960,7 +1064,10 @@ namespace erp.Controllers
                 #endregion
 
                 #region Send mail
-                SendMailNewUser(entity, pwdrandom);
+                if (sendMail)
+                {
+                    SendMailNewUser(entity, pwdrandom);
+                }
                 #endregion
 
                 return Json(new { result = true, source = "create", id = newUserId, message = "Khởi tạo thành công" });
@@ -1058,36 +1165,20 @@ namespace erp.Controllers
             ViewData["WorkTimeTypes"] = workTimeTypes;
             var banks = dbContext.Banks.Find(m => m.Enable.Equals(true)).ToList();
             ViewData["Banks"] = banks;
+
+            var lastNgachLuongs = dbContext.NgachLuongs.Find(m => m.Enable.Equals(true)).SortByDescending(m => m.Year).SortByDescending(m => m.Month).FirstOrDefault();
+            var monthNgachLuong = lastNgachLuongs.Month;
+            var yearNgachLuong = lastNgachLuongs.Year;
+            var ngachluongs = dbContext.NgachLuongs.Find(m => m.Enable.Equals(true) && m.Bac.Equals(1) && m.Month.Equals(monthNgachLuong) && m.Year.Equals(yearNgachLuong)).ToList();
+
+            var lastThang = dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true)).SortByDescending(m => m.Year).SortByDescending(m => m.Month).FirstOrDefault();
+            var monthThang = lastThang.Month;
+            var yearThang = lastThang.Year;
+            var thangbangluongs = dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true) && m.Bac.Equals(1) && m.Law.Equals(false) && m.Month.Equals(monthThang) && m.Year.Equals(yearThang)).ToList();
             #endregion
 
             var sortEmployee = Builders<Employee>.Sort.Ascending(m => m.FullName);
             var employees = dbContext.Employees.Find(m => m.Enable.Equals(true)).Sort(sortEmployee).ToList();
-
-            var currentSalaries = new List<Salary>();
-            var currentSalariesString = new List<string>();
-            if (entity.Salaries != null && entity.Salaries.Count > 0)
-            {
-                currentSalaries = entity.Salaries.ToList();
-                foreach (var currentSalary in currentSalaries)
-                {
-                    if (!string.IsNullOrEmpty(currentSalary.Title))
-                    {
-                        currentSalariesString.Add(currentSalary.Title);
-                    }
-                }
-            }
-            var salariesContent = dbContext.SalaryContents.Find(m => m.Enable.Equals(true) && !currentSalariesString.Contains(m.Name)).SortBy(m => m.Order).ToList();
-            foreach (var salaryContent in salariesContent)
-            {
-                currentSalaries.Add(new Salary
-                {
-                    Type = salaryContent.SalaryType,
-                    Title = salaryContent.Name,
-                    Money = 0,
-                    Order = salaryContent.Order
-                });
-            }
-            entity.Salaries = currentSalaries;
 
             var manager = new Employee();
             if (!string.IsNullOrEmpty(entity.ManagerId))
@@ -1120,7 +1211,9 @@ namespace erp.Controllers
                 EmployeeChance = employeeChanged,
                 Employees = employees,
                 Manager = manager,
-                StatusChange = statusChange
+                StatusChange = statusChange,
+                NgachLuongs = ngachluongs,
+                ThangBangLuongs = thangbangluongs
             };
             return View(viewModel);
         }
@@ -1134,6 +1227,7 @@ namespace erp.Controllers
         public async Task<ActionResult> EditAsync(EmployeeDataViewModel viewModel)
         {
             var entity = viewModel.Employee;
+            var isLeave = dbContext.Employees.CountDocuments(m => m.Enable.Equals(false) && m.EmployeeId.Equals(entity.Id));
             var userId = entity.Id;
 
             #region Authorization
@@ -1162,6 +1256,22 @@ namespace erp.Controllers
             if (loginUserName == Constants.System.account)
             {
                 rightHr = true;
+            }
+            #endregion
+
+            #region Setting
+            var settings = dbContext.Settings.Find(m => true).ToList();
+            var sendMail = true;
+            var sendMailLeave = true;
+            var emailEntitySetting = settings.Where(m => m.Key.Equals("email-cap-nhat-nhan-vien")).FirstOrDefault();
+            if (emailEntitySetting != null)
+            {
+                sendMail = emailEntitySetting.Value == "true" ? true : false;
+            }
+            var emailLeaveEntitySetting = settings.Where(m => m.Key.Equals("email-nhan-vien-nghi")).FirstOrDefault();
+            if (emailLeaveEntitySetting != null)
+            {
+                sendMailLeave = emailLeaveEntitySetting.Value == "true" ? true : false;
             }
             #endregion
 
@@ -1265,18 +1375,6 @@ namespace erp.Controllers
                 }
                 #endregion
 
-                #region Salary
-                decimal totalSalary = 0;
-                if (entity.Salaries != null && entity.Salaries.Count > 0)
-                {
-                    foreach (var salaryItem in entity.Salaries)
-                    {
-                        totalSalary += salaryItem.Money;
-                    }
-                }
-                entity.Salary = totalSalary;
-                #endregion
-
                 entity.AliasFullName = Utility.AliasConvert(entity.FullName);
                 entity.UpdatedBy = login;
                 entity.UpdatedOn = now;
@@ -1293,9 +1391,34 @@ namespace erp.Controllers
                 // Rule if user have right Nhan Su => direct
                 // If no. update temp. Then Nhan Su update.
                 var messageResult = "Cập nhật thành công";
+                #region Trim Data
+                entity.Email = !string.IsNullOrEmpty(entity.Email) ? entity.Email.Trim() : string.Empty;
+                entity.FullName = !string.IsNullOrEmpty(entity.FullName) ? entity.FullName.Trim() : string.Empty;
+                entity.Bornplace = !string.IsNullOrEmpty(entity.Bornplace) ? entity.Bornplace.Trim() : string.Empty;
+                entity.AddressResident = !string.IsNullOrEmpty(entity.AddressResident) ? entity.AddressResident.Trim() : string.Empty;
+                entity.AddressTemporary = !string.IsNullOrEmpty(entity.AddressTemporary) ? entity.AddressTemporary.Trim() : string.Empty;
+                entity.EmailPersonal = !string.IsNullOrEmpty(entity.EmailPersonal) ? entity.EmailPersonal.Trim() : string.Empty;
+                entity.IdentityCard = !string.IsNullOrEmpty(entity.IdentityCard) ? entity.IdentityCard.Trim() : string.Empty;
+                entity.Passport = !string.IsNullOrEmpty(entity.Passport) ? entity.Passport.Trim() : string.Empty;
+                entity.PassportCode = !string.IsNullOrEmpty(entity.PassportCode) ? entity.PassportCode.Trim() : string.Empty;
+                entity.PassportPlace = !string.IsNullOrEmpty(entity.PassportPlace) ? entity.PassportPlace.Trim() : string.Empty;
+                entity.HouseHold = !string.IsNullOrEmpty(entity.HouseHold) ? entity.HouseHold.Trim() : string.Empty;
+                entity.HouseHoldOwner = !string.IsNullOrEmpty(entity.HouseHoldOwner) ? entity.HouseHoldOwner.Trim() : string.Empty;
+                #endregion
+
                 var linkInformation = Constants.LinkHr.Main + "/" + Constants.LinkHr.Human + "/" + Constants.LinkHr.Information + "/" + entity.Id;
                 if (rightHr)
                 {
+                    if (!string.IsNullOrEmpty(entity.SalaryChucVuViTriCode))
+                    {
+                        var viTriE = dbContext.SalaryThangBangLuongs.Find(m => m.ViTriCode.Equals(entity.SalaryChucVuViTriCode)).SortByDescending(m => m.UpdatedOn).FirstOrDefault();
+                        if (viTriE != null)
+                        {
+                            entity.Title = viTriE.ViTri;
+                            entity.SalaryChucVu = viTriE.ViTri;
+                        }
+                    }
+
                     var filter = Builders<Employee>.Filter.Eq(m => m.Id, entity.Id);
                     var update = Builders<Employee>.Update
                         .Set(m => m.UpdatedBy, login)
@@ -1304,6 +1427,7 @@ namespace erp.Controllers
                         .Set(m => m.IsTimeKeeper, entity.IsTimeKeeper)
                         .Set(m => m.LeaveLevelYear, entity.LeaveLevelYear)
                         .Set(m => m.LeaveDayAvailable, entity.LeaveDayAvailable)
+                        .Set(m => m.Email, entity.Email)
                         .Set(m => m.FullName, entity.FullName)
                         .Set(m => m.FirstName, entity.FirstName)
                         .Set(m => m.LastName, entity.LastName)
@@ -1331,7 +1455,7 @@ namespace erp.Controllers
                         .Set(m => m.IdentityCardDate, entity.IdentityCardDate)
                         .Set(m => m.IdentityCardPlace, entity.IdentityCardPlace)
                         .Set(m => m.PassportEnable, entity.PassportEnable)
-                        .Set(m => m.Passport, entity.IdentityCard)
+                        .Set(m => m.Passport, entity.Passport)
                         .Set(m => m.PassportType, entity.PassportType)
                         .Set(m => m.PassportCode, entity.PassportCode)
                         .Set(m => m.PassportDate, entity.PassportDate)
@@ -1346,9 +1470,6 @@ namespace erp.Controllers
                         .Set(m => m.Cards, entity.Cards)
                         .Set(m => m.Contracts, entity.Contracts)
                         .Set(m => m.StorePapers, entity.StorePapers)
-                        .Set(m => m.Salaries, entity.Salaries)
-                        .Set(m => m.Salary, entity.Salary)
-                        // BHXH
                         .Set(m => m.BhxhEnable, entity.BhxhEnable)
                         .Set(m => m.BhxhStart, entity.BhxhStart)
                         .Set(m => m.BhxhEnd, entity.BhxhEnd)
@@ -1361,17 +1482,27 @@ namespace erp.Controllers
                         .Set(m => m.BhytStart, entity.BhytStart)
                         .Set(m => m.BhytEnd, entity.BhytEnd)
                         .Set(m => m.BhxhHistories, entity.BhxhHistories)
-                        // FAMILY
                         .Set(m => m.EmployeeFamilys, entity.EmployeeFamilys)
-                        // CONTRACT
                         .Set(m => m.Contracts, entity.Contracts)
-                        .Set(m => m.EmployeeEducations, entity.EmployeeEducations);
+                        .Set(m => m.EmployeeEducations, entity.EmployeeEducations)
+                        .Set(m => m.SalaryType, entity.SalaryType)
+                        .Set(m => m.SalaryPayMethod, entity.SalaryPayMethod)
+                        .Set(m => m.NgachLuong, entity.NgachLuong)
+                        .Set(m => m.SalaryChucVuViTriCode, entity.SalaryChucVuViTriCode);
+
+                    if (entity.Avatar != null && !string.IsNullOrEmpty(entity.Avatar.FileName))
+                    {
+                        update = update.Set(m => m.Avatar, entity.Avatar);
+                    }
+                    if (entity.Cover != null && !string.IsNullOrEmpty(entity.Cover.FileName))
+                    {
+                        update = update.Set(m => m.Cover, entity.Cover);
+                    }
 
                     if (avatarImage != null && !string.IsNullOrEmpty(avatarImage.FileName))
                     {
                         update = update.Set(m => m.Avatar, avatarImage);
                     }
-
                     if (coverImage != null && !string.IsNullOrEmpty(coverImage.FileName))
                     {
                         update = update.Set(m => m.Cover, coverImage);
@@ -1381,111 +1512,81 @@ namespace erp.Controllers
                     entity.EmployeeId = userId;
                     entity.Id = null;
                     dbContext.EmployeeHistories.InsertOne(entity);
+
                     #region Send email to user changed
-                    //var tos = new List<EmailAddress>
-                    //{
-                    //    new EmailAddress { Name = entity.FullName, Address = entity.Email }
-                    //};
+                    if (sendMail)
+                    {
+                        var tos = new List<EmailAddress>
+                        {
+                            new EmailAddress { Name = entity.FullName, Address = entity.Email }
+                        };
+                        var pathToFile = _env.WebRootPath
+                                + Path.DirectorySeparatorChar.ToString()
+                                + "Templates"
+                                + Path.DirectorySeparatorChar.ToString()
+                                + "EmailTemplate"
+                                + Path.DirectorySeparatorChar.ToString()
+                                + "HrChangeInformation.html";
+                        var subject = "Thay đổi thông tin nhân sự.";
+                        var requester = entity.FullName;
+                        var hrChanged = loginInformation.FullName;
+                        if (!string.IsNullOrEmpty(loginInformation.Title))
+                        {
+                            hrChanged += " - " + loginInformation.Title;
+                        }
+                        if (!string.IsNullOrEmpty(loginInformation.Email))
+                        {
+                            hrChanged += " - email: " + loginInformation.Email;
+                        }
+                        var linkDomain = Constants.System.domain;
+                        var fullLinkInformation = linkDomain + "/" + linkInformation;
+                        var bodyBuilder = new BodyBuilder();
+                        using (StreamReader SourceReader = System.IO.File.OpenText(pathToFile))
+                        {
+                            bodyBuilder.HtmlBody = SourceReader.ReadToEnd();
+                        }
+                        string messageBody = string.Format(bodyBuilder.HtmlBody,
+                            subject,
+                            requester,
+                            hrChanged,
+                            entity.UpdatedOn.ToString("dd/MM/yyyy"),
+                            fullLinkInformation,
+                            linkDomain
+                            );
+                        var emailMessage = new EmailMessage()
+                        {
+                            ToAddresses = tos,
+                            Subject = subject,
+                            BodyContent = messageBody,
+                            Type = "hr-edit-information"
+                        };
 
-                    //var webRoot = Environment.CurrentDirectory;
-                    //var pathToFile = _env.WebRootPath
-                    //        + Path.DirectorySeparatorChar.ToString()
-                    //        + "Templates"
-                    //        + Path.DirectorySeparatorChar.ToString()
-                    //        + "EmailTemplate"
-                    //        + Path.DirectorySeparatorChar.ToString()
-                    //        + "HrChangeInformation.html";
+                        // For faster. Add to schedule.
+                        // Send later
+                        var scheduleEmail = new ScheduleEmail
+                        {
+                            Status = (int)EEmailStatus.Schedule,
+                            //From = emailMessage.FromAddresses,
+                            To = emailMessage.ToAddresses,
+                            CC = emailMessage.CCAddresses,
+                            BCC = emailMessage.BCCAddresses,
+                            Type = emailMessage.Type,
+                            Title = emailMessage.Subject,
+                            Content = emailMessage.BodyContent
+                        };
+                        dbContext.ScheduleEmails.InsertOne(scheduleEmail);
 
-                    //#region parameters
-                    ////{0} : Subject
-                    ////{1} : Người được thay đổi thông tin
-                    ////{2} : Nhân sự thay dổi (ten - chuc vu - email)
-                    ////{3} : Ngày thay đổi
-                    ////{4} : Link chi tiết nhân sự
-                    ////{5}: Website
-                    //#endregion
-                    //var subject = "Thay đổi thông tin nhân sự.";
-                    //var requester = entity.FullName;
-                    //var hrChanged = loginInformation.FullName;
-                    //if (!string.IsNullOrEmpty(loginInformation.Title))
-                    //{
-                    //    hrChanged += " - " + loginInformation.Title;
-                    //}
-                    //if (!string.IsNullOrEmpty(loginInformation.Email))
-                    //{
-                    //    hrChanged += " - email: " + loginInformation.Email;
-                    //}
-                    //var linkDomain = Constants.System.domain;
-                    //var fullLinkInformation = linkDomain + "/" + linkInformation;
-                    //var bodyBuilder = new BodyBuilder();
-                    //using (StreamReader SourceReader = System.IO.File.OpenText(pathToFile))
-                    //{
-                    //    bodyBuilder.HtmlBody = SourceReader.ReadToEnd();
-                    //}
-                    //string messageBody = string.Format(bodyBuilder.HtmlBody,
-                    //    subject,
-                    //    requester,
-                    //    hrChanged,
-                    //    entity.UpdatedOn.ToString("dd/MM/yyyy"),
-                    //    fullLinkInformation,
-                    //    linkDomain
-                    //    );
-                    //var emailMessage = new EmailMessage()
-                    //{
-                    //    ToAddresses = tos,
-                    //    Subject = subject,
-                    //    BodyContent = messageBody
-                    //};
-                    //try
-                    //{
-                    //    var emailFrom = Constants.System.emailHr;
-                    //    var emailFromName = Constants.System.emailHrName;
-                    //    var emailFromPwd = Constants.System.emailHrPwd;
-                    //    var message = new MimeMessage();
-                    //    message.To.AddRange(emailMessage.ToAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
-                    //    if (emailMessage.CCAddresses != null && emailMessage.CCAddresses.Count > 0)
-                    //    {
-                    //        message.Cc.AddRange(emailMessage.CCAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
-                    //    }
-                    //    if (emailMessage.FromAddresses == null || emailMessage.FromAddresses.Count == 0)
-                    //    {
-                    //        emailMessage.FromAddresses = new List<EmailAddress>
-                    //            {
-                    //                new EmailAddress { Name = emailFromName, Address = emailFrom }
-                    //            };
-                    //    }
-                    //    message.From.AddRange(emailMessage.FromAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
-                    //    message.Subject = emailMessage.Subject;
-                    //    message.Body = new TextPart(TextFormat.Html)
-                    //    {
-                    //        Text = emailMessage.BodyContent
-                    //    };
-                    //    using (var emailClient = new MailKit.Net.Smtp.SmtpClient())
-                    //    {
-                    //        //The last parameter here is to use SSL (Which you should!)
-                    //        emailClient.Connect(emailFrom, 465, true);
-
-                    //        //Remove any OAuth functionality as we won't be using it. 
-                    //        emailClient.AuthenticationMechanisms.Remove("XOAUTH2");
-
-                    //        emailClient.Authenticate(emailFrom, emailFromPwd);
-
-                    //        emailClient.Send(message);
-                    //        emailClient.Disconnect(true);
-                    //        Console.WriteLine("The mail has been sent successfully !!");
-                    //    }
-                    //}
-                    //catch (Exception ex)
-                    //{
-                    //    Console.WriteLine(ex.Message);
-                    //    // insert dd. Do later.
-                    //}
+                        //_emailSender.SendEmail(emailMessage);
+                    }
                     #endregion
 
                     #region Send email leave
-                    if (entity.Leaveday.HasValue)
+                    if (isLeave == 0 && entity.Leaveday.HasValue)
                     {
-                        SendMailLeaveUser(entity);
+                        if (sendMailLeave)
+                        {
+                            SendMailLeaveUser(entity);
+                        }
                     }
                     #endregion
                 }
@@ -1497,150 +1598,91 @@ namespace erp.Controllers
 
                     messageResult = "Thông tin đã được gửi và cập nhật bởi bộ phận Nhân sự.";
                     #region Send email to Hr
-                    var tos = new List<EmailAddress>();
-                    var ccs = new List<EmailAddress>();
-                    var listHrRoles = dbContext.RoleUsers.Find(m => m.Role.Equals(Constants.Rights.NhanSu) && (m.Expired.Equals(null) || m.Expired > DateTime.Now)).ToList();
-                    if (listHrRoles != null && listHrRoles.Count > 0)
+                    if (sendMail)
                     {
-                        foreach (var item in listHrRoles)
+                        var tos = new List<EmailAddress>();
+                        var ccs = new List<EmailAddress>();
+                        var listHrRoles = dbContext.RoleUsers.Find(m => m.Role.Equals(Constants.Rights.NhanSu) && (m.Expired.Equals(null) || m.Expired > DateTime.Now)).ToList();
+                        if (listHrRoles != null && listHrRoles.Count > 0)
                         {
-                            if (item.Action == 3)
+                            foreach (var item in listHrRoles)
                             {
-                                var fields = Builders<Employee>.Projection.Include(p => p.Email).Include(p => p.FullName);
-                                var emailEntity = dbContext.Employees.Find(m => m.Id.Equals(item.User)).Project<Employee>(fields).FirstOrDefault();
-                                if (emailEntity != null)
+                                if (item.Action == 3)
                                 {
-                                    tos.Add(new EmailAddress { Name = emailEntity.FullName, Address = emailEntity.Email });
-                                }
-                            }
-                            else if (item.Action >= 4)
-                            {
-                                var fields = Builders<Employee>.Projection.Include(p => p.Email).Include(p => p.FullName);
-                                var emailEntity = dbContext.Employees.Find(m => m.Id.Equals(item.User)).Project<Employee>(fields).FirstOrDefault();
-                                if (emailEntity != null)
-                                {
-                                    // Remove a Thao, Pari
-                                    var listNo = new List<string>
+                                    var fields = Builders<Employee>.Projection.Include(p => p.Email).Include(p => p.FullName);
+                                    var emailEntity = dbContext.Employees.Find(m => m.Id.Equals(item.User)).Project<Employee>(fields).FirstOrDefault();
+                                    if (emailEntity != null)
                                     {
-                                        "ngopari@tribat.vn",
-                                        "thao.nv@tribat.vn"
-                                    };
-                                    if (!listNo.Any(s => emailEntity.Email.Contains(s)))
+                                        tos.Add(new EmailAddress { Name = emailEntity.FullName, Address = emailEntity.Email });
+                                    }
+                                }
+                                else if (item.Action >= 4)
+                                {
+                                    var fields = Builders<Employee>.Projection.Include(p => p.Email).Include(p => p.FullName);
+                                    var emailEntity = dbContext.Employees.Find(m => m.Id.Equals(item.User) && !m.NgachLuong.Equals("C.01")).Project<Employee>(fields).FirstOrDefault();
+                                    if (emailEntity != null)
                                     {
                                         ccs.Add(new EmailAddress { Name = emailEntity.FullName, Address = emailEntity.Email });
                                     }
                                 }
                             }
                         }
-                    }
 
-                    #region UAT
-                    var uat = dbContext.Settings.Find(m=>m.Key.Equals("UAT")).FirstOrDefault();
-                    if (uat != null && uat.Value == "true")
-                    {
-                        tos = new List<EmailAddress>
+                        #region UAT
+                        var uat = dbContext.Settings.Find(m => m.Key.Equals("UAT")).FirstOrDefault();
+                        if (uat != null && uat.Value == "true")
+                        {
+                            tos = new List<EmailAddress>
                         {
                             new EmailAddress { Name = "Xuan", Address = "xuan.tm1988@gmail.com" }
                         };
 
-                        ccs = new List<EmailAddress>
+                            ccs = new List<EmailAddress>
                         {
                             new EmailAddress { Name = "Xuan CC", Address = "xuantranm@gmail.com" }
                         };
-                    }
-                    #endregion
-
-                    // End Test
-
-                    var webRoot = Environment.CurrentDirectory;
-                    var pathToFile = _env.WebRootPath
-                            + Path.DirectorySeparatorChar.ToString()
-                            + "Templates"
-                            + Path.DirectorySeparatorChar.ToString()
-                            + "EmailTemplate"
-                            + Path.DirectorySeparatorChar.ToString()
-                            + "EmployeeChangeInformation.html";
-
-                    #region parameters
-                    //{0} : Subject
-                    //{1} : Đối tượng dc gửi
-                    //{2} : Người thay đổi thông tin - chức vụ
-                    //{3} : Ngày thay đổi
-                    //{4} : Link chi tiết nhân sự
-                    //{5}: Website
-                    #endregion
-                    var subject = "Thay đổi thông tin nhân sự.";
-                    var requester = "Bộ phận nhân sự.";
-                    var userTitle = entity.FullName;
-                    if (!string.IsNullOrEmpty(entity.Title))
-                    {
-                        userTitle += " - " + entity.Title;
-                    }
-                    var linkDomain = Constants.System.domain;
-                    var fullLinkInformation = linkDomain + "/" + linkInformation;
-                    var bodyBuilder = new BodyBuilder();
-                    using (StreamReader SourceReader = System.IO.File.OpenText(pathToFile))
-                    {
-                        bodyBuilder.HtmlBody = SourceReader.ReadToEnd();
-                    }
-                    string messageBody = string.Format(bodyBuilder.HtmlBody,
-                        subject,
-                        requester,
-                        userTitle,
-                        entity.UpdatedOn.ToString("dd/MM/yyyy"),
-                        fullLinkInformation,
-                        linkDomain
-                        );
-                    var emailMessage = new EmailMessage()
-                    {
-                        ToAddresses = tos,
-                        CCAddresses = ccs,
-                        Subject = subject,
-                        BodyContent = messageBody
-                    };
-                    try
-                    {
-                        var emailFrom = Constants.System.emailErp;
-                        var emailFromName = Constants.System.emailErpName;
-                        var emailFromPwd = Constants.System.emailErpPwd;
-                        var message = new MimeMessage();
-                        message.To.AddRange(emailMessage.ToAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
-                        if (emailMessage.CCAddresses != null && emailMessage.CCAddresses.Count > 0)
-                        {
-                            message.Cc.AddRange(emailMessage.CCAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
                         }
-                        if (emailMessage.FromAddresses == null || emailMessage.FromAddresses.Count == 0)
+                        #endregion
+
+                        var webRoot = Environment.CurrentDirectory;
+                        var pathToFile = _env.WebRootPath
+                                + Path.DirectorySeparatorChar.ToString()
+                                + "Templates"
+                                + Path.DirectorySeparatorChar.ToString()
+                                + "EmailTemplate"
+                                + Path.DirectorySeparatorChar.ToString()
+                                + "EmployeeChangeInformation.html";
+                        var subject = "Thay đổi thông tin nhân sự.";
+                        var requester = "Bộ phận nhân sự.";
+                        var userTitle = entity.FullName;
+                        if (!string.IsNullOrEmpty(entity.Title))
                         {
-                            emailMessage.FromAddresses = new List<EmailAddress>
-                                {
-                                    new EmailAddress { Name = emailFromName, Address = emailFrom }
-                                };
+                            userTitle += " - " + entity.Title;
                         }
-                        message.From.AddRange(emailMessage.FromAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
-                        message.Subject = emailMessage.Subject;
-                        message.Body = new TextPart(TextFormat.Html)
+                        var linkDomain = Constants.System.domain;
+                        var fullLinkInformation = linkDomain + "/" + linkInformation;
+                        var bodyBuilder = new BodyBuilder();
+                        using (StreamReader SourceReader = System.IO.File.OpenText(pathToFile))
                         {
-                            Text = emailMessage.BodyContent
+                            bodyBuilder.HtmlBody = SourceReader.ReadToEnd();
+                        }
+                        string messageBody = string.Format(bodyBuilder.HtmlBody,
+                            subject,
+                            requester,
+                            userTitle,
+                            entity.UpdatedOn.ToString("dd/MM/yyyy"),
+                            fullLinkInformation,
+                            linkDomain
+                            );
+                        var emailMessage = new EmailMessage()
+                        {
+                            ToAddresses = tos,
+                            CCAddresses = ccs,
+                            Subject = subject,
+                            BodyContent = messageBody,
+                            Type = "edit-information"
                         };
-                        using (var emailClient = new MailKit.Net.Smtp.SmtpClient())
-                        {
-                            //The last parameter here is to use SSL (Which you should!)
-                            emailClient.Connect(emailFrom, 465, true);
-
-                            //Remove any OAuth functionality as we won't be using it. 
-                            emailClient.AuthenticationMechanisms.Remove("XOAUTH2");
-
-                            emailClient.Authenticate(emailFrom, emailFromPwd);
-
-                            emailClient.Send(message);
-                            emailClient.Disconnect(true);
-                            Console.WriteLine("The mail has been sent successfully !!");
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine(ex.Message);
-                        // insert dd. Do later.
+                        _emailSender.SendEmail(emailMessage);
                     }
                     #endregion
                 }
@@ -1779,45 +1821,150 @@ namespace erp.Controllers
         [Route(Constants.LinkHr.ChildrenReport + "/" + Constants.LinkHr.Export)]
         public async Task<IActionResult> ChildrenReportExport(string fileName)
         {
-            string sWebRootFolder = _env.WebRootPath;
-            fileName = @"demo.xlsx";
-            string URL = string.Format("{0}://{1}/{2}", Request.Scheme, Request.Host, fileName);
-            FileInfo file = new FileInfo(Path.Combine(sWebRootFolder, fileName));
+            var builder = Builders<Employee>.Filter;
+            var filter = builder.Eq(m => m.Enable, true);
+            filter = filter & !builder.Eq(i => i.UserName, Constants.System.account);
+            filter = filter & builder.Eq("EmployeeFamilys.Relation", 3);
+            var results = await dbContext.Employees.Find(filter).ToListAsync();
+
+            string exportFolder = Path.Combine(_env.WebRootPath, "exports");
+            string sFileName = @"danh-sach-con-" + DateTime.Now.ToString("ddMMyyyyhhmm") + ".xlsx";
+            string URL = string.Format("{0}://{1}/{2}", Request.Scheme, Request.Host, sFileName);
+            FileInfo file = new FileInfo(Path.Combine(exportFolder, sFileName));
             var memory = new MemoryStream();
-            using (var fs = new FileStream(Path.Combine(sWebRootFolder, fileName), FileMode.Create, FileAccess.Write))
+            using (var fs = new FileStream(Path.Combine(exportFolder, sFileName), FileMode.Create, FileAccess.Write))
             {
-                IWorkbook workbook;
-                workbook = new XSSFWorkbook();
-                ISheet excelSheet = workbook.CreateSheet("Demo");
-                IRow row = excelSheet.CreateRow(0);
+                IWorkbook workbook = new XSSFWorkbook();
+                #region Styling
+                var cellStyleBorder = workbook.CreateCellStyle();
+                cellStyleBorder.BorderBottom = BorderStyle.Thin;
+                cellStyleBorder.BorderLeft = BorderStyle.Thin;
+                cellStyleBorder.BorderRight = BorderStyle.Thin;
+                cellStyleBorder.BorderTop = BorderStyle.Thin;
+                cellStyleBorder.Alignment = HorizontalAlignment.Center;
+                cellStyleBorder.VerticalAlignment = VerticalAlignment.Center;
 
-                row.CreateCell(0).SetCellValue("ID");
-                row.CreateCell(1).SetCellValue("Name");
-                row.CreateCell(2).SetCellValue("Age");
+                var cellStyleHeader = workbook.CreateCellStyle();
+                //cellStyleHeader.CloneStyleFrom(cellStyleBorder);
+                //cellStyleHeader.FillForegroundColor = HSSFColor.Blue.Index2;
+                cellStyleHeader.FillForegroundColor = HSSFColor.Grey25Percent.Index;
+                cellStyleHeader.FillPattern = FillPattern.SolidForeground;
+                #endregion
 
-                row = excelSheet.CreateRow(1);
-                row.CreateCell(0).SetCellValue(1);
-                row.CreateCell(1).SetCellValue("Kane Williamson");
-                row.CreateCell(2).SetCellValue(29);
+                ISheet sheet1 = workbook.CreateSheet("Danh-sach-con");
 
-                row = excelSheet.CreateRow(2);
-                row.CreateCell(0).SetCellValue(2);
-                row.CreateCell(1).SetCellValue("Martin Guptil");
-                row.CreateCell(2).SetCellValue(33);
+                //sheet1.AddMergedRegion(new CellRangeAddress(0, 0, 0, 10));
+                var rowIndex = 0;
+                IRow row = sheet1.CreateRow(rowIndex);
+                row.CreateCell(0, CellType.String).SetCellValue("STT");
+                row.CreateCell(1, CellType.String).SetCellValue("Mã");
+                row.CreateCell(2, CellType.String).SetCellValue("Họ tên");
+                row.CreateCell(3, CellType.String).SetCellValue("Email");
+                row.CreateCell(4, CellType.String).SetCellValue("Điện thoại bàn");
+                row.CreateCell(5, CellType.String).SetCellValue("Điện thoại");
+                row.CreateCell(6, CellType.String).SetCellValue("Nơi làm việc");
+                row.CreateCell(7, CellType.String).SetCellValue("Bộ phận");
+                row.CreateCell(8, CellType.String).SetCellValue("Phòng ban");
+                row.CreateCell(9, CellType.String).SetCellValue("Chức vụ");
+                row.CreateCell(10, CellType.String).SetCellValue("Thông tin con");
+                row.CreateCell(11, CellType.String).SetCellValue("Tổng số");
+                // Set style
+                for (int i = 0; i <= 11; i++)
+                {
+                    row.Cells[i].CellStyle = cellStyleHeader;
+                }
+                rowIndex++;
 
-                row = excelSheet.CreateRow(3);
-                row.CreateCell(0).SetCellValue(3);
-                row.CreateCell(1).SetCellValue("Colin Munro");
-                row.CreateCell(2).SetCellValue(23);
+                foreach (var data in results)
+                {
+                    row = sheet1.CreateRow(rowIndex);
+                    row.CreateCell(0, CellType.Numeric).SetCellValue(rowIndex);
+                    row.CreateCell(1, CellType.String).SetCellValue(data.CodeOld + " (" + data.Code + ")");
+                    row.CreateCell(2, CellType.String).SetCellValue(data.FullName);
+                    row.CreateCell(3, CellType.String).SetCellValue(data.Email);
+                    row.CreateCell(4, CellType.String).SetCellValue(data.Tel);
+                    var mobiles = string.Empty;
+                    if (data.Mobiles != null && data.Mobiles.Count > 0)
+                    {
+                        foreach (var mobile in data.Mobiles)
+                        {
+                            if (!string.IsNullOrEmpty(mobiles))
+                            {
+                                mobiles += " - ";
+                            }
+                            mobiles += mobile.Number;
+                        }
+                    }
+                    row.CreateCell(5, CellType.String).SetCellValue(mobiles);
+                    var workplaces = string.Empty;
+                    if (data.Workplaces != null && data.Workplaces.Count > 0)
+                    {
+                        foreach (var workplace in data.Workplaces)
+                        {
+                            if (!string.IsNullOrEmpty(workplaces))
+                            {
+                                workplaces += " - ";
+                            }
+                            workplaces += workplace.Name;
+                            if (!string.IsNullOrEmpty(workplace.Fingerprint))
+                            {
+                                workplaces += "(" + workplace.Fingerprint + " - " + workplace.WorkingScheduleTime + ")";
+                            }
+                        }
+                    }
+                    row.CreateCell(6, CellType.String).SetCellValue(workplaces);
+                    row.CreateCell(7, CellType.String).SetCellValue(data.Part);
+                    row.CreateCell(8, CellType.String).SetCellValue(data.Department);
+                    row.CreateCell(9, CellType.String).SetCellValue(data.Title);
+                    var thongtincon = string.Empty;
+                    int socon = 0;
+                    foreach (var children in data.EmployeeFamilys)
+                    {
+                        if (children.Relation == 3)
+                        {
+                            if (!string.IsNullOrEmpty(thongtincon))
+                            {
+                                thongtincon += " - ";
+                            }
+                            thongtincon += children.FullName;
+                            if (children.Birthday.HasValue)
+                            {
+                                thongtincon += " (" + children.Birthday.Value.ToString("dd/MM/yyyy") + ")";
+                            }
+                            socon++;
+                        }
+                    }
+                    row.CreateCell(10, CellType.String).SetCellValue(thongtincon);
+                    row.CreateCell(11, CellType.Numeric).SetCellValue(socon);
+                    //sheet1.AutoSizeColumn(0);
+                    rowIndex++;
+                }
+
+                var sheet2 = workbook.CreateSheet("Phong-ban");
+                var style1 = workbook.CreateCellStyle();
+                style1.FillForegroundColor = HSSFColor.Blue.Index2;
+                style1.FillPattern = FillPattern.SolidForeground;
+
+                var style2 = workbook.CreateCellStyle();
+                style2.FillForegroundColor = HSSFColor.Yellow.Index2;
+                style2.FillPattern = FillPattern.SolidForeground;
+
+                var cell2 = sheet2.CreateRow(0).CreateCell(0);
+                cell2.CellStyle = style1;
+                cell2.SetCellValue(0);
+
+                cell2 = sheet2.CreateRow(1).CreateCell(0);
+                cell2.CellStyle = style2;
+                cell2.SetCellValue(1);
 
                 workbook.Write(fs);
             }
-            using (var stream = new FileStream(Path.Combine(sWebRootFolder, fileName), FileMode.Open))
+            using (var stream = new FileStream(Path.Combine(exportFolder, sFileName), FileMode.Open))
             {
                 await stream.CopyToAsync(memory);
             }
             memory.Position = 0;
-            return File(memory, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+            return File(memory, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", sFileName);
         }
 
         #region Sub data
@@ -1853,14 +2000,15 @@ namespace erp.Controllers
         [Route("nhan-su/cong-viec/tao-moi/")]
         public IActionResult Title(Title entity)
         {
-            entity.Alias = Utility.AliasConvert(entity.Name);
-            bool exist = dbContext.Titles.CountDocuments(m => m.Alias.Equals(entity.Alias)) > 0;
-            if (!exist)
-            {
-                dbContext.Titles.InsertOne(entity);
-                return Json(new { result = true, source = "create", entity, message = "Tạo mới thành công" });
-            }
-            return Json(new { result = false, source = "create", entity, message = "Công việc đã có. Không thể tạo 2 dữ liệu cùng tên." });
+            return Json(new { result = false });
+            //entity.Alias = Utility.AliasConvert(entity.Name);
+            //bool exist = dbContext.Titles.CountDocuments(m => m.Alias.Equals(entity.Alias)) > 0;
+            //if (!exist)
+            //{
+            //    dbContext.Titles.InsertOne(entity);
+            //    return Json(new { result = true, source = "create", entity, message = "Tạo mới thành công" });
+            //}
+            //return Json(new { result = false, source = "create", entity, message = "Công việc đã có. Không thể tạo 2 dữ liệu cùng tên." });
         }
 
         [HttpPost]
@@ -1909,8 +2057,8 @@ namespace erp.Controllers
             nhansumoi += "</tr>";
 
             nhansumoi += "<tr style='height: 12.75pt'>";
-            nhansumoi += "<td nowrap='nowrap' style='border: solid windowtext 1.0pt; border-top: none; padding: 0cm 5.4pt 0cm 5.4pt;'>"+ "01" + "</td>";
-            nhansumoi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + entity.FullName +"</td>";
+            nhansumoi += "<td nowrap='nowrap' style='border: solid windowtext 1.0pt; border-top: none; padding: 0cm 5.4pt 0cm 5.4pt;'>" + "01" + "</td>";
+            nhansumoi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + entity.FullName + "</td>";
             nhansumoi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + contact + "</td>";
             nhansumoi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + entity.Email + "</td>";
             nhansumoi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + entity.Joinday.ToString("dd/MM/yyyy") + "</td>";
@@ -1926,9 +2074,9 @@ namespace erp.Controllers
                 "C.02"
             };
             var employees = dbContext.Employees.Find(m => m.Enable.Equals(true) && !string.IsNullOrEmpty(m.Email)).ToList();
-            foreach(var employee in employees)
+            foreach (var employee in employees)
             {
-                if (!string.IsNullOrEmpty(employee.SalaryMaSoChucDanhCongViec) && listboss.Any(str => str.Contains(employee.SalaryMaSoChucDanhCongViec)))
+                if (!string.IsNullOrEmpty(employee.NgachLuong) && listboss.Any(str => str.Contains(employee.NgachLuong)))
                 {
                     ccs.Add(new EmailAddress
                     {
@@ -1989,7 +2137,19 @@ namespace erp.Controllers
                 Type = "nhan-su-moi"
             };
 
-            _emailSender.SendEmail(emailMessage);
+            // For faster update.
+            var scheduleEmail = new ScheduleEmail
+            {
+                Status = (int)EEmailStatus.ScheduleASAP,
+                To = emailMessage.ToAddresses,
+                CC = emailMessage.CCAddresses,
+                BCC = emailMessage.BCCAddresses,
+                Type = emailMessage.Type,
+                Title = emailMessage.Subject,
+                Content = emailMessage.BodyContent
+            };
+            dbContext.ScheduleEmails.InsertOne(scheduleEmail);
+            //_emailSender.SendEmail(emailMessage);
         }
 
         public void SendMailLeaveUser(Employee entity)
@@ -2012,8 +2172,8 @@ namespace erp.Controllers
             nhansunghi += "<td nowrap='nowrap' style='border: solid windowtext 1.0pt; background: #76923C; padding: 0cm 5.4pt 0cm 5.4pt;'><b>STT</b></td>";
             nhansunghi += "<td nowrap='nowrap' style='border: solid windowtext 1.0pt; border-left: none; background: #76923C; padding: 0cm 5.4pt 0cm 5.4pt;'><b>PHÒNG/BAN</b></td>";
             nhansunghi += "<td nowrap='nowrap' style='border: solid windowtext 1.0pt; border-left: none; background: #76923C; padding: 0cm 5.4pt 0cm 5.4pt;'><b>HỌ VÀ TÊN</b></td>";
-            nhansunghi += "<td nowrap='nowrap' style='border: solid windowtext 1.0pt; border-left: none; background: #76923C; padding: 0cm 5.4pt 0cm 5.4pt;'><b>NGÀY NGHỈ</b></td>";
             nhansunghi += "<td nowrap='nowrap' style='border: solid windowtext 1.0pt; border-left: none; background: #76923C; padding: 0cm 5.4pt 0cm 5.4pt;'><b>CHỨC VỤ</b></td>";
+            nhansunghi += "<td nowrap='nowrap' style='border: solid windowtext 1.0pt; border-left: none; background: #76923C; padding: 0cm 5.4pt 0cm 5.4pt;'><b>NGÀY NGHỈ</b></td>";
             nhansunghi += "<td nowrap='nowrap' style='border: solid windowtext 1.0pt; border-left: none; background: #76923C; padding: 0cm 5.4pt 0cm 5.4pt;'><b>SỐ LIÊN HỆ</b></td>";
             nhansunghi += "</tr>";
 
@@ -2021,8 +2181,8 @@ namespace erp.Controllers
             nhansunghi += "<td nowrap='nowrap' style='border: solid windowtext 1.0pt; border-top: none; padding: 0cm 5.4pt 0cm 5.4pt;'>" + "01" + "</td>";
             nhansunghi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + entity.Department + "</td>";
             nhansunghi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + entity.FullName + "</td>";
-            nhansunghi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + entity.Leaveday.Value.ToString("dd/MM/yyyy") + "</td>";
             nhansunghi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + entity.Title + "</td>";
+            nhansunghi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + entity.Leaveday.Value.ToString("dd/MM/yyyy") + "</td>";
             nhansunghi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + contact + "</td>";
             nhansunghi += "</tr>";
             nhansunghi += "</tbody>";
@@ -2034,10 +2194,10 @@ namespace erp.Controllers
                 "C.01",
                 "C.02"
             };
-            var employees = dbContext.Employees.Find(m => m.Enable.Equals(true) && !string.IsNullOrEmpty(m.Email)).ToList();
+            var employees = dbContext.Employees.Find(m => m.Enable.Equals(true) && !string.IsNullOrEmpty(m.Email) && !m.UserName.Equals(Constants.System.account)).ToList();
             foreach (var employee in employees)
             {
-                if (!string.IsNullOrEmpty(employee.SalaryMaSoChucDanhCongViec) && listboss.Any(str => str.Contains(employee.SalaryMaSoChucDanhCongViec)))
+                if (!string.IsNullOrEmpty(employee.NgachLuong) && listboss.Any(str => str.Contains(employee.NgachLuong)))
                 {
                     ccs.Add(new EmailAddress
                     {
@@ -2056,19 +2216,15 @@ namespace erp.Controllers
             }
 
             #region UAT
-            var uat = dbContext.Settings.Find(m => m.Key.Equals("UAT")).FirstOrDefault();
-            if (uat != null && uat.Value == "true")
-            {
-                tos = new List<EmailAddress>
-                        {
-                            new EmailAddress { Name = "Xuan", Address = "xuan.tm1988@gmail.com" }
-                        };
+            //tos = new List<EmailAddress>
+            //            {
+            //                new EmailAddress { Name = "Xuan", Address = "xuan.tm1988@gmail.com" }
+            //            };
 
-                ccs = new List<EmailAddress>
-                        {
-                            new EmailAddress { Name = "Xuan CC", Address = "xuantranm@gmail.com" }
-                        };
-            }
+            //ccs = new List<EmailAddress>
+            //            {
+            //                new EmailAddress { Name = "Xuan CC", Address = "xuantranm@gmail.com" }
+            //            };
             #endregion
 
             var pathToFile = _env.WebRootPath
@@ -2098,120 +2254,24 @@ namespace erp.Controllers
                 Type = "nhan-su-nghi"
             };
 
-            _emailSender.SendEmail(emailMessage);
+            // For faster update.
+            var scheduleEmail = new ScheduleEmail
+            {
+                Status = (int)EEmailStatus.ScheduleASAP,
+                To = emailMessage.ToAddresses,
+                CC = emailMessage.CCAddresses,
+                BCC = emailMessage.BCCAddresses,
+                Type = emailMessage.Type,
+                Title = emailMessage.Subject,
+                Content = emailMessage.BodyContent
+            };
+            dbContext.ScheduleEmails.InsertOne(scheduleEmail);
+            //_emailSender.SendEmail(emailMessage);
         }
 
         private bool EntityExists(string id)
         {
             return dbContext.Employees.Count(m => m.Id == id) > 0;
-        }
-
-        [Route("nhan-su/import")]
-        public IActionResult Import()
-        {
-            return View();
-        }
-
-        public async Task<IActionResult> OnPostExport()
-        {
-            string sWebRootFolder = _env.WebRootPath;
-            string sFileName = @"demo.xlsx";
-            string URL = string.Format("{0}://{1}/{2}", Request.Scheme, Request.Host, sFileName);
-            FileInfo file = new FileInfo(Path.Combine(sWebRootFolder, sFileName));
-            var memory = new MemoryStream();
-            using (var fs = new FileStream(Path.Combine(sWebRootFolder, sFileName), FileMode.Create, FileAccess.Write))
-            {
-                IWorkbook workbook;
-                workbook = new XSSFWorkbook();
-                ISheet excelSheet = workbook.CreateSheet("Demo");
-                IRow row = excelSheet.CreateRow(0);
-
-                row.CreateCell(0).SetCellValue("ID");
-                row.CreateCell(1).SetCellValue("Name");
-                row.CreateCell(2).SetCellValue("Age");
-
-                row = excelSheet.CreateRow(1);
-                row.CreateCell(0).SetCellValue(1);
-                row.CreateCell(1).SetCellValue("Kane Williamson");
-                row.CreateCell(2).SetCellValue(29);
-
-                row = excelSheet.CreateRow(2);
-                row.CreateCell(0).SetCellValue(2);
-                row.CreateCell(1).SetCellValue("Martin Guptil");
-                row.CreateCell(2).SetCellValue(33);
-
-                row = excelSheet.CreateRow(3);
-                row.CreateCell(0).SetCellValue(3);
-                row.CreateCell(1).SetCellValue("Colin Munro");
-                row.CreateCell(2).SetCellValue(23);
-
-                workbook.Write(fs);
-            }
-            using (var stream = new FileStream(Path.Combine(sWebRootFolder, sFileName), FileMode.Open))
-            {
-                await stream.CopyToAsync(memory);
-            }
-            memory.Position = 0;
-            return File(memory, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", sFileName);
-        }
-
-        public ActionResult OnPostImport()
-        {
-            IFormFile file = Request.Form.Files[0];
-            string folderName = "Upload";
-            string webRootPath = _env.WebRootPath;
-            string newPath = Path.Combine(webRootPath, folderName);
-            StringBuilder sb = new StringBuilder();
-            if (!Directory.Exists(newPath))
-            {
-                Directory.CreateDirectory(newPath);
-            }
-            if (file.Length > 0)
-            {
-                string sFileExtension = Path.GetExtension(file.FileName).ToLower();
-                ISheet sheet;
-                string fullPath = Path.Combine(newPath, file.FileName);
-                using (var stream = new FileStream(fullPath, FileMode.Create))
-                {
-                    file.CopyTo(stream);
-                    stream.Position = 0;
-                    if (sFileExtension == ".xls")
-                    {
-                        HSSFWorkbook hssfwb = new HSSFWorkbook(stream); //This will read the Excel 97-2000 formats  
-                        sheet = hssfwb.GetSheetAt(0); //get first sheet from workbook  
-                    }
-                    else
-                    {
-                        XSSFWorkbook hssfwb = new XSSFWorkbook(stream); //This will read 2007 Excel format  
-                        sheet = hssfwb.GetSheetAt(0); //get first sheet from workbook   
-                    }
-                    IRow headerRow = sheet.GetRow(0); //Get Header Row
-                    int cellCount = headerRow.LastCellNum;
-                    sb.Append("<table class='table'><tr>");
-                    for (int j = 0; j < cellCount; j++)
-                    {
-                        NPOI.SS.UserModel.ICell cell = headerRow.GetCell(j);
-                        if (cell == null || string.IsNullOrWhiteSpace(cell.ToString())) continue;
-                        sb.Append("<th>" + cell.ToString() + "</th>");
-                    }
-                    sb.Append("</tr>");
-                    sb.AppendLine("<tr>");
-                    for (int i = (sheet.FirstRowNum + 1); i <= sheet.LastRowNum; i++) //Read Excel File
-                    {
-                        IRow row = sheet.GetRow(i);
-                        if (row == null) continue;
-                        if (row.Cells.All(d => d.CellType == CellType.Blank)) continue;
-                        for (int j = row.FirstCellNum; j < cellCount; j++)
-                        {
-                            if (row.GetCell(j) != null)
-                                sb.Append("<td>" + row.GetCell(j).ToString() + "</td>");
-                        }
-                        sb.AppendLine("</tr>");
-                    }
-                    sb.Append("</table>");
-                }
-            }
-            return this.Content(sb.ToString());
         }
 
         public bool CheckExist(Employee entity)

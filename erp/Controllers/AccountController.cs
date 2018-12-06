@@ -96,7 +96,7 @@ namespace erp.Controllers
                     {
                         new Claim("UserName", result.UserName),
                         new Claim(ClaimTypes.Name, result.Id),
-                        new Claim(ClaimTypes.Email, result.Email),
+                        new Claim(ClaimTypes.Email, string.IsNullOrEmpty(result.Email) ? string.Empty : result.Email),
                         new Claim("FullName", result.FullName)
                     };
 
@@ -338,6 +338,14 @@ namespace erp.Controllers
 
         public void SendMailRegister(Employee entity, string pwd)
         {
+            var title = string.Empty;
+            if (!string.IsNullOrEmpty(entity.Gender))
+            {
+                if (entity.AgeBirthday > 50)
+                {
+                    title = entity.Gender == "Nam" ? "anh" : "chị";
+                }
+            }
             var url = Constants.System.domain;
             var subject = "Thông tin đăng nhập hệ thống.";
             var tos = new List<EmailAddress>
@@ -358,7 +366,7 @@ namespace erp.Controllers
             }
             string messageBody = string.Format(builder.HtmlBody,
                 subject,
-                entity.FullName,
+                title + " " + entity.FullName,
                 url,
                 entity.UserName,
                 pwd,

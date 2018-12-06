@@ -18,5 +18,10 @@ namespace ViewModels
         public IList<Employee> EmployeesDisable { get; set; }
 
         public Employee Manager { get; set; }
+
+        #region Salaries
+        public IList<NgachLuong> NgachLuongs { get; set; }
+        public IList<SalaryThangBangLuong> ThangBangLuongs { get; set; }
+        #endregion
     }
 }

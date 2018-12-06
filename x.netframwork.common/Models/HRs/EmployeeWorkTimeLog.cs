@@ -1,4 +1,5 @@
-﻿using MongoDB.Bson;
+﻿using Common.Enums;
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System;
 using System.Collections.Generic;
@@ -16,6 +17,10 @@ namespace Models
         public string EmployeeId { get; set; }
 
         public string EmployeeName { get; set; }
+
+        public string Part { get; set; }
+
+        public string Department { get; set; }
 
         public string EmployeeTitle { get; set; }
 
@@ -48,11 +53,11 @@ namespace Models
 
         public TimeSpan Early { get; set; }
 
-        public int StatusLate { get; set; } = 1;
+        public int StatusLate { get; set; } = (int)StatusWork.DuCong;
 
-        public int StatusEarly { get; set; } = 1;
+        public int StatusEarly { get; set; } = (int)StatusWork.DuCong;
 
-        public int Status { get; set; } = 1;
+        public int Status { get; set; } = (int)StatusWork.DuCong;
 
         // Save History
         public IList<AttLog> Logs { get; set; }
@@ -82,6 +87,8 @@ namespace Models
 
         public string Reason { get; set; }
 
+        public string ReasonDetail { get; set; }
+
         public string ConfirmId { get; set; }
 
         public string ConfirmName { get; set; }
@@ -89,9 +96,11 @@ namespace Models
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime? ConfirmDate { get; set; }
 
-        // Use if 1: leave. ... define later
         public string InOutMode { get; set; }
+        
+        public int Mode { get; set; } = (int)TimeWork.Normal;
 
+        // use later...
         public string Workcode { get; set; }
 
         public string SecureCode { get; set; }

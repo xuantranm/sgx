@@ -7,18 +7,28 @@ using System.ComponentModel.DataAnnotations;
 namespace Models
 {
     // Mục đích lấy dữ liệu nhanh, phục vụ tính lương, danh sách, report,...
-    // Mỗi tháng 1 records.
+    // Lay du lieu cua 1 nhan vien base EmployeeId.
+    // Lay du lieu va kiem tra tung location theo enrollNumber.
+    // Vd: nhan vien A làm việc 2 nơi: VP, NM thì mỗi tháng sẽ có 2 records. 1 nm, 1 vp. base enrollNumber.
     public class EmployeeWorkTimeMonthLog
     {
         [BsonId]
-        // Mvc don't know how to create ObjectId from string
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
 
         public string EmployeeId { get; set; }
 
-        // Use employeeID
+        public string EmployeeName { get; set; }
+
+        public string Part { get; set; }
+
+        public string Department { get; set; }
+
+        public string Title { get; set; }
+
         public string EnrollNumber { get; set; }
+
+        public string WorkplaceCode { get; set; }
 
         public int Year { get; set; } = DateTime.Now.Year;
 
@@ -27,11 +37,7 @@ namespace Models
         public double Workday { get; set; }
 
         // store miliseconds
-        public double WorkTime { get; set; }
-
-        public double NgayNghiHuongLuong { get; set; } = 0;
-
-        public double NgayNghiLeTetHuongLuong { get; set; } = 0;
+        public double WorkTime { get; set; } = 0;
 
         public double CongCNGio { get; set; } = 0;
 
@@ -39,61 +45,29 @@ namespace Models
 
         public double CongLeTet { get; set; } = 0;
 
-        // store miliseconds
         public double Late { get; set; }
 
         public double Early { get; set; }
 
-        public double LateApprove { get; set; }
+        public double NghiPhepNam { get; set; } = 0;
 
-        public double EarlyApprove { get; set; }
+        public double NghiViecRieng { get; set; } = 0;
 
-        // Số phút cho phép thiếu trong tháng
-        public double MissingMinuteAllow { get; set; } = 0;
+        public double NghiBenh { get; set; } = 0;
 
-        public double MissingMinuteAllowUsed { get; set; } = 0;
+        public double NghiKhongPhep { get; set; } = 0;
 
-        public int MissingMinuteAllowUsedCount { get; set; } = 0;
+        // thai san, dam cuoi
+        public double NghiHuongLuong { get; set; } = 0;
 
-        // số lần cho phép trể trong tháng
-        public int LateCountAllow { get; set; } = 0;
+        public double NghiLe { get; set; } = 0;
 
-        // số phút cho phép trể 1 lần
-        public double LateMinuteAllow { get; set; } = 0;
+        public double KhongChamCong { get; set; } = 0;
 
-        // số lần dùng cho phép trể trong tháng
-        public int LateCountAllowUsed { get; set; } = 0;
-
-        // Số lần đi trễ trong tháng
-        public int LateCount { get; set; } = 0;
-
-        // số lần cho phép về sớm trong tháng
-        public int EarlyCountAllow { get; set; } = 0;
-
-        // số phút cho phép về sớm 1 lần
-        public double EarlyMinuteAllow { get; set; } = 0;
-
-        // số lần dùng cho phép về sớm trong tháng
-        public int EarlyCountAllowUsed { get; set; } = 0;
-
-        // Số lần về sớm trong tháng
-        public int EarlyCount { get; set; } = 0;
-
-        public double Sunday { get; set; }
-
-        public double Holiday { get; set; }
-
-        public double LeaveDate { get; set; }
-
-        public double LeaveDateNotApprove { get; set; }
-
-        public double LeaveDateApproved { get; set; }
-
-        public int NoFingerDate { get; set; } = 0;
+        public double ChuNhat { get; set; } = 0;
 
         public string Rule { get; set; } = "26-25";
 
-        // Last update data timekeeper
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime LastUpdated { get; set; } = DateTime.Now;
     }

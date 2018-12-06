@@ -1,0 +1,150 @@
+﻿@using Common.Utilities;
+@using ViewModels;
+@model BangLuongViewModel
+@{
+    Layout = "~/Views/Shared/_LayoutSocialFbFS.cshtml";
+    var login = User.Identity.Name;
+    var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+}
+<link href="~/assets/wingman/css/big-screen.css" rel="stylesheet" />
+<style>
+    tbody th:nth-child(3), tbody td:nth-child(3) {
+        position: sticky;
+        left: 0px;
+    }
+
+    tbody td:nth-child(3) {
+        background-color: lightgoldenrodyellow;
+    }
+</style>
+<div class="main-container">
+    <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="/">Trang chủ</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">Dữ liệu vay & tạm ứng</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="flush-with-above space-0">
+        <div class="bg-white">
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="flush-with-above height-80 d-block">
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="credit" role="tabpanel" aria-labelledby="credit-tab">
+                <div class="container">
+                    <div class="row mb-3">
+                        <div class="col-lg-3 col-md-6">
+                            <a class="btn btn-lg btn-block btn-success btn-edit-real" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Credits/@Constants.LinkSalary.Update" data-toggle="tooltip" title="Bấm thay đổi thang bảng lương.">
+                                <i class="icon icon-edit"></i>Chỉnh sửa
+                            </a>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <a class="btn btn-lg btn-block btn-info" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Credits/@Constants.LinkSalary.Export" data-toggle="tooltip" title="Xuất ra tài liệu file excel.">
+                                <i class="fas fa-download"></i> Xuất excel
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card card-sm">
+                        <div class="card-header bg-secondary d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6>TẠM ỨNG & VAY</h6>(ĐVT: 1,000 đồng)
+                            </div>
+                            <form class="d-flex align-items-center" method="get" action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Credits" id="form-main">
+                                <span class="mr-2 text-muted text-small text-nowrap">Tháng:</span>
+                                <select asp-for="thang" class="custom-select ddl-times">
+                                    @{
+                                        foreach (var item in Model.MonthYears)
+                                        {
+                                            <option value="@item.Month-@item.Year">@item.Month/@item.Year</option>
+                                        }
+                                    }
+                                </select>
+                            </form>
+                        </div>
+                    </div>
+                    @{
+                        if (Model.SalaryCredits.Count > 0)
+                        {
+                            <div class="row">
+                                <div class="col-12 table-responsive-sm">
+                                    <table class="table table-responsive-sm table-bordered table-striped table-hover floating-header">
+                                        <thead style="background-color:lightgrey">
+                                            <tr style="background-color:yellow!important">
+                                                <th style="vertical-align:middle;font-weight:bold" nowrap>#</th>
+                                                <th style="vertical-align:middle;font-weight:bold" nowrap>Họ và tên</th>
+                                                <th style="vertical-align:middle;font-weight:bold" nowrap>Mã NV</th>
+                                                <th style="vertical-align:middle;font-weight:bold" nowrap>Khoản vay/ tạm ứng</th>
+                                                <th style="vertical-align:middle;font-weight:bold" nowrap>Số tiền còn lại</th>
+                                                <th style="vertical-align:middle;font-weight:bold" nowrap>Trả hàng tháng</th>
+                                                <th style="vertical-align:middle;font-weight:bold" nowrap>Lịch sử thanh toán</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @{
+                                                int i = 1;
+                                                int iEntity = 0;
+                                                foreach (var item in Model.SalaryCredits)
+                                                {
+                                                    <tr class="tr-@iEntity" data-id="@item.Id">
+                                                        <td>
+                                                            @i
+                                                        </td>
+                                                        <td>@item.FullName</td>
+                                                        <td>@item.MaNhanVien</td>
+                                                        <td>
+                                                            @item.MucThanhToanHangThang
+                                                        </td>
+                                                        <td>
+                                                            @item.MucThanhToanHangThang
+                                                        </td>
+                                                        <td>
+                                                            @item.MucThanhToanHangThang
+                                                        </td>
+                                                        <td>
+                                                            @item.MucThanhToanHangThang
+                                                        </td>
+                                                    </tr>
+                                                    i++;
+                                                }
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert alert-light" role="alert">
+                                Không có dữ liệu
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+@section scripts {
+    <script type="text/javascript" src="~/js/salary-credit.js?@DateTime.Now.Ticks"></script>
+}
+
+
+

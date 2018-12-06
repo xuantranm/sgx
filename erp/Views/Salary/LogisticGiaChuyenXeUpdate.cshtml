@@ -1,0 +1,227 @@
+﻿@using Common.Utilities;
+@using ViewModels;
+@model BangLuongViewModel
+@{
+    Layout = "~/Views/Shared/_LayoutSocialFbFS.cshtml";
+    var login = User.Identity.Name;
+    var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+}
+<link href="~/assets/wingman/css/big-screen.css" rel="stylesheet" />
+<style>
+    tbody th:nth-child(2), tbody td:nth-child(2) {
+        position: sticky;
+        left: 0px;
+    }
+
+    tbody td:nth-child(2) {
+        background-color: lightgoldenrodyellow;
+    }
+</style>
+
+<div class="main-container">
+    <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="/">Trang chủ</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">LOGISTICS - bảng giá chuyến xe</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="flush-with-above space-0">
+        <div class="bg-white">
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <ul class="nav nav-tabs" id="myTab" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.VanPhong/@Constants.LinkSalary.ThangBangLuong/@Constants.LinkSalary.Update">THANG LƯƠNG</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.VanPhong/@Constants.LinkSalary.BangLuong/@Constants.LinkSalary.Update">BẢNG LƯƠNG</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Timer">CHẤM CÔNG</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Setting">THAM SỐ</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.SaleKPIEmployee/@Constants.LinkSalary.Update">KINH DOANH</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link active" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.LogisticEmployeeCong/@Constants.LinkSalary.Update">LOGISTICS</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Credits/@Constants.LinkSalary.Update">VAY & TẠM ỨNG</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="flush-with-above height-80 d-block">
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="sale" role="tabpanel" aria-labelledby="sale-tab">
+                <div class="container">
+                    <div class="card card-sm">
+                        <div class="card-header bg-secondary d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6>BẢNG GIÁ CHUYẾN XE</h6>(ĐVT: 1,000 đồng)
+                            </div>
+                            <form class="d-flex align-items-center" method="get" action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.LogisticGiaChuyenXe/@Constants.LinkSalary.Update" id="filter-form">
+                                <span class="mr-2 text-muted text-small text-nowrap">Tháng:</span>
+                                <select asp-for="thang" class="custom-select ddl-times">
+                                    @{
+                                        foreach (var item in Model.MonthYears)
+                                        {
+                                            <option value="@item.Month-@item.Year">@item.Month/@item.Year</option>
+                                        }
+                                    }
+                                </select>
+                            </form>
+                        </div>
+                    </div>
+
+                    <h5 class="mb-4">Dữ liệu ...</h5>
+
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <a href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.LogisticEmployeeCong" class="btn btn-default btn-list" data-toggle="tooltip" title="Bấm trở về.">
+                                <i class="icon icon-back"></i>Trở về
+                            </a>
+                            <a href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.LogisticGiaChuyenXeTemplate" class="btn btn-success btn-list" data-toggle="tooltip" title="Bấm trở về.">
+                                <i class="icon icon-back"></i>Tải mẫu dữ liệu
+                            </a>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <form method="post" action="/sl/logistic-gia-chuyen-xe-import/" enctype="multipart/form-data">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <input type="file" name="files" class="form-control fUpload" />
+                                    </div>
+                                    <div class="col-md-8">
+                                        <input type="button" class="btn btn-danger btnUpload" value="Tải lên" />
+                                    </div>
+                                </div>
+                                <br />
+                                <div class="progress">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated" style="width:0%"></div>
+                                </div>
+                                <div id="dvData"></div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <form action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.LogisticGiaChuyenXe/@Constants.LinkSalary.Update" method="post" class="data-form">
+                        <input type="hidden" name="thang" value="@Model.thang" />
+                        <div class="row mb-3">
+                            <div class="col-md-3 col-sm-6 col-12">
+                                <button type="submit" class="btn btn-lg btn-block btn-danger btn-submit" data-toggle="tooltip" title="Bấm cập nhật dữ liệu"><i class="icon-save"></i>&nbsp;Cập nhật</button>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-12 table-responsive-sm">
+                                <table class="table table-responsive-sm table-bordered table-striped table-hover floating-header">
+                                    <thead style="background-color:lightgrey">
+                                        <tr>
+                                            <th style="vertical-align:middle;font-weight:bold" nowrap>#</th>
+                                            <th style="vertical-align:middle;font-weight:bold" nowrap>Tuyến</th>
+                                            <th style="vertical-align:middle;font-weight:bold" nowrap>Loại xe</th>
+                                            <th style="vertical-align:middle;font-weight:bold">
+                                                Lương năng suất chuyến+ cơm
+                                            </th>
+                                            <th style="vertical-align:middle;font-weight:bold">Hỗ trợ tiền cơm tỉnh</th>
+                                            <th style="vertical-align:middle;font-weight:bold">
+                                                Lương năng suất
+                                                chuyến(trừ cơm)
+                                            </th>
+                                            <th style="vertical-align:middle;font-weight:bold" nowrap>Chuyến 1</th>
+                                            <th style="vertical-align:middle;font-weight:bold" nowrap>Chuyến 2</th>
+                                            <th style="vertical-align:middle;font-weight:bold" nowrap>Chuyến 3</th>
+                                            <th style="vertical-align:middle;font-weight:bold" nowrap>Chuyến 4</th>
+                                            <th style="vertical-align:middle;font-weight:bold" nowrap>Chuyến 5</th>
+                                            <th style="vertical-align:middle;font-weight:bold">
+                                                Hỗ trợ
+                                                chuyến đêm
+                                            </th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody>
+                                        @{
+                                            int i = 1;
+                                            int iE = 0;
+                                            foreach (var item in Model.LogisticGiaChuyenXes)
+                                            {
+                                        <tr class="tr-@item.Id" data-id="@item.Id">
+                                            <td>
+                                                @i
+                                                <input type="hidden" name="LogisticGiaChuyenXes[@iE].Id" value="@item.Id" />
+                                                <input type="hidden" name="LogisticGiaChuyenXes[@iE].TuyenAlias" value="@item.TuyenAlias" />
+                                                <input type="hidden" name="LogisticGiaChuyenXes[@iE].TuyenCode" value="@item.TuyenCode" />
+                                                <input type="hidden" name="LogisticGiaChuyenXes[@iE].LoaiXeAlias" value="@item.LoaiXeAlias" />
+                                                <input type="hidden" name="LogisticGiaChuyenXes[@iE].LoaiXeCode" value="@item.LoaiXeCode" />
+                                            </td>
+                                            <td>@item.Tuyen</td>
+                                            <td>@item.LoaiXe</td>
+                                            <td>
+                                                <input value="@item.LuongNangSuatChuyenCom" name="LogisticGiaChuyenXes[@iE].LuongNangSuatChuyenCom" class="form-control width100 numeric luongnangsuatchuyencom-@iE" data-id="luongnangsuatchuyencom-@iE" />
+                                            </td>
+                                            <td>
+                                                <input value="@item.HoTroTienComTinh" name="LogisticGiaChuyenXes[@iE].HoTroTienComTinh" class="form-control width100 numeric hotrotiencomtinh-@iE" data-id="hotrotiencomtinh-@iE" />
+                                            </td>
+                                            <td>
+                                                <input value="@item.LuongNangSuatChuyen" name="LogisticGiaChuyenXes[@iE].LuongNangSuatChuyen" class="form-control width100 numeric luongnangsuatchuyen-@iE" data-id="luongnangsuatchuyen-@iE" />
+                                            </td>
+                                            <td>
+                                                <input value="@item.Chuyen1" name="LogisticGiaChuyenXes[@iE].Chuyen1" class="form-control width100 numeric chuyen1-@iE" data-id="chuyen1-@iE" />
+                                            </td>
+                                            <td>
+                                                <input value="@item.Chuyen2" name="LogisticGiaChuyenXes[@iE].Chuyen2" class="form-control width100 numeric chuyen2-@iE" data-id="chuyen2-@iE" />
+                                            </td>
+                                            <td>
+                                                <input value="@item.Chuyen3" name="LogisticGiaChuyenXes[@iE].Chuyen3" class="form-control width100 numeric chuyen3-@iE" data-id="chuyen3-@iE" />
+                                            </td>
+                                            <td>
+                                                <input value="@item.Chuyen4" name="LogisticGiaChuyenXes[@iE].Chuyen4" class="form-control width100 numeric chuyen4-@iE" data-id="chuyen4-@iE" />
+                                            </td>
+                                            <td>
+                                                <input value="@item.Chuyen5" name="LogisticGiaChuyenXes[@iE].Chuyen5" class="form-control width100 numeric chuyen5-@iE" data-id="chuyen5-@iE" />
+                                            </td>
+                                            <td>
+                                                <input value="@item.HoTroChuyenDem" name="LogisticGiaChuyenXes[@iE].HoTroChuyenDem" class="form-control width100 numeric hotrochuyendem-@iE" data-id="hotrochuyendem-@iE" />
+                                            </td>
+                                        </tr>
+                                                i++;
+                                                iE++;
+                                            }
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+@section scripts {
+    <script type="text/javascript" src="~/js/salary-logistic-gia-chuyen-xe-update.js?@DateTime.Now.Ticks"></script>
+}
+
+
+

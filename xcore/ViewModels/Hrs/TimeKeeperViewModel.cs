@@ -46,5 +46,7 @@ namespace ViewModels
         public int Approve { get; set; }
         public IList<Trainning> ListTraining;
         #endregion 
+
+        public bool Approver { get; set; }
     }
 }

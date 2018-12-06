@@ -18,6 +18,15 @@
     </div>
 }
 
+@if (Model.Approver)
+{
+    <div class="form-group">
+        <a href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Approvement" style="cursor:pointer" data-toggle="tooltip" title="Quản lý phép của nhân viên và lịch sử duyệt phép.">
+            <i class="fas fa-chalkboard-teacher"></i> Lịch sử duyệt công
+        </a>
+    </div>
+}
+
 
 <section>
     <input type="hidden" id="hidUrlGetItem" value="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Item" />
@@ -43,6 +52,23 @@
                             <span class="badge badge-danger">@Model.Employee.Part</span>
                             <span class="badge badge-danger">@Model.Employee.Title</span>
                         </div>
+                        @{
+                            if (Model.Employee.Workplaces != null && Model.Employee.Workplaces.Count > 0)
+                            {
+                                <div class="mb-3">
+                                    @foreach (var time in Model.Employee.Workplaces)
+                                    {
+                                        if (!string.IsNullOrEmpty(time.Fingerprint))
+                                        {
+                                            <p>
+                                                Nơi làm việc: <span class="badge badge-info">@time.Name (@time.Code)</span>
+                                                Mã chấm công: <span class="badge badge-info">@time.Fingerprint</span>
+                                            </p>
+                                        }
+                                    }
+                                </div>
+                            }
+                        }
                         <div>
                             <ul class="list-inline text-small d-inline-block">
                                 <li class="list-inline-item">
@@ -75,14 +101,21 @@
         double workminutes = dayworking * 8 * 60;
         double late = 0;
         double early = 0;
-        if (Model.EmployeeWorkTimeMonthLog != null)
+        if (Model.EmployeeWorkTimeMonthLogs != null && Model.EmployeeWorkTimeMonthLogs.Count > 0)
         {
-            var employeeWorkTimeMonthLog = Model.EmployeeWorkTimeMonthLog;
-            lastUpdated = employeeWorkTimeMonthLog.LastUpdated.ToString("dd/MM/yyyy");
-            workday = employeeWorkTimeMonthLog.Workday;
-            workminutes = Math.Round(TimeSpan.FromMilliseconds(employeeWorkTimeMonthLog.WorkTime).TotalMinutes, 0);
-            late = employeeWorkTimeMonthLog.Late - employeeWorkTimeMonthLog.LateApprove;
-            early = employeeWorkTimeMonthLog.Early - employeeWorkTimeMonthLog.EarlyApprove;
+            workday = 0;
+            workminutes = 0;
+            late = 0;
+            early = 0;
+            foreach (var month in Model.EmployeeWorkTimeMonthLogs)
+            {
+                workday += month.Workday;
+                workminutes += month.WorkTime;
+                late += month.Late;
+                early += month.Early;
+            }
+            lastUpdated = Model.EmployeeWorkTimeMonthLogs[0].LastUpdated.ToString("dd/MM/yyyy");
+            workminutes = Math.Round(TimeSpan.FromMilliseconds(workminutes).TotalMinutes, 0);
         }
     }
     <span class="text-small"> Dữ liệu tính tới ngày @lastUpdated</span>
@@ -150,6 +183,7 @@
                 <thead>
                     <tr>
                         <th scope="col"></th>
+                        <th scope="col">#</th>
                         <th scope="col">Ngày</th>
                         <th scope="col">Vào</th>
                         <th scope="col">Ra</th>
@@ -163,16 +197,22 @@
                 <tbody>
                     @{
                         var iXacNhan = -8;
+                        var i = 1;
                         if (DateTime.Now.Date.AddDays(iXacNhan).DayOfWeek == DayOfWeek.Sunday)
                         {
                             iXacNhan--;
                         }
                         foreach (var log in Model.EmployeeWorkTimeLogs)
                         {
+                            var isToday = false;
+                            if (log.Date.Date == DateTime.Now.Date)
+                            {
+                                isToday = true;
+                            }
                             <tr>
                                 <td class="log-@log.Id">
                                     @{
-                                        if (log.Date.Date != DateTime.Now.Date)
+                                        if (!isToday)
                                         {
                                             if (log.Status == 0)
                                             {
@@ -224,6 +264,16 @@
                                                     statusBag = "badge-pill";
                                                 }
                                                 <span class="badge @statusBag">@Constants.TimeKeeper(log.Status)</span>
+
+                                                if (log.Mode == 1 && !string.IsNullOrEmpty(log.Reason))
+                                                {
+                                                    var displayReason = log.Reason;
+                                                    if (!string.IsNullOrEmpty(log.ReasonDetail))
+                                                    {
+                                                        displayReason += ". Chi tiết: " + log.ReasonDetail;
+                                                    }
+                                                    <p><small class="badge badge-light reason-info-text" data-toggle="tooltip" title="@displayReason">Lý do</small></p>
+                                                }
                                             }
                                         }
                                         else
@@ -232,23 +282,19 @@
                                         }
                                     }
                                 </td>
+                                <td>@i</td>
                                 <td scope="row">
                                     <span class="text-muted">@log.DateOnlyRecord.ToString("dd/MM/yyyy")</span>
                                 </td>
                                 <td>@log.In</td>
-                                <td>@log.Out</td>
                                 <td>
-                                    @{
-                                        if (log.Start.TotalMilliseconds == 0)
-                                        {
-                                            <span></span>
-                                        }
-                                        else
-                                        {
-                                            <small>@log.Start.ToString(@"hh\:mm")-@log.End.ToString(@"hh\:mm")</small>
-                                        }
+                                    <span>@log.Out</span>
+                                </td>
+                                <td>
+                                    @if (log.Start.TotalMilliseconds != 0)
+                                    {
+                                        <small>@log.Start.ToString(@"hh\:mm")-@log.End.ToString(@"hh\:mm")</small>
                                     }
-
                                 </td>
                                 <td>
                                     @if ((log.StatusLate == 0 || log.StatusLate == 2 || log.StatusLate == 4) && log.Late.TotalMilliseconds > 0)
@@ -263,26 +309,33 @@
                                     }
                                 </td>
                                 <td>
-                                    @{
-                                        if (log.Status == 3)
+                                    @if (log.Status == 3)
+                                    {
+                                        <span>1</span>
+                                    }
+                                    else
+                                    {
+                                        if (log.WorkDay == 0)
                                         {
-                                            <span>1</span>
+                                            if (!string.IsNullOrEmpty(log.Reason))
+                                            {
+                                                var displayReason = log.Reason;
+                                                if (!string.IsNullOrEmpty(log.ReasonDetail))
+                                                {
+                                                    displayReason += ". Chi tiết: " + log.ReasonDetail;
+                                                }
+                                                <small>@displayReason</small>
+                                            }
                                         }
                                         else
                                         {
-                                            if (log.WorkDay == 0)
-                                            {
-                                                <small>@log.Workcode</small>
-                                            }
-                                            else
-                                            {
-                                                <span>@log.WorkDay</span>
-                                            }
+                                            <span>@log.WorkDay</span>
                                         }
                                     }
                                 </td>
                                 <td><small>@log.WorkplaceCode</small></td>
                             </tr>
+                            i++;
                         }
                     }
                 </tbody>
@@ -290,7 +343,6 @@
         </div>
         <!--end of col-->
     </div>
-    <!--end of row-->
 }
 else
 {
@@ -299,31 +351,20 @@ else
     </div>
 }
 
-<small>Phòng Hành Chính Nhân Sự cho phép mỗi nhân viên 01 tháng được đi trễ về sớm 15 phút.</small>
-<small>Hệ thống sẽ tính tự động theo điều kiện đến trước và chuyển sang trạng thái "Duyệt tự động".</small>
 <br />
-<small>Nếu ngoài số phút cho phép này. Không có lý do chính đáng và không được duyệt thì thiếu thời gian buổi nào trừ 0.5 ngày/buổi.</small>
+<small>Thiếu thời gian làm việc và không có xác nhận công của quản lý thì áp dụng cách tính:</small>
+<small> * Quá giờ làm việc qui định 15 phút sẽ không tính công buổi làm việc đó.</small>
+<small> * Thời gian thiếu được cộng dồn làm cơ sở xét thưởng, nâng lương cuối năm.</small>
+<br />
 <small>Vui lòng xác nhận công trong vòng 02 ngày.</small>
 <br />
 <small>Chúc ngày làm việc hiệu quả.</small>
 
 
 <script id="tmplDataItem" type="text/x-jsrender">
-    <input type="hidden" name="EmployeeWorkTimeLog.Id" value="{{:id}}" />
-    <div class="form-group">
-        <label class="control-label">Người xác nhận</label>
-        <select name="EmployeeWorkTimeLog.ConfirmId" class="form-control">
-            @{
-                foreach (var item in Model.Approves)
-                {
-                    var title = string.Empty;
-                    <option value="@item.Id">@item.Name</option>
-                }
-            }
-        </select>
-    </div>
+    <input type="hidden" class="hidLogId" name="EmployeeWorkTimeLog.Id" value="{{:id}}" />
     <div class="from-group">
-        <label class="control-label">Chi tiết</label>
+        <label class="control-label">Thông tin xác nhận công</label>
     </div>
     <div class="row">
         <div class="col-12">
@@ -344,7 +385,35 @@ else
     </div>
     <div class="form-group">
         <label class="control-label">Lý do</label>
-        <textarea name="EmployeeWorkTimeLog.Reason" class="form-control js-auto-size">{{:reason}}</textarea>
+        <select class="form-control xac-nhan-cong-reason" name="EmployeeWorkTimeLog.Reason">
+            <option value="">Chọn</option>
+            <option value="Đi công tác">Đi công tác</option>
+            <option value="Quên chấm công">Quên chấm công</option>
+            <option value="Lý do khác">Lý do khác</option>
+        </select>
+    </div>
+    <div class="alert alert-info reason-description-3 d-none">
+        <label class="control-label">Lý do khác bao gồm: kẹt xe, thiên tai, tai nạn,...</label>
+    </div>
+    <div class="alert alert-danger reason-result-2 d-none">
+        <label class="control-label">Bạn thông cảm, theo qui định với lý do "Quên chấm công" trong 01 tháng chỉ được gửi xác nhận 01 lần.</label>
+        <p>Lần gửi xác nhận quên chấm công trong tháng:</p>
+        <p class="reason-detail-2-cancel"></p>
+    </div>
+    <div class="alert alert-danger reason-result-3 d-none">
+        <label class="control-label">Bạn thông cảm, theo qui định với lý do "Lý do khác" trong 01 tháng chỉ được gửi xác nhận 05 lần.</label>
+        <p>Lần gửi xác nhận "Lý do khác" trong tháng:</p>
+        <div class="reason-detail-3-cancel"></div>
+    </div>
+    <div class="form-group reason-detail d-none">
+        <label class="control-label">Chi tiết</label>
+        <textarea name="EmployeeWorkTimeLog.ReasonDetail" class="form-control js-auto-size">{{:reasonDetail}}</textarea>
+    </div>
+    <div class="form-group">
+        <label class="control-label">Người xác nhận</label>
+        <select name="EmployeeWorkTimeLog.ConfirmId" class="form-control ddl-approve-xac-nhan-cong">
+            <option value="">Chọn</option>
+        </select>
     </div>
 </script>
 
@@ -358,6 +427,7 @@ else
                 </button>
             </div>
             <form class="data-form" method="post" action="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Request" enctype="multipart/form-data">
+                <input type="hidden" id="hidReasonRule" value="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.ReasonRule" />
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                 <span class="result"></span>
                 <div class="modal-body data-item-edit">
@@ -365,7 +435,7 @@ else
 
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fas fa-times"></i>Hủy và đóng</button>
-                    <button type="submit" class="btn btn-primary btn-submit-timekeeping"><i class="icon-save"></i>&nbsp;Gửi</button>
+                    <button type="submit" class="btn btn-primary width140 btn-submit-timekeeping" disabled><i class="icon-save"></i>&nbsp;Gửi</button>
                 </div>
             </form>
         </div>

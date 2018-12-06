@@ -10,30 +10,26 @@
     </script>
 
     <title>@Html.Raw(ViewBag.Title)</title>
-    <meta charset="utf-8">
+    <meta charset="utf-8" />
     <meta name="robots" content="@Html.Raw(ViewBag.Robots)" />
-    <meta name="keywords" content="@Html.Raw(ViewBag.KeyWords)">
-    <meta name="description" content="@Html.Raw(ViewBag.Description)">
-    <meta name="author" content="@Html.Raw(ViewBag.MetaAuthor)">
+    <meta name="keywords" content="@Html.Raw(ViewBag.KeyWords)" />
+    <meta name="description" content="@Html.Raw(ViewBag.Description)" />
+    <meta name="author" content="@Html.Raw(ViewBag.MetaAuthor)" />
     <meta property="og:url" content="@Html.Raw(ViewBag.OgUrl)" />
-    <meta property="og:type" content="website">
+    <meta property="og:type" content="website" />
     <meta property="og:title" content="@Html.Raw(ViewBag.OgTitle)" />
     <meta property="og:description" content="@Html.Raw(ViewBag.OgDescription)" />
 
     <link rel="canonical" href="@Html.Raw(ViewBag.Canonical)" />
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400,400i,500" rel="stylesheet">
-    <link href="~/lib/jquery-ui-1.12.1/jquery-ui.min.css" rel="stylesheet">
-
-    @*<link href="~/assets/wingman/fonts/rubik300-400-400i-500.css" rel="stylesheet" />*@
-    <link href="~/lib/fontawesome-free-5.3.1-web/css/all.css" rel="stylesheet">
-    @*<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">*@
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400,400i,500" rel="stylesheet" />
+    <link href="~/lib/jquery-ui-1.12.1/jquery-ui.min.css" rel="stylesheet" />
+    <link href="~/lib/fontawesome-free-5.3.1-web/css/all.css" rel="stylesheet" />
     <link href="~/assets/wingman/css/socicon.css" rel="stylesheet" type="text/css" media="all" />
     <link href="~/assets/wingman/css/entypo.css" rel="stylesheet" type="text/css" media="all" />
     <link href="~/lib/zoom/zoom.css" rel="stylesheet" />
-    <!--Bootstrap 4.1.0-->
     <link href="~/lib/toastr/toastr.min.css" rel="stylesheet" />
     <link href="~/assets/wingman/css/theme.css" rel="stylesheet" type="text/css" media="all" />
     <link href="~/lib/bootstrap-multiselect/dist/css/bootstrap-multiselect.css" rel="stylesheet" />
@@ -45,39 +41,41 @@
     <link href="~/assets/wingman/css/custom.css" rel="stylesheet" type="text/css" media="all" />
     <link href="~/assets/wingman/css/screen.css" rel="stylesheet" type="text/css" media="all" />
 
-
     @RenderSection("css", required: false)
-
-    <!-- Global site tag (gtag.js) - Google Analytics -->
-    @*<script async src="https://www.googletagmanager.com/gtag/js?id=UA-52115242-13"></script>
-        <script>
-            window.dataLayer = window.dataLayer || [];
-            function gtag() { dataLayer.push(arguments); }
-            gtag('js', new Date());
-
-            gtag('config', 'UA-52115242-13');
-        </script>*@
     <script type="text/javascript" src="~/lib/jquery3.2.1/dist/jquery-3.2.1.min.js"></script>
     <script type="text/javascript" src="~/lib/imsky-holder-8220898/holder.min.js"></script>
 </head>
 
 <body>
     @{
-        var login = User.Identity.Name;
-        var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+        var isLogin = false;
         var rightSystem = false;
         var rightHr = false;
+        var rightBangChamCong = false;
         var rightLuong = false;
-        var rightLuongReal = false;
+        var rightLuongVanPhong = false;
+        var rightLuongNhaMay = false;
+        var rightLuongSanXuat = false;
         var rightNhaMay = false;
+        var login = User.Identity.Name;
         if (!string.IsNullOrEmpty(login))
         {
+            isLogin = true;
+            var loginUserName = string.Empty;
+            if (User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault() != null)
+            {
+                loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+            }
             rightSystem = Utility.IsRight(login, Constants.Rights.System, (int)ERights.View);
             rightHr = Utility.IsRight(login, Constants.Rights.HR, (int)ERights.View);
+            rightBangChamCong = Utility.IsRight(login, Constants.Rights.BangChamCong, (int)ERights.View);
             rightLuong = Utility.IsRight(login, Constants.Rights.Luong, (int)ERights.View);
-            rightLuongReal = Utility.IsRight(login, Constants.Rights.LuongReal, (int)ERights.View);
+            rightLuongVanPhong = Utility.IsRight(login, Constants.Rights.LuongVP, (int)ERights.View);
+            rightLuongNhaMay = Utility.IsRight(login, Constants.Rights.LuongNM, (int)ERights.View);
+            rightLuongSanXuat = Utility.IsRight(login, Constants.Rights.LuongSX, (int)ERights.View);
             rightNhaMay = Utility.IsRight(login, Constants.Rights.NhaMay, (int)ERights.View);
         }
+
     }
 
     @if (ViewData["Disable"] != null)
@@ -137,30 +135,59 @@
                             @if (rightLuong)
                             {
                                 var displayLaw = string.Empty;
-                                @if (rightLuongReal)
+                                @if (rightLuongVanPhong || rightLuongNhaMay || rightLuongSanXuat)
                                 {
                                     displayLaw = "BHXH";
                                 }
                                 <li class="nav-item dropdown">
                                     <a class="nav-link dropdown-toggle" href="#" id="pagesDropdown" role="button" data-toggle="dropdown"><i class="fas fa-dollar-sign"></i> Lương</a>
                                     <div class="dropdown-menu" aria-labelledby="pagesDropdown">
-                                        <a class="dropdown-item" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.ThangBangLuongLaw">
-                                            <span class="h6 mb-0">Thang bảng lương @displayLaw</span>
-                                        </a>
-                                        <div class="dropdown-divider"></div>
-                                        <a class="dropdown-item" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.BangLuongLaw">
+                                        <a class="dropdown-item" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.BangLuong">
                                             <span class="h6 mb-0">Bảng lương @displayLaw</span>
                                         </a>
-                                        @if (rightLuongReal)
-                                        {
+                                        @{
+                                            if (rightLuongVanPhong)
+                                            {
+                                                <div class="dropdown-divider"></div>
+                                                <a class="dropdown-item" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.VanPhong/@Constants.LinkSalary.BangLuong">
+                                                    <span class="h6 mb-0">Bảng lương Văn Phòng</span>
+                                                </a>
+                                            }
+                                            if (rightLuongNhaMay)
+                                            {
+                                                <div class="dropdown-divider"></div>
+                                                <a class="dropdown-item" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Factory/@Constants.LinkSalary.BangLuong">
+                                                    <span class="h6 mb-0">Bảng lương Nhà Máy</span>
+                                                </a>
+                                            }
+                                            if (rightLuongSanXuat)
+                                            {
+                                                <div class="dropdown-divider"></div>
+                                                <a class="dropdown-item" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.BangLuong">
+                                                    <span class="h6 mb-0">Bảng lương Sản Xuất</span>
+                                                </a>
+                                            }
+
                                             <div class="dropdown-divider"></div>
-                                            <a class="dropdown-item" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.ThangBangLuongReal">
-                                                <span class="h6 mb-0">Thang bảng lương</span>
+                                            <a class="dropdown-item" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.ThangBangLuong">
+                                                <span class="h6 mb-0">Thang bảng lương @displayLaw</span>
                                             </a>
+
+                                            if (rightLuongVanPhong)
+                                            {
                                             <div class="dropdown-divider"></div>
-                                            <a class="dropdown-item" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.BangLuongReal">
-                                                <span class="h6 mb-0">Bảng lương</span>
+                                            <a class="dropdown-item" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.VanPhong/@Constants.LinkSalary.ThangBangLuong">
+                                                <span class="h6 mb-0">Thang bảng lương Văn Phòng</span>
                                             </a>
+                                            }
+
+                                            if (rightLuongNhaMay || rightLuongSanXuat)
+                                            {
+                                                <div class="dropdown-divider"></div>
+                                                <a class="dropdown-item" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.FactoryProduction/@Constants.LinkSalary.ThangBangLuong">
+                                                    <span class="h6 mb-0">Thang bảng lương Nhà Máy & Sản xuất</span>
+                                                </a>
+                                            }
                                         }
                                     </div>
                                 </li>
@@ -172,29 +199,50 @@
                                     <a class="dropdown-item" href="/tai-lieu/hanh-chinh">Hành chính</a>
                                 </div>
                             </li>
-                            <li class="nav-item">
-                                <a href="/@Constants.LinkHr.Main/@Constants.LinkHr.Human/@Constants.LinkHr.Information/@login" class="nav-link" data-toggle="tooltip" title="Bấm vô để xem thông tin tài khoản."><i class="fas fa-user-shield"></i> Thông tin</a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="/@Constants.LinkLeave.Main/@Constants.LinkLeave.Index" class="nav-link" data-toggle="tooltip" title="Bấm vô tạo nghỉ phép, lịch sử nghỉ phép."><i class="far fa-calendar"></i> Nghỉ phép</a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Index" class="nav-link" data-toggle="tooltip" title="Bấm vô xem lịch sử chấm công, xác nhận công."><i class="fas fa-fingerprint"></i> Chấm công</a>
-                            </li>
-                            <li class="nav-item">
-                                <span data-toggle="modal" data-target="#pwdModal">
-                                    <a href="javascript:;" class="nav-link" title="Bấm thay đổi mật khẩu." data-toggle="tooltip">
-                                        <i class="fas fa-key"></i> Thay đổi mật khẩu
+                            @if (isLogin)
+                            {
+                                <li class="nav-item">
+                                    <a href="/@Constants.LinkHr.Main/@Constants.LinkHr.Human/@Constants.LinkHr.Information/@login" class="nav-link" data-toggle="tooltip" title="Bấm vô để xem thông tin tài khoản."><i class="fas fa-user-shield"></i> Thông tin</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="/@Constants.LinkLeave.Main/@Constants.LinkLeave.Index" class="nav-link" data-toggle="tooltip" title="Bấm vô tạo nghỉ phép, lịch sử nghỉ phép.">
+                                        <i class="far fa-calendar"></i> Nghỉ phép
                                     </a>
-                                </span>
-                            </li>
-                            <li class="nav-item">
-                                <form asp-area="" asp-controller="Account" asp-action="Logout" method="post" class="navbar-right logout-form" id="logout-form-layout">
-                                    <a href="#" onclick="document.getElementById('logout-form-layout').submit()" class="nav-link" title="Bấm vô để thoát tài khoản." data-toggle="tooltip">
-                                        <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                                </li>
+                                <li class="nav-item">
+                                    <a href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Index" class="nav-link" data-toggle="tooltip" title="Bấm vô xem lịch sử chấm công, xác nhận công.">
+                                        <i class="fas fa-fingerprint"></i> Chấm công
                                     </a>
-                                </form>
-                            </li>
+                                </li>
+                                @if (rightBangChamCong)
+                                {
+                                    <li class="nav-item">
+                                        <a href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Timer" class="nav-link" data-toggle="tooltip" title="Bấm vô xem bảng chấm công.">
+                                            <i class="far fa-calendar-alt"></i> Bảng chấm công
+                                        </a>
+                                    </li>
+                                }
+                                <li class="nav-item">
+                                    <span data-toggle="modal" data-target="#pwdModal">
+                                        <a href="javascript:;" class="nav-link" title="Bấm thay đổi mật khẩu." data-toggle="tooltip">
+                                            <i class="fas fa-key"></i> Thay đổi mật khẩu
+                                        </a>
+                                    </span>
+                                </li>
+                                <li class="nav-item">
+                                    <form asp-area="" asp-controller="Account" asp-action="Logout" method="post" class="navbar-right logout-form" id="logout-form-layout">
+                                        <a href="#" onclick="document.getElementById('logout-form-layout').submit()" class="nav-link" title="Bấm vô để thoát tài khoản." data-toggle="tooltip">
+                                            <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                                        </a>
+                                    </form>
+                                </li>
+                            }
+                            else
+                            {
+                                <li class="nav-item">
+                                    <a href="/tk/dang-nhap" class="nav-link" data-toggle="tooltip" title="Bấm vô đăng nhập."><i class="far fa-user"></i> Đăng nhập</a>
+                                </li>
+                            }
                         </ul>
                         <form class="form-inline col p-0 pl-md-2 pr-md-3 d-none">
                             <input class="form-control w-100 common-search" type="search" placeholder="Tìm kiếm" aria-label="Tìm kiếm" onsearch="OnSearch(this)" />
@@ -339,7 +387,7 @@
                                 </a>
                                 @if (rightLuong)
                                 {
-                                    <a class="list-group-item d-flex justify-content-between" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Index">
+                                    <a class="list-group-item d-flex justify-content-between" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.BangLuong">
                                         <div>
                                             <span>Lương</span>
                                         </div>
@@ -638,6 +686,8 @@
     <script type="text/javascript" src="~/lib/js-render/jsrender.min.js"></script>
     <script type="text/javascript" src="~/lib/select2/select2.min.js"></script>
     <script type="text/javascript" src="~/lib/jquery.floatThead/dist/jquery.floatThead.min.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC7PCKw6JWnv5YTgKQbl-mi2wsxAXQTPeM&libraries=places&region=vn&language=vi"
+            async defer></script>
     <script type="text/javascript" src="~/js/site.js?@DateTime.Now.Ticks"></script>
 
     @RenderSection("scripts", required: false)

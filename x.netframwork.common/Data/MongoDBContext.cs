@@ -121,6 +121,14 @@ namespace Data
             }
         }
 
+        public IMongoCollection<LeaveType> LeaveTypes
+        {
+            get
+            {
+                return _database.GetCollection<LeaveType>("LeaveTypes");
+            }
+        }
+
         public IMongoCollection<Leave> Leaves
         {
             get
@@ -164,5 +172,21 @@ namespace Data
             }
         }
         #endregion
+
+        public IMongoCollection<Role> Roles
+        {
+            get
+            {
+                return _database.GetCollection<Role>("Roles");
+            }
+        }
+
+        public IMongoCollection<RoleUser> RoleUsers
+        {
+            get
+            {
+                return _database.GetCollection<RoleUser>("RoleUsers");
+            }
+        }
     }
 }

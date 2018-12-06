@@ -8,14 +8,22 @@
 }
 
 @if (Model.RightRequest)
-    {
-        <div class="form-group">
-            <a href="/@Constants.LinkLeave.Main/@Constants.LinkLeave.HelpLeave" style="cursor:pointer" data-toggle="tooltip" title="Bấm vô tạo nghỉ phép cho nhân viên khác.">
-                <i class="fas fa-hands-helping"></i> Tạo nghỉ phép cho nhân viên khác
-            </a>
-        </div>
-    }
+{
+    <div class="form-group">
+        <a href="/@Constants.LinkLeave.Main/@Constants.LinkLeave.HelpLeave" style="cursor:pointer" data-toggle="tooltip" title="Bấm vô tạo nghỉ phép cho nhân viên khác.">
+            <i class="fas fa-hands-helping"></i> Tạo nghỉ phép cho nhân viên khác
+        </a>
+    </div>
+}
 
+@if (Model.Approver)
+{
+    <div class="form-group">
+        <a href="/@Constants.LinkLeave.Main/@Constants.LinkLeave.Approvement" style="cursor:pointer" data-toggle="tooltip" title="Quản lý phép của nhân viên và lịch sử duyệt phép.">
+            <i class="fas fa-chalkboard-teacher"></i> Quản lý phép và lịch sử duyệt phép
+        </a>
+    </div>
+}
 
 <h5 class="mb-4">Tổng quan</h5>
 
@@ -35,7 +43,7 @@
         <li class="list-group-item">
             <div class="d-flex justify-content-between">
                 <div><i class="icon-calculator mr-1"></i> Tổng số ngày phép còn lại</div>
-                <span class="badge badge-primary">@String.Format("{0:#,###,###.##}", totalLeaveAvailable)</span>
+                <span class="badge badge-primary">@totalLeaveAvailable</span>
                 <a data-target="#info-leave" data-toggle="collapse" aria-expanded="false" aria-controls="info-leave" style="cursor:pointer">
                     <i class="icon-list mr-1"></i> Chi tiết
                 </a>
@@ -128,7 +136,7 @@
                     <div class="col-lg-4 col-sm-6 col-xs-12">
                         <div class="form-group">
                             <label asp-for="Leave.Start" class="control-label"></label>
-                            <input id="leave-start" class="form-control form-control-lg datetimepicker-input" data-toggle="datetimepicker" data-target="#leave-start" />
+                            <input id="leave-start" class="form-control form-control-lg datetimepicker-input" data-toggle="datetimepicker" data-target="#leave-start" autocomplete="off" />
                             <span asp-validation-for="Leave.Start" class="text-danger"></span>
                             <input asp-for="Leave.Start" type="hidden" />
                         </div>

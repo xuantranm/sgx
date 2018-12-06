@@ -38,5 +38,7 @@ namespace ViewModels
 
         public IList<Employee> Employees { get; set; }
         #endregion
+
+        public bool Approver { get; set; }
     }
 }

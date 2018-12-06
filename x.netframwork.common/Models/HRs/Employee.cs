@@ -1,4 +1,5 @@
 ﻿using Common.Utilities;
+using Common.Enums;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System;
@@ -115,68 +116,6 @@ namespace Models
                 return culture.Calendar.GetWeekOfYear(NextBirthDays, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
             }
         }
-        //public int Age
-        //{
-        //    get
-        //    {
-        //        DateTime today = DateTime.Today;
-        //        int age = today.Year - Birthday.Year;
-        //        if (today < Birthday.AddYears(age))
-        //            age--;
-        //        return age;
-        //    }
-        //}
-
-        //public int AgeBirthday
-        //{
-        //    get
-        //    {
-        //        DateTime today = DateTime.Today;
-        //        int age = today.Year - Birthday.Year;
-        //        if (today < Birthday.AddYears(age))
-        //            age--;
-        //        return age+1;
-        //    }
-        //}
-
-        //public DateTime NextBirthDays
-        //{
-        //    get
-        //    {
-        //        return Birthday.AddYears(Age + 1);
-        //    }
-        //}
-
-        //public int RemainingBirthDays
-        //{
-        //    get
-        //    {
-        //        DateTime today = DateTime.Today;
-        //        DateTime nextBirthday = Birthday.AddYears(Age + 1);
-
-        //        TimeSpan difference = nextBirthday - DateTime.Today;
-
-        //        return Convert.ToInt32(difference.TotalDays);
-        //    }
-        //}
-
-        //public string BirthdayOfWeek
-        //{
-        //    get
-        //    {
-        //        var culture = new CultureInfo("vi");
-        //        return culture.DateTimeFormat.GetDayName(NextBirthDays.DayOfWeek);
-        //    }
-        //}
-
-        //public int WeekBirthdayNumber
-        //{
-        //    get
-        //    {
-        //        var culture = new CultureInfo("vi");
-        //        return culture.Calendar.GetWeekOfYear(NextBirthDays, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
-        //    }
-        //}
 
         public string Bornplace { get; set; }
 
@@ -187,6 +126,16 @@ namespace Models
 
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime Contractday { get; set; }
+
+        public int RemainingBhxh
+        {
+            get
+            {
+                DateTime today = DateTime.Today;
+                DateTime next = Joinday.AddMonths(6);
+                return (next - today).Days;
+            }
+        }
 
         public bool Leave { get; set; } = false;
 
@@ -217,7 +166,15 @@ namespace Models
 
         public string Part { get; set; }
 
+        public string PartId { get; set; }
+
+        public string PartAlias { get; set; }
+
         public string Department { get; set; }
+
+        public string DepartmentId { get; set; }
+
+        public string DepartmentAlias { get; set; }
 
         public string ManagerId { get; set; }
 
@@ -235,6 +192,10 @@ namespace Models
         public decimal LeaveDayAvailable { get; set; } = 0;
 
         public string Title { get; set; }
+
+        public string TitleId { get; set; }
+
+        public string TitleAlias { get; set; }
 
         public string Function { get; set; }
 
@@ -282,15 +243,6 @@ namespace Models
         public IList<Contract> Contracts { get; set; }
 
         public IList<StorePaper> StorePapers { get; set; }
-
-        public int LevelSalary { get; set; } = 0;
-
-        public int SalaryPayMethod { get; set; } = 0;
-
-        public IList<Salary> Salaries { get; set; }
-
-        [BsonRepresentation(BsonType.Decimal128)]
-        public decimal Salary { get; set; } = 0;
 
         #region BHXH
         public bool BhxhEnable { get; set; } = true;
@@ -359,268 +311,52 @@ namespace Models
         public EmployeeBank EmployeeBank { get; set; }
 
         #region SALARIES
-        public string SalaryNoiLamViec { get; set; }
-        public string SalaryPhongBan { get; set; }
-        public string SalaryChucVu { get; set; }
-        public string SalaryChucVuViTriCode { get; set; }
-        public int SalaryNoiLamViecOrder { get; set; } = 0;
-        public int SalaryPhongBanOrder { get; set; } = 0;
-        public int SalaryChucVuOrder { get; set; } = 0;
-        // nhóm vào chức vụ
-        public string SalaryMaSoChucDanhCongViec { get; set; }
-        public double SalaryMauSo { get; set; } = 26;
-        #endregion
-    }
+        /// <summary>
+        /// Because chance employee. Manager here.
+        /// Base [SalaryType]
+        /// </summary>
+        public int SalaryType { get; set; } = (int)ESalaryType.VP;
 
-    public class EmployeeBank
-    {
-        public string BankAccount { get; set; }
-        public string BankHolder { get; set; }
-        public string BankName { get; set; }
-        public string BankLocation { get; set; }
-        public bool Enable { get; set; }
-    }
+        // Update on future: 0: hand, 1: bank
+        public int SalaryPayMethod { get; set; } = 0;
 
-    public class BhxhHistory
-    {
-        public string Task { get; set; }
-
-        public string TaskDisplay { get; set; }
-
-        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
-        public DateTime? DateAction { get; set; }
-
-        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
-        public DateTime? DateResult { get; set; }
-
-        public int Status { get; set; }
-    }
-
-    public class Workplace
-    {
-        public string Code { get; set; }
-        public string Name { get; set; }
-        public string Fingerprint { get; set; }
-        public string WorkingScheduleTime { get; set; }
-        public bool Enable { get; set; } = true;
-        public string Language { get; set; } = Constants.Languages.Vietnamese;
-    }
-
-    public class EmployeeRole
-    {
-        public string Function { get; set; }
-        public int Right { get; set; }
-    }
-
-    public class EmployeeCheck
-    {
-        public int No { get; set; }
-        public string EmployeeCode { get; set; }
-        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
-        public DateTime Date { get; set; } = DateTime.Now;
-    }
-
-    public class EmployeeDocument
-    {
-        public string Name { get; set; }
-        public string Content { get;set; }
-    }
-
-    public class EmployeeContactRelate
-    {
-        public int No { get; set; }
-        public string FullName { get; set; }
-        public string Mobile { get; set; }
-    }
-
-    public class EmployeeFamily
-    {
-        public int? Relation { get; set; }
-        public string FullName { get; set; }
-        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
-        public DateTime? Birthday { get; set; }
-    }
-
-    public class EmployeePower
-    {
-        public int Year { get; set; }
-        public string Value { get; set; }
-        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
-        public DateTime Date { get; set; } = DateTime.Now;
-    }
-
-    public class EmployeeDiscipline
-    {
-        public int No { get; set; }
-        public string Content { get; set; }
-        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
-        public DateTime Date { get; set; } = DateTime.Now;
-    }
-
-    public class EmployeeAward
-    {
-        public int No { get; set; }
-        public string Content { get; set; }
-        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
-        public DateTime Date { get; set; } = DateTime.Now;
-    }
-
-    public class EmployeeMovement
-    {
-        public int No { get; set; }
-        public string Content { get; set; }
-        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
-        public DateTime Date { get; set; } = DateTime.Now;
-    }
-
-    public class EmployeeEducation
-    {
-        public int No { get; set; }
-        public string Content { get; set; }
-        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
-        public DateTime Date { get; set; } = DateTime.Now;
-    }
-
-    public class Salary
-    {
-        public string Code { get; set; }
-
-        public string Type { get; set; }
-
-        public string Title { get; set; }
-
-        public decimal Money { get; set; } = 0;
-
-        public int Order { get; set; } = 0;
-
-        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
-        public DateTime Date { get; set; } = DateTime.Now;
-    }
-
-    public class StorePaper
-    {
-        public string Type { get; set; }
-        public string Description { get; set; }
-        public int Count { get; set; }
-        public string Unit { get; set; }
-    }
-
-    public class EmployeeMobile
-    {
-        public string Type { get; set; }
-
-        public string Number { get; set; }
-    }
-
-    public class Card
-    {
-        public string Type { get; set; }
-
-        public string Code { get; set; }
-
-        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
-        public DateTime? Created { get; set; }
-
-        public string Location { get; set; }
-
-        public string Description { get; set; }
-
-        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
-        public DateTime? Expired { get; set; }
-
-        public IList<Image> Images { get; set; }
-
-        public bool Enable { get; set; } = true;
-    }
-
-    public class Certificate
-    {
-        public string Type { get; set; }
-
-        public string Location { get; set; }
-
-        public string Code { get; set; }
-
-        public string Description { get; set; }
-
-        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
-        public DateTime? Created { get; set; }
-
-        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
-        public DateTime? Expired { get; set; }
-
-        public IList<Image> Images { get; set; }
-
-        public bool Enable { get; set; } = true;
-    }
-
-    public class Contract
-    {
-        public string Type { get; set; }
-
-        public string TypeName { get; set; }
-
-        public string Code { get; set; }
-
-        public string PLHD { get; set; }
-
-        public string PhuLucDieuChinhLuong { get; set; }
-
-        public string Description { get; set; }
-
-        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
-        public DateTime? Start { get; set; }
-
-        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
-        public DateTime? End { get; set; }
+        // Get newest from [SalaryEmployeeMonth]
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal Salary { get; set; } = 0;
 
         [BsonRepresentation(BsonType.Decimal128)]
-        public decimal? Duration { get; set; }
+        public decimal LuongBHXH { get; set; } = 0;
 
-        public IList<Image> Images { get; set; }
+        // Tổng dư nợ hiện tại.
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal Credit { get; set; } = 0;
 
-        public bool Enable { get; set; } = true;
+        // Use Title.
+        public string SalaryChucVu { get; set; }
 
-        public DateTime NextContract
-        {
-            get
-            {
-                return End.HasValue ? End.Value.AddDays(1) : Constants.MinDate;
-            }
-        }
+        public string SalaryChucVuViTriCode { get; set; }
 
-        public int RemainingContract
-        {
-            get
-            {
-                if (End.HasValue)
-                {
-                    DateTime today = DateTime.Today;
-                    DateTime next = End.Value;
+        public int SalaryNoiLamViecOrder { get; set; } = 0;
 
-                    TimeSpan difference = next - DateTime.Today;
+        public int SalaryPhongBanOrder { get; set; } = 0;
 
-                    return Convert.ToInt32(difference.TotalDays);
-                }
-                else
-                {
-                    return 0;
-                }
-            }
-        }
-    }
+        public int SalaryChucVuOrder { get; set; } = 0;
 
-    public class Children
-    {
-        public string Type { get; set; }
+        // nhóm vào chức vụ
+        public string NgachLuong { get; set; }
 
-        public string FullName { get; set; }
+        // Faster get data. base newest from [SalaryEmployeeMonth]
+        public int SalaryLevel { get; set; } = 1;
 
-        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
-        public DateTime Birthday { get; set; }
+        public double SalaryMauSo { get; set; } = 26;
+        #endregion
 
-        public IList<Image> Images { get; set; }
+        #region SALES
+        public string SaleChucVu { get; set; }
+        #endregion
 
-        public bool Enable { get; set; } = true;
+        #region LOGISTICS
+        public string LogisticChucVu { get; set; }
+        #endregion
     }
 }

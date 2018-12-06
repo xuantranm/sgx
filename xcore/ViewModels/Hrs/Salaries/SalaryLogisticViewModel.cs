@@ -7,6 +7,6 @@ namespace ViewModels
 {
     public class SalaryLogisticViewModel : ExtensionViewModel
     {
-        public IList<SalaryLogisticData> SalaryLogistics { get; set; }
+        public IList<LogisticEmployeeCong> SalaryLogistics { get; set; }
     }
 }

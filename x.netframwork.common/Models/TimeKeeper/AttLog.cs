@@ -22,6 +22,9 @@ namespace Models
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime Date { get; set; }
 
+        // because datetime in mongo different vietnam. (miss 7 hours)
+        public string DateString { get; set; }
+
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime DateOnlyRecord
         {

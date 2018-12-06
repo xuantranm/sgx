@@ -1,0 +1,40 @@
+﻿@{
+    ViewData["Title"] = "Tải lên dữ liệu phòng ban-bộ phận-chức vụ";
+    Layout = "~/Views/Shared/_LayoutSocialFb.cshtml";
+}
+<style>
+    #myProgress {
+        width: 100%;
+        background-color: grey;
+    }
+
+    #myBar {
+        width: 1%;
+        height: 30px;
+        background-color: green;
+    }
+</style>
+
+<h2>@ViewData["Title"]</h2>
+<form method="post" action="/fix/phong-ban-bo-phan/update/" enctype="multipart/form-data">
+    <div class="row">
+        <div class="col-md-4">
+            <input type="file" name="files" class="form-control fUpload" />
+        </div>
+        <div class="col-md-8">
+            <input type="button" class="hidden btnUpload" value="Tải lên" />
+        </div>
+    </div>
+    <br />
+    <div class="progress">
+        <div class="progress-bar progress-bar-striped progress-bar-animated" style="width:0%"></div>
+    </div>
+</form>
+
+@section scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+        <script src="~/lib/jq-ajax-progress-master/jq-ajax-progress.min.js"></script>
+        <script src="~/js/fix-file.js?@DateTime.Now.Ticks"></script>
+    }
+}

@@ -47,16 +47,9 @@ namespace Models
         [BsonRepresentation(BsonType.Decimal128)]
         public decimal Money { get; set; }
 
-        // muc luong theo luat VN, false theo cong ty
-        // muc luong thuc te = false
-        public bool Law { get; set; } = true;
-
-        public bool FlagReal = false;
+        public bool Law { get; set; } = false;
 
         public bool Enable { get; set; } = true;
-
-        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
-        public DateTime Start { get; set; } = DateTime.Now;
 
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime CreatedOn { get; set; } = DateTime.Now;

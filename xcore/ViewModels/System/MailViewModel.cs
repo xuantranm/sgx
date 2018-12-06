@@ -9,6 +9,8 @@ namespace ViewModels
     {
         public IList<ScheduleEmail> ScheduleEmails { get; set; }
 
+        public ScheduleEmail ScheduleEmail { get; set; }
+
         public int? status { get; set; }
 
         public string id { get; set; }
@@ -22,5 +24,12 @@ namespace ViewModels
         public int Records { get; set; }
 
         public int Pages { get; set; }
+
+        // For resend
+        public string fromEmail { get; set; }
+
+        public string toEmail { get; set; }
+
+        public string ccEmail { get; set; }
     }
 }

@@ -10,7 +10,7 @@
 <form method="get" action="/@Constants.LinkLeave.Main/@Constants.LinkLeave.HelpLeave" id="form-main">
     <div class="form-group">
         <label class="control-label">Nhân viên</label>
-        <select asp-for="Leave.EmployeeId" name="id" class="form-control form-control-lg js-select2-basic-single ddlEmployeeId">
+        <select asp-for="Leave.EmployeeId" id="ddlId" name="id" class="form-control form-control-lg js-select2-basic-single ddlEmployeeId">
             <option value="">Chọn</option>
             @foreach (var employee in Model.Employees)
             {
@@ -48,7 +48,7 @@
         <li class="list-group-item">
             <div class="d-flex justify-content-between">
                 <div><i class="icon-calculator mr-1"></i> Tổng số ngày phép còn lại</div>
-                <span class="badge badge-primary">@String.Format("{0:#,###,###.##}", totalLeaveAvailable)</span>
+                <span class="badge badge-primary">@totalLeaveAvailable</span>
                 <a data-target="#info-leave" data-toggle="collapse" aria-expanded="false" aria-controls="info-leave" style="cursor:pointer">
                     <i class="icon-list mr-1"></i> Chi tiết
                 </a>

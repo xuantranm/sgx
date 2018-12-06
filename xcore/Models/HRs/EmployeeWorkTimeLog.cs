@@ -1,4 +1,5 @@
-﻿using MongoDB.Bson;
+﻿using Common.Enums;
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System;
 using System.Collections.Generic;
@@ -16,6 +17,10 @@ namespace Models
         public string EmployeeId { get; set; }
 
         public string EmployeeName { get; set; }
+
+        public string Part { get; set; }
+
+        public string Department { get; set; }
 
         public string EmployeeTitle { get; set; }
 
@@ -60,15 +65,12 @@ namespace Models
         [Display(Name = "Về sớm")]
         public TimeSpan Early { get; set; }
 
-        // 0: cần xác nhận công; 1: đủ ngày công ; 2: đã gửi xác nhận công, 3: đồng ý; 4: từ chối  
-        public int StatusLate { get; set; } = 1;
 
-        // 0: cần xác nhận công; 1: đủ ngày công ; 2: đã gửi xác nhận công, 3: đồng ý; 4: từ chối  
-        public int StatusEarly { get; set; } = 1;
+        public int StatusLate { get; set; } = (int)StatusWork.DuCong;
 
-        // 0: cần xác nhận công; 1: đủ ngày công ; 2: đã gửi xác nhận công, 3: đồng ý; 4: từ chối  
-        [Display(Name = "Trạng thái")]
-        public int Status { get; set; } = 1;
+        public int StatusEarly { get; set; } = (int)StatusWork.DuCong;
+
+        public int Status { get; set; } = (int)StatusWork.DuCong;
 
         // Save History
         public IList<AttLog> Logs { get; set; }
@@ -99,8 +101,12 @@ namespace Models
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime? RequestDate { get; set; }
 
+        // Use list ly do. Manual
         [Display(Name = "Lý do")]
         public string Reason { get; set; }
+
+        [Display(Name = "Chi tiết")]
+        public string ReasonDetail { get; set; }
 
         [Display(Name ="Người xác nhận")]
         public string ConfirmId { get; set; }
@@ -115,8 +121,9 @@ namespace Models
         // Use if 1: leave. ... define later
         public string InOutMode { get; set; }
 
-        // Use define: Nghỉ, Chủ nhật, Không chấm công
-        [Display(Name = "Work code")]
+        public int Mode { get; set; } = (int)TimeWork.Normal;
+
+        // use later...
         public string Workcode { get; set; }
 
         public string SecureCode { get; set; }

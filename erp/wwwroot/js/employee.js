@@ -1,8 +1,17 @@
 ﻿$(function () {
     eventAutocomplete();
 
+    $('.js-select2-basic-single').select2(
+        {
+            theme: "bootstrap"
+        });
+
+    $('.ddlEmployeeId').on('change', function () {
+        formSubmit();
+    });
+
     $('#sortBy').on('change', function () {
-        $("#form-search").submit();
+        formSubmit();
     });
 
     $('.part').on('click', function () {
@@ -70,7 +79,7 @@ function eventAutocomplete() {
             },
             minLength: 2,
             focus: function (event, ui) {
-                $(this).val(ui.item.email);
+                $(this).val(ui.item.fullName);
                 return false;
             },
             select: function (event, ui) {
@@ -79,9 +88,9 @@ function eventAutocomplete() {
             }
         }).autocomplete("instance")._renderItem = function (ul, item) {
             return $("<li>")
-                .append("<div>" + item.email + "<br>" + item.fullName + "</div>")
+                .append("<div>" + item.fullName + "<br>" + item.email + " - " + item.title + "</div>")
                 .appendTo(ul);
-        }
+        };
     });
 
     

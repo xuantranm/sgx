@@ -4,16 +4,17 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Models
 {
-    public class Part: Common
+    /// <summary>
+    /// Part belong Department
+    /// </summary>
+    // Bộ phận
+    public class Part
     {
         [BsonId]
-        // Mvc don't know how to create ObjectId from string
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
 
-        public string SystemCode { get; set; }
-
-        public string ParentCode { get; set; }
+        public string Code { get; set; }
 
         [Required]
         public string Name { get; set; }
@@ -26,5 +27,13 @@ namespace Models
 
         // sort 1->....
         public int Order { get; set; } = 1;
+
+        public string ParentCode { get; set; }
+
+        public string DepartmentCode { get; set; }
+
+        public string DepartmentName { get; set; }
+
+        public bool Enable { get; set; } = true;
     }
 }

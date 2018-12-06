@@ -105,7 +105,7 @@
           "lib/netstandard2.0/EPPlus.Core.dll": {}
         }
       },
-      "MailKit/2.0.6": {
+      "MailKit/2.0.7": {
         "type": "package",
         "dependencies": {
           "MimeKit": "2.0.6",
@@ -5285,7 +5285,7 @@
         "framework": ".NETCoreApp,Version=v2.1",
         "dependencies": {
           "DotNetCore.NPOI": "1.2.1",
-          "MailKit": "2.0.6",
+          "MailKit": "2.0.7",
           "MaxMind.GeoIP2": "3.0.0",
           "Microsoft.AspNetCore.Mvc.ViewFeatures": "2.1.2",
           "MongoDB.Driver": "2.7.0"
@@ -5380,11 +5380,12 @@
         "lib/netstandard2.0/EPPlus.Core.xml"
       ]
     },
-    "MailKit/2.0.6": {
-      "sha512": "xO7c8jHlbN15CoEKvIOkED6fN3W0hzUghXeh8GX8C8tSVA1mhPQnPwm7xIH7GbxkZt/IaLnvc9sVuFGxVR+yRw==",
+    "MailKit/2.0.7": {
+      "sha512": "CDgy8cR5BTUAmTUczVHDDW8/peDXYTN/JxmrFqWrv6UTmBw+RufVK4zGIvW3oSQQMkBz4z05NFfpIIgxV908qA==",
       "type": "package",
-      "path": "mailkit/2.0.6",
+      "path": "mailkit/2.0.7",
       "files": [
+        ".signature.p7s",
         "lib/monoandroid/MailKit.dll",
         "lib/monoandroid/MailKit.xml",
         "lib/net45/MailKit.dll",
@@ -5399,7 +5400,7 @@
         "lib/portable-win81+wpa81/MailKit.xml",
         "lib/xamarinios/MailKit.dll",
         "lib/xamarinios/MailKit.xml",
-        "mailkit.2.0.6.nupkg.sha512",
+        "mailkit.2.0.7.nupkg.sha512",
         "mailkit.nuspec"
       ]
     },
@@ -8826,7 +8827,7 @@
       ]
     },
     "System.Buffers/4.5.0": {
-      "sha512": "xpHYjjtyTEpzMwtSQBWdVc3dPjLdQtvyUg6fBlBqcLl1r2Y7gDG/W/enAYOB98nG3oD3Q153Y2FBO8JDWd+0Xw==",
+      "sha512": "5BgE5qYF/TgftB9FlByFqfhwYVt8UKf748KGovHLkBnW67Z89VdY/8ZXDVXRU78RCtQ/gIJ3TPBLmXtFvhm5xA==",
       "type": "package",
       "path": "system.buffers/4.5.0",
       "files": [
@@ -12063,10 +12064,11 @@
       ]
     },
     "System.Runtime.InteropServices.RuntimeInformation/4.3.0": {
-      "sha512": "cbz4YJMqRDR7oLeMRbdYv7mYzc++17lNhScCX0goO2XpGWdvAt60CGN+FHdePUEHCe/Jy9jUlvNAiNdM+7jsOw==",
+      "sha512": "p0Ks5JJnrUJbbJUBoTRyEdd8dvbjZywKxkmwl1ldjyu767RxUG9+wZGsSN1c8SMiJ8zfvsoO2flilpHKYZtWkg==",
       "type": "package",
       "path": "system.runtime.interopservices.runtimeinformation/4.3.0",
       "files": [
+        ".signature.p7s",
         "ThirdPartyNotices.txt",
         "dotnet_library_license.txt",
         "lib/MonoAndroid10/_._",
@@ -13854,7 +13856,7 @@
     ".NETCoreApp,Version=v2.1": [
       "DotNetCore.NPOI >= 1.2.1",
       "EPPlus.Core >= 1.5.4",
-      "MailKit >= 2.0.6",
+      "MailKit >= 2.0.7",
       "MaxMind.GeoIP2 >= 3.0.0",
       "Microsoft.AspNetCore.App >= 2.1.1",
       "Microsoft.NETCore.App >= 2.1.0",
@@ -13918,7 +13920,7 @@
           },
           "MailKit": {
             "target": "Package",
-            "version": "[2.0.6, )"
+            "version": "[2.0.7, )"
           },
           "MaxMind.GeoIP2": {
             "target": "Package",

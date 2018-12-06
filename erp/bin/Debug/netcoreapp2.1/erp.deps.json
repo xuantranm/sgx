@@ -1,7 +1,7 @@
 {
   "runtimeTarget": {
     "name": ".NETCoreApp,Version=v2.1",
-    "signature": "79be5f0ee079420875427234e5af67b88d6059b8"
+    "signature": "5c6718ef238770c18ab49404e1d53a8a71abde5a"
   },
   "compilationOptions": {
     "defines": [
@@ -26,7 +26,7 @@
         "dependencies": {
           "DotNetCore.NPOI": "1.2.1",
           "EPPlus.Core": "1.5.4",
-          "MailKit": "2.0.6",
+          "MailKit": "2.0.7",
           "MaxMind.GeoIP2": "3.0.0",
           "Microsoft.AspNetCore.App": "2.1.1",
           "Microsoft.NETCore.App": "2.1.0",
@@ -156,7 +156,7 @@
           "lib/netstandard2.0/EPPlus.Core.dll": {}
         }
       },
-      "MailKit/2.0.6": {
+      "MailKit/2.0.7": {
         "dependencies": {
           "MimeKit": "2.0.6",
           "NETStandard.Library": "2.0.3",
@@ -174,7 +174,7 @@
         "runtime": {
           "lib/netstandard2.0/MailKit.dll": {
             "assemblyVersion": "2.0.0.0",
-            "fileVersion": "2.0.6.0"
+            "fileVersion": "2.0.7.0"
           }
         },
         "compile": {
@@ -1279,7 +1279,7 @@
       "xcore/1.0.0": {
         "dependencies": {
           "DotNetCore.NPOI": "1.2.1",
-          "MailKit": "2.0.6",
+          "MailKit": "2.0.7",
           "MaxMind.GeoIP2": "3.0.0",
           "Microsoft.AspNetCore.Mvc.ViewFeatures": "2.1.2",
           "MongoDB.Driver": "2.7.0"
@@ -4192,12 +4192,12 @@
       "path": "epplus.core/1.5.4",
       "hashPath": "epplus.core.1.5.4.nupkg.sha512"
     },
-    "MailKit/2.0.6": {
+    "MailKit/2.0.7": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-xO7c8jHlbN15CoEKvIOkED6fN3W0hzUghXeh8GX8C8tSVA1mhPQnPwm7xIH7GbxkZt/IaLnvc9sVuFGxVR+yRw==",
-      "path": "mailkit/2.0.6",
-      "hashPath": "mailkit.2.0.6.nupkg.sha512"
+      "sha512": "sha512-CDgy8cR5BTUAmTUczVHDDW8/peDXYTN/JxmrFqWrv6UTmBw+RufVK4zGIvW3oSQQMkBz4z05NFfpIIgxV908qA==",
+      "path": "mailkit/2.0.7",
+      "hashPath": "mailkit.2.0.7.nupkg.sha512"
     },
     "MaxMind.Db/2.4.0": {
       "type": "package",
@@ -5845,7 +5845,7 @@
     "System.Buffers/4.5.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-xpHYjjtyTEpzMwtSQBWdVc3dPjLdQtvyUg6fBlBqcLl1r2Y7gDG/W/enAYOB98nG3oD3Q153Y2FBO8JDWd+0Xw==",
+      "sha512": "sha512-5BgE5qYF/TgftB9FlByFqfhwYVt8UKf748KGovHLkBnW67Z89VdY/8ZXDVXRU78RCtQ/gIJ3TPBLmXtFvhm5xA==",
       "path": "system.buffers/4.5.0",
       "hashPath": "system.buffers.4.5.0.nupkg.sha512"
     },
@@ -6202,7 +6202,7 @@
     "System.Runtime.InteropServices.RuntimeInformation/4.3.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-cbz4YJMqRDR7oLeMRbdYv7mYzc++17lNhScCX0goO2XpGWdvAt60CGN+FHdePUEHCe/Jy9jUlvNAiNdM+7jsOw==",
+      "sha512": "sha512-p0Ks5JJnrUJbbJUBoTRyEdd8dvbjZywKxkmwl1ldjyu767RxUG9+wZGsSN1c8SMiJ8zfvsoO2flilpHKYZtWkg==",
       "path": "system.runtime.interopservices.runtimeinformation/4.3.0",
       "hashPath": "system.runtime.interopservices.runtimeinformation.4.3.0.nupkg.sha512"
     },

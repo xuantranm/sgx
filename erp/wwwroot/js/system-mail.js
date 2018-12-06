@@ -2,36 +2,43 @@
     var $table = $('table.floating-header');
     $table.floatThead();
 
-    $('.checkbox-all').click(function (event) {
-        if (this.checked) {
-            $('.checkbox-item').each(function () {
-                this.checked = true;
-                $('.status-item', $(this).closest('td')).val(3);
-            });
-        } else {
-            $('.checkbox-item').each(function () {
-                this.checked = false;
-                $('.status-item', $(this).closest('td')).val(0);
-            });
-        }
+    $('#status').on('change', function (e) {
+        formSubmit();
     });
 
-    $('.checkbox-item').each(function () {
-        $(this).click(function () {
-            if (this.checked) {
-                $('.status-item', $(this).closest('td')).val(3);
-            } else {
-                $('.status-item', $(this).closest('td')).val(0);
+    $('#size').on('change', function (e) {
+        formSubmit();
+    });
+
+    $('#page').on('change', function (e) {
+        formSubmit();
+    });
+
+    $('#emailModal').on('show.bs.modal', function (event) {
+        var a = $(event.relatedTarget); // Button that triggered the modal
+        var recipient = a.data('id'); // Extract info from data-* attributes
+        $('#hidId').val(recipient);
+        var url = $('#hidUrlGetItem').val();
+        var modal = $(this);
+        $.ajax({
+            type: "post",
+            url: url,
+            data: { id: recipient },
+            success: function (data) {
+                console.log(data);
+                if (data.length !== 0) {
+                    modal.find('.content-email-modal').html(data);
+                }
             }
         });
     });
 
     $(".data-form").on("submit", function (event) {
-        if (!$('input[type=checkbox]:checked').length) {
-            toastr.error("Chọn email để gửi lại.");
-            //stop the form from submitting
-            return false;
-        }
+        //if (!$('input[type=checkbox]:checked').length) {
+        //    toastr.error("Chọn email để gửi lại.");
+        //    //stop the form from submitting
+        //    return false;
+        //}
 
         event.preventDefault();
         var $this = $(this);

@@ -262,7 +262,7 @@ namespace erp.Controllers
 
         public bool CheckExist(BHYTHospital entity)
         {
-            return dbContext.BHYTHospitals.Find(m => m.Enable.Equals(true) && m.Code.Equals(entity.Code)).Count() > 0 ? false : true;
+            return dbContext.BHYTHospitals.CountDocuments(m => m.Enable.Equals(true) && m.Code.Equals(entity.Code)) > 0 ? false : true;
         }
 
         public bool CheckUpdate(BHYTHospital entity)
@@ -285,7 +285,7 @@ namespace erp.Controllers
 
         public bool CheckActive(BHYTHospital entity)
         {
-            return dbContext.BHYTHospitals.Find(m => m.Enable.Equals(true) && m.Code.Equals(entity.Code)).Count() > 0 ? false : true;
+            return dbContext.BHYTHospitals.CountDocuments(m => m.Enable.Equals(true) && m.Code.Equals(entity.Code)) > 0 ? false : true;
         }
 
         public bool CheckDelete(BHYTHospital entity)

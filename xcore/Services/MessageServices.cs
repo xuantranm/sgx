@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Common.Enums;
 using Common.Utilities;
 using Data;
 using Microsoft.AspNetCore.Hosting;
@@ -152,17 +153,17 @@ namespace Services
             {
                 foreach (var item in emailMessage.ToAddresses)
                 {
-                    if (IsValidEmail(item.Address))
+                    if (Utility.IsValidEmail(item.Address))
                     {
                         newToList.Add(item);
                     }
                     else
                     {
-                        // Chỉ gửi cho email sai
-                        var toError = new List<EmailAddress>
-                        {
+                       // Chỉ gửi cho email sai
+                       var toError = new List<EmailAddress>
+                       {
                             item
-                        };
+                       };
                         var errorEmail = new ScheduleEmail
                         {
                             From = emailMessage.FromAddresses,
@@ -170,9 +171,9 @@ namespace Services
                             CC = emailMessage.CCAddresses,
                             BCC = emailMessage.BCCAddresses,
                             Type = emailMessage.Type,
-                            Title = message.Subject,
+                            Title = emailMessage.Subject,
                             Content = emailMessage.BodyContent,
-                            Status = 2,
+                            Status = (int)EEmailStatus.Fail,
                             Error = "Sai định dạng mail",
                             ErrorCount = 0
                         };
@@ -207,7 +208,7 @@ namespace Services
                 };
                 dbContext.ScheduleEmails.InsertOne(scheduleEmail);
                 #endregion
-                var isEmailSent = 0;
+                var isEmailSent = (int)EEmailStatus.Send;
                 var error = string.Empty;
                 try
                 {
@@ -222,7 +223,7 @@ namespace Services
                         emailClient.Authenticate(emailMessage.FromAddresses.First().Address, emailMessage.FromAddresses.First().Pwd);
 
                         emailClient.Send(message);
-                        isEmailSent = 1;
+                        isEmailSent = (int)EEmailStatus.Ok;
 
                         emailClient.Disconnect(true);
                         #region Update status
@@ -236,7 +237,7 @@ namespace Services
                 }
                 catch (Exception ex)
                 {
-                    isEmailSent = 2;
+                    isEmailSent = (int)EEmailStatus.Fail;
                     error = ex.Message;
                     #region Update status
                     var filter = Builders<ScheduleEmail>.Filter.Eq(m => m.Id, scheduleEmail.Id);
@@ -339,19 +340,6 @@ namespace Services
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-            }
-        }
-
-        private bool IsValidEmail(string email)
-        {
-            try
-            {
-                var addr = new System.Net.Mail.MailAddress(email);
-                return addr.Address == email;
-            }
-            catch
-            {
-                return false;
             }
         }
     }

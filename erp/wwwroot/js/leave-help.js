@@ -70,109 +70,113 @@
             });
         event.preventDefault();
     });
-});
 
-function registerTimePicker() {
-    var dateNow = new Date();
-    $("#from_date").datepicker({
-        language: "vi",
-        format: 'dd/mm/yyyy',
-        startDate: dateNow
-    });
+    function registerTimePicker() {
+        var dateNow = new Date();
+        $("#from_date").datepicker({
+            language: "vi",
+            format: 'dd/mm/yyyy',
+            startDate: dateNow
+        });
 
-    $("#to_date").datepicker({
-        language: "vi",
-        format: 'dd/mm/yyyy',
-        startDate: dateNow
-    });
-
-    $('#from_date').on('changeDate', function () {
-        var date = moment($(this).datepicker('getFormattedDate'), 'DD-MM-YYYY')._d;
-        $('#to_date').val($(this).val());
-        $('#to_date').datepicker('destroy');
         $("#to_date").datepicker({
             language: "vi",
             format: 'dd/mm/yyyy',
-            startDate: date
+            startDate: dateNow
         });
-        calculatorLeaveDuration();
-    });
 
-    $('#to_date').on('changeDate', function () {
-        calculatorLeaveDuration();
-    });
+        $('#from_date').on('changeDate', function () {
+            var date = moment($(this).datepicker('getFormattedDate'), 'DD-MM-YYYY')._d;
+            $('#to_date').val($(this).val());
+            $('#to_date').datepicker('destroy');
+            $("#to_date").datepicker({
+                language: "vi",
+                format: 'dd/mm/yyyy',
+                startDate: date
+            });
+            calculatorLeaveDuration();
+        });
 
-    var startTimeHH = parseInt($('#Leave_Start').val().split(':')[0]);
-    var startTimeMM = parseInt($('#Leave_Start').val().split(':')[1]);
-    var endTimeHH = parseInt($('#Leave_End').val().split(':')[0]);
-    var endTimeMM = parseInt($('#Leave_End').val().split(':')[1]);
-    $('#leave-start').datetimepicker({
-        locale: 'vi',
-        format: 'LT',
-        defaultDate: moment(dateNow).hours(startTimeHH).minutes(startTimeMM).seconds(0).milliseconds(0)
-    });
-    $('#leave-start').on('change.datetimepicker', function () {
-        calculatorLeaveDuration();
-    });
-    $('#leave-end').datetimepicker({
-        locale: 'vi',
-        format: 'LT',
-        defaultDate: moment(dateNow).hours(endTimeHH).minutes(endTimeMM).seconds(0).milliseconds(0)
-    });
-    $('#leave-end').on('change.datetimepicker', function () {
-        calculatorLeaveDuration();
-    });
-}
+        $('#to_date').on('changeDate', function () {
+            console.log("to event");
+            calculatorLeaveDuration();
+        });
 
-function calculatorLeaveDuration() {
-    // Ajax calculator on server (holidays, sunday,...)
-    var from = moment($('#from_date').datepicker('getFormattedDate'), 'DD-MM-YYYY')._d;
-    from.setHours($('#leave-start').val().split(':')[0]);
-    from.setMinutes($('#leave-start').val().split(':')[1]);
-    var to = moment($('#to_date').datepicker('getFormattedDate'), 'DD-MM-YYYY')._d;
-    to.setHours($('#leave-end').val().split(':')[0]);
-    to.setMinutes($('#leave-end').val().split(':')[1]);
+        var startTimeHH = parseInt($('#Leave_Start').val().split(':')[0]);
+        var startTimeMM = parseInt($('#Leave_Start').val().split(':')[1]);
+        var endTimeHH = parseInt($('#Leave_End').val().split(':')[0]);
+        var endTimeMM = parseInt($('#Leave_End').val().split(':')[1]);
 
-    //MM-DD-YYYY
+        $('#leave-start').datetimepicker({
+            locale: 'vi',
+            format: 'LT',
+            defaultDate: moment(dateNow).hours(startTimeHH).minutes(startTimeMM).seconds(0).milliseconds(0)
+        });
+        $('#leave-start').on('change.datetimepicker', function () {
+            calculatorLeaveDuration();
+        });
+        $('#leave-end').datetimepicker({
+            locale: 'vi',
+            format: 'LT',
+            defaultDate: moment(dateNow).hours(endTimeHH).minutes(endTimeMM).seconds(0).milliseconds(0)
+        });
+        $('#leave-end').on('change.datetimepicker', function () {
+            calculatorLeaveDuration();
+        });
+    }
 
-    var fromPost =
-        from.getUTCFullYear() + "/" +
-        ("0" + (from.getUTCMonth() + 1)).slice(-2) + "/" +
-        ("0" + from.getUTCDate()).slice(-2) + " " +
-        ("0" + from.getHours()).slice(-2) + ":" +
-        ("0" + from.getUTCMinutes()).slice(-2);
-    var toPost = to.getUTCFullYear() + "/" +
-        ("0" + (to.getUTCMonth() + 1)).slice(-2) + "/" +
-        ("0" + to.getUTCDate()).slice(-2) + " " +
-        ("0" + to.getHours()).slice(-2) + ":" +
-        ("0" + to.getUTCMinutes()).slice(-2);
+    function calculatorLeaveDuration() {
+        // Ajax calculator on server (holidays, sunday,...)
+        var from = moment($('#from_date').datepicker('getFormattedDate'), 'DD-MM-YYYY')._d;
+        from.setHours($('#leave-start').val().split(':')[0]);
+        from.setMinutes($('#leave-start').val().split(':')[1]);
+        var to = moment($('#to_date').datepicker('getFormattedDate'), 'DD-MM-YYYY')._d;
+        to.setHours($('#leave-end').val().split(':')[0]);
+        to.setMinutes($('#leave-end').val().split(':')[1]);
 
-    var fromEntity = ("0" + (from.getUTCMonth() + 1)).slice(-2) + "-" + ("0" + from.getUTCDate()).slice(-2) + "-" + from.getUTCFullYear();
-    var toEntity = ("0" + (to.getUTCMonth() + 1)).slice(-2) + "-" + ("0" + to.getUTCDate()).slice(-2) + "-" + to.getUTCFullYear();
-    $('input[name="Leave.From"]').val(fromEntity);
-    $('input[name="Leave.To"]').val(toEntity);
-    $('input[name="Leave.Start"]').val($('#leave-start').val());
-    $('input[name="Leave.End"]').val($('#leave-end').val());
+        //MM-DD-YYYY
+        var fromPost =
+            from.getUTCFullYear() + "/" +
+            ("0" + (from.getUTCMonth() + 1)).slice(-2) + "/" +
+            ("0" + from.getUTCDate()).slice(-2) + " " +
+            ("0" + from.getHours()).slice(-2) + ":" +
+            ("0" + from.getUTCMinutes()).slice(-2);
+        var toPost = to.getUTCFullYear() + "/" +
+            ("0" + (to.getUTCMonth() + 1)).slice(-2) + "/" +
+            ("0" + to.getUTCDate()).slice(-2) + " " +
+            ("0" + to.getHours()).slice(-2) + ":" +
+            ("0" + to.getUTCMinutes()).slice(-2);
 
-    $.ajax({
-        type: "POST",
-        url: $('#hidCalculatorLink').val(),
-        data: {
-            from: fromPost,
-            to: toPost,
-            scheduleWorkingTime: $('#Leave_WorkingScheduleTime').val(),
-            type: $('#Leave_TypeId').val()
-        },
-        success: function (data) {
-            console.log(data);
-            if (data.result === true) {
-                $('.leave-duration').text(data.date);
+        var fromEntity = ("0" + (from.getUTCMonth() + 1)).slice(-2) + "-" + ("0" + from.getUTCDate()).slice(-2) + "-" + from.getUTCFullYear();
+        var toEntity = ("0" + (to.getUTCMonth() + 1)).slice(-2) + "-" + ("0" + to.getUTCDate()).slice(-2) + "-" + to.getUTCFullYear();
+        $('input[name="Leave.From"]').val(fromEntity);
+        $('input[name="Leave.To"]').val(toEntity);
+        $('input[name="Leave.Start"]').val($('#leave-start').val());
+        $('input[name="Leave.End"]').val($('#leave-end').val());
+
+        console.log("Fro: " + fromPost);
+        console.log("To: " + toPost);
+        $.ajax({
+            type: "POST",
+            url: $('#hidCalculatorLink').val(),
+            data: {
+                from: fromPost,
+                to: toPost,
+                scheduleWorkingTime: $('#Leave_WorkingScheduleTime').val(),
+                type: $('#Leave_TypeId').val()
+            },
+            success: function (data) {
+                //console.log(data);
+                if (data.result === true) {
+                    $('.leave-duration').text(data.date);
+                }
+                else {
+                    $('.leave-duration').text(data.message);
+                }
             }
-            else {
-                $('.leave-duration').text(data.message);
-            }
-        }
-    });
-    
-}
+        });
+    }
+});
+
+
 

@@ -1,0 +1,267 @@
+﻿@using System;
+@using Common.Utilities;
+@using Common.Enums;
+@using System.Globalization;
+@using ViewModels
+@model TimeKeeperViewModel
+
+@{
+    Layout = "~/Views/Shared/_LayoutSocialFb.cshtml";
+}
+
+<div class="card card-sm">
+    <div class="card-header bg-secondary d-flex justify-content-between align-items-center">
+        <div>
+            <h6>Lịch sử duyệt công</h6>
+        </div>
+        <form class="d-flex align-items-center" method="get" action="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Approvement" id="form-main">
+            <span class="mr-2 text-muted text-small text-nowrap">Tháng:</span>
+            <select asp-for="thang" class="custom-select ddl-times">
+                @{
+                    foreach (var item in Model.MonthYears)
+                    {
+                        <option value="@item.Month-@item.Year">@item.Month/@item.Year</option>
+                    }
+                }
+            </select>
+        </form>
+    </div>
+</div>
+
+@if (Model.EmployeeWorkTimeLogs.Count > 0)
+{
+    <div class="row">
+        <div class="col-12 table-responsive-sm">
+            <table class="table table-responsive-sm table-bordered table-striped table-hover floating-header">
+                <thead style="background-color:lightgrey">
+                    <tr>
+                        <th>#</th>
+                        <th>Trạng thái</th>
+                        <th>Ngày duyệt</th>
+                        <th>Ngày gửi xác nhận</th>
+                        <th scope="col">Nhân viên</th>
+                        <th scope="col">Ngày công</th>
+                        <th scope="col">Vào</th>
+                        <th scope="col">Ra</th>
+                        <th scope="col">Ca làm việc</th>
+                        <th scope="col">Đi trễ (phút)</th>
+                        <th scope="col">Về sớm (phút)</th>
+                        <th scope="col">Ngày làm việc</th>
+                        <th scope="col">Nơi chấm công</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        var linkapprove = Constants.System.domain + "/xacnhan/cong";
+                        int i = 1;
+                        foreach (var log in Model.EmployeeWorkTimeLogs)
+                        {
+                            <tr>
+                                <td>@i</td>
+                                <td>
+                                    @{
+                                        if (log.Status == (int)StatusWork.DaGuiXacNhan)
+                                        {
+                                            
+                                            var linkAccept = linkapprove + "?id=" + log.Id + "&approve=3&secure=" + log.SecureCode;
+                                            var linkCancel = linkapprove + "?id=" + log.Id + "&approve=4&secure=" + log.SecureCode;
+                                            <p>
+                                                <a href="@linkAccept" target="_blank" onClick="javascript:document.location.reload(true)" class="btn btn-sm btn-block btn-success"><i class="far fa-check-circle"></i> Xác nhận</a>
+                                            </p>
+                                            <p>
+                                                <a href="@linkCancel" target="_blank" onClick="javascript:document.location.reload(true)" class="btn btn-sm btn-block btn-danger"><i class="fas fa-ban"></i> Không xác nhận</a>
+                                            </p>
+                                        }
+                                        else if (log.Status == (int)StatusWork.DongY)
+                                        {
+                                            <small class="badge badge-success">@Constants.TimeKeeper(log.Status)</small>
+                                        }
+                                        else
+                                        {
+                                            <small class="badge badge-danger">@Constants.TimeKeeper(log.Status)</small>
+                                        }
+                                    }
+                                </td>
+                                <td>
+                                    @{
+                                        var dateConfirm = log.ConfirmDate.HasValue ? log.ConfirmDate.Value.ToString("dd/MM/yyyy") : string.Empty;
+                                    }
+                                    <span class="text-muted">@dateConfirm</span>
+                                </td>
+                                <td>
+                                    @{
+                                        var dateRequest = log.RequestDate.HasValue ? log.RequestDate.Value.ToString("dd/MM/yyyy") : string.Empty;
+                                    }
+                                    <span class="text-muted">@dateRequest</span>
+                                </td>
+                                <td nowrap>
+                                    @log.EmployeeName <br />
+                                    <small>@log.EmployeeTitle</small>
+                                </td>
+                                <td>
+                                    <span class="text-muted">@log.DateOnlyRecord.ToString("dd/MM/yyyy")</span>
+                                </td>
+                                <td>@log.In</td>
+                                <td>
+                                    <span>@log.Out</span>
+                                </td>
+                                <td>
+                                    @if (log.Start.TotalMilliseconds != 0)
+                                    {
+                                        <small>@log.Start.ToString(@"hh\:mm")-@log.End.ToString(@"hh\:mm")</small>
+                                    }
+                                </td>
+                                <td>
+                                    @if ((log.StatusLate == 0 || log.StatusLate == 2 || log.StatusLate == 4) && log.Late.TotalMilliseconds > 0)
+                                    {
+                                        <span>@Math.Round(log.Late.TotalMinutes, 0)</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if ((log.StatusEarly == 0 || log.StatusEarly == 2 || log.StatusEarly == 4) && log.Early.TotalMilliseconds > 0)
+                                    {
+                                        <span>@Math.Round(log.Early.TotalMinutes, 0)</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (log.Status == 3)
+                                    {
+                                        <span>1</span>
+                                    }
+                                    else
+                                    {
+                                        if (log.WorkDay == 0)
+                                        {
+                                            if (!string.IsNullOrEmpty(log.Reason))
+                                            {
+                                                var displayReason = log.Reason;
+                                                if (!string.IsNullOrEmpty(log.ReasonDetail))
+                                                {
+                                                    displayReason += ". Chi tiết: " + log.ReasonDetail;
+                                                }
+                                                <small>@displayReason</small>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span>@log.WorkDay</span>
+                                        }
+                                    }
+                                </td>
+                                <td><small>@log.WorkplaceCode</small></td>
+                            </tr>
+                            i++;
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+        <!--end of col-->
+    </div>
+}
+else
+{
+    <div class="alert alert-light" role="alert">
+        Không có dữ liệu hoặc bạn thuộc danh sách không chấm công.
+    </div>
+}
+
+<br />
+<small>Thiếu thời gian làm việc và không có xác nhận công của quản lý thì áp dụng cách tính:</small>
+<small> * Quá giờ làm việc qui định 15 phút sẽ không tính công buổi làm việc đó.</small>
+<small> * Thời gian thiếu được cộng dồn làm cơ sở xét thưởng, nâng lương cuối năm.</small>
+<br />
+<small>Vui lòng xác nhận công trong vòng 02 ngày.</small>
+<br />
+<small>Chúc ngày làm việc hiệu quả.</small>
+
+
+<script id="tmplDataItem" type="text/x-jsrender">
+    <input type="hidden" class="hidLogId" name="EmployeeWorkTimeLog.Id" value="{{:id}}" />
+    <div class="from-group">
+        <label class="control-label">Thông tin xác nhận công</label>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            Ngày <span class="badge badge-info">{{:date}}</span>
+        </div>
+        <div class="col-md-3 col-sm-6 col-xs-12">
+            Vào: <span class="badge badge-info">{{:in}}</span>
+        </div>
+        <div class="col-md-3 col-sm-6 col-xs-12">
+            Trễ: <span class="badge badge-info">{{:late}}</span>
+        </div>
+        <div class="col-md-3 col-sm-6 col-xs-12">
+            Ra: <span class="badge badge-info">{{:out}}</span>
+        </div>
+        <div class="col-md-3 col-sm-6 col-xs-12">
+            Sớm: <span class="badge badge-info">{{:early}}</span>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label">Lý do</label>
+        <select class="form-control xac-nhan-cong-reason" name="EmployeeWorkTimeLog.Reason">
+            <option value="">Chọn</option>
+            <option value="Đi công tác">Đi công tác</option>
+            <option value="Quên chấm công">Quên chấm công</option>
+            <option value="Lý do khác">Lý do khác</option>
+        </select>
+    </div>
+    <div class="alert alert-info reason-description-3 d-none">
+        <label class="control-label">Lý do khác bao gồm: kẹt xe, thiên tai, tai nạn,...</label>
+    </div>
+    <div class="alert alert-danger reason-result-2 d-none">
+        <label class="control-label">Bạn thông cảm, theo qui định với lý do "Quên chấm công" trong 01 tháng chỉ được gửi xác nhận 01 lần.</label>
+        <p>Lần gửi xác nhận quên chấm công trong tháng:</p>
+        <p class="reason-detail-2-cancel"></p>
+    </div>
+    <div class="alert alert-danger reason-result-3 d-none">
+        <label class="control-label">Bạn thông cảm, theo qui định với lý do "Lý do khác" trong 01 tháng chỉ được gửi xác nhận 05 lần.</label>
+        <p>Lần gửi xác nhận "Lý do khác" trong tháng:</p>
+        <div class="reason-detail-3-cancel"></div>
+    </div>
+    <div class="form-group reason-detail d-none">
+        <label class="control-label">Chi tiết</label>
+        <textarea name="EmployeeWorkTimeLog.ReasonDetail" class="form-control js-auto-size">{{:reasonDetail}}</textarea>
+    </div>
+    <div class="form-group">
+        <label class="control-label">Người xác nhận</label>
+        <select name="EmployeeWorkTimeLog.ConfirmId" class="form-control ddl-approve-xac-nhan-cong">
+            <option value="">Chọn</option>
+        </select>
+    </div>
+</script>
+
+<div class="modal fade" id="requestTimeKeeperModal" tabindex="-1" role="dialog" aria-labelledby="requestTimeKeeperModal" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editItemModalLabel">Xác nhận công</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Đóng">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form class="data-form" method="post" action="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Request" enctype="multipart/form-data">
+                <input type="hidden" id="hidReasonRule" value="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.ReasonRule" />
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <span class="result"></span>
+                <div class="modal-body data-item-edit">
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fas fa-times"></i>Hủy và đóng</button>
+                    <button type="submit" class="btn btn-primary width140 btn-submit-timekeeping" disabled><i class="icon-save"></i>&nbsp;Gửi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+        <script type="text/javascript" src="~/js/timekeeper.js?@DateTime.Now.Ticks"></script>
+    }
+}
+
+

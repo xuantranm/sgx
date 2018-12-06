@@ -1,0 +1,113 @@
+﻿@*<div class="col-6 workplace">
+            <div class="form-group">
+                <i class="icon icon-location"></i>
+                <label class="control-label">Nơi làm việc</label>
+                @if (!readonlyMode)
+                {
+                    <select class="form-control form-control-lg multi-select-workplace" multiple="multiple">
+                        @{
+                            var selectedNM = string.Empty;
+                            var selectedVP = string.Empty;
+                            if (Model.Employee.Workplaces != null && Model.Employee.Workplaces.Count > 0)
+                            {
+                                i = 0;
+                                foreach (var workplace in Model.Employee.Workplaces)
+                                {
+                                    if (workplace.Code == "NM")
+                                    {
+                                        selectedNM = "selected";
+                                    }
+                                    if (workplace.Code == "VP")
+                                    {
+                                        selectedVP = "selected";
+                                    }
+                                }
+                            }
+                            if (!string.IsNullOrEmpty(selectedNM))
+                            {
+                                <option value="NM" selected="selected">Nhà máy</option>
+                            }
+                            else
+                            {
+                                <option value="NM">Nhà máy</option>
+                            }
+                            if (!string.IsNullOrEmpty(selectedVP))
+                            {
+                                <option value="VP" selected="selected">Văn phòng</option>
+                            }
+                            else
+                            {
+                                <option value="VP">Văn phòng</option>
+                            }
+                        }
+                    </select>
+                }
+            </div>
+        </div>
+                                    @if (readonlyMode)
+                                    {
+                                        if (Model.Employee.Workplaces != null && Model.Employee.Workplaces.Count > 0)
+                                        {
+                                            foreach (var workplace in Model.Employee.Workplaces)
+                                            {
+                                                <div class="col-6 nodeWorkplace node">
+                                                    <div class="form-group">
+                                                        <span class="badge badge-primary">@workplace.Name</span>
+                                                        <i class="icon icon-fingerprint"></i>
+                                                        @if (!string.IsNullOrEmpty(workplace.Fingerprint))
+                                                        {
+                                                            <label class="control-label">Mã chấm công</label>
+                                                            <span class="badge badge-info">@workplace.Fingerprint</span>
+                                                            <label class="control-label">Thời gian làm việc</label>
+                                                            <span class="badge badge-info">@workplace.WorkingScheduleTime</span>
+                                                        }
+                                                    </div>
+                                                </div>
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (Model.Employee.Workplaces != null && Model.Employee.Workplaces.Count > 0)
+                                        {
+                                            i = 0;
+                                            foreach (var workplace in Model.Employee.Workplaces)
+                                            {
+                                                <div class="col-6 nodeWorkplace node">
+                                                    <div class="form-group">
+                                                        <span class="badge badge-primary">@workplace.Name</span>
+                                                        <i class="icon icon-fingerprint"></i>
+                                                        <label class="control-label">Mã chấm công</label>
+                                                        <input name="Employee.Workplaces[@i].Fingerprint" class="form-control form-control-lg" value="@workplace.Fingerprint" />
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label class="control-label">Thời gian làm việc</label>
+                                                        <select name="Employee.Workplaces[@i].WorkingScheduleTime" class="form-control form-control-lg">
+                                                            @{
+                                                                foreach (var workTimeType in ViewBag.WorkTimeTypes)
+                                                                {
+                                                                    var workScheduleTime = new TimeSpan(7, 0, 0);
+                                                                    if (!string.IsNullOrEmpty(Model.Employee.Workplaces[i].WorkingScheduleTime))
+                                                                    {
+                                                                        workScheduleTime = TimeSpan.Parse(Model.Employee.Workplaces[i].WorkingScheduleTime.Split('-')[0]);
+                                                                    }
+                                                                    if (workTimeType.Start == workScheduleTime)
+                                                                    {
+                                                                        <option value="@workTimeType.Start.ToString(@"hh\:mm")-@workTimeType.End.ToString(@"hh\:mm")" selected>@workTimeType.Start.ToString(@"hh\:mm") - @workTimeType.End.ToString(@"hh\:mm")</option>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <option value="@workTimeType.Start.ToString(@"hh\:mm")-@workTimeType.End.ToString(@"hh\:mm")" @selected>@workTimeType.Start.ToString(@"hh\:mm") - @workTimeType.End.ToString(@"hh\:mm")</option>
+                                                                    }
+                                                                }
+                                                            }
+                                                        </select>
+                                                    </div>
+                                                    <input type="hidden" name="Employee.Workplaces[@i].Code" value="@workplace.Code" />
+                                                    <input type="hidden" name="Employee.Workplaces[@i].Name" value="@workplace.Name" />
+                                                </div>
+                                                i++;
+                                            }
+                                        }
+                                    }
+                                    *@

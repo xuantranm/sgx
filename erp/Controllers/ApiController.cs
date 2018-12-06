@@ -185,7 +185,7 @@ namespace erp.Controllers
             else
             {
                 term = Utility.AliasConvert(term);
-                filter = filter & builder.Regex(i => i.AliasFullName, term);
+                filter = filter & (builder.Regex(i => i.AliasFullName, term) | builder.Regex(i=>i.Email, term));
             }
             #endregion
 
@@ -193,9 +193,9 @@ namespace erp.Controllers
             var sort = Builders<Employee>.Sort.Ascending(m => m.Code);
             #endregion
 
-            var fields = Builders<Employee>.Projection.Include(p => p.Code).Include(p => p.FullName).Include(p=>p.AliasFullName).Include(p => p.Email);
+            var fields = Builders<Employee>.Projection.Include(p => p.Code).Include(p => p.FullName).Include(p=>p.AliasFullName).Include(p => p.Email).Include(p => p.Title);
 
-            var outputs = dbContext.Employees.Find(filter).Project<Employee>(fields).Sort(sort).Limit(10).ToList();
+            var outputs = dbContext.Employees.Find(filter).Project<Employee>(fields).Sort(sort).Limit(20).ToList();
             watch.Stop();
             var elapsedMs = watch.ElapsedMilliseconds;
             return Json(new { elapsedMs = elapsedMs+"ms", outputs });

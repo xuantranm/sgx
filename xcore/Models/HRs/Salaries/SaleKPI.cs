@@ -6,7 +6,11 @@ using System.ComponentModel.DataAnnotations;
 namespace Models
 {
     /// <summary>
-    /// KPI từng tháng
+    /// KPI từng tháng,
+    /// Gọi chịu khó groupby Type and Condition.
+    /// Mục đích mở rộng về sau.
+    /// Hay mỗi type 1 field...
+    /// Mở rộng hay thêm bớt thêm field data.
     /// </summary>
     public class SaleKPI
     {
@@ -24,19 +28,32 @@ namespace Models
 
         public string ChucVuCode { get; set; }
 
-        // khách hàng mới | độ phủ | doanh số,...
-        public string Type { get; set; }
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal KHMoi { get; set; } = 0;
 
-        public string TypeAlias { get; set; }
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal DoPhuTren80 { get; set; } = 0;
 
-        public string TypeCode { get; set; }
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal NganhHangDat704Nganh { get; set; } = 0;
 
-        // null-empty not set; tren 80, 90,....
-        public string Condition { get; set; }
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal DoanhThuTren80 { get; set; } = 0;
 
-        public string ConditionValue { get; set; }
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal DoanhThuDat100 { get; set; } = 0;
 
-        public string Value { get; set; }
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal DoanhSoTren80 { get; set; } = 0;
+
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal DoanhSoDat100 { get; set; } = 0;
+
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal DoanhSoTren120 { get; set; } = 0;
+
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal Total { get; set; } = 0;
 
         public bool Enable { get; set; } = true;
 

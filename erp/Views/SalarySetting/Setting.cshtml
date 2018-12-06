@@ -1,0 +1,60 @@
+﻿@using Common.Utilities;
+@using ViewModels;
+@model BangLuongViewModel
+@{
+    Layout = "~/Views/Shared/_LayoutSocialFbFS.cshtml";
+    var login = User.Identity.Name;
+    var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+}
+
+<div class="main-container">
+    <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="/">Trang chủ</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">Cài đặt mẫu số</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="flush-with-above height-80 d-block">
+        <div class="container">
+            <div class="row mb-3">
+                <div class="col-12">
+                    <button type="button" class="btn btn-success btn-edit" data-toggle="tooltip" title="Bấm thay đổi tham số.">
+                        <i class="icon icon-edit"></i>Chỉnh sửa
+                    </button>
+                    <button type="button" class="btn btn-success btn-back" data-toggle="tooltip" title="Bấm để trở về.">
+                        <i class="icon icon-back"></i>Trở về
+                    </button>
+                </div>
+            </div>
+            @{
+                var i = 0;
+                foreach (var item in Model.SalarySettings)
+                {
+                    <div class="row">
+                        <div class="col-12">
+                            <span>@item.Title</span> <span class="badge badge-primary">@item.Value</span>
+                            <small>@item.Description</small>
+                        </div>
+                    </div>
+                    i++;
+                }
+            }
+        </div>
+    </section>
+</div>
+
+@section scripts {
+    <script type="text/javascript" src="~/js/salary-setting.js?@DateTime.Now.Ticks"></script>
+}
+
+
+

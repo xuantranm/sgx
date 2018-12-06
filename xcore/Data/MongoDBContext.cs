@@ -134,6 +134,14 @@ namespace Data
 
         #region SALARIES
 
+        public IMongoCollection<NgachLuong> NgachLuongs
+        {
+            get
+            {
+                return _database.GetCollection<NgachLuong>("NgachLuongs");
+            }
+        }
+
         /// <summary>
         /// Bang cai dat: mau so,...
         /// </summary>
@@ -145,19 +153,27 @@ namespace Data
             }
         }
 
-        public IMongoCollection<SalarySaleKPI> SalarySaleKPIs
+        public IMongoCollection<SaleKPIEmployee> SaleKPIEmployees
         {
             get
             {
-                return _database.GetCollection<SalarySaleKPI>("SalarySaleKPIs");
+                return _database.GetCollection<SaleKPIEmployee>("SaleKPIEmployees");
             }
         }
 
-        public IMongoCollection<SalaryLogisticData> SalaryLogisticDatas
+        public IMongoCollection<LogisticGiaChuyenXe> LogisticGiaChuyenXes
         {
             get
             {
-                return _database.GetCollection<SalaryLogisticData>("SalaryLogisticDatas");
+                return _database.GetCollection<LogisticGiaChuyenXe>("LogisticGiaChuyenXes");
+            }
+        }
+
+        public IMongoCollection<LogisticEmployeeCong> LogisticEmployeeCongs
+        {
+            get
+            {
+                return _database.GetCollection<LogisticEmployeeCong>("LogisticEmployeeCongs");
             }
         }
 
@@ -240,11 +256,11 @@ namespace Data
         #endregion
 
         #region KINH DOANH
-        public IMongoCollection<ChucVuSale> ChucVuSales
+        public IMongoCollection<ChucVuKinhDoanh> ChucVuKinhDoanhs
         {
             get
             {
-                return _database.GetCollection<ChucVuSale>("ChucVuSales");
+                return _database.GetCollection<ChucVuKinhDoanh>("ChucVuKinhDoanhs");
             }
         }
 
@@ -258,11 +274,27 @@ namespace Data
         #endregion
 
         #region LOGISTICS
-        public IMongoCollection<CityGiaoNhan> CityGiaoNhans
+        public IMongoCollection<LogisticsLocation> LogisticsLocations
         {
             get
             {
-                return _database.GetCollection<CityGiaoNhan>("CityGiaoNhans");
+                return _database.GetCollection<LogisticsLocation>("LogisticsLocations");
+            }
+        }
+
+        public IMongoCollection<LogisticsLoaiXe> LogisticsLoaiXes
+        {
+            get
+            {
+                return _database.GetCollection<LogisticsLoaiXe>("LogisticsLoaiXes");
+            }
+        }
+
+        public IMongoCollection<LogisticGiaBun> LogisticGiaBuns
+        {
+            get
+            {
+                return _database.GetCollection<LogisticGiaBun>("LogisticGiaBuns");
             }
         }
 
@@ -281,6 +313,20 @@ namespace Data
                 return _database.GetCollection<HoTroCongTacXa>("HoTroCongTacXas");
             }
         }
+        #endregion
+
+        #region NHA MAY
+        public IMongoCollection<SalaryNhaMayCong> SalaryNhaMayCongs
+        {
+            get
+            {
+                return _database.GetCollection<SalaryNhaMayCong>("SalaryNhaMayCongs");
+            }
+        }
+        #endregion
+
+        #region SAN XUAT
+
         #endregion
 
         public IMongoCollection<TrainningType> TrainningTypes

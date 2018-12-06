@@ -1,0 +1,516 @@
+﻿@using Common.Utilities;
+@using ViewModels;
+@model BangLuongViewModel
+@{
+    Layout = "~/Views/Shared/_LayoutSocialFbFS.cshtml";
+    var login = User.Identity.Name;
+    var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+
+    var priceHOCHIMINHN = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("HOCHIMINH") && m.LoaiXeCode.Equals("XN"));
+    var priceHOCHIMINHL = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("HOCHIMINH") && m.LoaiXeCode.Equals("XL"));
+    var priceBINHDUONGN = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("BINHDUONG") && m.LoaiXeCode.Equals("XN"));
+    var priceBINHDUONGL = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("BINHDUONG") && m.LoaiXeCode.Equals("XL"));
+    var priceBIENHOAN = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("BIENHOA") && m.LoaiXeCode.Equals("XN"));
+    var priceBIENHOAL = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("BIENHOA") && m.LoaiXeCode.Equals("XL"));
+    var priceVUNGTAUN = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("VUNGTAU") && m.LoaiXeCode.Equals("XN"));
+    var priceVUNGTAUL = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("VUNGTAU") && m.LoaiXeCode.Equals("XL"));
+    var priceBINHTHUANN = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("BINHTHUAN") && m.LoaiXeCode.Equals("XN"));
+    var priceBINHTHUANL = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("BINHTHUAN") && m.LoaiXeCode.Equals("XL"));
+    var priceCANTHON = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("CANTHO") && m.LoaiXeCode.Equals("XN"));
+    var priceCANTHOL = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("CANTHO") && m.LoaiXeCode.Equals("XL"));
+    var priceVINHLONGN = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("VINHLONG") && m.LoaiXeCode.Equals("XN"));
+    var priceVINHLONGL = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("VINHLONG") && m.LoaiXeCode.Equals("XL"));
+    var priceLONGANN = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("LONGAN") && m.LoaiXeCode.Equals("XN"));
+    var priceLONGANL = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("LONGAN") && m.LoaiXeCode.Equals("XL"));
+    var priceTIENGIANGN = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("TIENGIANG") && m.LoaiXeCode.Equals("XN"));
+    var priceTIENGIANGL = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("TIENGIANG") && m.LoaiXeCode.Equals("XL"));
+    var priceDONGNAIN = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("DONGNAI") && m.LoaiXeCode.Equals("XN"));
+    var priceDONGNAIL = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("DONGNAI") && m.LoaiXeCode.Equals("XL"));
+}
+<link href="~/assets/wingman/css/big-screen.css" rel="stylesheet" />
+<style>
+    .employeekpi tbody th:nth-child(3), .employeekpi tbody td:nth-child(3) {
+        position: sticky;
+        left: 0px;
+    }
+
+    .employeekpi tbody td:nth-child(3) {
+        background-color: lightgoldenrodyellow;
+    }
+
+    .kpi tbody th:nth-child(2), .kpi tbody td:nth-child(2) {
+        position: sticky;
+        left: 0px;
+    }
+
+    .kpi tbody td:nth-child(2) {
+        background-color: lightgoldenrodyellow;
+    }
+</style>
+
+<div class="main-container">
+    <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="/">Trang chủ</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">Dữ liệu Logistic</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="flush-with-above space-0">
+        <div class="bg-white">
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <ul class="nav nav-tabs" id="myTab" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.VanPhong/@Constants.LinkSalary.ThangBangLuong">THANG LƯƠNG</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.VanPhong/@Constants.LinkSalary.BangLuong">BẢNG LƯƠNG</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Timer">CHẤM CÔNG</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Setting">THAM SỐ</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.SaleKPIEmployee">KINH DOANH</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link active" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.LogisticEmployeeCong">LOGISTICS</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Credits">VAY & TẠM ỨNG</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="flush-with-above height-80 d-block">
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="sale" role="tabpanel" aria-labelledby="sale-tab">
+                <div class="container">
+                    <div class="card card-sm">
+                        <div class="card-header bg-secondary d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6>DỮ LIỆU LOGISTICS</h6>(ĐVT: 1 đồng)
+                            </div>
+                            <form class="d-flex align-items-center" method="get" action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.LogisticEmployeeCong" id="form-main">
+                                <span class="mr-2 text-muted text-small text-nowrap">Tháng:</span>
+                                <select asp-for="thang" class="custom-select ddl-times">
+                                    @{
+                                        foreach (var item in Model.MonthYears)
+                                        {
+                                            <option value="@item.Month-@item.Year">@item.Month/@item.Year</option>
+                                        }
+                                    }
+                                </select>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <a class="nav-link custom-more collapsed" data-toggle="collapse" href="#chuyenxe" aria-expanded="false" aria-controls="more">
+                            <i class="fas fa-expand"></i> Bảng giá chuyến xe
+                        </a>
+                        <div id="chuyenxe" class="col-12 collapse">
+                            <div class="row mb-3">
+                                <div class="col-md-4 col-sm-6 col-12">
+                                    <a class="btn btn-lg btn-block btn-success btn-edit-real" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.LogisticGiaChuyenXe/@Constants.LinkSalary.Update" data-toggle="tooltip" title="Bấm thay đổi.">
+                                        <i class="icon icon-edit"></i>Chỉnh sửa
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-12 table-responsive-sm">
+                                    <table class="table table-responsive-sm table-bordered table-striped table-hover floating-header kpi">
+                                        <thead style="background-color:lightgrey">
+                                            <tr>
+                                                <th style="vertical-align:middle;font-weight:bold" nowrap>#</th>
+                                                <th style="vertical-align:middle;font-weight:bold" nowrap>Tuyến</th>
+                                                <th style="vertical-align:middle;font-weight:bold" nowrap>Loại xe</th>
+                                                <th style="vertical-align:middle;font-weight:bold" nowrap>
+                                                    Lương năng suất chuyến + cơm
+                                                </th>
+                                                <th style="vertical-align:middle;font-weight:bold" nowrap>
+                                                    Hỗ trợ tiền cơm tỉnh
+                                                </th>
+                                                <th style="vertical-align:middle;font-weight:bold" nowrap>
+                                                    Lương năng suất chuyến
+                                                </th>
+                                                <th style="vertical-align:middle;font-weight:bold" nowrap>Chuyến 1</th>
+                                                <th style="vertical-align:middle;font-weight:bold" nowrap>Chuyến 2</th>
+                                                <th style="vertical-align:middle;font-weight:bold" nowrap>Chuyến 3</th>
+                                                <th style="vertical-align:middle;font-weight:bold" nowrap>Chuyến 4</th>
+                                                <th style="vertical-align:middle;font-weight:bold" nowrap>Chuyến 5</th>
+                                                <th style="vertical-align:middle;font-weight:bold" nowrap>Hỗ trợ chuyến đêm (*)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @{
+                                                int iS = 1;
+                                                foreach (var item in Model.LogisticGiaChuyenXes)
+                                                {
+                                                    <tr class="tr-@item.Id" data-id="@item.Id">
+                                                        <td>
+                                                            @iS
+                                                        </td>
+                                                        <td>@item.Tuyen</td>
+                                                        <td>@item.LoaiXe</td>
+                                                        <td>@String.Format("{0:#,###,###}", item.LuongNangSuatChuyenCom)</td>
+                                                        <td>@String.Format("{0:#,###,###}", item.HoTroTienComTinh)</td>
+                                                        <td>@String.Format("{0:#,###,###}", item.LuongNangSuatChuyen)</td>
+                                                        <td>
+                                                            @String.Format("{0:#,###,###}", item.Chuyen1)
+                                                        </td>
+                                                        <td>
+                                                            @String.Format("{0:#,###,###}", item.Chuyen2)
+                                                        </td>
+                                                        <td>
+                                                            @String.Format("{0:#,###,###}", item.Chuyen3)
+                                                        </td>
+                                                        <td>
+                                                            @String.Format("{0:#,###,###}", item.Chuyen4)
+                                                        </td>
+                                                        <td>
+                                                            @String.Format("{0:#,###,###}", item.Chuyen5)
+                                                        </td>
+                                                        <td>@String.Format("{0:#,###,###}", item.HoTroChuyenDem)</td>
+                                                    </tr>
+                                                    iS++;
+                                                }
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h5 class="mb-4">Dữ liệu công</h5>
+
+                    <div class="row mb-3">
+                        <div class="col-lg-3 col-md-6">
+                            <a class="btn btn-lg btn-block btn-success btn-edit-real" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.LogisticEmployeeCong/@Constants.LinkSalary.Update" data-toggle="tooltip" title="Bấm thay đổi.">
+                                <i class="icon icon-edit"></i>Chỉnh sửa
+                            </a>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <a class="btn btn-lg btn-block btn-info" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.LogisticEmployeeCong/@Constants.LinkSalary.Export" data-toggle="tooltip" title="Xuất ra tài liệu file excel.">
+                                <i class="fas fa-download"></i> Xuất excel
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12 table-responsive-sm">
+                            <table class="table table-responsive-sm table-bordered table-striped table-hover floating-header employeekpi">
+                                <thead style="background-color:lightgrey">
+                                    <tr>
+                                        <th rowspan="3" style="vertical-align:middle;font-weight:bold" nowrap>#</th>
+                                        <th rowspan="3" style="vertical-align:middle;font-weight:bold" nowrap>MÃ NV</th>
+                                        <th rowspan="3" style="vertical-align:middle;font-weight:bold" nowrap>Họ Tên</th>
+                                        <th rowspan="3" style="vertical-align:middle;font-weight:bold" nowrap>Chức vụ</th>
+                                        <th rowspan="3" style="vertical-align:middle;font-weight:bold" nowrap>Doanh thu</th>
+                                        <th rowspan="3" style="vertical-align:middle;font-weight:bold" nowrap>Lương theo danh thu/doanh số</th>
+                                        <th colspan="5" style="vertical-align:middle;font-weight:bold;text-align:center;" nowrap>TP.HCM Xe nhỏ 1.7 tấn</th>
+                                        <th colspan="5" style="vertical-align:middle;font-weight:bold;text-align:center;" nowrap>TP.HCM Xe lớn ben và 8 tấn</th>
+                                        <th colspan="5" style="vertical-align:middle;font-weight:bold;text-align:center;" nowrap>BÌNH DƯƠNG Xe nhỏ</th>
+                                        <th colspan="5" style="vertical-align:middle;font-weight:bold;text-align:center;" nowrap>BÌNH DƯƠNG Xe lớn</th>
+                                        <th colspan="5" style="vertical-align:middle;font-weight:bold;text-align:center;" nowrap>BIÊN HÒA Xe nhỏ</th>
+                                        <th colspan="5" style="vertical-align:middle;font-weight:bold;text-align:center;" nowrap>BIÊN HÒA Xe lớn</th>
+                                        <th colspan="2" style="vertical-align:middle;font-weight:bold;text-align:center;" nowrap>Vũng Tàu</th>
+                                        <th colspan="2" style="vertical-align:middle;font-weight:bold;text-align:center;" nowrap>Bình Thuận</th>
+                                        <th style="vertical-align:middle;font-weight:bold;text-align:center;" nowrap>Cần Thơ</th>
+                                        <th style="vertical-align:middle;font-weight:bold;text-align:center;" nowrap>Vĩnh Long</th>
+                                        <th colspan="2" style="vertical-align:middle;font-weight:bold;text-align:center;" nowrap>Long An</th>
+                                        <th colspan="2" style="vertical-align:middle;font-weight:bold;text-align:center;" nowrap>Tiền Giang</th>
+                                        <th colspan="2" style="vertical-align:middle;font-weight:bold;text-align:center;" nowrap>Đồng Nai</th>
+                                        <th rowspan="3" style="vertical-align:middle;font-weight:bold">Tổng số chuyến</th>
+                                        <th rowspan="3" style="vertical-align:middle;font-weight:bold">Tiền chuyến</th>
+                                        <th rowspan="3" style="vertical-align:middle;font-weight:bold">Công tác xa</th>
+                                        <th rowspan="3" style="vertical-align:middle;font-weight:bold">Khối lượng bùn</th>
+                                        <th rowspan="3" style="vertical-align:middle;font-weight:bold">Tiền/tấn</th>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="5" style="text-align:center;">Trợ cấp</td>
+                                        <td colspan="5" style="text-align:center;">Trợ cấp</td>
+                                        <td colspan="5" style="text-align:center;">Trợ cấp</td>
+                                        <td colspan="5" style="text-align:center;">Trợ cấp</td>
+                                        <td colspan="5" style="text-align:center;">Trợ cấp</td>
+                                        <td colspan="5" style="text-align:center;">Trợ cấp</td>
+                                        <td style="text-align:center;">Xe nhỏ</td>
+                                        <td style="text-align:center;">Xe lớn</td>
+                                        <td style="text-align:center;">Xe nhỏ</td>
+                                        <td style="text-align:center;">Xe lớn</td>
+                                        <td style="text-align:center;">Xe lớn</td>
+                                        <td style="text-align:center;">Xe lớn</td>
+                                        <td style="text-align:center;">Xe nhỏ</td>
+                                        <td style="text-align:center;">Xe lớn</td>
+                                        <td style="text-align:center;">Xe nhỏ</td>
+                                        <td style="text-align:center;">Xe lớn</td>
+                                        <td style="text-align:center;">Xe nhỏ</td>
+                                        <td style="text-align:center;">Xe lớn</td>
+                                    </tr>
+                                    <tr>
+                                        @for (int iCHCMN = 1; iCHCMN <= 5; iCHCMN++)
+                                        {
+                                            <td>Chuyến @iCHCMN</td>
+                                        }
+                                        @for (int iCHCML = 1; iCHCML <= 5; iCHCML++)
+                                        {
+                                            <td>Chuyến @iCHCML</td>
+                                        }
+                                        @for (int iCBDN = 1; iCBDN <= 5; iCBDN++)
+                                        {
+                                            <td>Chuyến @iCBDN</td>
+                                        }
+                                        @for (int iCBDL = 1; iCBDL <= 5; iCBDL++)
+                                        {
+                                            <td>Chuyến @iCBDL</td>
+                                        }
+                                        @for (int iCBHN = 1; iCBHN <= 5; iCBHN++)
+                                        {
+                                            <td>Chuyến @iCBHN</td>
+                                        }
+                                        @for (int iCBHL = 1; iCBHL <= 5; iCBHL++)
+                                        {
+                                            <td>Chuyến @iCBHL</td>
+                                        }
+                                        <td>VT</td>
+                                        <td>VT</td>
+                                        <td>BT</td>
+                                        <td>BT</td>
+                                        <td>CT</td>
+                                        <td>VL</td>
+                                        <td>LA</td>
+                                        <td>LA</td>
+                                        <td>TG</td>
+                                        <td>TG</td>
+                                        <td>ĐN</td>
+                                        <td>ĐN</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="6" style="text-align:center;">ĐƠN GIÁ CHUYẾN XE</td>
+                                        <td>@String.Format("{0:#,###,###}", priceHOCHIMINHN.Chuyen1)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceHOCHIMINHN.Chuyen2)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceHOCHIMINHN.Chuyen3)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceHOCHIMINHN.Chuyen4)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceHOCHIMINHN.Chuyen5)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceHOCHIMINHL.Chuyen1)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceHOCHIMINHL.Chuyen2)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceHOCHIMINHL.Chuyen3)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceHOCHIMINHL.Chuyen4)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceHOCHIMINHL.Chuyen5)</td>
+
+                                        <td>@String.Format("{0:#,###,###}", priceBINHDUONGN.Chuyen1)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceBINHDUONGN.Chuyen2)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceBINHDUONGN.Chuyen3)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceBINHDUONGN.Chuyen4)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceBINHDUONGN.Chuyen5)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceBINHDUONGL.Chuyen1)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceBINHDUONGL.Chuyen2)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceBINHDUONGL.Chuyen3)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceBINHDUONGL.Chuyen4)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceBINHDUONGL.Chuyen5)</td>
+
+                                        <td>@String.Format("{0:#,###,###}", priceBIENHOAN.Chuyen1)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceBIENHOAN.Chuyen2)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceBIENHOAN.Chuyen3)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceBIENHOAN.Chuyen4)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceBIENHOAN.Chuyen5)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceBIENHOAL.Chuyen1)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceBIENHOAL.Chuyen2)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceBIENHOAL.Chuyen3)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceBIENHOAL.Chuyen4)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceBIENHOAL.Chuyen5)</td>
+
+                                        <td>@String.Format("{0:#,###,###}", priceVUNGTAUN.Chuyen2)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceVUNGTAUL.Chuyen2)</td>
+
+                                        <td>@String.Format("{0:#,###,###}", priceBINHTHUANN.Chuyen2)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceBINHTHUANL.Chuyen2)</td>
+
+                                        <td>@String.Format("{0:#,###,###}", priceCANTHOL.Chuyen2)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceVINHLONGL.Chuyen2)</td>
+
+                                        <td>@String.Format("{0:#,###,###}", priceLONGANN.Chuyen2)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceLONGANL.Chuyen2)</td>
+
+                                        <td>@String.Format("{0:#,###,###}", priceTIENGIANGN.Chuyen2)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceTIENGIANGL.Chuyen2)</td>
+
+                                        <td>@String.Format("{0:#,###,###}", priceDONGNAIN.Chuyen2)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceDONGNAIL.Chuyen2)</td>
+
+                                        <td rowspan="2" style="text-align:center;"></td>
+                                        <td rowspan="2" style="text-align:center;"></td>
+                                        <td rowspan="2" style="text-align:center;"></td>
+                                        <td rowspan="2" style="text-align:center;"></td>
+                                        <td rowspan="2" style="text-align:center;vertical-align:bottom;">
+                                            @String.Format("{0:#,###,###}", Model.DonGiaBun)
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="6" style="text-align:center;">HỖ TRỢ CÔNG TÁC XA</td>
+                                        <td>@String.Format("{0:#,###,###}", priceHOCHIMINHN.HoTroTienComTinh)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceHOCHIMINHN.HoTroTienComTinh)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceHOCHIMINHN.HoTroTienComTinh)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceHOCHIMINHN.HoTroTienComTinh)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceHOCHIMINHN.HoTroTienComTinh)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceHOCHIMINHL.HoTroTienComTinh)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceHOCHIMINHL.HoTroTienComTinh)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceHOCHIMINHL.HoTroTienComTinh)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceHOCHIMINHL.HoTroTienComTinh)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceHOCHIMINHL.HoTroTienComTinh)</td>
+
+                                        <td>@String.Format("{0:#,###,###}", priceBINHDUONGN.HoTroTienComTinh)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceBINHDUONGN.HoTroTienComTinh)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceBINHDUONGN.HoTroTienComTinh)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceBINHDUONGN.HoTroTienComTinh)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceBINHDUONGN.HoTroTienComTinh)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceBINHDUONGL.HoTroTienComTinh)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceBINHDUONGL.HoTroTienComTinh)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceBINHDUONGL.HoTroTienComTinh)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceBINHDUONGL.HoTroTienComTinh)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceBINHDUONGL.HoTroTienComTinh)</td>
+
+                                        <td>@String.Format("{0:#,###,###}", priceBIENHOAN.HoTroTienComTinh)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceBIENHOAN.HoTroTienComTinh)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceBIENHOAN.HoTroTienComTinh)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceBIENHOAN.HoTroTienComTinh)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceBIENHOAN.HoTroTienComTinh)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceBIENHOAL.HoTroTienComTinh)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceBIENHOAL.HoTroTienComTinh)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceBIENHOAL.HoTroTienComTinh)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceBIENHOAL.HoTroTienComTinh)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceBIENHOAL.HoTroTienComTinh)</td>
+
+                                        <td>@String.Format("{0:#,###,###}", priceVUNGTAUN.HoTroTienComTinh)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceVUNGTAUL.HoTroTienComTinh)</td>
+
+                                        <td>@String.Format("{0:#,###,###}", priceBINHTHUANN.HoTroTienComTinh)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceBINHTHUANL.HoTroTienComTinh)</td>
+
+                                        <td>@String.Format("{0:#,###,###}", priceCANTHOL.HoTroTienComTinh)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceVINHLONGL.HoTroTienComTinh)</td>
+
+                                        <td>@String.Format("{0:#,###,###}", priceLONGANN.HoTroTienComTinh)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceLONGANL.HoTroTienComTinh)</td>
+
+                                        <td>@String.Format("{0:#,###,###}", priceTIENGIANGN.HoTroTienComTinh)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceTIENGIANGL.HoTroTienComTinh)</td>
+
+                                        <td>@String.Format("{0:#,###,###}", priceDONGNAIN.HoTroTienComTinh)</td>
+                                        <td>@String.Format("{0:#,###,###}", priceDONGNAIL.HoTroTienComTinh)</td>
+
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        int i = 1;
+                                        foreach (var item in Model.LogisticEmployeeCongs)
+                                        {
+                                            <tr class="tr-@item.Id" data-id="@item.Id">
+                                                <td>
+                                                    @i
+                                                </td>
+                                                <td>@item.MaNhanVien</td>
+                                                <td nowrap>@item.FullName</td>
+                                                <td nowrap>@item.ChucVu</td>
+                                                <td>@String.Format("{0:#,###,###}", item.DoanhThu)</td>
+                                                <td>@String.Format("{0:#,###,###}", Math.Round((double)item.LuongTheoDoanhThuDoanhSo / 1000d, 0))</td>
+                                                <td>@item.Chuyen1HcmXeNho</td>
+                                                <td>@item.Chuyen2HcmXeNho</td>
+                                                <td>@item.Chuyen3HcmXeNho</td>
+                                                <td>@item.Chuyen4HcmXeNho</td>
+                                                <td>@item.Chuyen5HcmXeNho</td>
+                                                <td>@item.Chuyen1HcmXeLon</td>
+                                                <td>@item.Chuyen2HcmXeLon</td>
+                                                <td>@item.Chuyen3HcmXeLon</td>
+                                                <td>@item.Chuyen4HcmXeLon</td>
+                                                <td>@item.Chuyen5HcmXeLon</td>
+
+                                                <td>@item.Chuyen1BinhDuongXeNho</td>
+                                                <td>@item.Chuyen2BinhDuongXeNho</td>
+                                                <td>@item.Chuyen3BinhDuongXeNho</td>
+                                                <td>@item.Chuyen4BinhDuongXeNho</td>
+                                                <td>@item.Chuyen5BinhDuongXeNho</td>
+                                                <td>@item.Chuyen1BinhDuongXeLon</td>
+                                                <td>@item.Chuyen2BinhDuongXeLon</td>
+                                                <td>@item.Chuyen3BinhDuongXeLon</td>
+                                                <td>@item.Chuyen4BinhDuongXeLon</td>
+                                                <td>@item.Chuyen5BinhDuongXeLon</td>
+
+                                                <td>@item.Chuyen1BienHoaXeNho</td>
+                                                <td>@item.Chuyen2BienHoaXeNho</td>
+                                                <td>@item.Chuyen3BienHoaXeNho</td>
+                                                <td>@item.Chuyen4BienHoaXeNho</td>
+                                                <td>@item.Chuyen5BienHoaXeNho</td>
+                                                <td>@item.Chuyen1BienHoaXeLon</td>
+                                                <td>@item.Chuyen2BienHoaXeLon</td>
+                                                <td>@item.Chuyen3BienHoaXeLon</td>
+                                                <td>@item.Chuyen4BienHoaXeLon</td>
+                                                <td>@item.Chuyen5BienHoaXeLon</td>
+
+                                                <td>@item.VungTauXeNho</td>
+                                                <td>@item.VungTauXeLon</td>
+
+                                                <td>@item.BinhThuanXeNho</td>
+                                                <td>@item.BinhThuanXeLon</td>
+
+                                                <td>@item.CanThoXeLon</td>
+                                                <td>@item.VinhLongXeLon</td>
+
+                                                <td>@item.LongAnXeNho</td>
+                                                <td>@item.LongAnXeLon</td>
+
+                                                <td>@item.TienGiangXeNho</td>
+                                                <td>@item.TienGiangXeLon</td>
+
+                                                <td>@item.DongNaiXeNho</td>
+                                                <td>@item.DongNaiXeLon</td>
+
+                                                <td>@item.TongSoChuyen</td>
+                                                <td>
+                                                    @String.Format("{0:#,###,###}", Math.Round((double)item.TienChuyen / 1000d, 0))
+                                                </td>
+                                                <td>
+                                                    @String.Format("{0:#,###,###}", Math.Round((double)item.CongTacXa / 1000d, 0))
+                                                </td>
+                                                <td>@String.Format("{0:#,###,###}", item.KhoiLuongBun)</td>
+                                                <td>
+                                                    @String.Format("{0:#,###,###}", Math.Round((double)item.ThanhTienBun / 1000d, 0))
+                                                </td>
+                                            </tr>
+                                            i++;
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+@section scripts {
+    <script type="text/javascript" src="~/js/salary-logistic-employee-cong.js?@DateTime.Now.Ticks"></script>
+}
+
+
+

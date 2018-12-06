@@ -1,0 +1,87 @@
+﻿@using System.Globalization;
+@using Common.Utilities;
+@using Common.Enums;
+@using ViewModels
+@model MailViewModel
+
+<div class="row">
+    <div class="col-12">
+        Người gửi:
+        @{
+            var fromDisplay = string.Empty;
+            if (Model.ScheduleEmail.From != null && Model.ScheduleEmail.From.Count > 0)
+            {
+                foreach (var from in Model.ScheduleEmail.From)
+                {
+                    if (!string.IsNullOrEmpty(fromDisplay))
+                    {
+                        fromDisplay += ";";
+                    }
+                    fromDisplay += from.Name + " <" + from.Address + ">";
+                }
+            }
+        }
+        <p>
+            <b>@fromDisplay</b>
+        </p>
+    </div>
+    <div class="col-12">
+        Người nhận:
+        @{
+            var toDisplay = string.Empty;
+            if (Model.ScheduleEmail.To != null && Model.ScheduleEmail.To.Count > 0)
+            {
+                foreach (var to in Model.ScheduleEmail.To)
+                {
+                    if (!string.IsNullOrEmpty(toDisplay))
+                    {
+                        toDisplay += ";";
+                    }
+                    toDisplay += to.Name + " <" + to.Address + ">";
+                }
+            }
+        }
+        <p>
+            <b>@toDisplay</b>
+        </p>
+    </div>
+    <div class="col-12">
+        Người cc (nếu có):
+        @{
+            var ccDisplay = string.Empty;
+            if (Model.ScheduleEmail.CC != null && Model.ScheduleEmail.CC.Count > 0)
+            {
+                foreach (var ci in Model.ScheduleEmail.CC)
+                {
+                    if (!string.IsNullOrEmpty(ccDisplay))
+                    {
+                        ccDisplay += ";";
+                    }
+                    ccDisplay += ci.Name + " <" + ci.Address + ">";
+                }
+            }
+        }
+        <p>
+            <b>@ccDisplay</b>
+        </p>
+    </div>
+    <div class="col-12">
+        Tiêu đề
+        <b>@Model.ScheduleEmail.Title</b>
+    </div>
+    <div class="col-12">
+        Nội dung:
+        <div class="border">@Html.Raw(Model.ScheduleEmail.Content)</div>
+    </div>
+    <div class="col-12">
+        Thông tin gửi:
+        @{
+            var infoDisplay = string.Empty;
+            infoDisplay += "Loại: " + Model.ScheduleEmail.Type;
+            infoDisplay += ". Ngày tạo: " + Model.ScheduleEmail.CreatedOn;
+            infoDisplay += ". Ngày cập nhật: " + Model.ScheduleEmail.UpdatedOn;
+            infoDisplay += ". Tình trạng: " + Constants.EmailStatus(Model.ScheduleEmail.Status);
+        }
+        <p><small>@infoDisplay</small></p>
+    </div>
+</div>

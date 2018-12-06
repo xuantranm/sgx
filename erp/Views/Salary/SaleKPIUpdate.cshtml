@@ -6,6 +6,17 @@
     var login = User.Identity.Name;
     var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
 }
+<link href="~/assets/wingman/css/big-screen.css" rel="stylesheet" />
+<style>
+    tbody th:nth-child(2), tbody td:nth-child(2) {
+        position: sticky;
+        left: 0px;
+    }
+
+    tbody td:nth-child(2) {
+        background-color: lightgoldenrodyellow;
+    }
+</style>
 
 <div class="main-container">
     <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
@@ -16,7 +27,7 @@
                         <li class="breadcrumb-item">
                             <a href="/">Trang chủ</a>
                         </li>
-                        <li class="breadcrumb-item active" aria-current="page">Dữ liệu kinh doanh</li>
+                        <li class="breadcrumb-item active" aria-current="page">KPI kinh doanh</li>
                     </ol>
                 </div>
             </div>
@@ -30,16 +41,22 @@
                     <div class="col">
                         <ul class="nav nav-tabs" id="myTab" role="tablist">
                             <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.BangLuongReal">BẢNG LƯƠNG</a>
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.VanPhong/@Constants.LinkSalary.ThangBangLuong/@Constants.LinkSalary.Update">THANG LƯƠNG</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Setting/@Constants.LinkSalary.Update">THAM SỐ</a>
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.VanPhong/@Constants.LinkSalary.BangLuong/@Constants.LinkSalary.Update">BẢNG LƯƠNG</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link active" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.SaleKPIs/@Constants.LinkSalary.Update">KINH DOANH</a>
+                                <a class="nav-link" href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Timer">CHẤM CÔNG</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.LogisticDatas/@Constants.LinkSalary.Update">LOGISTICS</a>
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Setting">THAM SỐ</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link active" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.SaleKPIEmployee/@Constants.LinkSalary.Update">KINH DOANH</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.LogisticEmployeeCong/@Constants.LinkSalary.Update">LOGISTICS</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Credits/@Constants.LinkSalary.Update">VAY & TẠM ỨNG</a>
@@ -53,157 +70,114 @@
 
     <section class="flush-with-above height-80 d-block">
         <div class="tab-content">
-            <div class="tab-pane fade show active" id="law" role="tabpanel" aria-labelledby="law-tab">
-                <form action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.SaleKPIs/@Constants.LinkSalary.Update" method="post" class="data-form">
-                    <div class="row mb-3">
-                        <div class="col-12">
-                            <button type="button" class="btn btn-success btn-edit d-none" data-toggle="tooltip" title="Bấm thay đổi dữ liệu.">
-                                <i class="icon icon-edit"></i>Chỉnh sửa
-                            </button>
-
-                            <button type="submit" class="btn btn-primary btn-submit" data-toggle="tooltip" title="Bấm để cập nhật dữ liệu.">
-                                <i class="icon icon-save"></i>Lưu thay đổi
-                            </button>
-                            <button type="button" class="btn btn-success btn-back d-none" data-toggle="tooltip" title="Bấm để trở về.">
-                                <i class="icon icon-back"></i>Trở về
-                            </button>
+            <div class="tab-pane fade show active" id="sale" role="tabpanel" aria-labelledby="sale-tab">
+                <div class="container">
+                    <div class="card card-sm">
+                        <div class="card-header bg-secondary d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6>KPI</h6>(ĐVT: 1,000 đồng)
+                            </div>
+                            <form class="d-flex align-items-center" method="get" action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.SaleKPI/@Constants.LinkSalary.Update" id="filter-form">
+                                <span class="mr-2 text-muted text-small text-nowrap">Tháng:</span>
+                                <select asp-for="thang" class="custom-select ddl-times">
+                                    @{
+                                        foreach (var item in Model.MonthYears)
+                                        {
+                                            <option value="@item.Month-@item.Year">@item.Month/@item.Year</option>
+                                        }
+                                    }
+                                </select>
+                            </form>
                         </div>
                     </div>
-
-                    <div class="row">
-                        @{
+                    <form action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.SaleKPI/@Constants.LinkSalary.Update" method="post" class="data-form">
+                        <input type="hidden" name="thang" value="@Model.thang" />
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <a href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.SaleKPIEmployee" class="btn btn-info btn-list" data-toggle="tooltip" title="Bấm trở về.">
+                                    <i class="icon icon-back"></i>Trở về
+                                </a>
+                                <button type="submit" class="btn btn-danger btn-submit" data-toggle="tooltip" title="Bấm cập nhật dữ liệu."><i class="icon-save"></i>&nbsp;Cập nhật</button>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
                             <div class="col-12 table-responsive-sm">
-                                <table class="table table-responsive-sm table-bordered table-salary-level">
-                                    <tr style="background-color:yellow!important">
-                                        <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>STT</th>
-                                        <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>MÃ</th>
-                                        <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>KH VỰC</th>
-                                        <th colspan="5" style="vertical-align:middle;font-weight:bold" nowrap>CHỈ TIÊU</th>
-                                        <th colspan="5" style="vertical-align:middle;font-weight:bold" nowrap>THỰC HIỆN</th>
-                                        <th colspan="5" style="vertical-align:middle;font-weight:bold" nowrap>CHỈ TIÊU & THỰC HIỆN</th>
-                                        <th colspan="7" style="vertical-align:middle;font-weight:bold" nowrap>Incentive KPIs</th>
-                                    </tr>
-                                    <tr style="background-color:yellow!important">
-                                        <td style="text-align:center;">DOANH SỐ</td>
-                                        <td style="text-align:center;">DOANH THU</td>
-                                        <td style="text-align:center;">ĐỘ PHỦ</td>
-                                        <td style="text-align:center;">MỞ MỚI</td>
-                                        <td style="text-align:center;">NGÀNH HÀNG</td>
-                                        <td style="text-align:center;">DOANH SỐ</td>
-                                        <td style="text-align:center;">DOANH THU</td>
-                                        <td style="text-align:center;">ĐỘ PHỦ</td>
-                                        <td style="text-align:center;">MỞ MỚI</td>
-                                        <td style="text-align:center;">NGÀNH HÀNG</td>
-                                        <td style="text-align:center;">DOANH SỐ</td>
-                                        <td style="text-align:center;">DOANH THU</td>
-                                        <td style="text-align:center;">ĐỘ PHỦ</td>
-                                        <td style="text-align:center;">MỞ MỚI</td>
-                                        <td style="text-align:center;">NGÀNH HÀNG</td>
-                                        <td style="text-align:center;">DOANH SỐ</td>
-                                        <td style="text-align:center;">DOANH THU</td>
-                                        <td style="text-align:center;">ĐỘ PHỦ</td>
-                                        <td style="text-align:center;">MỞ MỚI</td>
-                                        <td style="text-align:center;">NGÀNH HÀNG</td>
-                                        <td style="text-align:center;">TOTAL</td>
-                                        <td style="text-align:center;">Thử  Việc</td>
-                                    </tr>
+                                <table class="table table-responsive-sm table-bordered table-striped table-hover floating-header">
+                                    <thead style="background-color:lightgrey">
+                                        <tr>
+                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>#</th>
+                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>Chức vụ</th>
+                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>KH Mới</th>
+                                            <th colspan="1" style="vertical-align:middle;font-weight:bold" nowrap>Độ phủ</th>
+                                            <th colspan="1" style="vertical-align:middle;font-weight:bold" nowrap>Ngành hàng</th>
+                                            <th colspan="2" style="vertical-align:middle;font-weight:bold" nowrap>Doanh thu</th>
+                                            <th colspan="3" style="vertical-align:middle;font-weight:bold" nowrap>Doanh số</th>
+                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>Tổng</th>
+                                        </tr>
+                                        <tr>
+                                            <td style="text-align:center;">Trên 80%</td>
+                                            <td style="text-align:center;">Đạt 70% 4 ngành</td>
+                                            <td style="text-align:center;">80% - 99%</td>
+                                            <td style="text-align:center;">Đạt 100%</td>
+                                            <td style="text-align:center;">80% - 99%</td>
+                                            <td style="text-align:center;">Đạt 100%</td>
+                                            <td style="text-align:center;">Trên 120%</td>
+                                        </tr>
+                                    </thead>
+
                                     <tbody>
                                         @{
                                             int i = 1;
-                                            int iEntity = 0;
-                                            foreach (var item in Model.SalarySaleKPIs)
+                                            int iE = 0;
+                                            foreach (var item in Model.SaleKPIs)
                                             {
-                                                <tr class="tr-@iEntity" data-id="@item.Id">
+                                                <tr class="tr-@item.Id" data-id="@item.Id">
                                                     <td>
                                                         @i
-                                                        <input type="hidden" asp-for="SalaryCredits[iEntity].Id" />
+                                                        <input type="hidden" name="SaleKPIs[@iE].Id" value="@item.Id" />
+                                                        <input type="hidden" name="SaleKPIs[@iE].ChucVu" value="@item.ChucVu" />
+                                                        <input type="hidden" name="SaleKPIs[@iE].ChucVuAlias" value="@item.ChucVuAlias" />
+                                                        <input type="hidden" name="SaleKPIs[@iE].ChucVuCode" value="@item.ChucVuCode" />
                                                     </td>
-                                                    <td>@item.MaNhanVien</td>
-                                                    <td>@item.FullName</td>
+                                                    <td>@item.ChucVu</td>
                                                     <td>
-                                                        <input value="@Math.Round(Model.SalarySaleKPIs[iEntity].ChiTieuDoanhSo/1000, 0)" name="SalarySaleKPIs[@iEntity].ChiTieuDoanhSo" class="form-control width100 numeric chitieudoanhso-@iEntity" data-id="chitieudoanhso-@iEntity" />
-                                                    </td>
-                                                    <td>
-                                                        <input value="@Math.Round(Model.SalarySaleKPIs[iEntity].ChiTieuDoanhThu/1000, 0)" name="SalarySaleKPIs[@iEntity].ChiTieuDoanhThu" class="form-control width100 numeric chitieudoanhthu-@iEntity" data-id="chitieudoanhthu-@iEntity" />
-                                                    </td>
-                                                    <td>
-                                                        <input value="@Math.Round(Model.SalarySaleKPIs[iEntity].ChiTieuDoPhu/1000, 0)" name="SalarySaleKPIs[@iEntity].ChiTieuDoPhu" class="form-control width100 numeric chitieudophu-@iEntity" data-id="chitieudophu-@iEntity" />
+                                                        <input value="@(Math.Round((double)item.KHMoi / 1000d, 0))" name="SaleKPIs[@iE].KHMoi" class="form-control width100 numeric khmoi-@item.Id" data-id="khmoi-@item.Id" />
                                                     </td>
                                                     <td>
-                                                        <input value="@Math.Round(Model.SalarySaleKPIs[iEntity].ChiTieuMoMoi/1000, 0)" name="SalarySaleKPIs[@iEntity].ChiTieuMoMoi" class="form-control width100 numeric chitieumomoi-@iEntity" data-id="chitieumomoi-@iEntity" />
+                                                        <input value="@(Math.Round((double)item.DoPhuTren80 / 1000d, 0))" name="SaleKPIs[@iE].DoPhuTren80" class="form-control width100 numeric dophutren80-@item.Id" data-id="dophutren80-@item.Id" />
                                                     </td>
                                                     <td>
-                                                        <input value="@Model.SalarySaleKPIs[iEntity].ChiTieuNganhHang" name="SalarySaleKPIs[@iEntity].ChiTieuNganhHang" class="form-control width100 numeric chitieunganhhang-@iEntity" data-id="chitieunganhhang-@iEntity" />
+                                                        <input value="@(Math.Round((double)item.NganhHangDat704Nganh / 1000d, 0))" name="SaleKPIs[@iE].NganhHangDat704Nganh" class="form-control width100 numeric nganhhangdat704nganh-@item.Id" data-id="nganhhangdat704nganh-@item.Id" />
                                                     </td>
                                                     <td>
-                                                        <input value="@Math.Round(Model.SalarySaleKPIs[iEntity].ThucHienDoanhSo/1000, 0)" name="SalarySaleKPIs[@iEntity].ThucHienDoanhSo" class="form-control width100 numeric thuchiendoanhso-@iEntity" data-id="thuchiendoanhso-@iEntity" />
+                                                        <input value="@(Math.Round((double)item.DoanhThuTren80 / 1000d, 0))" name="SaleKPIs[@iE].DoanhThuTren80" class="form-control width100 numeric doanhthutren80-@item.Id" data-id="doanhthutren80-@item.Id" />
                                                     </td>
                                                     <td>
-                                                        <input value="@Math.Round(Model.SalarySaleKPIs[iEntity].ThucHienDoanhThu/1000, 0)" name="SalarySaleKPIs[@iEntity].ThucHienDoanhThu" class="form-control width100 numeric thuchiendoanhthu-@iEntity" data-id="thuchiendoanhthu-@iEntity" />
+                                                        <input value="@(Math.Round((double)item.DoanhThuDat100 / 1000d, 0))" name="SaleKPIs[@iE].DoanhThuDat100" class="form-control width100 numeric doanhthudat100-@item.Id" data-id="doanhthudat100-@item.Id" />
                                                     </td>
                                                     <td>
-                                                        <input value="@Math.Round(Model.SalarySaleKPIs[iEntity].ThucHienDoPhu/1000, 0)" name="SalarySaleKPIs[@iEntity].ThucHienDoPhu" class="form-control width100 numeric thuchiendophu-@iEntity" data-id="thuchiendophu-@iEntity" />
+                                                        <input value="@(Math.Round((double)item.DoanhSoTren80 / 1000d, 0))" name="SaleKPIs[@iE].DoanhSoTren80" class="form-control width100 numeric doanhsotren80-@item.Id" data-id="doanhsotren80-@item.Id" />
                                                     </td>
                                                     <td>
-                                                        <input value="@Math.Round(Model.SalarySaleKPIs[iEntity].ThucHienMoMoi/1000, 0)" name="SalarySaleKPIs[@iEntity].ThucHienMoMoi" class="form-control width100 numeric thuchienmomoi-@iEntity" data-id="thuchienmomoi-@iEntity" />
+                                                        <input value="@(Math.Round((double)item.DoanhSoDat100 / 1000d, 0))" name="SaleKPIs[@iE].DoanhSoDat100" class="form-control width100 numeric danhsodat100-@item.Id" data-id="danhsodat100-@item.Id" />
                                                     </td>
                                                     <td>
-                                                        <input value="@Model.SalarySaleKPIs[iEntity].ThucHienNganhHang" name="SalarySaleKPIs[@iEntity].ThucHienNganhHang" class="form-control width100 numeric thuchiennganhhang-@iEntity" data-id="thuchiennganhhang-@iEntity" />
-                                                    </td>
-
-
-                                                    <td>
-                                                        <span class="chitieuthuchiendoanhso-@iEntity">@Model.SalarySaleKPIs[iEntity].ChiTieuThucHienDoanhSo %</span>
+                                                        <input value="@(Math.Round((double)item.DoanhSoTren120 / 1000d, 0))" name="SaleKPIs[@iE].DoanhSoTren120" class="form-control width100 numeric doanhsotren120-@item.Id" data-id="doanhsotren120-@item.Id" />
                                                     </td>
                                                     <td>
-                                                        <span class="chitieuthuchiendoanhthu-@iEntity">@Model.SalarySaleKPIs[iEntity].ChiTieuThucHienDoanhThu %</span>
-                                                    </td>
-                                                    <td>
-                                                        <span class="chitieuthuchiendophu-@iEntity">@Model.SalarySaleKPIs[iEntity].ChiTieuThucHienDoPhu %</span>
-                                                    </td>
-                                                    <td>
-                                                        <span class="chitieuthuchienmomoi-@iEntity">@Model.SalarySaleKPIs[iEntity].ChiTieuThucHienMoMoi %</span>
-                                                    </td>
-                                                    <td>
-                                                        <span class="chitieuthuchiennganhhang-@iEntity">@Model.SalarySaleKPIs[iEntity].ChiTieuThucHienNganhHang %</span>
-                                                    </td>
-                                                    <td>
-                                                        <span class="thuongchitieuthuchiendoanhso-@iEntity">@Model.SalarySaleKPIs[iEntity].ThuongChiTieuThucHienDoanhSo %</span>
-                                                    </td>
-                                                    <td>
-                                                        <span class="thuongchitieuthuchiendoanhthu-@iEntity">@Model.SalarySaleKPIs[iEntity].ThuongChiTieuThucHienDoanhThu %</span>
-                                                    </td>
-                                                    <td>
-                                                        <span class="thuongchitieuthuchiendophu-@iEntity">@Model.SalarySaleKPIs[iEntity].ThuongChiTieuThucHienDoPhu %</span>
-                                                    </td>
-                                                    <td>
-                                                        <span class="thuongchitieuthuchienmomoi-@iEntity">@Model.SalarySaleKPIs[iEntity].ThuongChiTieuThucHienMoMoi %</span>
-                                                    </td>
-                                                    <td>
-                                                        <span class="thuongchitieuthuchiennganhhang-@iEntity">@Model.SalarySaleKPIs[iEntity].ThuongChiTieuThucHienNganhHang %</span>
-                                                    </td>
-                                                    <td>
-                                                        @if (Model.SalarySaleKPIs[iEntity].TongThuong > 0)
-                                                        {
-                                                            <span class="tongthuong-@iEntity">
-                                                                @Model.SalarySaleKPIs[iEntity].TongThuong %
-                                                            </span>
-                                                        }
-                                                    <td>
-                                                        <input value="@Model.SalarySaleKPIs[iEntity].ThuViec" name="SalarySaleKPIs[@iEntity].ThuongChiTieuThucHienNganhHang" class="form-control width100 numeric thuongchitieuthuchiennganhhang-@iEntity" data-id="thuongchitieuthuchiennganhhang-@iEntity" />
+                                                        <input value="@(Math.Round((double)item.Total / 1000d, 0))" name="SaleKPIs[@iE].Total" class="form-control width100 numeric total-@item.Id" data-id="total-@item.Id" />
                                                     </td>
                                                 </tr>
                                                 i++;
-                                                iEntity++;
+                                                iE++;
                                             }
                                         }
                                     </tbody>
                                 </table>
                             </div>
-                        }
-                    </div>
-
-                </form>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </section>

@@ -2,9 +2,15 @@
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System.ComponentModel.DataAnnotations;
+using Common.Enums;
 
 namespace Models
 {
+    /// <summary>
+    /// 1 day, 1 record
+    /// Group by Code base date created
+    /// Form, To is same date.
+    /// </summary>
     public class Leave : Common
     {
         [BsonId]
@@ -25,6 +31,10 @@ namespace Models
 
         public string EmployeeTitle { get; set; }
 
+        public string EmployeePart { get; set; }
+
+        public string EmployeeDepartment { get; set; }
+
         // 1 cấp xác nhận (trường hợp 2 cấp. ;2.Id)
         // Format 1.Id
         public string ApproverId { get; set; }
@@ -39,8 +49,7 @@ namespace Models
 
         public string ApproverEmail2 { get; set; }
 
-        // 0: new , 1: accept, 2: cancel, 3: pending,...
-        public int Status { get; set; } = 0;
+        public int Status { get; set; } = (int)StatusLeave.New;
 
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime From { get; set; } = DateTime.Now;
@@ -63,7 +72,13 @@ namespace Models
 
         public string WorkingScheduleTime { get; set; }
 
+        public string GroupCode { get; set; } = DateTime.Now.ToString("ddMMyyyy");
+
         // Use link email.
         public string SecureCode { get; set; }
+
+        public int Month { get; set; } = DateTime.Now.Month;
+
+        public int Year { get; set; } = DateTime.Now.Year;
     }
 }

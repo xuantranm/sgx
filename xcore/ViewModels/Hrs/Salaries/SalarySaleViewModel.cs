@@ -8,6 +8,6 @@ namespace ViewModels
     public class SalarySaleViewModel : ExtensionViewModel
     {
         public IList<SaleKPI> SaleKPIs { get; set; }
-        public IList<SalarySaleKPI> SalarySaleKPIs { get; set; }
+        public IList<SalaryEmployeeMonth> SalaryEmployeeMonths { get; set; }
     }
 }

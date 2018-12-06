@@ -1,10 +1,37 @@
-﻿using System;
+﻿using Common.Enums;
+using System;
 
 namespace Common.Utilities
 {
     public static class Constants
     {
+        public static class ActionLink
+        {
+            public const string Init = "init";
+            public const string Export = "xuat-tai-lieu";
+            public const string Add = "nhan-su";
+            public const string Edit = "thong-tin";
+            public const string Update = "cap-nhat";
+            public const string Delete = "danh-sach";
+            public const string Disable = "nhap-lieu";
+        }
+
+        public static string Location(int loc)
+        {
+            switch (loc)
+            {
+                case (int)ESalaryType.NM:
+                    return "Nhà Máy";
+                case (int)ESalaryType.SX:
+                    return "Nhà Máy";
+                default:
+                    return "Văn Phòng";
+            }
+        }
+
         public const string ImgMissLink = "http://via.placeholder.com/";
+
+        public const string WaitData = "Chờ lấy dữ liệu";
 
         // System not store db. highest right
         public static class System
@@ -41,7 +68,9 @@ namespace Common.Utilities
             public const string NhanSu = "nhan-su";
             public const string HanhChanh = "hanh-chanh";
             public const string Luong = "luong";
-            public const string LuongReal = "luong-real";
+            public const string LuongNM = "luong-nha-may";
+            public const string LuongSX = "luong-san-xuat";
+            public const string LuongVP = "luong-van-phong";
             
             public const string XinNghiPhepDum = "xin-nghi-phep-dum";
             public const string XacNhanNghiPhep = "xac-nhan-nghi-phep";
@@ -49,6 +78,7 @@ namespace Common.Utilities
             public const string ChamCong = "cham-cong";
             public const string XacNhanCongDum = "xac-nhan-cong-dum";
             public const string XacNhanCong = "xac-nhan-cong";
+            public const string BangChamCong = "bang-cham-cong";
 
             public const string NhaMay = "nha-may";
             public const string TonSX = "ton-sx";
@@ -139,34 +169,78 @@ namespace Common.Utilities
             //public const string Approve = "duyet-phep";
             public const string HelpTime = "cong-nhan-vien-khac";
 
+            public const string ReasonRule = "ly-do-xac-nhan-cong";
+
+            public const string Approvement = "lich-su-duyet-cong";
+
+            public const string Timer = "bang-cham-cong";
         }
 
         public static class LinkSalary
         {
-            public const string Main = "sl";
-            public const string UpdateData = "cap-nhat-du-lieu";
+            public const string Main = "lg";
+            public const string VanPhong = "van-phong";
             public const string Setting = "cai-dat";
-            public const string Index = "bang-luong";
+            public const string Factory = "nha-may";
+            public const string Production = "san-xuat";
+            public const string FactoryProduction = "nha-may-va-san-xuat";
 
-            public const string BangLuongReal = "danh-sach-luong-nhan-vien-ap-dung";
-            public const string LuongCalculator = "tinh-toan-luong";
-            public const string ThucLanhCalculator = "tinh-toan-thuc-lanh";
-            public const string BangLuongLaw = "danh-sach-luong-nhan-vien";
-
-            public const string ThangBangLuongReal = "thang-bang-luong-ap-dung";
-            public const string ThangBangLuongRealCalculator = "tinh-toan-thang-bang-luong-ap-dung";
-
-            public const string ThangBangLuongLaw = "thang-bang-luong";
-            public const string ThangBangLuongLawCalculator = "tinh-toan-thang-bang-luong";
-
+            public const string ThangBangLuong = "thang-bang-luong";
+            public const string BangLuong = "bang-luong";
             public const string TheLuong = "the-luong";
-            public const string KPIMonth = "kpi-kinh-doanh";
-            public const string SaleKPIs = "so-lieu-kinh-doanh";
-            public const string LogisticDatas = "so-lieu-logistics";
+
+            public const string SaleKPI = "kinh-doanh-kpi-thang";
+            public const string SaleKPICalculator = "tinh-toan-kinh-doanh-kpi-thang";
+            public const string SaleKPIImport = "kinh-doanh-kpi-thang-import";
+            public const string SaleKPITemplate = "kinh-doanh-kpi-thang-mau";
+
+            public const string SaleKPIEmployee = "kinh-doanh-so-lieu";
+            public const string SaleKPIEmployeeImport = "kinh-doanh-so-lieu-import";
+            public const string SaleKPIEmployeeTemplate = "kinh-doanh-so-lieu-mau";
+            public const string SaleKPIEmployeeCalculator = "tinh-toan-so-lieu-kinh-doanh";
+
+            public const string LogisticGiaChuyenXe = "logistic-gia-chuyen-xe";
+            public const string LogisticGiaChuyenXeCalculator = "tinh-toan-logistic-gia-chuyen-xe";
+            public const string LogisticGiaChuyenXeImport = "logistic-gia-chuyen-xe-import";
+            public const string LogisticGiaChuyenXeTemplate = "logistic-gia-chuyen-xe-mau";
+
+            public const string LogisticGiaBunPost = "logistic-gia-bun-post";
+
+            public const string LogisticEmployeeCong = "logistics-cong-nhan-vien";
+            public const string LogisticEmployeeCongCalculator = "tinh-toan-cong-nhan-vien-logistic";
+            public const string LogisticEmployeeImport = "logistics-so-lieu-import";
+            public const string LogisticEmployeeTemplate = "logistics-so-lieu-mau";
+
             public const string Credits = "so-lieu-tam-ung";
 
             public const string Export = "xuat-tai-lieu";
             public const string Update = "cap-nhat";
+            public const string Calculator = "tinh-toan";
+            public const string CalculatorThucLanh = "tinh-toan-thuc-lanh";
+
+            public const string Init = "init";
+            public const string Document = "tai-lieu";
+
+            public const string NhanVienKhoiNhaMay = "nhan-vien-khoi-nha-may";
+            public const string NhanVienKhoiSanXuat = "nhan-vien-khoi-san-xuat";
+
+            // TEMPLATES
+            public const string CongTong = "cong-tong";
+            public const string NhaMayTemplate = "nha-may-so-lieu-mau";
+            public const string NhaMayImport = "nha-may-so-lieu-import";
+
+            public const string SanXuatTemplate = "san-xuat-so-lieu-mau";
+            public const string SanXuatImport = "san-xuat-so-lieu-import";
+        }
+
+        public static class LinkCredit
+        {
+            public const string Main = "cd";
+            public const string Credits = "so-lieu-tam-ung";
+            public const string CreditsNM = "ung-luong";
+
+            public const string Template = "mau-tam-ung";
+            public const string CreditImport = "tam-ung-import";
         }
 
         public static class LinkTraining
@@ -250,6 +324,10 @@ namespace Common.Utilities
             public const string ApprovePost = "post-duyet-phep";
             // API
             public const string Approve = "duyet-phep";
+
+            public const string Manage = "quan-ly";
+
+            public const string Approvement = "quan-ly-phep";
         }
 
         public static class LinkSystem
@@ -257,6 +335,7 @@ namespace Common.Utilities
             public const string Main = "system";
             public const string Mail = "mail";
             public const string Resend = "gui-lai";
+            public const string Item = "chi-tiet";
         }
 
         public static class Link
@@ -445,6 +524,24 @@ namespace Common.Utilities
                     return "Chuyển khoản";
                 default:
                     return "Tiền mặt";
+            }
+        }
+
+        // 0: send | 1: ok | 2: fail, 3: make resend
+        public static string EmailStatus(int status)
+        {
+            switch (status)
+            {
+                case 0:
+                    return "Gửi";
+                case 1:
+                    return "Thành công";
+                case 2:
+                    return "Lỗi";
+                case 3:
+                    return "Gửi lại";
+                default:
+                    return string.Empty;
             }
         }
 

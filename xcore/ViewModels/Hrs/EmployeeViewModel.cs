@@ -20,7 +20,11 @@ namespace ViewModels
         // show title
         public Employee Employee { get; set; }
 
+        public IList<Employee> EmployeesDdl { get; set; }
+
         #region Search
+        public string id { get; set; }
+
         public string ten { get; set; }
 
         public string code { get; set; }

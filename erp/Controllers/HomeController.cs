@@ -323,34 +323,69 @@ namespace erp.Controllers
                     var update = Builders<Employee>.Update
                         .Set(m => m.Password, sysPassword);
                     dbContext.Employees.UpdateOne(filterUpdate, update);
-
-                    #region UAT
-                    //var uat = dbContext.Settings.Find(m => m.Key.Equals("UAT")).FirstOrDefault();
-                    //if (uat != null && uat.Value == "true")
-                    //{
-                    //    var listSendMailTest = new List<string>
-                    //        {
-                    //            "xuan.tm",
-                    //            //"phuong.ndq"
-                    //            //"anh.nth",
-                    //            //"thanh.dnt",
-                    //            //"thoa.ctm"
-                    //        };
-
-                    //    if (!string.IsNullOrEmpty(listSendMailTest.Where(s => s.Equals(employee.UserName)).FirstOrDefault()))
-                    //    {
-                    //        SendMailRegister(employee, password);
-                    //        return Json(new { result = true, source = "sendmail", message = "Gửi mail thành công" });
-                    //    }
-                    //}
-                    #endregion
-
-                    //if (uat.Value == "0")
-                    //{
-                    //    SendMailRegister(employee, password);
-                    //}
-
                     SendMailRegister(employee, password);
+                }
+            }
+
+            return Json(new { result = true, source = "sendmail", message = "Gửi mail thành công" });
+        }
+
+        [Route("/email/send-miss-v100/")]
+        public async Task<IActionResult> SendMailMissV100()
+        {
+            #region Authorization
+            var login = User.Identity.Name;
+            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+            ViewData["LoginUserName"] = loginUserName;
+
+            var userInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
+            if (userInformation == null)
+            {
+                #region snippet1
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                #endregion
+                return RedirectToAction("login", "account");
+            }
+            if (loginUserName != Constants.System.account)
+            {
+                return RedirectToAction("AccessDenied", "Account");
+            }
+            #endregion
+
+            #region Filter
+            var listboss = new List<string>
+            {
+                "C.01",
+                "C.02"
+            };
+            // remove list sent
+            var listused = new List<string>
+            {
+                "Nguyễn Thành Đạt",
+                "Nguyễn Thái Bình",
+                "Phương Bình"
+            };
+            #endregion
+
+            var employees = dbContext.Employees.Find(m=>m.Enable.Equals(true) 
+                                                    && !m.UserName.Equals(Constants.System.account)
+                                                    && !string.IsNullOrEmpty(m.Email)
+                                                    && !m.Department.Equals("Phòng HCNS - NS")
+                                                    && !listboss.Contains(m.NgachLuong)
+                                                    && !listused.Contains(m.FullName)).ToList();
+            var password = string.Empty;
+            foreach (var employee in employees)
+            {
+                if (!string.IsNullOrEmpty(employee.Email))
+                {
+                    password = Guid.NewGuid().ToString("N").Substring(0, 6);
+                    var sysPassword = Helpers.Helper.HashedPassword(password);
+
+                    var filterUpdate = Builders<Employee>.Filter.Eq(m => m.Id, employee.Id);
+                    var update = Builders<Employee>.Update
+                        .Set(m => m.Password, sysPassword);
+                    dbContext.Employees.UpdateOne(filterUpdate, update);
+                    SendMailRegister2(employee, password);
                 }
             }
 
@@ -359,6 +394,14 @@ namespace erp.Controllers
 
         public void SendMailRegister(Employee entity, string pwd)
         {
+            var title = string.Empty;
+            if (!string.IsNullOrEmpty(entity.Gender))
+            {
+                if (entity.AgeBirthday > 50)
+                {
+                    title = entity.Gender == "Nam" ? "anh" : "chị";
+                }
+            }
             var url = Constants.System.domain;
             var subject = "Thông tin đăng nhập hệ thống.";
             var tos = new List<EmailAddress>
@@ -389,7 +432,55 @@ namespace erp.Controllers
             {
                 ToAddresses = tos,
                 Subject = subject,
-                BodyContent = messageBody
+                BodyContent = messageBody,
+                Type = "register"
+            };
+
+            _emailSender.SendEmail(emailMessage);
+        }
+
+        public void SendMailRegister2(Employee entity, string pwd)
+        {
+            var title = string.Empty;
+            if (!string.IsNullOrEmpty(entity.Gender))
+            {
+                if (entity.AgeBirthday > 50)
+                {
+                    title = entity.Gender == "Nam" ? "anh" : "chị";
+                }
+            }
+            var url = Constants.System.domain;
+            var subject = "Thông tin đăng nhập hệ thống.";
+            var tos = new List<EmailAddress>
+            {
+                new EmailAddress { Name = entity.FullName, Address = entity.Email }
+            };
+            var pathToFile = _env.WebRootPath
+                    + Path.DirectorySeparatorChar.ToString()
+                    + "Templates"
+                    + Path.DirectorySeparatorChar.ToString()
+                    + "EmailTemplate"
+                    + Path.DirectorySeparatorChar.ToString()
+                    + "Confirm_Account_Registration_2.html";
+            var builder = new BodyBuilder();
+            using (StreamReader SourceReader = System.IO.File.OpenText(pathToFile))
+            {
+                builder.HtmlBody = SourceReader.ReadToEnd();
+            }
+            string messageBody = string.Format(builder.HtmlBody,
+                subject,
+                title + " " + entity.FullName,
+                url,
+                entity.UserName,
+                pwd,
+                entity.Email);
+
+            var emailMessage = new EmailMessage()
+            {
+                ToAddresses = tos,
+                Subject = subject,
+                BodyContent = messageBody,
+                Type = "register"
             };
 
             _emailSender.SendEmail(emailMessage);

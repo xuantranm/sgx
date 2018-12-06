@@ -47,8 +47,6 @@ namespace tribatvn.Controllers
 
                 InitTexts();
 
-                InitDepartments();
-
                 InitCategories();
 
                 InitProducts();
@@ -114,65 +112,6 @@ namespace tribatvn.Controllers
                 Name = "vi-VN",
                 Title = "Vietnamese"
             });
-        }
-
-        public void InitDepartments()
-        {
-            dbContext.Departments.DeleteMany(new BsonDocument());
-            dbContext.Departments.InsertOne(new Department()
-            {
-                Code = 1,
-                Name = "IT"
-            });
-            dbContext.Departments.InsertOne(new Department()
-            {
-                Code = 2,
-                Name = "Hành chính nhân sự"
-            });
-            dbContext.Departments.InsertOne(new Department()
-            {
-                Code = 3,
-                Name = "Kế Toán"
-            });
-            dbContext.Departments.InsertOne(new Department()
-            {
-                Code = 4,
-                Name = "Kinh Doanh"
-            });
-            dbContext.Departments.InsertOne(new Department()
-            {
-                Code = 5,
-                Name = "Vật Tư"
-            });
-            dbContext.Departments.InsertOne(new Department()
-            {
-                Code = 6,
-                Name = "Nhà Máy"
-            });
-            dbContext.Departments.InsertOne(new Department()
-            {
-                Code = 7,
-                Name = "Kho"
-            });
-            dbContext.Departments.InsertOne(new Department()
-            {
-                Code = 8,
-                Name = "Dự Án"
-            });
-            dbContext.Departments.InsertOne(new Department()
-            {
-                Code = 9,
-                Name = "Kế Hoạch"
-            });
-
-            // Fix alias
-            foreach (var item in dbContext.Departments.Find(m => true).ToList())
-            {
-                var filter = Builders<Department>.Filter.Eq(m => m.Id, item.Id);
-                var update = Builders<Department>.Update
-                    .Set(m => m.Alias, Utility.AliasConvert(item.Name));
-                dbContext.Departments.UpdateOne(filter, update);
-            }
         }
 
         public void InitCategories()

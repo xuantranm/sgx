@@ -2,19 +2,16 @@
     var $table = $('table.floating-header');
     $table.floatThead();
 
-    $('.serial').keypress(function (e) {
-        if (e.which === 13) {
-            $(this).closest('tr').next().find('input.serial').focus();
-            e.preventDefault();
-        }
-    });
-
     $('.left-menu').addClass('d-none');
 
     $('.js-select2-basic-single').select2(
         {
             theme: "bootstrap"
         });
+
+    $('#thang').on('change', function (e) {
+        formSubmit();
+    });
 
     registerAutoNumeric();
 
@@ -72,21 +69,18 @@
     
     function calculatorLuong(code) {
         var dataInput = $('.tr-' + code + ' :input').serialize().replace(new RegExp('%5B' + code + '%5D', 'g'), '%5B0%5D');
-        console.log(dataInput);
         $.ajax({
             type: "post",
             url: $('#hidCalculatorLuong').val(),
             data: dataInput,
             success: function (data) {
                 console.log(data);
-                $('.luong-co-ban-' + code).html(accounting.formatNumber(data.entity.luongCanBan / 1000));
-                $('.tham-nien-' + code).html(accounting.formatNumber(data.entity.thamNien / 1000));
                 $('.luongcbbaogomphucap-' + code).html(accounting.formatNumber(data.entity.luongCoBanBaoGomPhuCap / 1000));
                 $('.tongthunhap-' + code).html(accounting.formatNumber(data.entity.tongThuNhap / 1000));
-                $('.tongthunhapphut-' + code).html(accounting.formatNumber(data.entity.tongThuNhapMinute / 1000));
-                $('.bHXHBHYT-' + code).html(accounting.formatNumber(data.entity.BHXHBHYT / 1000));
+                $('.tongthunhapphut-' + code).html(accounting.formatNumber(data.entity.tongThuNhapPhut / 1000));
+                $('.bHXHBHYT-' + code).html(accounting.formatNumber(data.entity.bhxhbhyt / 1000));
                 $('.thuclanh-' + code).html(accounting.formatNumber(data.entity.thucLanh / 1000));
-                $('.thuclanhphut-' + code).html(accounting.formatNumber(data.entity.thucLanhMinute / 1000));
+                $('.thuclanhphut-' + code).html(accounting.formatNumber(data.entity.thucLanhPhut / 1000));
             }
         });
     }

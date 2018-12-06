@@ -19,6 +19,7 @@ using Common.Enums;
 using Microsoft.AspNetCore.Authorization;
 using MimeKit;
 using MimeKit.Text;
+using Services;
 
 namespace erp.Controllers
 {
@@ -34,11 +35,17 @@ namespace erp.Controllers
 
         public IConfiguration Configuration { get; }
 
-        public SystemController(IDistributedCache cache, IConfiguration configuration, IHostingEnvironment env, ILogger<SystemController> logger)
+        private readonly IEmailSender _emailSender;
+        private readonly ISmsSender _smsSender;
+
+        public SystemController(IDistributedCache cache, IConfiguration configuration, IHostingEnvironment env, IEmailSender emailSender,
+            ISmsSender smsSender, ILogger<SystemController> logger)
         {
             _cache = cache;
             Configuration = configuration;
             _env = env;
+            _emailSender = emailSender;
+            _smsSender = smsSender;
             _logger = logger;
         }
 
@@ -95,88 +102,61 @@ namespace erp.Controllers
             return View(viewModel);
         }
 
+        [HttpPost]
+        [Route(Constants.LinkSystem.Mail + "/" + Constants.LinkSystem.Item)]
+        public ActionResult EmailItem(string id)
+        {
+            var item = dbContext.ScheduleEmails.Find(m => m.Id.Equals(id)).FirstOrDefault();
+            var viewModel = new MailViewModel
+            {
+                ScheduleEmail = item,
+                id = id
+            };
+
+            return PartialView("_ContentEmailPartial", viewModel);
+        }
+
         [Route(Constants.LinkSystem.Mail + "/" + Constants.LinkSystem.Resend)]
         public ActionResult Resend(MailViewModel viewModel)
         {
             var userId = User.Identity.Name;
-            var emailFrom = Constants.System.emailHr;
-            var emailFromPwd = Constants.System.emailHrPwd;
-
-            foreach (var scheduleEmail in viewModel.ScheduleEmails)
+            var item = dbContext.ScheduleEmails.Find(m => m.Id.Equals(viewModel.id)).FirstOrDefault();
+            
+            if (item != null)
             {
-                // Resend if status = 3
-                if (scheduleEmail.Status == 3)
+                var tos = new List<EmailAddress>();
+                if (!string.IsNullOrEmpty(viewModel.toEmail))
                 {
-                    var item = dbContext.ScheduleEmails.Find(m => m.Id.Equals(scheduleEmail.Id)).FirstOrDefault();
-                    if (item != null && item.To != null)
+                    foreach (var email in viewModel.toEmail.Split(";"))
                     {
-                        var emailMessage = new EmailMessage()
-                        {
-                            FromAddresses = item.From,
-                            ToAddresses = item.To,
-                            CCAddresses = item.CC,
-                            BCCAddresses = item.BCC,
-                            Subject = item.Title,
-                            BodyContent = item.Content
-                        };
-
-                        var message = new MimeMessage();
-                        message.From.AddRange(emailMessage.FromAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
-                        message.To.AddRange(emailMessage.ToAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
-                        message.Cc.AddRange(emailMessage.CCAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
-                        message.Bcc.AddRange(emailMessage.BCCAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
-                        message.Subject = emailMessage.Subject;
-                        message.Body = new TextPart(TextFormat.Html)
-                        {
-                            Text = emailMessage.BodyContent
-                        };
-                                                
-                        var isEmailSent = 0;
-                        var error = string.Empty;
-                        try
-                        {
-                            using (var emailClient = new MailKit.Net.Smtp.SmtpClient())
-                            {
-                                //The last parameter here is to use SSL (Which you should!)
-                                emailClient.Connect(emailFrom, 465, true);
-
-                                //Remove any OAuth functionality as we won't be using it. 
-                                emailClient.AuthenticationMechanisms.Remove("XOAUTH2");
-
-                                emailClient.Authenticate(emailFrom, emailFromPwd);
-
-                                emailClient.Send(message);
-                                isEmailSent = 1;
-
-                                emailClient.Disconnect(true);
-                                #region Update status
-                                var filter = Builders<ScheduleEmail>.Filter.Eq(m => m.Id, scheduleEmail.Id);
-                                var update = Builders<ScheduleEmail>.Update
-                                    .Set(m => m.Status, isEmailSent)
-                                    .Set(m => m.UpdatedOn, DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss.fff"));
-                                dbContext.ScheduleEmails.UpdateOne(filter, update);
-                                #endregion
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine(ex.Message);
-                            isEmailSent = 2;
-                            error = ex.Message;
-                            #region Update status
-                            var filter = Builders<ScheduleEmail>.Filter.Eq(m => m.Id, scheduleEmail.Id);
-                            var update = Builders<ScheduleEmail>.Update
-                                .Set(m => m.Status, isEmailSent)
-                                .Set(m => m.Error, error)
-                                .Inc(m => m.ErrorCount, 1)
-                                .Set(m => m.UpdatedOn, DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss.fff"));
-                            dbContext.ScheduleEmails.UpdateOne(filter, update);
-                            #endregion
-                            SendMailSupport(scheduleEmail.Id);
-                        }
+                        tos.Add(new EmailAddress { Address = email });
                     }
                 }
+                var ccs = new List<EmailAddress>();
+                if (!string.IsNullOrEmpty(viewModel.ccEmail))
+                {
+                    foreach (var email in viewModel.ccEmail.Split(";"))
+                    {
+                        ccs.Add(new EmailAddress { Address = email });
+                    }
+                }
+                var emailMessage = new EmailMessage()
+                {
+                    ToAddresses = tos,
+                    CCAddresses = ccs,
+                    Subject = item.Title,
+                    BodyContent = item.Content
+                };
+
+                _emailSender.SendEmail(emailMessage);
+
+                // Update status send
+                var filter = Builders<ScheduleEmail>.Filter.Eq(m => m.Id, viewModel.id);
+                var update = Builders<ScheduleEmail>.Update.Set(m => m.Status, 3)
+                                                           .Set(m => m.UpdatedOn, DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss.fff"));
+                dbContext.ScheduleEmails.UpdateOne(filter, update);
             }
+
             return Json(new { result = true, message = "Add new successfull." });
         }
 
@@ -321,7 +301,7 @@ namespace erp.Controllers
             dbContext.FactoryShifts.InsertOne(new FactoryShift
             {
                 Name = "Ca 1",
-                Alias ="ca-1"
+                Alias = "ca-1"
             });
             dbContext.FactoryShifts.InsertOne(new FactoryShift
             {
@@ -399,7 +379,7 @@ namespace erp.Controllers
             });
             dbContext.SalaryMonthlyTypes.InsertOne(new SalaryMonthlyType
             {
-                Title ="Số công ngày thường",
+                Title = "Số công ngày thường",
                 Type = "thu-nhap",
                 Unit = "ngày",
                 Order = 1
@@ -523,7 +503,7 @@ namespace erp.Controllers
             dbContext.Banks.InsertOne(new Bank
             {
                 Name = "Ngân hàng Thương mại Cổ phần Tiên Phong",
-                Shorten ="TPBank",
+                Shorten = "TPBank",
                 Alias = "ngan-hang-thuong-mai-co-phan-tien-phong",
                 Image = new Image
                 {
@@ -690,7 +670,8 @@ namespace erp.Controllers
                 var start = TimeSpan.FromHours(i);
                 var end = DateTime.Now.Date.AddHours(i + 9).TimeOfDay;
 
-                dbContext.WorkTimeTypes.InsertOne(new WorkTimeType {
+                dbContext.WorkTimeTypes.InsertOne(new WorkTimeType
+                {
                     Start = start,
                     End = end,
                     CreatedBy = Constants.System.account,
