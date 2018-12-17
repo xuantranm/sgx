@@ -18,6 +18,8 @@ namespace tribatvn.Controllers
 {
     public class LanguageController : Controller
     {
+        private readonly IHttpContextAccessor _httpContextAccessor;
+
         MongoDBContext dbContext = new MongoDBContext();
         IHostingEnvironment _hostingEnvironment;
 
@@ -25,11 +27,12 @@ namespace tribatvn.Controllers
 
         public IConfiguration Configuration { get; }
 
-        public LanguageController(IConfiguration configuration, IHostingEnvironment env, ILogger<LanguageController> logger)
+        public LanguageController(IConfiguration configuration, IHostingEnvironment env, ILogger<LanguageController> logger, IHttpContextAccessor httpContextAccessor)
         {
             Configuration = configuration;
             _hostingEnvironment = env;
             _logger = logger;
+            this._httpContextAccessor = httpContextAccessor;
         }
 
         #region Init Data
@@ -44,7 +47,7 @@ namespace tribatvn.Controllers
                 CultureInfo.DefaultThreadCurrentCulture = culture;
                 CultureInfo.DefaultThreadCurrentUICulture = culture;
                 // Set cookie
-                Set("language", language, 10);
+                //Set("language", language, 10);
             }
             else
             {
@@ -100,12 +103,6 @@ namespace tribatvn.Controllers
             //return Request.Cookies["Key"];
             return Request.Cookies[key];
         }
-        /// <summary>  
-        /// set the cookie  
-        /// </summary>  
-        /// <param name="key">key (unique indentifier)</param>  
-        /// <param name="value">value to store in cookie object</param>  
-        /// <param name="expireTime">expiration time</param>  
         public void Set(string key, string value, int? expireTime)
         {
             CookieOptions option = new CookieOptions();

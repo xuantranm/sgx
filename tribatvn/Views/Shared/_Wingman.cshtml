@@ -71,6 +71,7 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="~/assets/wingman/js/theme.js"></script>
     <script src="~/lib/autosize/jquery.textarea_autosize.js"></script>
+    <script src="~/lib/jquery.cookie.js"></script>
     <script src="~/js/site.js"></script>
 
     <!--Multilanguage-->
@@ -79,7 +80,8 @@
         $('.btn-language').on('click', function () {
             var language = $(this).attr("data-value");
             var url = $('.' + language, $('.link-languages')).data('value');
-            console.log(url);
+            //console.log(url);
+            $.cookie("language", language, { expires: 10 });
             $.ajax({
                 url: '/language/change/',
                 data: { language: language },

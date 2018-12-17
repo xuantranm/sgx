@@ -16,7 +16,7 @@
 <div class="main-container">
     <section class="bg-dark text-white height-70">
         @*<img alt="Image" src="assets/wingman/img/photo-man-whiteboard.jpg" class="bg-image opacity-70" />*@
-        <img alt="Image" src="~/assets/images/tempo/background/banner.jpg" class="bg-image opacity-70" data-action="zoom" />
+        <img alt="Image" src="~/assets/images/tempo/background/banner.jpg" class="bg-image opacity-70" @*data-action="zoom"*@ />
 
         <div class="container">
             <div class="row">
@@ -170,16 +170,20 @@
             <!--end of row-->
             <div class="row justify-content-center">
                 <div class="col-md-8 col-sm-10">
-                    <div class="video-cover rounded">
-                        <img alt="Image" src="~/assets/images/tempo/background/banner2.jpg" class="bg-image" />
-                        <div class="video-play-icon">
-                            <i class="icon-controller-play"></i>
-                        </div>
+                    @*<div class="video-cover rounded">
+            <img alt="Image" src="~/assets/images/tempo/background/banner2.jpg" class="bg-image" />
+            <div class="video-play-icon">
+                <i class="icon-controller-play"></i>
+            </div>
 
-                        <div class="embed-responsive embed-responsive-16by9">
-                            <iframe width="854" height="480" src="https://www.youtube.com/embed/9dOX7V4MxuA" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-                            @*<iframe class="embed-responsive-item" data-src="https://www.youtube.com/embed/oYqvpjKJZkU?autoplay=1&amp;mute=1&amp;showinfo=0&amp;rel=0" allowfullscreen></iframe>*@
-                        </div>
+
+
+            <div class="embed-responsive embed-responsive-16by9">
+                <iframe width="854" height="480" src="https://www.youtube.com/embed/9dOX7V4MxuA" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+            </div>
+        </div>*@
+                    <div class="embed-responsive embed-responsive-16by9">
+                        <iframe width="560" height="315" src="https://www.youtube.com/embed/2i6oFCa33Ng" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                     </div>
                     <!--end of video cover-->
                 </div>
@@ -188,9 +192,9 @@
             <!--end of row-->
             <div class="row justify-content-center text-center section-outro">
                 <div class="col-lg-4 col-md-5">
-                    <h6>Giới thiệu text text text</h6>
-                    <p>Mô tả sdad asdh shdhsk dsghs sgtwy utwyo oeri ryye rô wyye oowue ỷy</p>
-                    <a href="#">View more features &rsaquo;</a>
+                    <h6>@Html.Raw(TextHelper.GetText(579, language))</h6>
+                    <p>@Html.Raw(TextHelper.GetText(580, language))</p>
+                    <a href="#">@Html.Raw(TextHelper.GetText(578, language)) &rsaquo;</a>
                 </div>
                 <!--end of col-->
             </div>
@@ -274,7 +278,7 @@
                 <div class="col-lg-4 col-md-5">
                     <h6>Introducing a new way</h6>
                     <p>An opportunity to introduce the major benefits of your product and set the scene for what's to come</p>
-                    <a href="#">View more features &rsaquo;</a>
+                    <a href="#">@Html.Raw(TextHelper.GetText(578, language)) &rsaquo;</a>
                 </div>
                 <!--end of col-->
             </div>

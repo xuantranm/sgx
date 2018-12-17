@@ -20,6 +20,8 @@ namespace Helpers
         
         public static string GetText(int code, string language, bool plainText = false, bool noGodMode = false)
         {
+            // Some time cookie not found language.
+
             if (string.IsNullOrEmpty(language))
             {
                 language = Thread.CurrentThread.CurrentUICulture.Name;
@@ -32,7 +34,7 @@ namespace Helpers
 
             if (text == null)
             {
-                var aa = dbContext.Texts.Find(m => m.Code.Equals(1) && m.Language.Equals(language)).First();
+                //var aa = dbContext.Texts.Find(m => m.Code.Equals(1) && m.Language.Equals(language)).First();
                 return "Missing code";
             }
             text.ToolTip = Utility.HtmlToPlainText(text.ToolTip);

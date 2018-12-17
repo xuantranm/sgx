@@ -41,6 +41,7 @@ namespace tribatvn.Controllers
         public IActionResult Index()
         {
             CultureInfo cultureInfo = CultureDefine();
+
             ViewData["Language"] = cultureInfo.Name;
             ViewData["LanguageHtmlTag"] = cultureInfo.TwoLetterISOLanguageName;
 

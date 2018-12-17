@@ -39,32 +39,156 @@ namespace tribatvn.Controllers
         {
             if (setting == "init")
             {
-                _logger.LogInformation(LoggingEvents.GenerateItems, "Generate first data");
+                InitUpdateText();
+                //_logger.LogInformation(LoggingEvents.GenerateItems, "Generate first data");
 
-                InitLanguages();
+                //InitLanguages();
 
-                InitSeos();
+                //InitSeos();
 
-                InitTexts();
+                //InitTexts();
 
-                InitCategories();
+                //InitCategories();
 
-                InitProducts();
+                //InitProducts();
 
-                InitContents();
+                //InitContents();
 
-                InitNewsCategory();
+                //InitNewsCategory();
 
-                InitNews();
+                //InitNews();
 
-                InitJobcategory();
+                //InitJobcategory();
 
-                InitJobs();
+                //InitJobs();
 
                 return Constants.String_Y;
             }
 
             return Constants.String_Y;
+        }
+
+        public void InitUpdateText()
+        {
+            #region 501
+            dbContext.Texts.InsertOne(new Text()
+            {
+                Code = 501,
+                Content = "Product",
+                ContentPlainText = "Product",
+                ToolTip = "Product",
+                Seo = "Product",
+                Type = "home",
+                Language = Constants.Languages.English
+            });
+            #endregion
+
+            #region 506
+            dbContext.Texts.InsertOne(new Text()
+            {
+                Code = 506,
+                Content = "Processing - Recycling",
+                ContentPlainText = "Processing - Recycling",
+                ToolTip = "Processing - Recycling",
+                Seo = "Processing - Recycling",
+                Type = "home",
+                Language = Constants.Languages.English
+            });
+            #endregion
+
+            #region 510
+            dbContext.Texts.InsertOne(new Text()
+            {
+                Code = 510,
+                Content = "Services",
+                ContentPlainText = "Services",
+                ToolTip = "Services",
+                Seo = "Services",
+                Type = "home",
+                Language = Constants.Languages.English
+            });
+            #endregion
+
+            #region 514
+            dbContext.Texts.InsertOne(new Text()
+            {
+                Code = 514,
+                Content = "UI",
+                ContentPlainText = "UI",
+                ToolTip = "UI",
+                Seo = "UI",
+                Type = "home",
+                Language = Constants.Languages.English
+            });
+            #endregion
+
+            #region 578
+            dbContext.Texts.InsertOne(new Text()
+            {
+                Code = 578,
+                Content = "Xem thêm",
+                ContentPlainText = "Xem thêm",
+                ToolTip = "Xem thêm",
+                Seo = "Xem thêm",
+                Type = "home",
+                Language = Constants.Languages.Vietnamese
+            });
+            dbContext.Texts.InsertOne(new Text()
+            {
+                Code = 578,
+                Content = "View more features",
+                ContentPlainText = "View more features",
+                ToolTip = "View more features",
+                Seo = "View more features",
+                Type = "home",
+                Language = Constants.Languages.English
+            });
+            #endregion
+            #region 579
+            dbContext.Texts.InsertOne(new Text()
+            {
+                Code = 579,
+                Content = "Mô tả ngắn...",
+                ContentPlainText = "Mô tả ngắn...",
+                ToolTip = "Mô tả ngắn...",
+                Seo = "Mô tả ngắn...",
+                Type = "home",
+                Language = Constants.Languages.Vietnamese
+            });
+            dbContext.Texts.InsertOne(new Text()
+            {
+                Code = 579,
+                Content = "Short description...",
+                ContentPlainText = "Short description...",
+                ToolTip = "Short description...",
+                Seo = "Short description...",
+                Type = "home",
+                Language = Constants.Languages.English
+            });
+            #endregion
+
+            #region 580
+            dbContext.Texts.InsertOne(new Text()
+            {
+                Code = 580,
+                Content = "Chi tiết ngắn...",
+                ContentPlainText = "Chi tiết ngắn...",
+                ToolTip = "Chi tiết ngắn...",
+                Seo = "Chi tiết ngắn...",
+                Type = "home",
+                Language = Constants.Languages.Vietnamese
+            });
+            dbContext.Texts.InsertOne(new Text()
+            {
+                Code = 580,
+                Content = "Short detail...",
+                ContentPlainText = "Short detail...",
+                ToolTip = "Short detail...",
+                Seo = "Short detail...",
+                Type = "home",
+                Language = Constants.Languages.English
+            });
+            #endregion
         }
 
         public void InitLanguages()
@@ -769,6 +893,16 @@ namespace tribatvn.Controllers
                 Type = "home",
                 Language = Constants.Languages.Vietnamese
             });
+            dbContext.Texts.InsertOne(new Text()
+            {
+                Code = 501,
+                Content = "Product",
+                ContentPlainText = "Product",
+                ToolTip = "Product",
+                Seo = "Product",
+                Type = "home",
+                Language = Constants.Languages.English
+            });
             #endregion
 
             #region 502
@@ -833,6 +967,16 @@ namespace tribatvn.Controllers
                 Seo = "Xử lý - tái chế",
                 Type = "home",
                 Language = Constants.Languages.Vietnamese
+            });
+            dbContext.Texts.InsertOne(new Text()
+            {
+                Code = 506,
+                Content = "Processing - Recycling",
+                ContentPlainText = "Processing - Recycling",
+                ToolTip = "Processing - Recycling",
+                Seo = "Processing - Recycling",
+                Type = "home",
+                Language = Constants.Languages.English
             });
             #endregion
 
