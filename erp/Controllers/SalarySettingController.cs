@@ -292,7 +292,7 @@ namespace erp.Controllers
         #endregion
 
         #region Init Data. USE FOR ALL SALARIES
-        [Route(Constants.LinkSalary.Document + "/" +Constants.LinkSalary.VanPhong + "/" + Constants.LinkSalary.ThangBangLuong)]
+        [Route(Constants.LinkSalary.Document + "/" +Constants.LinkSalary.VanPhong + "/" + Constants.LinkSalary.ThangLuong)]
         public IActionResult ThangLuongVP()
         {
             return View();
@@ -304,7 +304,7 @@ namespace erp.Controllers
             return View();
         }
 
-        [Route(Constants.LinkSalary.Document + "/" + Constants.LinkSalary.VanPhong + "/" + Constants.LinkSalary.ThangBangLuong + "/" + Constants.ActionLink.Update)]
+        [Route(Constants.LinkSalary.Document + "/" + Constants.LinkSalary.VanPhong + "/" + Constants.LinkSalary.ThangLuong + "/" + Constants.ActionLink.Update)]
         [HttpPost]
         public ActionResult ThangLuongVPImport()
         {

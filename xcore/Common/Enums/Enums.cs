@@ -3,6 +3,11 @@ namespace Common.Enums
 {
     public enum Phase { Years, Months, Days, Done }
 
+    public enum EEmailGroup
+    {
+        Hr = 1
+    }
+
     public enum EEmailStatus
     {
         Send = 0,

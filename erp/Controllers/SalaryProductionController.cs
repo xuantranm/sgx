@@ -202,9 +202,6 @@ namespace erp.Controllers
             return View(viewModel);
         }
 
-        // Comment Update
-        // Add after ok
-
         [HttpPost]
         [Route(Constants.LinkSalary.BangLuong + "/" + Constants.ActionLink.Update)]
         public async Task<IActionResult> BangLuongUpdate(BangLuongViewModel viewModel)
@@ -662,7 +659,7 @@ namespace erp.Controllers
             return luongCB;
         }
 
-        #region SUB DATA
+        #region CONG TONG
         [Route(Constants.LinkSalary.CongTong)]
         public async Task<IActionResult> CongTong(string thang)
         {
@@ -680,7 +677,7 @@ namespace erp.Controllers
                 return RedirectToAction("login", "account");
             }
 
-            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.LuongVP, (int)ERights.View)))
+            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.LuongSX, (int)ERights.View)))
             {
                 return RedirectToAction("AccessDenied", "Account");
             }
@@ -755,7 +752,7 @@ namespace erp.Controllers
                 return RedirectToAction("login", "account");
             }
 
-            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.LuongVP, (int)ERights.View)))
+            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.LuongSX, (int)ERights.View)))
             {
                 return RedirectToAction("AccessDenied", "Account");
             }
@@ -862,8 +859,7 @@ namespace erp.Controllers
 
         #endregion
 
-
-        #region TEMPLATES
+        #region IMPORT DATA
         [Route(Constants.LinkSalary.NhaMayTemplate)]
         public async Task<IActionResult> NhaMayTemplate(string fileName)
         {

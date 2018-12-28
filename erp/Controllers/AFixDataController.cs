@@ -64,6 +64,191 @@ namespace erp.Controllers
             _logger = logger;
         }
 
+        [Route("/fix/gui-mail-nhom-nhan-su-moi/")]
+        public IActionResult SendMailNewUserMulti(string group)
+        {
+            var arrs = new List<string>
+            {
+                "luan.nt",
+                "loc.tm",
+                "thuan.nc"
+            };
+
+            // 1. Get information Employee
+            var list = dbContext.Employees.Find(m => arrs.Contains(m.UserName)).ToList();
+            // Send mail
+
+            // 1. Notication
+            //      cc: cấp cao
+            //      to: employee have email
+            // 2. Send to IT setup email,...
+            var url = Constants.System.domain;
+
+
+            var subject = "THÔNG BÁO NHÂN SỰ MỚI.";
+            var nhansumoi = string.Empty;
+            nhansumoi += "<table class='MsoNormalTable' border='0 cellspacing='0' cellpadding='0' width='738' style='width: 553.6pt; margin-left: -1.15pt; border-collapse: collapse;'>";
+            nhansumoi += "<tbody>";
+            nhansumoi += "<tr style='height: 15.75pt'>";
+            nhansumoi += "<td nowrap='nowrap' style='border: solid windowtext 1.0pt; background: #76923C; padding: 0cm 5.4pt 0cm 5.4pt;'><b>STT</b></td>";
+            nhansumoi += "<td nowrap='nowrap' style='border: solid windowtext 1.0pt; border-left: none; background: #76923C; padding: 0cm 5.4pt 0cm 5.4pt;'><b>HỌ VÀ TÊN</b></td>";
+            nhansumoi += "<td nowrap='nowrap' style='border: solid windowtext 1.0pt; border-left: none; background: #76923C; padding: 0cm 5.4pt 0cm 5.4pt;'><b>CHỨC VỤ</b></td>";
+            nhansumoi += "<td nowrap='nowrap' style='border: solid windowtext 1.0pt; border-left: none; background: #76923C; padding: 0cm 5.4pt 0cm 5.4pt;'><b>SỐ ĐT LIÊN HỆ</b></td>";
+            nhansumoi += "<td nowrap='nowrap' style='border: solid windowtext 1.0pt; border-left: none; background: #76923C; padding: 0cm 5.4pt 0cm 5.4pt;'><b>EMAIL</b></td>";
+            nhansumoi += "<td nowrap='nowrap' style='border: solid windowtext 1.0pt; border-left: none; background: #76923C; padding: 0cm 5.4pt 0cm 5.4pt;'><b>NGÀY NHẬN VIỆC</b></td>";
+            nhansumoi += "</tr>";
+
+            var i = 1;
+            foreach (var entity in list)
+            {
+                var contact = string.Empty;
+                if (entity.Mobiles != null && entity.Mobiles.Count > 0)
+                {
+                    contact = entity.Mobiles[0].Number;
+                }
+
+                nhansumoi += "<tr style='height: 12.75pt'>";
+                nhansumoi += "<td nowrap='nowrap' style='border: solid windowtext 1.0pt; border-top: none; padding: 0cm 5.4pt 0cm 5.4pt;'>" + i.ToString("00") + "</td>";
+                nhansumoi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + entity.FullName + "</td>";
+                nhansumoi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + entity.Title + "</td>";
+                nhansumoi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'><a href='tel:" + contact + "'>"+ contact + "</a></td>";
+                nhansumoi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + entity.Email + "</td>";
+                nhansumoi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + entity.Joinday.ToString("dd/MM/yyyy") + "</td>";
+                nhansumoi += "</tr>";
+                i++;
+            }
+
+            nhansumoi += "</tbody>";
+            nhansumoi += "</table>";
+            var tos = new List<EmailAddress>();
+            var ccs = new List<EmailAddress>();
+            var listboss = new List<string>
+            {
+                "C.01",
+                "C.02"
+            };
+            var employees = dbContext.Employees.Find(m => m.Enable.Equals(true) && !string.IsNullOrEmpty(m.Email)).ToList();
+            foreach (var employee in employees)
+            {
+                if (!string.IsNullOrEmpty(employee.NgachLuong) && listboss.Any(str => str.Contains(employee.NgachLuong)))
+                {
+                    ccs.Add(new EmailAddress
+                    {
+                        Name = employee.FullName,
+                        Address = employee.Email,
+                    });
+                }
+                else
+                {
+                    tos.Add(new EmailAddress
+                    {
+                        Name = employee.FullName,
+                        Address = employee.Email,
+                    });
+                }
+            }
+
+            #region UAT
+            var uat = dbContext.Settings.Find(m => m.Key.Equals("UAT")).FirstOrDefault();
+            if (uat != null && uat.Value == "true")
+            {
+                tos = new List<EmailAddress>
+                        {
+                            new EmailAddress { Name = "Xuan", Address = "xuan.tm1988@gmail.com" }
+                        };
+
+                ccs = new List<EmailAddress>
+                        {
+                            new EmailAddress { Name = "Xuan CC", Address = "xuantranm@gmail.com" }
+                        };
+            }
+            #endregion
+
+            var pathToFile = _env.WebRootPath
+                    + Path.DirectorySeparatorChar.ToString()
+                    + "Templates"
+                    + Path.DirectorySeparatorChar.ToString()
+                    + "EmailTemplate"
+                    + Path.DirectorySeparatorChar.ToString()
+                    + "NhanSuMoi.html";
+            var builder = new BodyBuilder();
+            using (StreamReader SourceReader = System.IO.File.OpenText(pathToFile))
+            {
+                builder.HtmlBody = SourceReader.ReadToEnd();
+            }
+            string messageBody = string.Format(builder.HtmlBody,
+                subject,
+                "tất cả thành viên",
+                nhansumoi,
+                url);
+
+            var emailMessage = new EmailMessage()
+            {
+                ToAddresses = tos,
+                CCAddresses = ccs,
+                Subject = subject,
+                BodyContent = messageBody,
+                Type = "nhan-su-moi"
+            };
+
+            // For faster update.
+            var scheduleEmail = new ScheduleEmail
+            {
+                Status = (int)EEmailStatus.ScheduleASAP,
+                To = emailMessage.ToAddresses,
+                CC = emailMessage.CCAddresses,
+                BCC = emailMessage.BCCAddresses,
+                Type = emailMessage.Type,
+                Title = emailMessage.Subject,
+                Content = emailMessage.BodyContent
+            };
+            dbContext.ScheduleEmails.InsertOne(scheduleEmail);
+            //_emailSender.SendEmail(emailMessage);
+
+            return Json(new { result = true, source = "cap-nhat-chuc-vu-theo-thang-luong", message = "Cập nhật chức vụ thành công" });
+        }
+
+        [Route("/fix/cap-nhat-chuc-vu-theo-thang-luong/")]
+        public IActionResult TitleUpdateThangLuong()
+        {
+            var luongs = dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true) && m.Bac.Equals(1) && m.Month.Equals(12) && m.Year.Equals(2018)).ToList();
+            int i = 1;
+            foreach (var luong in luongs)
+            {
+                // Check exist
+                if (!string.IsNullOrEmpty(luong.ViTri))
+                {
+                    var titleItem = dbContext.Titles.Find(m => m.Alias.Equals(luong.ViTriAlias)).FirstOrDefault();
+                    if (titleItem == null)
+                    {
+                        // Insert
+                        dbContext.Titles.InsertOne(new Title
+                        {
+                            Code = luong.ViTriCode,
+                            Name = luong.ViTri,
+                            Alias = luong.ViTriAlias,
+                            Description = luong.ViTri,
+                            Order = i
+                        });
+                    }
+                    else
+                    {
+                        var newCode = Constants.System.viTriCodeTBLuong + Convert.ToInt32(i).ToString("000");
+                        var filter = Builders<Title>.Filter.Eq(m => m.Id, titleItem.Id);
+                        var update = Builders<Title>.Update
+                            .Set(m => m.Code, newCode)
+                            .Set(m => m.Order, i);
+                        dbContext.Titles.UpdateOne(filter, update);
+                    }
+                }
+
+                i++;
+            }
+
+            return Json(new { result = true, source = "cap-nhat-chuc-vu-theo-thang-luong", message = "Cập nhật chức vụ thành công" });
+        }
+
+
         [Route("/fix/phong-ban-bo-phan/")]
         public IActionResult PhongBanBoPhan()
         {

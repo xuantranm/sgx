@@ -100,8 +100,9 @@ namespace Models
         
         public int Mode { get; set; } = (int)TimeWork.Normal;
 
-        // use later...
-        public string Workcode { get; set; }
+        // use define salary loction
+        // base luong [SalaryType] : VP, NM, SX
+        public int Workcode { get; set; }
 
         public string SecureCode { get; set; }
     }

@@ -404,6 +404,14 @@ namespace Data
             }
         }
 
+        public IMongoCollection<EmailGroup> EmailGroups
+        {
+            get
+            {
+                return _database.GetCollection<EmailGroup>("EmailGroups");
+            }
+        }
+
         public IMongoCollection<Leave> Leaves
         {
             get

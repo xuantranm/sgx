@@ -2093,6 +2093,145 @@ namespace erp.Controllers
             //_emailSender.SendEmail(emailMessage);
         }
 
+        public void SendMailNewUserMulti(string group)
+        {
+            var arrs = new List<string>
+            {
+                "luan.nt",
+                "loc.tm",
+                "thuan.nc"
+            };
+
+            // 1. Get information Employee
+            var list = dbContext.Employees.Find(m => arrs.Contains(m.UserName)).ToList();
+            // Send mail
+
+            // 1. Notication
+            //      cc: cấp cao
+            //      to: employee have email
+            // 2. Send to IT setup email,...
+            var url = Constants.System.domain;
+            
+            
+            var subject = "THÔNG BÁO NHÂN SỰ MỚI.";
+            var nhansumoi = string.Empty;
+            nhansumoi += "<table class='MsoNormalTable' border='0 cellspacing='0' cellpadding='0' width='738' style='width: 553.6pt; margin-left: -1.15pt; border-collapse: collapse;'>";
+            nhansumoi += "<tbody>";
+            nhansumoi += "<tr style='height: 15.75pt'>";
+            nhansumoi += "<td nowrap='nowrap' style='border: solid windowtext 1.0pt; background: #76923C; padding: 0cm 5.4pt 0cm 5.4pt;'><b>STT</b></td>";
+            nhansumoi += "<td nowrap='nowrap' style='border: solid windowtext 1.0pt; border-left: none; background: #76923C; padding: 0cm 5.4pt 0cm 5.4pt;'><b>HỌ VÀ TÊN</b></td>";
+            nhansumoi += "<td nowrap='nowrap' style='border: solid windowtext 1.0pt; border-left: none; background: #76923C; padding: 0cm 5.4pt 0cm 5.4pt;'><b>SỐ LIÊN HỆ</b></td>";
+            nhansumoi += "<td nowrap='nowrap' style='border: solid windowtext 1.0pt; border-left: none; background: #76923C; padding: 0cm 5.4pt 0cm 5.4pt;'><b>EMAIL</b></td>";
+            nhansumoi += "<td nowrap='nowrap' style='border: solid windowtext 1.0pt; border-left: none; background: #76923C; padding: 0cm 5.4pt 0cm 5.4pt;'><b>NGÀY NHẬN VIỆC</b></td>";
+            nhansumoi += "<td nowrap='nowrap' style='border: solid windowtext 1.0pt; border-left: none; background: #76923C; padding: 0cm 5.4pt 0cm 5.4pt;'><b>CHỨC VỤ</b></td>";
+            nhansumoi += "</tr>";
+
+            foreach (var entity in list)
+            {
+                var contact = string.Empty;
+                if (entity.Mobiles != null && entity.Mobiles.Count > 0)
+                {
+                    contact = entity.Mobiles[0].Number;
+                }
+
+                nhansumoi += "<tr style='height: 12.75pt'>";
+                nhansumoi += "<td nowrap='nowrap' style='border: solid windowtext 1.0pt; border-top: none; padding: 0cm 5.4pt 0cm 5.4pt;'>" + "01" + "</td>";
+                nhansumoi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + entity.FullName + "</td>";
+                nhansumoi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + contact + "</td>";
+                nhansumoi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + entity.Email + "</td>";
+                nhansumoi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + entity.Joinday.ToString("dd/MM/yyyy") + "</td>";
+                nhansumoi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + entity.Title + "</td>";
+                nhansumoi += "</tr>";
+            }
+            
+            nhansumoi += "</tbody>";
+            nhansumoi += "</table>";
+            var tos = new List<EmailAddress>();
+            var ccs = new List<EmailAddress>();
+            var listboss = new List<string>
+            {
+                "C.01",
+                "C.02"
+            };
+            var employees = dbContext.Employees.Find(m => m.Enable.Equals(true) && !string.IsNullOrEmpty(m.Email)).ToList();
+            foreach (var employee in employees)
+            {
+                if (!string.IsNullOrEmpty(employee.NgachLuong) && listboss.Any(str => str.Contains(employee.NgachLuong)))
+                {
+                    ccs.Add(new EmailAddress
+                    {
+                        Name = employee.FullName,
+                        Address = employee.Email,
+                    });
+                }
+                else
+                {
+                    tos.Add(new EmailAddress
+                    {
+                        Name = employee.FullName,
+                        Address = employee.Email,
+                    });
+                }
+            }
+
+            #region UAT
+            var uat = dbContext.Settings.Find(m => m.Key.Equals("UAT")).FirstOrDefault();
+            if (uat != null && uat.Value == "true")
+            {
+                tos = new List<EmailAddress>
+                        {
+                            new EmailAddress { Name = "Xuan", Address = "xuan.tm1988@gmail.com" }
+                        };
+
+                ccs = new List<EmailAddress>
+                        {
+                            new EmailAddress { Name = "Xuan CC", Address = "xuantranm@gmail.com" }
+                        };
+            }
+            #endregion
+
+            var pathToFile = _env.WebRootPath
+                    + Path.DirectorySeparatorChar.ToString()
+                    + "Templates"
+                    + Path.DirectorySeparatorChar.ToString()
+                    + "EmailTemplate"
+                    + Path.DirectorySeparatorChar.ToString()
+                    + "NhanSuMoi.html";
+            var builder = new BodyBuilder();
+            using (StreamReader SourceReader = System.IO.File.OpenText(pathToFile))
+            {
+                builder.HtmlBody = SourceReader.ReadToEnd();
+            }
+            string messageBody = string.Format(builder.HtmlBody,
+                subject,
+                "tất cả thành viên",
+                nhansumoi,
+                url);
+
+            var emailMessage = new EmailMessage()
+            {
+                ToAddresses = tos,
+                CCAddresses = ccs,
+                Subject = subject,
+                BodyContent = messageBody,
+                Type = "nhan-su-moi"
+            };
+
+            // For faster update.
+            var scheduleEmail = new ScheduleEmail
+            {
+                Status = (int)EEmailStatus.ScheduleASAP,
+                To = emailMessage.ToAddresses,
+                CC = emailMessage.CCAddresses,
+                BCC = emailMessage.BCCAddresses,
+                Type = emailMessage.Type,
+                Title = emailMessage.Subject,
+                Content = emailMessage.BodyContent
+            };
+            dbContext.ScheduleEmails.InsertOne(scheduleEmail);
+            //_emailSender.SendEmail(emailMessage);
+        }
+
         public void SendMailLeaveUser(Employee entity)
         {
             // 1. Notication
@@ -2256,68 +2395,5 @@ namespace erp.Controllers
             }
             return entity.Usage > 0 ? false : true;
         }
-
-        #region Sub data
-        [HttpPost]
-        [Route(Constants.LinkHr.Department + " / " + Constants.ActionLink.Update)]
-        public IActionResult Department(Department entity)
-        {
-            entity.Alias = Utility.AliasConvert(entity.Name);
-            bool exist = dbContext.Departments.CountDocuments(m => m.Alias.Equals(entity.Alias)) > 0;
-            if (!exist)
-            {
-                dbContext.Departments.InsertOne(entity);
-                return Json(new { result = true, source = "create", entity, message = "Tạo mới thành công" });
-            }
-            return Json(new { result = false, source = "create", entity, message = "Phòng/ban đã có. Không thể tạo 2 dữ liệu cùng tên." });
-        }
-
-        [HttpPost]
-        [Route(Constants.LinkHr.Part + " / " + Constants.ActionLink.Update)]
-        public IActionResult Part(Part entity)
-        {
-            entity.Alias = Utility.AliasConvert(entity.Name);
-            bool exist = dbContext.Parts.CountDocuments(m => m.Alias.Equals(entity.Alias)) > 0;
-            if (!exist)
-            {
-                dbContext.Parts.InsertOne(entity);
-                return Json(new { result = true, source = "create", entity, message = "Tạo mới thành công" });
-            }
-            return Json(new { result = false, source = "create", entity, message = "Dữ liệu tồn tại. Không thể tạo 2 dữ liệu cùng tên." });
-        }
-
-        [HttpPost]
-        //[Route(Constants.LinkHr.Title + " / " + Constants.ActionLink.Update)]
-        public IActionResult Title(Title entity)
-        {
-            entity.Alias = Utility.AliasConvert(entity.Name);
-            bool exist = dbContext.Titles.CountDocuments(m => m.Alias.Equals(entity.Alias)) > 0;
-            if (!exist)
-            {
-                var lastest = dbContext.Titles.Find(m => m.Enable.Equals(true)).SortByDescending(m => m.Order).FirstOrDefault();
-                var newNo = lastest.Order + 1;
-                var newCode = Constants.System.viTriCodeTBLuong + newNo.ToString("000");
-                entity.Code = newCode;
-                entity.Order = newNo;
-                dbContext.Titles.InsertOne(entity);
-                return Json(new { result = true, source = "create", entity, message = "Tạo mới thành công" });
-            }
-            return Json(new { result = false, source = "create", entity, message = "Dữ liệu tồn tại. Không thể tạo 2 dữ liệu cùng tên." });
-        }
-
-        [HttpPost]
-        [Route(Constants.LinkHr.Hospital + " / " + Constants.ActionLink.Update)]
-        public IActionResult Hospital(BHYTHospital entity)
-        {
-            entity.Alias = Utility.AliasConvert(entity.Name);
-            bool exist = dbContext.BHYTHospitals.CountDocuments(m => m.Alias.Equals(entity.Alias)) > 0;
-            if (!exist)
-            {
-                dbContext.BHYTHospitals.InsertOne(entity);
-                return Json(new { result = true, source = "create", entity, message = "Tạo mới thành công" });
-            }
-            return Json(new { result = false, source = "create", entity, message = "Bệnh viện đã có. Không thể tạo 2 dữ liệu cùng tên." });
-        }
-        #endregion
     }
 }

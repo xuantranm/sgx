@@ -219,7 +219,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-sm-6 col-12">
+                        <div class="col-12">
                             <div class="form-group">
                                 <i class="icon icon-select-arrows"></i>
                                 <label asp-for="Employee.Title" class="control-label"></label>
@@ -241,7 +241,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-sm-6 col-12">
+                        <div class="col-12">
                             <div class="form-group">
                                 <i class="icon icon-select-arrows"></i>
                                 <label class="control-label">Người quản lý trực tiếp</label>
@@ -250,13 +250,23 @@
                                     @{
                                         foreach (var item in Model.Employees)
                                         {
-                                            <option value="@item.Id" data-userName="@item.UserName" data-email="@item.Email" data-fullname="@item.FullName">@item.FullName [@item.Title]</option>
+                                            string displayTitle = string.Empty;
+                                            if (!string.IsNullOrEmpty(item.Title))
+                                            {
+                                                displayTitle += "[" + item.Title + "]";
+                                            }
+                                            if (!string.IsNullOrEmpty(item.Email))
+                                            {
+                                                displayTitle += "- " + item.Email + "";
+                                            }
+                                            <option value="@item.Id">@item.FullName @displayTitle</option>
                                         }
                                     }
                                 </select>
-                                <script id="tmplManagePeople" type="text/x-jsrender">
-                                    <option value="{{:id}}" data-userName="{{:userName}}" data-email="{{:email}}" data-fullname="{{:fullName}}">{{:fullName}} [{{:title}}]</option>
-                                </script>
+                                <input type="hidden" value="@Model.Employee.ManagerId" id="hidManagerId" />
+                                @*<script id="tmplManagePeople" type="text/x-jsrender">
+            <option value="{{:id}}" data-userName="{{:userName}}" data-email="{{:email}}" data-fullname="{{:fullName}}">{{:fullName}} [{{:title}}]</option>
+        </script>*@
                             </div>
                         </div>
                         <div class="col-6">
@@ -389,20 +399,10 @@
                             <h5>Thông tin cá nhân</h5>
                         </div>
                     </div>
+                    <input asp-for="Employee.Leaveday" type="hidden" />
+                    <input asp-for="Employee.LeaveReason" type="hidden" />
+                    <input asp-for="Employee.LeaveHandover" type="hidden" />
                     <div class="row">
-                        <div class="col-6 d-none">
-                            <div class="form-group">
-                                <label asp-for="Employee.Leaveday" class="control-label"></label>
-                                <input asp-for="Employee.Leaveday" class="form-control form-control-lg datepicker datepicker-lg" placeholder="" />
-                                <span asp-validation-for="Employee.Leaveday" class="text-danger"></span>
-                            </div>
-                        </div>
-                        <div class="col-6 d-none">
-                            <div class="form-group">
-                                <label asp-for="Employee.LeaveReason" class="control-label"></label>
-                                <textarea asp-for="Employee.LeaveReason" class="form-control form-control-lg"></textarea>
-                            </div>
-                        </div>
                         <div class="col-12">
                             <div class="form-group">
                                 <label asp-for="Employee.Bornplace" class="control-label"></label>
@@ -617,12 +617,12 @@
                                     </div>
                                 </div>
                                 @*<div class="col-6">
-                                        <div class="form-group">
-                                            <label asp-for="Employee.BhxhDependecy" class="control-label"></label>
-                                            <input asp-for="Employee.BhxhDependecy" class="form-control form-control-lg" />
-                                            <span asp-validation-for="Employee.BhxhDependecy" class="text-danger"></span>
-                                        </div>
-                                    </div>*@
+                        <div class="form-group">
+                            <label asp-for="Employee.BhxhDependecy" class="control-label"></label>
+                            <input asp-for="Employee.BhxhDependecy" class="form-control form-control-lg" />
+                            <span asp-validation-for="Employee.BhxhDependecy" class="text-danger"></span>
+                        </div>
+                    </div>*@
                                 <div class="col-6">
                                     <div class="form-group">
                                         <label asp-for="Employee.BhxhStatus" class="control-label"></label>
@@ -1036,6 +1036,38 @@
         </div>
 
         <div class="row">
+            <!-- Autocomplete -->
+            <div class="col-12 col-md-6">
+                <div class="form-group">
+                    <label class="control-label">Nhóm gửi email</label>
+                    <input asp-for="EmailGroup" class="form-control form-control-lg" />
+                    <small><span class="badge badge-info">1</span> Đặt tên nhóm theo ngày, theo ký tự nào đó. Vd: 20122018.</small>
+                    <small><span class="badge badge-info">2</span> Sau khi hoàn tất muốn gửi mail theo nhóm thì đánh dấu bên dưới. Muốn tạo thêm thông tin theo nhóm thì bỏ chọn bên dưới.</small>
+                    <small>*** Hệ thống sẽ gửi email thông báo theo tên nhóm. Sau khi lên lịch gửi tên nhóm sẽ hủy.</small>
+                </div>
+            </div>
+            <div class="col-12 divEmailGroupInfo"></div>
+            <div class="col-12">
+                <div class="form-group">
+                    <div class="float-left">
+                        @{
+                            if (Model.EmailSend)
+                            {
+                                <input type="checkbox" checked class="big-checkbox chkEmailSend">
+                            }
+                            else
+                            {
+                                <input type="checkbox" class="big-checkbox chkEmailSend">
+                            }
+                        }
+                        <input asp-for="EmailSend" type="hidden" />
+                    </div>
+                    <div class="float-left" style="margin-left:8px"><b>Gửi email thông báo</b></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
             <div class="col-12 col-md-8">
                 <div class="form-group">
                     <button class="btn btn-success btn-lg btn-block btn-submit" id="btn-save-submit" type="submit" data-toggle="tooltip" title="Lưu thông tin nhân viên mới"><i class="icon icon-save"></i> Lưu</button>
@@ -1059,7 +1091,7 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form class="data-form" method="post" action="/@Constants.LinkHr.Main/@Constants.LinkHr.Department/@Constants.ActionLink.Update/" enctype="multipart/form-data">
+            <form class="data-form" method="post" action="/api/department" enctype="multipart/form-data">
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                 <span class="result"></span>
                 <div class="modal-body">
@@ -1090,7 +1122,7 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form class="data-form" method="post" action="/@Constants.LinkHr.Main/@Constants.LinkHr.Part/@Constants.ActionLink.Update/" enctype="multipart/form-data">
+            <form class="data-form" method="post" action="/api/part" enctype="multipart/form-data">
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                 <span class="result"></span>
                 <div class="modal-body">
@@ -1121,7 +1153,7 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form method="post" action="/@Constants.LinkHr.Main/@Constants.LinkHr.Title/@Constants.ActionLink.Update" enctype="multipart/form-data">
+            <form method="post" action="/api/title" enctype="multipart/form-data">
                 <span class="result"></span>
                 <div class="modal-body">
                     <div class="form-group">
@@ -1151,7 +1183,7 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form class="data-form" method="post" action="/@Constants.LinkHr.Main/@Constants.LinkHr.Hospital/@Constants.ActionLink.Update/" enctype="multipart/form-data">
+            <form class="data-form" method="post" action="/api/hospital" enctype="multipart/form-data">
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                 <span class="result"></span>
                 <div class="modal-body">
@@ -1232,7 +1264,7 @@
 @section scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
-        <script src="~/js/employee-data.js?@DateTime.Now.Ticks"></script>
+        <script src="~/js/employee-data.js?v-@DateTime.Now.Ticks"></script>
     }
 }
 

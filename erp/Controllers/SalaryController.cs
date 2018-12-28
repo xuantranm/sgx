@@ -63,7 +63,7 @@ namespace erp.Controllers
         }
 
         [Route(Constants.LinkSalary.VanPhong + "/" + Constants.LinkSalary.BangLuong)]
-        public async Task<IActionResult> BangLuongReal(string thang)
+        public async Task<IActionResult> BangLuong(string thang)
         {
             #region Authorization
             var login = User.Identity.Name;
@@ -163,7 +163,7 @@ namespace erp.Controllers
         }
 
         [Route(Constants.LinkSalary.VanPhong + "/" + Constants.LinkSalary.BangLuong + "/" + Constants.LinkSalary.Update)]
-        public async Task<IActionResult> BangLuongRealUpdate(string thang)
+        public async Task<IActionResult> BangLuongUpdate(string thang)
         {
             #region Authorization
             var login = User.Identity.Name;
@@ -264,7 +264,7 @@ namespace erp.Controllers
 
         [HttpPost]
         [Route(Constants.LinkSalary.VanPhong + "/" + Constants.LinkSalary.BangLuong + "/" + Constants.LinkSalary.Update)]
-        public async Task<IActionResult> BangLuongRealUpdate(BangLuongViewModel viewModel)
+        public async Task<IActionResult> BangLuongUpdate(BangLuongViewModel viewModel)
         {
             #region Authorization
             var login = User.Identity.Name;
@@ -429,8 +429,9 @@ namespace erp.Controllers
             return View(viewModel);
         }
 
-        [Route(Constants.LinkSalary.VanPhong + "/" + Constants.LinkSalary.ThangBangLuong)]
-        public async Task<IActionResult> ThangBangLuongReal(string thang)
+        #region THANG LUONG
+        [Route(Constants.LinkSalary.VanPhong + "/" + Constants.LinkSalary.ThangLuong)]
+        public async Task<IActionResult> ThangLuong(string thang)
         {
             #region Authorization
             var login = User.Identity.Name;
@@ -549,8 +550,8 @@ namespace erp.Controllers
             return View(viewModel);
         }
 
-        [Route(Constants.LinkSalary.VanPhong + "/" + Constants.LinkSalary.ThangBangLuong + "/" + Constants.LinkSalary.Update)]
-        public async Task<IActionResult> ThangBangLuongRealUpdate(string thang)
+        [Route(Constants.LinkSalary.VanPhong + "/" + Constants.LinkSalary.ThangLuong + "/" + Constants.LinkSalary.Update)]
+        public async Task<IActionResult> ThangLuongUpdate(string thang)
         {
             #region Authorization
             var login = User.Identity.Name;
@@ -671,8 +672,8 @@ namespace erp.Controllers
         }
 
         [HttpPost]
-        [Route(Constants.LinkSalary.VanPhong + "/" + Constants.LinkSalary.ThangBangLuong + "/" + Constants.LinkSalary.Update)]
-        public async Task<IActionResult> ThangBangLuongRealUpdate(ThangBangLuongViewModel viewModel)
+        [Route(Constants.LinkSalary.VanPhong + "/" + Constants.LinkSalary.ThangLuong + "/" + Constants.LinkSalary.Update)]
+        public async Task<IActionResult> ThangLuongUpdate(ThangBangLuongViewModel viewModel)
         {
             #region Authorization
             var login = User.Identity.Name;
@@ -836,6 +837,7 @@ namespace erp.Controllers
                 return Json(new { result = false, source = "update", id = string.Empty, message = ex.Message });
             }
         }
+        #endregion
 
         #region SALES
         [Route(Constants.LinkSalary.SaleKPIEmployee)]
@@ -4352,7 +4354,7 @@ namespace erp.Controllers
             return calBHXH;
         }
 
-        [Route(Constants.LinkSalary.ThangBangLuong + "/" + Constants.LinkSalary.VanPhong + "/" + Constants.LinkSalary.Calculator)]
+        [Route(Constants.LinkSalary.ThangLuong + "/" + Constants.LinkSalary.VanPhong + "/" + Constants.LinkSalary.Calculator)]
         public IActionResult ThangBangLuongCalculator(string thang, string id, decimal heso, decimal money)
         {
             #region Times

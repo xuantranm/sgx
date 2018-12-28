@@ -61,7 +61,14 @@ namespace ViewModels
 
         public string phongban { get; set; }
 
+        public string khoi { get; set; }
+
+        public DateTime Tu { get; set; }
+
+        public DateTime Den { get; set; }
+
         public DateTime FromDate { get; set; }
+
         public DateTime ToDate { get; set; }
 
         // NHA MAY

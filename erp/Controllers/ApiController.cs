@@ -28,8 +28,7 @@ using Services;
 
 namespace erp.Controllers
 {
-    //[Route("api/[controller]")]
-    [Route("api/")]
+    // No mapping url. USE Orginal.
     public class ApiController : Controller
     {
         MongoDBContext dbContext = new MongoDBContext();
@@ -57,6 +56,96 @@ namespace erp.Controllers
             _smsSender = smsSender;
             _logger = logger;
         }
+
+        #region Employee
+        public IActionResult Department(Department entity)
+        {
+            entity.Alias = Utility.AliasConvert(entity.Name);
+            bool exist = dbContext.Departments.CountDocuments(m => m.Alias.Equals(entity.Alias)) > 0;
+            if (!exist)
+            {
+                dbContext.Departments.InsertOne(entity);
+                return Json(new { result = true, source = "create", entity, message = Constants.NewDataSuccess });
+            }
+            return Json(new { result = false, source = "create", entity, message = Constants.DataDuplicate });
+        }
+
+        public IActionResult Part(Part entity)
+        {
+            entity.Alias = Utility.AliasConvert(entity.Name);
+            bool exist = dbContext.Parts.CountDocuments(m => m.Alias.Equals(entity.Alias)) > 0;
+            if (!exist)
+            {
+                dbContext.Parts.InsertOne(entity);
+                return Json(new { result = true, source = "create", entity, message = Constants.NewDataSuccess });
+            }
+            return Json(new { result = false, source = "create", entity, message = Constants.DataDuplicate });
+        }
+
+        public IActionResult Title(Title entity)
+        {
+            if (!string.IsNullOrEmpty(entity.Name))
+            {
+                entity.Alias = Utility.AliasConvert(entity.Name);
+                bool exist = dbContext.Titles.CountDocuments(m => m.Alias.Equals(entity.Alias)) > 0;
+                if (!exist)
+                {
+                    var lastest = dbContext.Titles.Find(m => m.Enable.Equals(true)).SortByDescending(m => m.Order).FirstOrDefault();
+                    var newNo = lastest.Order + 1;
+                    var newCode = Constants.System.viTriCodeTBLuong + newNo.ToString("000");
+                    entity.Code = newCode;
+                    entity.Order = newNo;
+                    dbContext.Titles.InsertOne(entity);
+
+                    // Add Thang Bang Luong with minimum salary
+                    decimal salaryMin = 4012500;
+                    var luong = dbContext.SalaryMucLuongVungs.Find(m => m.Enable.Equals(true)).SortByDescending(m=>m.Year).SortByDescending(m=>m.Month).FirstOrDefault();
+                    salaryMin = luong.ToiThieuVungDoanhNghiepApDung;
+
+                    decimal heso = (decimal)1;
+                    decimal tiLe = (decimal)0;
+                    for (int lv = 1; lv <= 10; lv++)
+                    {
+                        if (lv > 1)
+                        {
+                            heso += tiLe;
+                        }
+                        dbContext.SalaryThangBangLuongs.InsertOne(new SalaryThangBangLuong()
+                        {
+                            Month = DateTime.Now.Date.Month,
+                            Year = DateTime.Now.Date.Year,
+                            ViTri = entity.Name,
+                            Bac = lv,
+                            TiLe = tiLe,
+                            HeSo = heso,
+                            MucLuong = salaryMin,
+                            ViTriCode = entity.Code,
+                            ViTriAlias = entity.Alias,
+                            Law = false
+                        });
+                    }
+
+                    return Json(new { result = true, source = "create", entity, message = Constants.NewDataSuccess });
+                }
+            }
+            
+            return Json(new { result = false, source = "create", entity, message = Constants.DataDuplicate });
+        }
+
+        [HttpPost]
+        [Route(Constants.LinkHr.Hospital + " / " + Constants.ActionLink.Update)]
+        public IActionResult Hospital(BHYTHospital entity)
+        {
+            entity.Alias = Utility.AliasConvert(entity.Name);
+            bool exist = dbContext.BHYTHospitals.CountDocuments(m => m.Alias.Equals(entity.Alias)) > 0;
+            if (!exist)
+            {
+                dbContext.BHYTHospitals.InsertOne(entity);
+                return Json(new { result = true, source = "create", entity, message = Constants.NewDataSuccess });
+            }
+            return Json(new { result = false, source = "create", entity, message = Constants.DataDuplicate });
+        }
+        #endregion
 
         #region FACTORY
         [Route("factory/product-infomation")]

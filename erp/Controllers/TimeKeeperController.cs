@@ -28,6 +28,7 @@ using Helpers;
 using MimeKit;
 using MimeKit.Text;
 using Services;
+using NPOI.HSSF.Util;
 
 namespace erp.Controllers
 {
@@ -129,10 +130,15 @@ namespace erp.Controllers
                 #endregion
                 return RedirectToAction("login", "account");
             }
-            bool isRight = false;
+            bool quyenXacNhanCong = false;
             if (loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.XacNhanCongDum, (int)ERights.Add))
             {
-                isRight = true;
+                quyenXacNhanCong = true;
+            }
+            bool quyenBangCong = false;
+            if (loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.BangChamCong, (int)ERights.View))
+            {
+                quyenBangCong = true;
             }
             #endregion
 
@@ -163,7 +169,7 @@ namespace erp.Controllers
                     Year = endDate.AddMonths(1).Year
                 });
             }
-            var sortTimes = monthYears.OrderByDescending(x => x.Year).OrderByDescending(x => x.Month).ToList();
+            var sortTimes = monthYears.OrderByDescending(x => x.Month).OrderByDescending(x => x.Year).ToList();
             var approves = new List<IdName>();
             if (!string.IsNullOrEmpty(userInformation.ManagerId))
             {
@@ -239,7 +245,8 @@ namespace erp.Controllers
                 EndWorkingDate = toDate,
                 Approves = approves,
                 thang = thang,
-                RightRequest = isRight,
+                RightRequest = quyenXacNhanCong,
+                RightManager = quyenBangCong,
                 Approver = approver
             };
             return View(viewModel);
@@ -262,15 +269,20 @@ namespace erp.Controllers
                 return RedirectToAction("login", "account");
             }
 
-            // Quyền tạo nghỉ phép dùm
-            bool isRight = false;
+            bool quyenXacNhan = false;
             if (loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.XacNhanCongDum, (int)ERights.Add))
             {
-                isRight = true;
+                quyenXacNhan = true;
             }
-            if (!isRight)
+            if (!quyenXacNhan)
             {
                 return RedirectToAction("AccessDenied", "Account");
+            }
+
+            bool quyenBangCong = false;
+            if (loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.BangChamCong, (int)ERights.View))
+            {
+                quyenBangCong = true;
             }
             #endregion
 
@@ -309,7 +321,7 @@ namespace erp.Controllers
                     Year = endDate.AddMonths(1).Year
                 });
             }
-            var sortTimes = monthYears.OrderByDescending(x => x.Year).OrderByDescending(x => x.Month).ToList();
+            var sortTimes = monthYears.OrderByDescending(x => x.Month).OrderByDescending(x => x.Year).ToList();
             var approves = new List<IdName>();
             if (!string.IsNullOrEmpty(userInformation.ManagerId))
             {
@@ -377,7 +389,8 @@ namespace erp.Controllers
                 EndWorkingDate = toDate,
                 Approves = approves,
                 id = id,
-                thang = thang
+                thang = thang,
+                RightManager = quyenBangCong
             };
             return View(viewModel);
         }
@@ -446,7 +459,7 @@ namespace erp.Controllers
                     Year = endDate.AddMonths(1).Year
                 });
             }
-            var sortTimes = monthYears.OrderByDescending(x => x.Year).OrderByDescending(x => x.Month).ToList();
+            var sortTimes = monthYears.OrderByDescending(x => x.Month).OrderByDescending(x => x.Year).ToList();
             var approves = new List<IdName>();
             if (!string.IsNullOrEmpty(userInformation.ManagerId))
             {
@@ -955,10 +968,9 @@ namespace erp.Controllers
             return Json(new { result = true, message = "Cám ơn đã xác nhận, kết quả đang gửi cho người liên quan." });
         }
 
-        #region TIMER
-
+        #region CHAM CONG
         [Route(Constants.LinkTimeKeeper.Timer)]
-        public async Task<IActionResult> BangChamCong(string thang, string phongban, string id)
+        public async Task<IActionResult> BangChamCong(DateTime Tu, DateTime Den, string khoi, string phongban, string id)
         {
             #region Authorization
             var login = User.Identity.Name;
@@ -974,7 +986,7 @@ namespace erp.Controllers
                 return RedirectToAction("login", "account");
             }
 
-            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, "nhan-su", (int)ERights.View)))
+            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.BangChamCong, (int)ERights.View)))
             {
                 return RedirectToAction("AccessDenied", "Account");
             }
@@ -982,56 +994,47 @@ namespace erp.Controllers
             #endregion
 
             #region DDL
-            var monthYears = new List<MonthYear>();
-            var date = new DateTime(2018, 02, 01);
-            var endDate = DateTime.Now;
-            while (date.Year < endDate.Year || (date.Year == endDate.Year && date.Month <= endDate.Month))
-            {
-                monthYears.Add(new MonthYear
-                {
-                    Month = date.Month,
-                    Year = date.Year
-                });
-                date = date.AddMonths(1);
-            }
-            if (endDate.Day > 25)
-            {
-                monthYears.Add(new MonthYear
-                {
-                    Month = endDate.AddMonths(1).Month,
-                    Year = endDate.AddMonths(1).Year
-                });
-            }
-            var sortTimes = monthYears.OrderByDescending(x => x.Year).OrderByDescending(x => x.Month).ToList();
-
-            // Danh sách nhân viên để tạo phép dùm
-            // Remove cấp cao ra (theo mã số lương)
-            var builderEmployee = Builders<Employee>.Filter;
-            var filterEmployee = builderEmployee.Eq(m => m.Enable, true);
-            filterEmployee = filterEmployee & !builderEmployee.Eq(m => m.UserName, Constants.System.account);
-            filterEmployee = filterEmployee & !builderEmployee.In(m => m.NgachLuong, new string[] { "C.01", "C.02", "C.03" });
-            var employees = await dbContext.Employees.Find(filterEmployee).SortBy(m => m.FullName).ToListAsync();
-
             var departments = dbContext.Departments.Find(m => m.Enable.Equals(true)).SortBy(m => m.Order).ToList();
 
+            var builderE = Builders<Employee>.Filter;
+            var filterE = builderE.Eq(m => m.Enable, true) & !builderE.Eq(m => m.UserName, Constants.System.account);
+            var intKhoi = (int)ESalaryType.VP;
+            if (!string.IsNullOrEmpty(khoi))
+            {
+                switch (khoi)
+                {
+                    case "SX":
+                        intKhoi = (int)ESalaryType.SX;
+                        break;
+                    case "NM":
+                        intKhoi = (int)ESalaryType.NM;
+                        break;
+                }
+                filterE = filterE & builderE.Eq(m => m.SalaryType, intKhoi);
+            }
+            var employees = await dbContext.Employees.Find(filterE).ToListAsync();
             #endregion
 
             #region Times
-            var toDate = Utility.WorkingMonthToDate(thang);
-            var fromDate = toDate.AddMonths(-1).AddDays(1);
-            if (string.IsNullOrEmpty(thang))
+            var today = DateTime.Now.Date;
+            // Default curent
+            if (Den < Constants.MinDate)
             {
-                toDate = DateTime.Now;
-                fromDate = toDate.Day > 25 ? new DateTime(toDate.Year, toDate.Month, 26) : new DateTime(toDate.AddMonths(-1).Year, toDate.AddMonths(-1).Month, 26);
+                Den = today;
             }
-            var year = toDate.Day > 25 ? toDate.AddMonths(1).Year : toDate.Year;
-            var month = toDate.Day > 25 ? toDate.AddMonths(1).Month : toDate.Month;
-            thang = string.IsNullOrEmpty(thang) ? month + "-" + year : thang;
+            if (Tu < Constants.MinDate)
+            {
+                var previous = Den.Day > 25 ? Den : Den.AddMonths(-1);
+                Tu = new DateTime(previous.Year, previous.Month, 26);
+            }
             #endregion
 
             #region Filter
             var builder = Builders<EmployeeWorkTimeLog>.Filter;
-            var filter = builder.Eq(m => m.Enable, true) & builder.Eq(m => m.Month, month) & builder.Eq(m => m.Year, year);
+            var filter = builder.Eq(m => m.Enable, true)
+                        & builder.Eq(m => m.Workcode, intKhoi)
+                        & builder.Gte(m => m.Date, Tu)
+                        & builder.Lte(m => m.Date, Den);
 
             if (!string.IsNullOrEmpty(phongban))
             {
@@ -1047,12 +1050,10 @@ namespace erp.Controllers
 
             var viewModel = new BangLuongViewModel
             {
-                MonthYears = sortTimes,
-                thang = thang,
-                EmployeeWorkTimeLogs = times,
-                FromDate = fromDate,
-                ToDate = toDate,
                 Employees = employees,
+                EmployeeWorkTimeLogs = times,
+                Tu = Tu,
+                Den = Den,
                 Departments = departments,
                 phongban = phongban,
                 Id = id
@@ -1062,7 +1063,7 @@ namespace erp.Controllers
         }
 
         [Route(Constants.LinkTimeKeeper.Timer + "/" + Constants.ActionLink.Export)]
-        public async Task<IActionResult> BangChamCongExport(string thang, string phongban, string id)
+        public async Task<IActionResult> BangChamCongExport(string thang, string from, string to, string phongban, string id)
         {
             #region Authorization
             var login = User.Identity.Name;
@@ -1082,41 +1083,6 @@ namespace erp.Controllers
             {
                 return RedirectToAction("AccessDenied", "Account");
             }
-
-            #endregion
-
-            #region DDL
-            var monthYears = new List<MonthYear>();
-            var date = new DateTime(2018, 02, 01);
-            var endDate = DateTime.Now;
-            while (date.Year < endDate.Year || (date.Year == endDate.Year && date.Month <= endDate.Month))
-            {
-                monthYears.Add(new MonthYear
-                {
-                    Month = date.Month,
-                    Year = date.Year
-                });
-                date = date.AddMonths(1);
-            }
-            if (endDate.Day > 25)
-            {
-                monthYears.Add(new MonthYear
-                {
-                    Month = endDate.AddMonths(1).Month,
-                    Year = endDate.AddMonths(1).Year
-                });
-            }
-            var sortTimes = monthYears.OrderByDescending(x => x.Year).OrderByDescending(x => x.Month).ToList();
-
-            // Danh sách nhân viên để tạo phép dùm
-            // Remove cấp cao ra (theo mã số lương)
-            var builderEmployee = Builders<Employee>.Filter;
-            var filterEmployee = builderEmployee.Eq(m => m.Enable, true);
-            filterEmployee = filterEmployee & !builderEmployee.Eq(m => m.UserName, Constants.System.account);
-            filterEmployee = filterEmployee & !builderEmployee.In(m => m.NgachLuong, new string[] { "C.01", "C.02", "C.03" });
-            var employees = await dbContext.Employees.Find(filterEmployee).SortBy(m => m.FullName).ToListAsync();
-
-            var departments = dbContext.Departments.Find(m => m.Enable.Equals(true)).SortBy(m => m.Order).ToList();
 
             #endregion
 
@@ -1149,20 +1115,124 @@ namespace erp.Controllers
 
             var times = await dbContext.EmployeeWorkTimeLogs.Find(filter).SortBy(m => m.Date).ToListAsync();
 
-            var viewModel = new BangLuongViewModel
+            string exportFolder = Path.Combine(_env.WebRootPath, "exports");
+            string sFileName = @"thong-ke-cham-cong-nha-may-thang-" + thang;
+            if (!string.IsNullOrEmpty(phongban))
             {
-                MonthYears = sortTimes,
-                thang = thang,
-                EmployeeWorkTimeLogs = times,
-                FromDate = fromDate,
-                ToDate = toDate,
-                Employees = employees,
-                Departments = departments,
-                phongban = phongban,
-                Id = id
-            };
+                sFileName += phongban;
+            }
+            sFileName += "-V" + DateTime.Now.ToString("ddMMyyyyHHmmss") + ".xlsx";
 
-            return View(viewModel);
+            string URL = string.Format("{0}://{1}/{2}", Request.Scheme, Request.Host, sFileName);
+            FileInfo file = new FileInfo(Path.Combine(exportFolder, sFileName));
+            var memory = new MemoryStream();
+            using (var fs = new FileStream(Path.Combine(exportFolder, sFileName), FileMode.Create, FileAccess.Write))
+            {
+                IWorkbook workbook = new XSSFWorkbook();
+                #region Styling
+                var cellStyleBorder = workbook.CreateCellStyle();
+                cellStyleBorder.BorderBottom = BorderStyle.Thin;
+                cellStyleBorder.BorderLeft = BorderStyle.Thin;
+                cellStyleBorder.BorderRight = BorderStyle.Thin;
+                cellStyleBorder.BorderTop = BorderStyle.Thin;
+                cellStyleBorder.Alignment = HorizontalAlignment.Center;
+                cellStyleBorder.VerticalAlignment = VerticalAlignment.Center;
+
+                var cellStyleHeader = workbook.CreateCellStyle();
+                //cellStyleHeader.CloneStyleFrom(cellStyleBorder);
+                //cellStyleHeader.FillForegroundColor = HSSFColor.Blue.Index2;
+                cellStyleHeader.FillForegroundColor = HSSFColor.Grey25Percent.Index;
+                cellStyleHeader.FillPattern = FillPattern.SolidForeground;
+
+                var font = workbook.CreateFont();
+                font.FontHeightInPoints = 11;
+                //font.FontName = "Calibri";
+                font.Boldweight = (short)FontBoldWeight.Bold;
+                #endregion
+
+                ISheet sheet1 = workbook.CreateSheet("Cong" + DateTime.Now.Month.ToString("00"));
+                //sheet1.AddMergedRegion(new CellRangeAddress(2, 2, 3, 7));
+                //sheet1.AddMergedRegion(new CellRangeAddress(2, 2, 8, 13));
+
+                var rowIndex = 0;
+                IRow row = sheet1.CreateRow(rowIndex);
+                row.CreateCell(0, CellType.String).SetCellValue("Công ty TNHH CNSH SÀI GÒN XANH ");
+                rowIndex++;
+
+                row = sheet1.CreateRow(rowIndex);
+                row.CreateCell(0, CellType.String).SetCellValue("127 Nguyễn Trọng Tuyển - P.15 - Q.Phú Nhuận - Tp HCM");
+                rowIndex++;
+
+                row = sheet1.CreateRow(rowIndex);
+                row.CreateCell(0, CellType.String).SetCellValue("Điện thoại: (028)-39971869 − (028)-38442457");
+                rowIndex++;
+
+                row = sheet1.CreateRow(rowIndex);
+                row.CreateCell(0, CellType.String).SetCellValue("BẢNG THỐNG KÊ CHẤM CÔNG");
+                rowIndex++;
+
+                row = sheet1.CreateRow(rowIndex);
+                row.CreateCell(0, CellType.String).SetCellValue("BẢNG THỐNG KÊ CHẤM CÔNG");
+                rowIndex++;
+
+                row = sheet1.CreateRow(rowIndex);
+                row.CreateCell(0, CellType.String).SetCellValue("Từ ngày");
+                row.CreateCell(1, CellType.Numeric).SetCellValue(DateTime.Now.Month);
+                row.CreateCell(2, CellType.String).SetCellValue("đến ngày");
+                row.CreateCell(3, CellType.Numeric).SetCellValue(DateTime.Now.Year);
+
+                row = sheet1.CreateRow(rowIndex);
+                row.CreateCell(0, CellType.String).SetCellValue("Tháng");
+                row.CreateCell(1, CellType.Numeric).SetCellValue(DateTime.Now.Month);
+                row.CreateCell(2, CellType.String).SetCellValue("Năm");
+                row.CreateCell(3, CellType.Numeric).SetCellValue(DateTime.Now.Year);
+
+                // Set style
+                for (int i = 0; i <= 3; i++)
+                {
+                    row.Cells[i].CellStyle = cellStyleHeader;
+                }
+                row.Cells[1].CellStyle.SetFont(font);
+                row.Cells[3].CellStyle.SetFont(font);
+                rowIndex++;
+                //https://stackoverflow.com/questions/51681846/rowspan-and-colspan-in-apache-poi
+
+                row = sheet1.CreateRow(rowIndex);
+                row.CreateCell(0, CellType.String).SetCellValue("#");
+                row.CreateCell(1, CellType.String).SetCellValue("Mã nhân viên");
+                row.CreateCell(2, CellType.String).SetCellValue("Họ tên");
+                row.CreateCell(3, CellType.String).SetCellValue("Chức vụ");
+                row.CreateCell(4, CellType.String).SetCellValue("Công tổng");
+                row.CreateCell(5, CellType.String).SetCellValue("Cơm SX");
+                row.CreateCell(6, CellType.String).SetCellValue("Cơm KD");
+                // Set style
+                for (int i = 0; i <= 6; i++)
+                {
+                    row.Cells[i].CellStyle = cellStyleHeader;
+                }
+
+
+                for (int i = 1; i <= 50; i++)
+                {
+                    row = sheet1.CreateRow(rowIndex + 1);
+                    //row.CreateCell(0, CellType.Numeric).SetCellValue(i);
+                    row.CreateCell(1, CellType.String).SetCellValue(string.Empty);
+                    row.CreateCell(2, CellType.String).SetCellValue(string.Empty);
+                    row.CreateCell(3, CellType.String).SetCellValue(string.Empty);
+                    row.CreateCell(4, CellType.Numeric).SetCellValue(string.Empty);
+                    row.CreateCell(5, CellType.Numeric).SetCellValue(string.Empty);
+                    row.CreateCell(6, CellType.Numeric).SetCellValue(string.Empty);
+                    rowIndex++;
+                }
+
+                workbook.Write(fs);
+            }
+            using (var stream = new FileStream(Path.Combine(exportFolder, sFileName), FileMode.Open))
+            {
+                await stream.CopyToAsync(memory);
+            }
+            memory.Position = 0;
+            return File(memory, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", sFileName);
         }
         #endregion
 

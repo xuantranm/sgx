@@ -193,11 +193,18 @@ db.SalaryEmployeeMonths.update({},{$set : {"BHTN": 0}},{upsert:false,multi:true}
 // Link: /lg/tai-lieu/van-phong/thang-bang-luong  (update bacluong file)
 Runned 04.12.2018 12:28
 
-14.12.2018
+14.12.2018 (Runned on 19 Dec 2018 - 12:19)
 db.Employees.update({}, {$unset: {LeaveLevelYear:"12"}}, false, true);
 db.EmployeeHistories.update({}, {$unset: {LeaveLevelYear:"12"}}, false, true);
 db.Employees.update({}, {$set : {LeaveLevelYear: 12}},{upsert:false, multi:true})
 db.EmployeeHistories.update({}, {$set : {LeaveLevelYear: 12}},{upsert:false, multi:true})
 db.LeaveEmployees.update({}, {$set : {UseFlag: true}},{upsert:false, multi:true})
+Link: /fix/title-order/
 
+25.12.2018 (runned 28.12.2018)
+db.EmployeeWorkTimeLogs.update({}, {$unset: {Workcode: 0}}, false, true);
+db.EmployeeWorkTimeLogs.update({}, {$set: {Workcode : 1 }}, false, true);
+// Run xdatafix
+
+// Continute
 

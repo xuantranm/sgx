@@ -16,7 +16,7 @@ namespace ViewModels
 
         public Employee Employee { get; set; }
 
-        public bool RightRequest { get; set; } = false;
+        
 
         public IList<EmployeeWorkTimeMonthLog> EmployeeWorkTimeMonthLogs { get; set; }
 
@@ -48,5 +48,11 @@ namespace ViewModels
         #endregion 
 
         public bool Approver { get; set; }
+
+        #region Rights
+        public bool RightRequest { get; set; } = false;
+
+        public bool RightManager { get; set; } = false;
+        #endregion
     }
 }

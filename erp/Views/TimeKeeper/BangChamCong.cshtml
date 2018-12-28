@@ -1,11 +1,12 @@
 ﻿@using Common.Utilities;
+@using Common.Enums;
 @using ViewModels;
 @model BangLuongViewModel
 @{
     Layout = "~/Views/Shared/_LayoutSocialFbFS.cshtml";
     var login = User.Identity.Name;
     var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
-    var calDate = Convert.ToInt32((Model.ToDate - Model.FromDate).TotalDays) + 1;
+    var calDate = Convert.ToInt32((Model.Den - Model.Tu).TotalDays) + 1;
 }
 <link href="~/assets/wingman/css/big-screen.css" rel="stylesheet" />
 
@@ -36,40 +37,6 @@
         </div>
     </nav>
 
-    <section class="flush-with-above space-0">
-        <div class="bg-white">
-            <div class="container">
-                <div class="row">
-                    <div class="col">
-                        <ul class="nav nav-tabs" id="myTab" role="tablist">
-                            <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.VanPhong/@Constants.LinkSalary.ThangBangLuong">THANG LƯƠNG</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.VanPhong/@Constants.LinkSalary.BangLuong">BẢNG LƯƠNG</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link active" href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Timer">CHẤM CÔNG</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Setting">THAM SỐ</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.SaleKPIEmployee">KINH DOANH</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.LogisticEmployeeCong">LOGISTICS</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Credits">VAY & TẠM ỨNG</a>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <!-- MAIN -->
     <section class="flush-with-above height-80 d-block">
         <div class="tab-content">
@@ -77,50 +44,72 @@
                 <div class="container">
                     <div class="row mb-3">
                         <div class="col-lg-3 col-sm-6">
-                            <a class="btn btn-lg btn-block btn-info" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.VanPhong/@Constants.LinkSalary.ThangBangLuong/@Constants.LinkSalary.Export" data-toggle="tooltip" title="Xuất ra tài liệu file excel.">
+                            <a class="btn btn-lg btn-block btn-info" href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Timer/@Constants.ActionLink.Export" data-toggle="tooltip" title="Xuất ra tài liệu file excel.">
                                 <i class="fas fa-download"></i> Xuất excel
                             </a>
                         </div>
                     </div>
                     <div class="card card-sm">
                         <div class="card-header bg-secondary d-flex justify-content-between align-items-center">
-                            <form class="d-flex align-items-center" method="get" action="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Timer" id="form-main">
-                                <span class="mr-2 text-muted text-small text-nowrap">Phòng/ban:</span>
-                                <select asp-for="phongban" class="form-control form-control-lg ddlphong">
-                                    <option value="" selected>Chọn</option>
+                            <form method="get" action="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Timer" id="form-main">
+                                <div class="d-flex align-items-center">
+                                    <span class="mr-2 text-muted text-small text-nowrap">Phòng/ban:</span>
+                                    <select asp-for="phongban" class="form-control form-control-lg ddlphong">
+                                        <option value="" selected>Tất cả</option>
+                                        @{
+                                            foreach (var item in Model.Departments)
+                                            {
+                                                <option value="@item.Name">@item.Name</option>
+                                            }
+                                        }
+                                    </select>
+                                    <span class="mr-2 text-muted text-small text-nowrap">Khối:</span>
+                                    <select asp-for="khoi" class="form-control form-control-lg ddlphong">
+                                        <option value="" selected>Tất cả</option>
+                                        <option value="@ESalaryType.VP">Văn Phòng</option>
+                                        <option value="@ESalaryType.NM">Nhà Máy</option>
+                                        <option value="@ESalaryType.SX">Sản Xuất</option>
+                                    </select>
+                                    <span class="mr-2 text-muted text-small text-nowrap">Nhân viên:</span>
+                                    <select asp-for="Id" class="form-control form-control-lg js-select2-basic-single ddlEmployeeId">
+                                        <option value="">Tất cả</option>
+                                        @foreach (var employee in Model.Employees)
+                                        {
+                                            string displayTitle = string.Empty;
+                                            if (!string.IsNullOrEmpty(employee.Title))
+                                            {
+                                                displayTitle += "[" + employee.Title + "]";
+                                            }
+                                            if (!string.IsNullOrEmpty(employee.Email))
+                                            {
+                                                displayTitle += "- " + employee.Email + "";
+                                            }
+                                            <option value="@employee.Id">@employee.FullName @displayTitle</option>
+                                        }
+                                    </select>
+                                    @*<span class="mr-2 text-muted text-small text-nowrap">Tháng:</span>
+        <select asp-for="thang" class="custom-select ddl-times">
+            @{
+                foreach (var item in Model.MonthYears)
+                {
+                    <option value="@item.Month-@item.Year">@item.Month/@item.Year</option>
+                }
+            }
+        </select>*@
+                                    <span class="mr-2 text-muted text-small text-nowrap">Từ:</span>
                                     @{
-                                        foreach (var item in Model.Departments)
-                                        {
-                                            <option value="@item.Name">@item.Name</option>
-                                        }
+                                        var fromdatesearch = Model.Tu > Constants.MinDate ? Model.Tu.ToString("dd/MM/yyyy") : "";
+                                        var todatesearch = Model.Den > Constants.MinDate ? Model.Den.ToString("dd/MM/yyyy") : "";
                                     }
-                                </select>
-                                <span class="mr-2 text-muted text-small text-nowrap">Nhân viên:</span>
-                                <select asp-for="Id" class="form-control form-control-lg js-select2-basic-single ddlEmployeeId">
-                                    <option value="">Chọn</option>
-                                    @foreach (var employee in Model.Employees)
-                                    {
-                                        string displayTitle = string.Empty;
-                                        if (!string.IsNullOrEmpty(employee.Title))
-                                        {
-                                            displayTitle += "[" + employee.Title + "]";
-                                        }
-                                        if (!string.IsNullOrEmpty(employee.Email))
-                                        {
-                                            displayTitle += "- " + employee.Email + "";
-                                        }
-                                        <option value="@employee.Id">@employee.FullName @displayTitle</option>
-                                    }
-                                </select>
-                                <span class="mr-2 text-muted text-small text-nowrap">Tháng:</span>
-                                <select asp-for="thang" class="custom-select ddl-times">
-                                    @{
-                                        foreach (var item in Model.MonthYears)
-                                        {
-                                            <option value="@item.Month-@item.Year">@item.Month/@item.Year</option>
-                                        }
-                                    }
-                                </select>
+                                    <input class="from-date form-control datepicker datepicker-lg" value="@fromdatesearch" />
+                                    <span class="mr-2 text-muted text-small text-nowrap">đến:</span>
+                                    <input class="to-date form-control datepicker datepicker-lg" value="@todatesearch" />
+                                    <input type="hidden" name="Tu" class="tu-ngay" value="@Model.Tu.ToString("MM-dd-yyyy")" />
+                                    <input type="hidden" name="Den" class="den-ngay" value="@Model.Den.ToString("MM-dd-yyyy")" />
+
+                                    <button type="submit" class="btn btn-lg btn-success btn-search-inline">Tìm kiếm</button>
+                                </div>
+                                
                             </form>
                         </div>
                     </div>
@@ -138,7 +127,7 @@
                                     </tr>
                                     <tr>
                                         @{
-                                            for (DateTime date = Model.FromDate; date <= Model.ToDate; date = date.AddDays(1.0))
+                                            for (DateTime date = Model.Tu; date <= Model.Den; date = date.AddDays(1.0))
                                             {
                                                 <td style="text-align:center; color:red">
                                                     <div class="rotate">
@@ -218,9 +207,6 @@
                                                 double workday = 0;
                                                 double late = 0;
                                                 double early = 0;
-                                                //double nghihuongluong = 0;
-                                                //double nghiphep = 0;
-                                                //double nghikhonghuongluong = 0;
                                                 <tr>
                                                     <td>@iNo</td>
                                                     <td>@time.EmployeeName</td>
@@ -232,7 +218,7 @@
                                                         var timesSort = time.timesEmployee.OrderBy(m => m.Date).ToList();
                                                         if (calDate != timesSort.Count)
                                                         {
-                                                            for (DateTime date = Model.FromDate; date <= Model.ToDate; date = date.AddDays(1.0))
+                                                            for (DateTime date = Model.Tu; date <= Model.Den; date = date.AddDays(1.0))
                                                             {
                                                                 <td nowrap>
                                                                     @{
@@ -325,10 +311,6 @@
                                                                                     <p style="margin-bottom: 0;"><small>@log.Date.ToString("dd/MM/yyyy HH:mm:ss")</small></p>
                                                                                 }
                                                                             }
-                                                                            else
-                                                                            {
-                                                                                <span>@item.Workcode</span>
-                                                                            }
                                                                             if (!string.IsNullOrEmpty(item.Reason))
                                                                             {
                                                                                 var displayReason = item.Reason;
@@ -344,13 +326,9 @@
                                                             }
                                                         }
                                                     }
-
                                                     <td>@workday</td>
                                                     <td>@Math.Round(late, 0)</td>
                                                     <td>@Math.Round(early, 0)</td>
-                                                    @*<td>@nghihuongluong</td>
-                                                        <td>@nghiphep</td>
-                                                        <td>@nghikhonghuongluong</td>*@
                                                 </tr>
                                                 iNo++;
                                             }
@@ -367,7 +345,7 @@
 </div>
 
 @section scripts {
-    <script type="text/javascript" src="~/js/salary-cham-cong.js?@DateTime.Now.Ticks"></script>
+    <script type="text/javascript" src="~/js/bang-cham-cong.js?v-@DateTime.Now.Ticks"></script>
 }
 
 

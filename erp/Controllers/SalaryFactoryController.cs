@@ -121,20 +121,19 @@ namespace erp.Controllers
 
             #region Setting
             // Init
-            dbContext.SalarySettings.InsertOne(new SalarySetting()
-            {
-                Key = "mau-so-chuyen-can",
-                Value = "300000",
-                Title = "Muc thuong chuyen can"
-            });
+            //dbContext.SalarySettings.InsertOne(new SalarySetting()
+            //{
+            //    Key = "mau-so-chuyen-can",
+            //    Value = "300000",
+            //    Title = "Muc thuong chuyen can"
+            //});
 
-            dbContext.SalarySettings.InsertOne(new SalarySetting()
-            {
-                Key = "mau-so-tien-com",
-                Value = "22000",
-                Title = "Đơn giá tiền cơm"
-            });
-
+            //dbContext.SalarySettings.InsertOne(new SalarySetting()
+            //{
+            //    Key = "mau-so-tien-com",
+            //    Value = "22000",
+            //    Title = "Đơn giá tiền cơm"
+            //});
             // End init
             var thamsoEntity = dbContext.SalarySettings.Find(m => m.Enable.Equals(true)).ToList();
             var mauSo = Convert.ToDecimal(thamsoEntity.Find(m => m.Key.Equals("mau-so-lam-viec")).Value);
@@ -817,7 +816,7 @@ namespace erp.Controllers
             return luongCB;
         }
 
-        #region SUB DATA
+        #region CONG TONG
         [Route(Constants.LinkSalary.CongTong)]
         public async Task<IActionResult> CongTong(string thang)
         {
@@ -835,7 +834,7 @@ namespace erp.Controllers
                 return RedirectToAction("login", "account");
             }
 
-            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.LuongVP, (int)ERights.View)))
+            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.LuongNM, (int)ERights.View)))
             {
                 return RedirectToAction("AccessDenied", "Account");
             }
@@ -910,7 +909,7 @@ namespace erp.Controllers
                 return RedirectToAction("login", "account");
             }
 
-            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.LuongVP, (int)ERights.View)))
+            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.LuongNM, (int)ERights.View)))
             {
                 return RedirectToAction("AccessDenied", "Account");
             }
@@ -1009,16 +1008,9 @@ namespace erp.Controllers
             return Json(new { result = true, source = "update", message = "Thành công" });
         }
 
-        private List<SalaryNhaMayCong> GetSalaryNhaMayCongs(int month, int year)
-        {
-            var results = dbContext.SalaryNhaMayCongs.Find(m => m.Enable.Equals(true) && m.Month.Equals(month) && m.Year.Equals(year)).ToList();
-            return results;
-        }
-
         #endregion
 
-
-        #region TEMPLATES
+        #region IMPORT DATA
         [Route(Constants.LinkSalary.NhaMayTemplate)]
         public async Task<IActionResult> NhaMayTemplate(string fileName)
         {
@@ -1244,7 +1236,12 @@ namespace erp.Controllers
             }
             return Json(new { url = "/" + Constants.LinkSalary.Main + "/" + Constants.LinkSalary.Factory + "/" + Constants.LinkSalary.CongTong });
         }
-
         #endregion
+
+        private List<SalaryNhaMayCong> GetSalaryNhaMayCongs(int month, int year)
+        {
+            var results = dbContext.SalaryNhaMayCongs.Find(m => m.Enable.Equals(true) && m.Month.Equals(month) && m.Year.Equals(year)).ToList();
+            return results;
+        }
     }
 }

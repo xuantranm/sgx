@@ -31,8 +31,8 @@ using NPOI.SS.Util;
 namespace erp.Controllers
 {
     [Authorize]
-    [Route(Constants.LinkSalary.Main +"/" + Constants.LinkSalary.FactoryProduction)]
-    public class SalaryFactoryProductionController : Controller
+    [Route(Constants.LinkSalary.Main + "/" + Constants.LinkSalary.ThangLuongTrue)]
+    public class SalaryThangLuongController : Controller
     {
         readonly MongoDBContext dbContext = new MongoDBContext();
         private readonly IDistributedCache _cache;
@@ -42,7 +42,7 @@ namespace erp.Controllers
 
         public IConfiguration Configuration { get; }
 
-        public SalaryFactoryProductionController(IDistributedCache cache, IConfiguration configuration, IHostingEnvironment env, ILogger<SalaryFactoryProductionController> logger)
+        public SalaryThangLuongController(IDistributedCache cache, IConfiguration configuration, IHostingEnvironment env, ILogger<SalaryThangLuongController> logger)
         {
             _cache = cache;
             Configuration = configuration;
@@ -50,8 +50,8 @@ namespace erp.Controllers
             _logger = logger;
         }
 
-        [Route(Constants.LinkSalary.ThangBangLuong)]
-        public async Task<IActionResult> ThangBangLuong(string thang, string id)
+        [Route(Constants.LinkSalary.ThangLuong)]
+        public async Task<IActionResult> ThangLuong(string thang, string id)
         {
             #region Authorization
             var login = User.Identity.Name;
@@ -148,19 +148,13 @@ namespace erp.Controllers
         }
 
         #region Init Data.
-        [Route(Constants.LinkSalary.Document + "/" + Constants.LinkSalary.ThangBangLuong)]
-        public IActionResult ThangLuong()
+        [Route(Constants.LinkSalary.ThangLuong + "/" + Constants.LinkSalary.Document)]
+        public IActionResult ThangLuongTaiLieu()
         {
             return View();
         }
 
-        [Route(Constants.LinkSalary.Document + "/" + Constants.LinkSalary.BangLuong)]
-        public IActionResult LuongNhanVien()
-        {
-            return View();
-        }
-
-        [Route(Constants.LinkSalary.Document + "/" + Constants.LinkSalary.ThangBangLuong +"/" + Constants.ActionLink.Update)]
+        [Route(Constants.LinkSalary.ThangLuong + "/" + Constants.LinkSalary.Document + "/" + Constants.ActionLink.Update)]
         [HttpPost]
         public ActionResult ThangLuongImport()
         {
@@ -262,6 +256,12 @@ namespace erp.Controllers
                 }
             }
             return Json(new { url = "/" });
+        }
+
+        [Route(Constants.LinkSalary.Document + "/" + Constants.LinkSalary.BangLuong)]
+        public IActionResult LuongNhanVien()
+        {
+            return View();
         }
 
         [Route(Constants.LinkSalary.Document + "/" + Constants.LinkSalary.BangLuong + "/" + Constants.ActionLink.Update)]

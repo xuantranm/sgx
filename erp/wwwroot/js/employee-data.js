@@ -7,7 +7,7 @@
         //types: ["(regions)"]
         componentRestrictions: { country: 'vn' }
     };
-    var bornplace = new google.maps.places.Autocomplete($("#Employee_Bornplace")[0], { componentRestrictions: { country: 'vn' }});
+    var bornplace = new google.maps.places.Autocomplete($("#Employee_Bornplace")[0], { componentRestrictions: { country: 'vn' } });
     google.maps.event.addListener(bornplace, 'place_changed', function () {
         var place = bornplace.getPlace();
         //console.log(place.address_components);
@@ -72,12 +72,6 @@
         $('textarea', $(this).closest('.form-group')).val($(this).data('value'));
     });
 
-    if ($('#hidManagerId').val() === "") {
-        shortManagerPeople();
-    } else {
-        $("#ManagerId").val($('#hidManagerId').val());
-    }
-
     document.getElementById('avatar-input').addEventListener('change', loadAvatar, false);
 
     document.getElementById('cover-input').addEventListener('change', readCover, true);
@@ -112,9 +106,8 @@
         $.ajax({
             type: form.attr('method'),
             url: form.attr('action'),
-            data: frmValues
-        })
-            .done(function (data) {
+            data: frmValues,
+            success: function (data) {
                 if (data.result === true) {
                     toastr.info(data.message);
                     // Update ddl
@@ -127,11 +120,8 @@
                 else {
                     toastr.error(data.message);
                 }
-            })
-            .fail(function () {
-                toastr.error(data.message)
-            });
-        event.preventDefault();
+            }
+        });
     });
 
     $('.btn-save-part').on('click', function () {
@@ -140,9 +130,8 @@
         $.ajax({
             type: form.attr('method'),
             url: form.attr('action'),
-            data: frmValues
-        })
-            .done(function (data) {
+            data: frmValues,
+            success: function (data) {
                 if (data.result === true) {
                     toastr.info(data.message);
                     // Update ddl
@@ -155,57 +144,31 @@
                 else {
                     toastr.error(data.message);
                 }
-            })
-            .fail(function () {
-                toastr.error(data.message)
-            });
-        event.preventDefault();
+            }
+        });
     });
 
     $('.btn-save-title').on('click', function () {
         var form = $(this).closest('form');
         var frmValues = form.serialize();
-        console.log(frmValues);
-        console.log(form.attr('action'));
         $.ajax({
-            type: "post",
-            url: "/hr/chuc-vu/cap-nhat",
+            type: form.attr('method'),
+            url: form.attr('action'),
             data: frmValues,
-            success: function (response) {
-                if (response.length === 0)
-                    alert('Some error occured while uploading');
+            success: function (data) {
+                if (data.result === true) {
+                    toastr.info(data.message);
+                    $('select[name="Employee.Title"] option:first').after('<option value="' + data.entity.name + '">' + data.entity.name + '</option>');
+                    $('select[name="Employee.Title"]').val(data.entity.name);
+                    $('input', form).val('');
+                    $('textarea', form).val('');
+                    $('#newTitle').modal('hide');
+                }
                 else {
-                    //window.location.replace(response.url);
-                    console.log(response);
+                    toastr.error(data.message);
                 }
             }
         });
-            //.done(function (data) {
-            //    console.log(data);
-            //    if (data.result === true) {
-            //        toastr.info(data.message);
-            //        // Update ddl
-            //        $('select[name="Employee.Title"] option:first').after('<option value="' + data.entity.name + '">' + data.entity.name + '</option>');
-            //        $('select[name="Employee.Title"]').val(data.entity.name);
-            //        $('input', form).val('');
-            //        $('textarea', form).val('');
-            //        $('#newTitle').modal('hide');
-            //    }
-            //    else {
-            //        toastr.error(data.message);
-            //    }
-            //})
-            //.fail(function () {
-            //    toastr.error(data.message)
-            //});
-        event.preventDefault();
-    });
-
-    $('select[name="Employee.Part"]').on('change', function () {
-        shortManagerPeople();
-    });
-    $('select[name="Employee.Department"]').on('change', function () {
-        shortManagerPeople();
     });
 
     $('#check-timekeeper').on('change', function () {
@@ -228,25 +191,13 @@
         }
     });
 
-    $('select[name="Employee.SalaryPayMethod"]').on('change', function () {
-        //console.log($(this).val());
-        if ($(this).val() === "1") {
-            $('.bank-method').removeClass('d-none');
-        } else {
-            $('.bank-method').addClass('d-none');
-        }
-    });
-
-    //js-select2-basic-single
     $('.js-select2-basic-single').select2(
         {
             theme: "bootstrap"
         });
 
-    $('.btn-submit').prop('disabled', false);
-
     $('.datepicker').on('changeDate', function () {
-        var date = moment($(this).datepicker('getFormattedDate'), 'DD-MM-YYYY')
+        var date = moment($(this).datepicker('getFormattedDate'), 'DD-MM-YYYY');
         $('.hidedatepicker', $(this).closest('.form-group')).val(
             date.format('MM-DD-YYYY')
         );
@@ -343,7 +294,7 @@
                 "code": code
             }
         ];
-        
+
         $('.more-task-bhxh').before($.templates("#tmplBHXH").render(data));
         registerDatePicker();
         enableRemove();
@@ -355,9 +306,8 @@
         $.ajax({
             type: form.attr('method'),
             url: form.attr('action'),
-            data: frmValues
-        })
-            .done(function (data) {
+            data: frmValues,
+            success: function (data) {
                 if (data.result === true) {
                     toastr.info(data.message);
                     // Update ddl
@@ -371,11 +321,8 @@
                 else {
                     toastr.error(data.message);
                 }
-            })
-            .fail(function () {
-                toastr.error(data.message)
-            });
-        event.preventDefault();
+            }
+        });
     });
 
     $('.task-bhxh').on('change', function () {
@@ -420,10 +367,6 @@
     });
 
     eventContractType();
-
-    $('.codeSalary').each(function (i, obj) {
-        enableAutoNumeric($(obj).val());
-    });
 
     $('.addCertificate').click(function (e) {
         e.preventDefault();
@@ -502,21 +445,13 @@
             enctype: 'multipart/form-data',
             processData: false,  // Important!
             contentType: false,
-            data: formData
-        })
-            .done(function (data) {
-                console.log(data);
+            data: formData,
+            success: function (data) {
                 if (data.result === true) {
-                    if ($('.right-hr').val() === "true") {
-                        $('#resultModal').modal();
-                        $('#modalnotice').html($.templates("#tmplModalNotice").render(data));
-                        resetForm();
-                    } else {
-                        toastr.success(data.message);
-                        setTimeout(function () {
-                            window.location = "/";
-                        }, 1000);
-                    }
+                    toastr.success(data.message);
+                    setTimeout(function () {
+                        window.location = "/";
+                    }, 1000);
                 }
                 else {
                     if (data.source === "user") {
@@ -529,12 +464,9 @@
                     }
                     toastr.error(data.message);
                 }
-            })
-            .fail(function () {
-                //toastr.error(data.message);
-                resetForm();
-            });
-        event.preventDefault();
+            }
+        });
+        //event.preventDefault();
     });
 });
 
@@ -565,34 +497,6 @@ function eventContractType() {
     $('.contract-type').on('change', function () {
         var parent = $(this).closest('.nodeContract');
         $('.contract-type-name', parent).val($(".contract-type option:selected", parent).text());
-    });
-}
-
-function shortManagerPeople() {
-    var tmplManagerPeople = $.templates("#tmplManagePeople");
-    $.ajax({
-        url: '/api/employee-filter',
-        type: 'GET',
-        data: {
-            part: $('select[name="Employee.Part"]').val(),
-            department: $('select[name="Employee.Department"]').val()
-            //title: $('select[name="Employee.Title"]').val()
-        },
-        datatype: 'json',
-        contentType: 'application/json; charset=utf-8',
-        success: function (data) {
-            //console.log(data);
-            if (data.length !== 0) {
-                if (data.length > 0) {
-                    var htmlEmployees = tmplManagerPeople.render(data);
-                    $("#ManagerId").html(htmlEmployees);
-                    $("#ManagerId").prepend($('<option value="" selected>Không có quản lý</option>'));
-                    if ($('#hidManagerId').val() !== '') {
-                        $("#ManagerId").val($('#hidManagerId').val());
-                    }
-                }
-            }
-        }
     });
 }
 
@@ -645,45 +549,6 @@ function enableRemoveMobileExist() {
     });
 }
 
-function enableAutoNumeric(code) {
-    var newInstall = code;
-    newInstall = new AutoNumeric('.autonumeric-' + code, { decimalPlaces: 0 });
-
-    $('.autonumeric-'+ code).on('keyup', function () {
-        var trueVal = Number(newInstall.getNumericString());
-        $('.moneytostring', $(this).closest('.form-group')).html(capitalizeFirstLetter(num2Word2.convert(trueVal)));
-        $('.autonumeric-value', $(this).closest('.form-group')).val(trueVal);
-
-        updateTotalEmployeeSalary();
-    });
-
-    
-    //$('.autonumeric').on('keyup', function () {
-
-    //    var trueVal = Number(autoNumericInstance.getNumericString());
-
-    //    $('.moneytostring', $(this).closest('.form-group')).html(DocTienBangChu(trueVal));
-    //    $('.autonumeric-value', $(this).closest('.form-group')).val(autoNumericInstance.getNumericString());
-    //});
-}
-
 function enableAutoSize() {
     $('textarea.js-auto-size').textareaAutoSize();
-}
-
-function displayMoney(element) {
-    var trueVal = element.val().replace(/\,/g, '');
-    trueVal = Number(trueVal);
-    //console.log(DocTienBangChu(trueVal));
-}
-
-function updateTotalEmployeeSalary() {
-    var result = 0;
-    $('.salary-item-money').each(function (i, obj) {
-        result += parseFloat($(obj).val());
-    });
-
-    //var textResult = accounting.formatNumber(result);
-    var textResult = accounting.formatMoney(result, "VNĐ ", 0);
-    $('#salary-estimate').val(textResult);
 }

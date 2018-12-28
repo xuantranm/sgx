@@ -20,6 +20,20 @@
     $('#thang').on('change', function (e) {
         formSubmit();
     });
+
+    $('.from-date').on('changeDate', function () {
+        var date = moment($(this).datepicker('getFormattedDate'), 'DD-MM-YYYY');
+        $('.tu-ngay').val(
+            date.format('MM-DD-YYYY')
+        );
+    });
+
+    $('.to-date').on('changeDate', function () {
+        var date = moment($(this).datepicker('getFormattedDate'), 'DD-MM-YYYY');
+        $('.den-ngay').val(
+            date.format('MM-DD-YYYY')
+        );
+    });
 });
 
 

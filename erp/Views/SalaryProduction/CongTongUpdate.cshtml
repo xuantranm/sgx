@@ -1,4 +1,5 @@
 ﻿@using Common.Utilities;
+@using Common.Enums;
 @using ViewModels;
 @model BangLuongViewModel
 @{
@@ -18,6 +19,7 @@
         height: 30px;
         background-color: green;
     }
+
     .employeekpi tbody th:nth-child(3), .employeekpi tbody td:nth-child(3) {
         position: sticky;
         left: 0px;
@@ -60,22 +62,22 @@
                     <div class="col">
                         <ul class="nav nav-tabs" id="myTab" role="tablist">
                             <li class="nav-item">
-                                <a class="nav-link active" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Factory/@Constants.LinkSalary.CongTong/@Constants.ActionLink.Update">CÔNG TỔNG & HỔ TRỢ CƠM</a>
+                                <a class="nav-link active" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.CongTong/@Constants.ActionLink.Update">CÔNG TỔNG & HỔ TRỢ CƠM</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Factory/@Constants.LinkSalary.BangLuong/@Constants.ActionLink.Update">BẢNG LƯƠNG</a>
+                                <a class="nav-link " href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.BangLuong/@Constants.ActionLink.Update">BẢNG LƯƠNG</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Timer">CHẤM CÔNG</a>
+                                <a class="nav-link" target="_blank" href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Timer?khoi=@ESalaryType.SX">CHẤM CÔNG</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkCredit.Main/@Constants.LinkCredit.CreditsNM/@Constants.ActionLink.Update">ỨNG LƯƠNG</a>
+                                <a class="nav-link" href="/@Constants.LinkCredit.Main/@Constants.LinkSalary.Production/@Constants.LinkCredit.CreditsNM/@Constants.ActionLink.Update">ỨNG LƯƠNG</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.FactoryProduction/@Constants.LinkSalary.ThangBangLuong/@Constants.ActionLink.Update">THANG LƯƠNG</a>
+                                <a class="nav-link" target="_blank" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.ThangLuongTrue/@Constants.LinkSalary.ThangLuong">THANG LƯƠNG</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Setting/@Constants.ActionLink.Update">THAM SỐ</a>
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.Setting/@Constants.ActionLink.Update">THAM SỐ</a>
                             </li>
                         </ul>
                     </div>
@@ -93,7 +95,7 @@
                             <div>
                                 <h6>Công tổng và hỗ trợ cơm</h6>(ĐVT: đồng)
                             </div>
-                            <form class="d-flex align-items-center" method="get" action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Factory/@Constants.LinkSalary.CongTong/@Constants.ActionLink.Update" id="form-main">
+                            <form class="d-flex align-items-center" method="get" action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.CongTong/@Constants.ActionLink.Update" id="form-main">
                                 <span class="mr-2 text-muted text-small text-nowrap">Tháng:</span>
                                 <select asp-for="thang" class="custom-select ddl-times">
                                     @{
@@ -109,17 +111,17 @@
 
                     <div class="row mb-3">
                         <div class="col-12">
-                            <a href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Factory/@Constants.LinkSalary.CongTong" class="btn btn-default btn-list" data-toggle="tooltip" title="Bấm trở về.">
+                            <a href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.CongTong" class="btn btn-default btn-list" data-toggle="tooltip" title="Bấm trở về.">
                                 <i class="icon icon-back"></i>Trở về
                             </a>
-                            <a href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Factory/@Constants.LinkSalary.NhaMayTemplate" class="btn btn-success btn-list" data-toggle="tooltip" title="Bấm trở về.">
+                            <a href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.NhaMayTemplate" class="btn btn-success btn-list" data-toggle="tooltip" title="Bấm trở về.">
                                 <i class="icon icon-back"></i>Tải mẫu dữ liệu
                             </a>
                         </div>
                     </div>
                     <div class="row mb-3">
                         <div class="col-12">
-                            <form method="post" action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Factory/@Constants.LinkSalary.NhaMayImport" enctype="multipart/form-data">
+                            <form method="post" action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.NhaMayImport" enctype="multipart/form-data">
                                 <div class="row">
                                     <div class="col-md-4">
                                         <input type="file" name="files" class="form-control fUpload" />
@@ -137,9 +139,9 @@
                         </div>
                     </div>
 
-                    <form action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Factory/@Constants.LinkSalary.CongTong/@Constants.LinkSalary.Update" method="post" class="data-form">
+                    <form action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.CongTong/@Constants.LinkSalary.Update" method="post" class="data-form">
                         <input type="hidden" name="thang" value="@Model.thang" />
-                        <input type="hidden" id="hidCalculator" value="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Factory/@Constants.LinkSalary.Calculator" />
+                        <input type="hidden" id="hidCalculator" value="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.Calculator" />
                         <div class="row mb-3">
                             <div class="col-md-3 col-sm-6 col-12">
                                 <button type="submit" class="btn btn-lg btn-block btn-danger btn-submit" data-toggle="tooltip" title="Bấm cập nhật dữ liệu kinh doanh."><i class="icon-save"></i>&nbsp;Cập nhật</button>

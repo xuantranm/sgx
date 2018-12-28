@@ -208,9 +208,13 @@ namespace erp.Controllers
             //{10}: Link chi tiết
             //{11}: Website
             #endregion
-            var subject = "Xác nhận nghỉ phép.";
-            var status = approve == 1 ? "Đồng ý" : "Không duyệt";
-            var dateRequest = leave.From.ToString("dd/MM/yyyy HH:mm") + " - " + leave.To.ToString("dd/MM/yyyy HH:mm") + " (" + leave.Number + " ngày)";
+            var status = approve == 1 ? "Đồng ý" : "Không đồng ý";
+            var dateRequest = leave.From.ToString("dd/MM/yyyy HH:mm") + " - " + leave.To.ToString("dd/MM/yyyy HH:mm");
+
+            var subject = "[Nghỉ phép] Kết quả duyệt: " + status + " - ngày " + dateRequest;
+
+            var countLeaveDay = " (" + leave.Number + " ngày)";
+
             var linkDetail = Constants.System.domain + "/" + Constants.LinkLeave.Main + "/" + Constants.LinkLeave.Index;
             var bodyBuilder = new BodyBuilder();
             using (StreamReader SourceReader = System.IO.File.OpenText(pathToFile))
@@ -224,7 +228,7 @@ namespace erp.Controllers
                 approvement.FullName,
                 approvement.Email,
                 approvement.Title,
-                dateRequest,
+                dateRequest + countLeaveDay,
                 leave.Reason,
                 leave.TypeName,
                 leave.Phone,

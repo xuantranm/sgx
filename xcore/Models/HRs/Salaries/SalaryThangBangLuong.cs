@@ -34,6 +34,9 @@ namespace Models
         public int Bac { get; set; }
 
         [BsonRepresentation(BsonType.Decimal128)]
+        public decimal TiLe { get; set; } = 0;
+
+        [BsonRepresentation(BsonType.Decimal128)]
         public decimal HeSo { get; set; }
 
         [BsonRepresentation(BsonType.Decimal128)]

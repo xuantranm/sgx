@@ -63,7 +63,7 @@ namespace erp.Controllers
         }
 
         [Route(Constants.LinkSalary.BangLuong)]
-        public async Task<IActionResult> BangLuongLaw(string thang)
+        public async Task<IActionResult> BangLuong(string thang)
         {
             #region Authorization
             var login = User.Identity.Name;
@@ -275,8 +275,8 @@ namespace erp.Controllers
             return View(viewModel);
         }
 
-        [Route(Constants.LinkSalary.ThangBangLuong)]
-        public async Task<IActionResult> ThangBangLuongLaw()
+        [Route(Constants.LinkSalary.ThangLuong)]
+        public async Task<IActionResult> ThangLuong()
         {
             #region Authorization
             var login = User.Identity.Name;
@@ -312,8 +312,8 @@ namespace erp.Controllers
             return View(viewModel);
         }
 
-        [Route(Constants.LinkSalary.ThangBangLuong + "/" + Constants.LinkSalary.Calculator)]
-        public IActionResult ThangBangLuongLawCalculator(decimal money, decimal heso, string id)
+        [Route(Constants.LinkSalary.ThangLuong + "/" + Constants.LinkSalary.Calculator)]
+        public IActionResult ThangLuongCalculator(decimal money, decimal heso, string id)
         {
             var list = new List<IdMoney>();
             decimal salaryMin = dbContext.SalaryMucLuongVungs.Find(m => m.Enable.Equals(true)).First().ToiThieuVungDoanhNghiepApDung; // use reset

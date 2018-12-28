@@ -56,78 +56,6 @@ namespace Models
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime Birthday { get; set; }
 
-        public int Age
-        {
-            get
-            {
-                DateTime today = DateTime.Today;
-                int age = today.Year - Birthday.Year;
-                if (today < Birthday.AddYears(age) )
-                    age--;
-                return age;
-            }
-        }
-
-        public int RemainingBirthDays
-        {
-            get
-            {
-                DateTime today = DateTime.Today;
-                DateTime next = Birthday.AddYears(today.Year - Birthday.Year);
-
-                if (next < today)
-                    next = next.AddYears(1);
-
-                int numDays = (next - today).Days;
-
-                return numDays;
-            }
-        }
-
-        public int AgeBirthday
-        {
-            get
-            {
-                if (RemainingBirthDays == 0)
-                {
-                    // Today is birthday
-                    return Age;
-                }
-                return Age+1;
-            }
-        }
-
-        public DateTime NextBirthDays
-        {
-            get
-            {
-                if (RemainingBirthDays == 0)
-                {
-                    // Today is birthday
-                    return Birthday.AddYears(Age);
-                }
-                return Birthday.AddYears(Age + 1);
-            }
-        }
-
-        public string BirthdayOfWeek
-        {
-            get
-            {
-                var culture = new CultureInfo("vi");
-                return culture.DateTimeFormat.GetDayName(NextBirthDays.DayOfWeek);
-            }
-        }
-
-        public int WeekBirthdayNumber
-        {
-            get
-            {
-                var culture = new CultureInfo("vi");
-                return culture.Calendar.GetWeekOfYear(NextBirthDays, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
-            }
-        }
-
         [Display(Name = "Nguyên quán")]
         public string Bornplace { get; set; }
 
@@ -155,6 +83,9 @@ namespace Models
 
         [Display(Name = "Lý do nghỉ việc")]
         public string LeaveReason { get; set; }
+
+        // Nội dung bàn giao
+        public string LeaveHandover { get; set; }
 
         [Display(Name = "Thường trú")]
         public string AddressResident { get; set; }
@@ -439,6 +370,80 @@ namespace Models
 
         #region LOGISTICS
         public string LogisticChucVu { get; set; }
+        #endregion
+
+        #region Get
+        public int Age
+        {
+            get
+            {
+                DateTime today = DateTime.Today;
+                int age = today.Year - Birthday.Year;
+                if (today < Birthday.AddYears(age))
+                    age--;
+                return age;
+            }
+        }
+
+        public int RemainingBirthDays
+        {
+            get
+            {
+                DateTime today = DateTime.Today;
+                DateTime next = Birthday.AddYears(today.Year - Birthday.Year);
+
+                if (next < today)
+                    next = next.AddYears(1);
+
+                int numDays = (next - today).Days;
+
+                return numDays;
+            }
+        }
+
+        public int AgeBirthday
+        {
+            get
+            {
+                if (RemainingBirthDays == 0)
+                {
+                    // Today is birthday
+                    return Age;
+                }
+                return Age + 1;
+            }
+        }
+
+        public DateTime NextBirthDays
+        {
+            get
+            {
+                if (RemainingBirthDays == 0)
+                {
+                    // Today is birthday
+                    return Birthday.AddYears(Age);
+                }
+                return Birthday.AddYears(Age + 1);
+            }
+        }
+
+        public string BirthdayOfWeek
+        {
+            get
+            {
+                var culture = new CultureInfo("vi");
+                return culture.DateTimeFormat.GetDayName(NextBirthDays.DayOfWeek);
+            }
+        }
+
+        public int WeekBirthdayNumber
+        {
+            get
+            {
+                var culture = new CultureInfo("vi");
+                return culture.Calendar.GetWeekOfYear(NextBirthDays, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
+            }
+        }
         #endregion
     }
 }

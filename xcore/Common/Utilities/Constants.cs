@@ -33,6 +33,10 @@ namespace Common.Utilities
 
         public const string WaitData = "Chờ lấy dữ liệu";
 
+        public const string NewDataSuccess = "Tạo mới dữ liệu thành công";
+
+        public const string DataDuplicate = "Dữ liệu đã tồn tại. Không thể tạo nhiều dữ liệu cùng tên.";
+
         // System not store db. highest right
         public static class System
         {
@@ -187,9 +191,9 @@ namespace Common.Utilities
             public const string Setting = "cai-dat";
             public const string Factory = "nha-may";
             public const string Production = "san-xuat";
-            public const string FactoryProduction = "nha-may-va-san-xuat";
+            public const string ThangLuongTrue = "tl";
 
-            public const string ThangBangLuong = "thang-bang-luong";
+            public const string ThangLuong = "thang-luong";
             public const string BangLuong = "bang-luong";
             public const string TheLuong = "the-luong";
 
@@ -235,6 +239,8 @@ namespace Common.Utilities
 
             public const string SanXuatTemplate = "san-xuat-so-lieu-mau";
             public const string SanXuatImport = "san-xuat-so-lieu-import";
+
+            public const string Timer = "bang-cong";
         }
 
         public static class LinkCredit
@@ -562,7 +568,7 @@ namespace Common.Utilities
                 case 4:
                     return "Không xác nhận";
                 case 5:
-                    return "Duyệt tự động";
+                    return "Đang lấy dữ liệu";
                 default:
                     return string.Empty;
             }

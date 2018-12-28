@@ -25,43 +25,21 @@
         </div>
     </nav>
 
-    <section class="flush-with-above space-0">
-        <div class="bg-white">
-            <div class="container">
-                <div class="row">
-                    <div class="col">
-                        <ul class="nav nav-tabs" id="myTab" role="tablist">
-                            <li class="nav-item">
-                                <a class="nav-link active" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.FactoryProduction/@Constants.LinkSalary.ThangBangLuong">THANG LƯƠNG </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Factory/@Constants.LinkSalary.BangLuong">BẢNG LƯƠNG NHÀ MÁY</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.BangLuong">BẢNG LƯƠNG SẢN XUẤT</a>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <!-- MAIN -->
     <section class="flush-with-above height-80 d-block">
         <div class="tab-content">
             <div class="tab-pane fade show active" id="law" role="tabpanel" aria-labelledby="law-tab">
                 <div class="container">
-                    <div class="row mb-3">
-                        <div class="col-12">
-                            <a class="btn btn-success btn-edit" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.ThangBangLuong/@Constants.LinkSalary.Update" data-toggle="tooltip" title="Bấm thay đổi thang bảng lương.">
-                                <i class="icon icon-edit"></i>Chỉnh sửa
-                            </a>
-                            <a class="btn btn-info d-none" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.ThangBangLuong/@Constants.LinkSalary.Export" data-toggle="tooltip" title="Xuất ra tài liệu file excel.">
-                                <i class="fas fa-download"></i> Xuất excel
-                            </a>
-                        </div>
-                    </div>
+                    @*<div class="row mb-3">
+                            <div class="col-12">
+                                <a class="btn btn-success btn-edit" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.ThangLuong/@Constants.LinkSalary.Update" data-toggle="tooltip" title="Bấm thay đổi thang bảng lương.">
+                                    <i class="icon icon-edit"></i>Chỉnh sửa
+                                </a>
+                                <a class="btn btn-info d-none" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.ThangLuong/@Constants.LinkSalary.Export" data-toggle="tooltip" title="Xuất ra tài liệu file excel.">
+                                    <i class="fas fa-download"></i> Xuất excel
+                                </a>
+                            </div>
+                        </div>*@
 
                     <div class="row mb-3">
                         <div class="col-12">
@@ -141,17 +119,17 @@
                                                         miss = levelMax - bacLuong.CountSalaries;
                                                     }
                                                     int numCol = levelMax + 2;
-                                                <tr style="background-color:rgb(0, 176, 240); color:black">
-                                                    <td colspan="@numCol">
-                                                        <b>@iName- @bacLuong.Name</b>
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td style="background-color:white">
-                                                        Hệ số
-                                                    </td>
-                                                    <td style="background-color:rgb(0,211,240);color:black"></td>
-                                                    @{
+                                                    <tr style="background-color:rgb(0, 176, 240); color:black">
+                                                        <td colspan="@numCol">
+                                                            <b>@iName- @bacLuong.Name</b>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td style="background-color:white">
+                                                            Hệ số
+                                                        </td>
+                                                        <td style="background-color:rgb(0,211,240);color:black"></td>
+                                                        @{
                                                             var colorRed = "black";
                                                             foreach (var heso in bacLuong.Salaries)
                                                             {
@@ -159,61 +137,61 @@
                                                                 {
                                                                     colorRed = "red";
                                                                 }
-                                                    <td style="text-align:right;background-color:rgb(0,211,240);color:@colorRed">
-                                                        @heso.HeSo.ToString("0.##")
-                                                    </td>
+                                                                <td style="text-align:right;background-color:rgb(0,211,240);color:@colorRed">
+                                                                    @heso.HeSo.ToString("0.##")
+                                                                </td>
                                                             }
                                                             if (miss > 0)
                                                             {
                                                                 for (var i2 = 1; i2 <= miss; i2++)
                                                                 {
-                                                        <td style="text-align:right;background-color:rgb(0,211,240);color:black"></td>
+                                                                    <td style="text-align:right;background-color:rgb(0,211,240);color:black"></td>
                                                                 }
                                                             }
-                                                    }
-                                                </tr>
-                                                <tr>
-                                                    <td style="background-color:white">
-                                                        Mức lương tháng
-                                                    </td>
-                                                    <td style="text-align:center">@bacLuong.MaSo</td>
-                                                    @{
+                                                        }
+                                                    </tr>
+                                                    <tr>
+                                                        <td style="background-color:white">
+                                                            Mức lương tháng
+                                                        </td>
+                                                        <td style="text-align:center">@bacLuong.MaSo</td>
+                                                        @{
                                                             foreach (var heso in bacLuong.Salaries)
                                                             {
-                                                        <td style="background-color:white">
-                                                            @string.Format("{0:n0}", Math.Round((double)heso.MucLuongThang, 0))
-                                                        </td>
+                                                                <td style="background-color:white">
+                                                                    @string.Format("{0:n0}", Math.Round((double)heso.MucLuongThang, 0))
+                                                                </td>
                                                             }
                                                             if (miss > 0)
                                                             {
                                                                 for (var i3 = 1; i3 <= miss; i3++)
                                                                 {
-                                                        <td style="background-color:white"></td>
+                                                                    <td style="background-color:white"></td>
                                                                 }
                                                             }
-                                                    }
-                                                </tr>
-                                                <tr>
-                                                    <td style="background-color:white">
-                                                        Mức lương ngày
-                                                    </td>
-                                                    <td style="background-color:white"></td>
-                                                    @{
+                                                        }
+                                                    </tr>
+                                                    <tr>
+                                                        <td style="background-color:white">
+                                                            Mức lương ngày
+                                                        </td>
+                                                        <td style="background-color:white"></td>
+                                                        @{
                                                             foreach (var heso in bacLuong.Salaries)
                                                             {
-                                                        <td style="background-color:white">
-                                                            @string.Format("{0:n0}", Math.Round((double)heso.MucLuongNgay, 0))
-                                                        </td>
+                                                                <td style="background-color:white">
+                                                                    @string.Format("{0:n0}", Math.Round((double)heso.MucLuongNgay, 0))
+                                                                </td>
                                                             }
                                                             if (miss > 0)
                                                             {
                                                                 for (var i3 = 1; i3 <= miss; i3++)
                                                                 {
-                                                        <td style="background-color:white"></td>
+                                                                    <td style="background-color:white"></td>
                                                                 }
                                                             }
-                                                    }
-                                                </tr>
+                                                        }
+                                                    </tr>
                                                     iName++;
                                                 }
                                             }

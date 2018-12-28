@@ -21,6 +21,13 @@
     .badge-order {
         margin-left: -1.4rem;
     }
+    .d-flex {
+        display: block!important;
+        z-index: 10001;
+    }
+    .btn-search-inline {
+        margin-top: 10px;
+    }
 }
 
 @media (max-width: 991.98px) {

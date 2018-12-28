@@ -57,6 +57,8 @@ $(function () {
     $(".datepicker").datepicker({
         language: "vi",
         format: 'dd/mm/yyyy',
+        todayHighlight: true,
+        autoclose: true
     });
 
     $('.multi-select').multiselect({

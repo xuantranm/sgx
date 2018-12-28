@@ -135,19 +135,19 @@
                             @if (rightLuong)
                             {
                                 var displayLaw = string.Empty;
-                                @if (rightLuongVanPhong || rightLuongNhaMay || rightLuongSanXuat)
+                                @if (rightLuongVanPhong)
                                 {
                                     displayLaw = "BHXH";
                                 }
                                 <li class="nav-item dropdown">
                                     <a class="nav-link dropdown-toggle" href="#" id="pagesDropdown" role="button" data-toggle="dropdown"><i class="fas fa-dollar-sign"></i> Lương</a>
                                     <div class="dropdown-menu" aria-labelledby="pagesDropdown">
-                                        <a class="dropdown-item" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.BangLuong">
-                                            <span class="h6 mb-0">Bảng lương @displayLaw</span>
-                                        </a>
                                         @{
                                             if (rightLuongVanPhong)
                                             {
+                                                <a class="dropdown-item" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.BangLuong">
+                                                    <span class="h6 mb-0">Bảng lương @displayLaw</span>
+                                                </a>
                                                 <div class="dropdown-divider"></div>
                                                 <a class="dropdown-item" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.VanPhong/@Constants.LinkSalary.BangLuong">
                                                     <span class="h6 mb-0">Bảng lương Văn Phòng</span>
@@ -168,23 +168,22 @@
                                                 </a>
                                             }
 
-                                            <div class="dropdown-divider"></div>
-                                            <a class="dropdown-item" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.ThangBangLuong">
-                                                <span class="h6 mb-0">Thang bảng lương @displayLaw</span>
-                                            </a>
-
                                             if (rightLuongVanPhong)
                                             {
-                                            <div class="dropdown-divider"></div>
-                                            <a class="dropdown-item" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.VanPhong/@Constants.LinkSalary.ThangBangLuong">
-                                                <span class="h6 mb-0">Thang bảng lương Văn Phòng</span>
-                                            </a>
+                                                <div class="dropdown-divider"></div>
+                                                <a class="dropdown-item" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.ThangLuong">
+                                                    <span class="h6 mb-0">Thang bảng lương @displayLaw</span>
+                                                </a>
+                                                <div class="dropdown-divider"></div>
+                                                <a class="dropdown-item" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.VanPhong/@Constants.LinkSalary.ThangLuong">
+                                                    <span class="h6 mb-0">Thang bảng lương Văn Phòng</span>
+                                                </a>
                                             }
 
                                             if (rightLuongNhaMay || rightLuongSanXuat)
                                             {
                                                 <div class="dropdown-divider"></div>
-                                                <a class="dropdown-item" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.FactoryProduction/@Constants.LinkSalary.ThangBangLuong">
+                                                <a class="dropdown-item" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.ThangLuongTrue/@Constants.LinkSalary.ThangLuong">
                                                     <span class="h6 mb-0">Thang bảng lương Nhà Máy & Sản xuất</span>
                                                 </a>
                                             }

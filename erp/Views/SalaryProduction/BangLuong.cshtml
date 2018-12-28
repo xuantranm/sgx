@@ -1,4 +1,5 @@
 ﻿@using Common.Utilities;
+@using Common.Enums;
 @using ViewModels;
 @model BangLuongViewModel
 @{
@@ -26,7 +27,7 @@
                         <li class="breadcrumb-item">
                             <a href="/">Trang chủ</a>
                         </li>
-                        <li class="breadcrumb-item active" aria-current="page">Bảng lương Sản Xuất</li>
+                        <li class="breadcrumb-item active" aria-current="page">Bảng lương Nhà Máy</li>
                     </ol>
                 </div>
             </div>
@@ -46,16 +47,16 @@
                                 <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.CongTong">CÔNG TỔNG & HỔ TRỢ CƠM</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Timer">CHẤM CÔNG</a>
+                                <a class="nav-link" target="_blank" href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Timer?khoi=@ESalaryType.SX">CHẤM CÔNG</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkCredit.Main/@Constants.LinkCredit.CreditsNM">ỨNG LƯƠNG</a>
+                                <a class="nav-link" href="/@Constants.LinkCredit.Main/@Constants.LinkSalary.Production/@Constants.LinkCredit.CreditsNM">ỨNG LƯƠNG</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.FactoryProduction/@Constants.LinkSalary.ThangBangLuong">THANG LƯƠNG</a>
+                                <a class="nav-link" target="_blank" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.ThangLuongTrue/@Constants.LinkSalary.ThangLuong">THANG LƯƠNG</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Setting">THAM SỐ</a>
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.Setting">THAM SỐ</a>
                             </li>
                         </ul>
                     </div>
@@ -76,7 +77,7 @@
                             </a>
                         </div>
                         <div class="col-lg-3 col-md-6">
-                            <a class="btn btn-lg btn-block btn-info" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.ThangBangLuong/@Constants.LinkSalary.Export" data-toggle="tooltip" title="Xuất ra tài liệu file excel.">
+                            <a class="btn btn-lg btn-block btn-info" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.ThangLuong/@Constants.LinkSalary.Export" data-toggle="tooltip" title="Xuất ra tài liệu file excel.">
                                 <i class="fas fa-download"></i> Xuất excel
                             </a>
                         </div>
@@ -150,43 +151,42 @@
                                 <table class="table table-responsive-sm table-bordered table-striped table-hover floating-header">
                                     <thead style="background-color:lightgrey">
                                         <tr>
-                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold">#</th>
-                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold">Mã <br /><small>(Mã cũ)</small></th>
-                                            <th rowspan="2" nowrap>Họ và tên</th>
-                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold">Chức vụ</th>
-                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold">Ngày vào làm việc</th>
-                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold">Số tháng thâm niên</th>
-                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold">Hệ số thâm niên</th>
-                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold">Ngạch lương</th>
-                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold">Hệ số lương</th>
-                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold">Lương cơ bản</th>
-                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold">Ngày làm việc</th>
-                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold">Phép năm</th>
-                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold">Lễ tết</th>
-                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold">Lương định mức</th>
-                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold">Tiền phép năm, lễ tết</th>
-                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold">Thành tiền lương cơ bản</th>
-                                            <td colspan="6">Phụ cấp</td>
-                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold">Tổng phụ cấp</th>
-                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold">Lương vượt định mức</th>
-                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold">Tổng thu nhập</th>
-                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold">Trừ tạm ứng</th>
-                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold">Thưởng lễ, tết</th>
-                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold">Lương đóng BHXH</th>
-                                            <td colspan="4">Các khoản trích người lao động</td>
-                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold">Thực lãnh</th>
-                                        </tr>
-                                        <tr>
-                                            <td>Ăn trưa</td>
-                                            <td>Nhà ở</td>
-                                            <td>Xăng xe</td>
-                                            <td>Nặng nhọc, độc hại</td>
-                                            <td>Thâm niên</td>
-                                            <td>Trách nhiệm</td>
-                                            <td>BHXH (8%)</td>
-                                            <td>BHYT(1.5%)</td>
-                                            <td>BHTN(1%)</td>
-                                            <td>Cộng</td>
+                                            <td>#</td>
+                                            <td>Mã <br /><small>(Mã cũ)</small></td>
+                                            <td nowrap>Họ và tên</td>
+                                            <td>Chức vụ</td>
+                                            <td>Phòng ban</td>
+                                            <td>Ngày vào làm việc</td>
+                                            <td>Số tháng thâm niên</td>
+                                            <td>Hệ số thâm niên</td>
+                                            <td>Ngạch lương</td>
+                                            <td>Hệ số lương</td>
+                                            <td>Lương CB</td>
+                                            <td>Ngày công lv</td>
+                                            <td>Lương định mức</td>
+                                            <td>Ngày phép năm</td>
+                                            <td>Giờ tăng ca</td>
+                                            <td>Giờ làm việc CN</td>
+                                            <td>Ngày nghỉ lễ tết</td>
+                                            <td>Ngày LV lễ tết</td>
+                                            <td>Thành tiền lương CB</td>
+                                            <td>Lương vượt định mức</td>
+                                            <td>Phụ cấp thâm niên</td>
+                                            <td>Phụ cấp chuyên cần</td>
+                                            <td>Phụ cấp khác</td>
+                                            <td>Tổng phụ cấp</td>
+                                            <td>Tổng thu nhập</td>
+                                            <td>Trừ tạm ứng</td>
+                                            <td>Trừ BHXH</td>
+                                            <td>Lương đóng BHXH</td>
+                                            <td>Thưởng Lễ</td>
+                                            <td>Thực lãnh</td>
+                                            <td>Tiền cơm (KD)</td>
+                                            <td>Tiền cơm (SX)</td>
+                                            <td>Hỗ trợ thêm</td>
+                                            <td>
+                                                Thực lãnh (Tròn Số)
+                                            </td>
                                         </tr>
                                     </thead>
                                     <tbody class="font-14">
@@ -194,94 +194,110 @@
                                             var i = 1;
                                             foreach (var item in Model.SalaryEmployeeMonths)
                                             {
-                                        <tr>
-                                            <td>
-                                                @i
-                                            </td>
-                                            <td nowrap>
-                                                @item.MaNhanVien <small>@item.ViTriCode</small>
-                                            </td>
-                                            <td nowrap>
-                                                @item.FullName
-                                            </td>
-                                            <td>
-                                                <small class="bold">@item.ChucVu</small>
-                                            </td>
-                                            <td>
-                                                @item.ThamNienLamViec.ToString("dd/MM/yyyy")
-                                            </td>
-                                            <td>
-                                                <span class="badge badge-info">@item.ThamNienMonth</span>
-                                            </td>
-                                            <td>
-                                                @item.HeSoThamNien
-                                            </td>
-                                            <td>
-                                                @item.SalaryMaSoChucDanhCongViec
-                                            </td>
-                                            <td>
-                                                @item.Bac
-                                            </td>
-                                            <td>
-                                                @String.Format("{0:#,###,###}", Math.Round((double)item.LuongCanBan, 0))
-                                            </td>
-                                            <td>
-                                                @item.NgayCongLamViec
-                                            </td>
-                                            <td>
-                                                @item.NgayNghiPhepNam
-                                            </td>
-                                            <td>
-                                                @item.NgayNghiLeTetHuongLuong
-                                            </td>
-                                            <td>
-                                                @String.Format("{0:#,###,###}", item.LuongDinhMuc)
-                                            </td>
-                                            <td>
-                                                @String.Format("{0:#,###,###}", item.TienPhepNamLeTet)
-                                            </td>
-                                            <td>
-                                                @String.Format("{0:#,###,###}", item.ThanhTienLuongCanBan)
-                                            </td>
-                                            <td>@String.Format("{0:#,###,###}", item.Com)</td>
-                                            <td>@String.Format("{0:#,###,###}", item.NhaO)</td>
-                                            <td>@String.Format("{0:#,###,###}", item.Xang)</td>
-                                            <td>@String.Format("{0:#,###,###}", item.NangNhocDocHai)</td>
-                                            <td>
-                                                @String.Format("{0:#,###,###}", item.ThamNien)
-                                            </td>
-                                            <td>@String.Format("{0:#,###,###}", item.TrachNhiem)</td>
-
-                                            <td> @String.Format("{0:#,###,###}", item.TongPhuCap)</td>
-                                            <td>
-                                                @String.Format("{0:#,###,###}", item.LuongVuotDinhMuc)
-                                            </td>
-                                            <td> @String.Format("{0:#,###,###}", item.TongThuNhap)</td>
-                                            <td>
-                                                @String.Format("{0:#,###,###}", item.TamUng)
-                                            </td>
-                                            <td>
-                                                @String.Format("{0:#,###,###}", item.ThuongLeTet)
-                                            </td>
-                                            <td>
-                                                @String.Format("{0:#,###,###}", item.LuongThamGiaBHXH)
-                                            </td>
-                                            <td>
-                                                @String.Format("{0:#,###,###}", item.BHXH)
-                                            </td>
-                                            <td>
-                                                @String.Format("{0:#,###,###}", item.BHYT)
-                                            </td>
-                                            <td>
-                                                @String.Format("{0:#,###,###}", item.BHTN)
-                                            </td>
-                                            <td>
-                                                @String.Format("{0:#,###,###}", item.BHXHBHYT)
-                                            </td>
-                                            <td>
-                                                @String.Format("{0:#,###,###}", item.ThucLanh)
-                                            </td>
-                                        </tr>
+                                                <tr>
+                                                    <td>
+                                                        @i
+                                                    </td>
+                                                    <td nowrap>
+                                                        @item.MaNhanVien <small>@item.ViTriCode</small>
+                                                    </td>
+                                                    <td nowrap>
+                                                        @item.FullName
+                                                    </td>
+                                                    <td>
+                                                        <small class="bold">@item.ChucVu</small>
+                                                    </td>
+                                                    <td>
+                                                        <small class="bold">@item.PhongBan</small>
+                                                    </td>
+                                                    <td>
+                                                        @item.ThamNienLamViec.ToString("dd/MM/yyyy")
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge badge-info">@item.ThamNienMonth</span>
+                                                    </td>
+                                                    <td>
+                                                        @item.HeSoThamNien
+                                                    </td>
+                                                    <td>
+                                                        @item.SalaryMaSoChucDanhCongViec
+                                                    </td>
+                                                    <td>
+                                                        @item.Bac
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", Math.Round((double)item.LuongCanBan, 0))
+                                                    </td>
+                                                    <td>
+                                                        @item.NgayCongLamViec
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", item.LuongDinhMuc)
+                                                    </td>
+                                                    <td>
+                                                        @item.NgayNghiPhepNam
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", item.CongTangCaNgayThuongGio)
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", item.CongCNGio)
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", item.NgayNghiLeTetHuongLuong)
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", item.CongLeTet)
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", item.ThanhTienLuongCanBan)
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", item.LuongVuotDinhMuc)
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", item.ThamNien)
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", item.PhuCapChuyenCan)
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", item.PhuCapKhac)
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", item.TongPhuCap)
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", item.TongThuNhap)
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", item.TamUng)
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", item.BHXHBHYT)
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", item.LuongThamGiaBHXH)
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", item.ThuongLeTet)
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", item.ThucLanh)
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", item.ComKD)
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", item.ComSX)
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", item.HoTroNgoaiLuong)
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", item.ThucLanhTronSo)
+                                                    </td>
+                                                </tr>
                                                 i++;
                                             }
                                         }

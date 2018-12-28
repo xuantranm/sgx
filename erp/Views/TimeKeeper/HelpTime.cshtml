@@ -202,75 +202,68 @@
                 </thead>
                 <tbody>
                     @{
-                        var iXacNhan = -8;
+                        // Cho phép xác nhận tháng tính lương và hiện tại
+                        var today = DateTime.Now.Date;
+                        var currentMonth = today.Day > 25 ? today.AddMonths(1).Month : today.Month;
+                        //var iXacNhan = -8;
                         var i = 1;
-                        if (DateTime.Now.Date.AddDays(iXacNhan).DayOfWeek == DayOfWeek.Sunday)
-                        {
-                            iXacNhan--;
-                        }
+                        //if (today.AddDays(iXacNhan).DayOfWeek == DayOfWeek.Sunday)
+                        //{
+                        //    iXacNhan--;
+                        //}
                         foreach (var log in Model.EmployeeWorkTimeLogs)
                         {
-                            var isToday = false;
-                            if (log.Date.Date == DateTime.Now.Date)
-                            {
-                                isToday = true;
-                            }
                             <tr>
                                 <td class="log-@log.Id">
                                     @{
-                                        if (!isToday)
+                                        if (log.Date == today)
                                         {
-                                            if (log.Status == 0)
+                                            <span class="badge badge-light">Đang lấy dữ liệu</span>
+                                        }
+                                        else
+                                        {
+                                            if (log.Status == (int)StatusWork.XacNhanCong)
                                             {
-                                                if (log.Date.Date >= DateTime.Now.Date.AddDays(iXacNhan))
+                                                if (log.Month == currentMonth)
                                                 {
                                                     <input type="button" class="btn btn-sm btn-danger" value="Xác nhận" data-toggle="modal" data-target="#requestTimeKeeperModal" data-id="@log.Id" />
                                                 }
                                                 else
                                                 {
                                                     var displayStatus = string.Empty;
-                                                    if (log.Date.Date != DateTime.Now.Date)
+                                                    if (Math.Round(log.Late.TotalMinutes, 0) > 0)
                                                     {
-                                                        if (Math.Round(log.Late.TotalMinutes, 0) > 0)
-                                                        {
-                                                            displayStatus += string.IsNullOrEmpty(displayStatus) ? "" : " - ";
-                                                            displayStatus += "Trễ";
-                                                        }
-                                                        if (Math.Round(log.Early.TotalMinutes, 0) > 0)
-                                                        {
-                                                            displayStatus += string.IsNullOrEmpty(displayStatus) ? "" : " - ";
-                                                            displayStatus += "Sớm";
-                                                        }
-                                                        if (!log.In.HasValue && !log.Out.HasValue)
-                                                        {
-                                                            displayStatus += string.IsNullOrEmpty(displayStatus) ? "" : " - ";
-                                                            displayStatus += "Thiếu";
-
-                                                        }
-                                                        else if (!log.In.HasValue)
-                                                        {
-                                                            displayStatus += string.IsNullOrEmpty(displayStatus) ? "" : " - ";
-                                                            displayStatus += "Thiếu vào";
-                                                        }
-                                                        else if (!log.Out.HasValue)
-                                                        {
-                                                            displayStatus += string.IsNullOrEmpty(displayStatus) ? "" : " - ";
-                                                            displayStatus += "Thiếu ra";
-                                                        }
+                                                        displayStatus += string.IsNullOrEmpty(displayStatus) ? "" : " - ";
+                                                        displayStatus += "Trễ";
                                                     }
-
+                                                    if (Math.Round(log.Early.TotalMinutes, 0) > 0)
+                                                    {
+                                                        displayStatus += string.IsNullOrEmpty(displayStatus) ? "" : " - ";
+                                                        displayStatus += "Sớm";
+                                                    }
+                                                    if (!log.In.HasValue && !log.Out.HasValue)
+                                                    {
+                                                        displayStatus += string.IsNullOrEmpty(displayStatus) ? "" : " - ";
+                                                        displayStatus += "Thiếu";
+                                                    }
+                                                    else if (!log.In.HasValue)
+                                                    {
+                                                        displayStatus += string.IsNullOrEmpty(displayStatus) ? "" : " - ";
+                                                        displayStatus += "Thiếu vào";
+                                                    }
+                                                    else if (!log.Out.HasValue)
+                                                    {
+                                                        displayStatus += string.IsNullOrEmpty(displayStatus) ? "" : " - ";
+                                                        displayStatus += "Thiếu ra";
+                                                    }
                                                     <small class="badge badge-secondary">@displayStatus</small>
                                                 }
                                             }
                                             else
                                             {
-                                                var statusBag = "badge-info";
-                                                if (log.Status == 4)
-                                                {
-                                                    statusBag = "badge-pill";
-                                                }
+                                                var statusBag = log.Status == (int)StatusWork.TuChoi ? "badge-pill" : "badge-info";
                                                 <span class="badge @statusBag">@Constants.TimeKeeper(log.Status)</span>
-                                                if (log.Mode == 1 && !string.IsNullOrEmpty(log.Reason))
+                                                if (log.Mode == (int)TimeWork.Normal && !string.IsNullOrEmpty(log.Reason))
                                                 {
                                                     var displayReason = log.Reason;
                                                     if (!string.IsNullOrEmpty(log.ReasonDetail))
@@ -281,40 +274,43 @@
                                                 }
                                             }
                                         }
-                                        else
-                                        {
-                                            <span class="badge badge-light">Đang lấy dữ liệu</span>
-                                        }
                                     }
                                 </td>
+
                                 <td>@i</td>
                                 <td scope="row">
-                                    <span class="text-muted">@log.DateOnlyRecord.ToString("dd/MM/yyyy")</span>
+                                    <span class="text-muted">@log.Date.ToString("dd/MM/yyyy")</span>
                                 </td>
-                                <td>@log.In</td>
+                                <td><span>@log.In</span></td>
+                                <td><span>@log.Out</span></td>
                                 <td>
-                                    <span>@log.Out</span>
-                                </td>
-                                <td>
-                                    @if (log.Start.TotalMilliseconds != 0)
-                                    {
-                                        <small>@log.Start.ToString(@"hh\:mm")-@log.End.ToString(@"hh\:mm")</small>
+                                    @{
+                                        var detail = string.Empty;
+                                        if (log.Start.TotalMilliseconds != 0)
+                                        {
+                                            detail += log.Start.ToString(@"hh\:mm");
+                                        }
+                                        if (log.End.TotalMilliseconds != 0)
+                                        {
+                                            detail += "-" + log.End.ToString(@"hh\:mm");
+                                        }
                                     }
+                                    <small>@detail</small>
                                 </td>
                                 <td>
-                                    @if ((log.StatusLate == 0 || log.StatusLate == 2 || log.StatusLate == 4) && log.Late.TotalMilliseconds > 0)
+                                    @if ((log.StatusLate == (int)StatusWork.XacNhanCong || log.StatusLate == (int)StatusWork.DaGuiXacNhan || log.StatusLate == (int)StatusWork.TuChoi) && log.Late.TotalMilliseconds > 0)
                                     {
                                         <span>@Math.Round(log.Late.TotalMinutes, 0)</span>
                                     }
                                 </td>
                                 <td>
-                                    @if ((log.StatusEarly == 0 || log.StatusEarly == 2 || log.StatusEarly == 4) && log.Early.TotalMilliseconds > 0)
+                                    @if ((log.StatusEarly == (int)StatusWork.XacNhanCong || log.StatusEarly == (int)StatusWork.DaGuiXacNhan || log.StatusEarly == (int)StatusWork.TuChoi) && log.Early.TotalMilliseconds > 0)
                                     {
                                         <span>@Math.Round(log.Early.TotalMinutes, 0)</span>
                                     }
                                 </td>
                                 <td>
-                                    @if (log.Status == 3)
+                                    @if (log.Status == (int)StatusWork.DongY)
                                     {
                                         <span>1</span>
                                     }
@@ -358,11 +354,14 @@ else
 }
 
 <br />
-<small>Thiếu thời gian làm việc và không có xác nhận công của quản lý thì áp dụng cách tính:</small>
-<small> * Quá giờ làm việc qui định 15 phút sẽ không tính công buổi làm việc đó.</small>
+<div class="alert alert-warning" role="alert">
+    <small>Anh chị chú ý điều khoản bên dưới !</small>
+</div>
+<small>Thiếu thời gian làm việc và không xác nhận công của quản lý, áp dụng cách tính:</small>
+<small> * Quá thời gian làm việc qui định <code>15 phút</code> không tính công buổi làm việc <code>(tương đương 0.5 ngày)</code>.</small>
 <small> * Thời gian thiếu được cộng dồn làm cơ sở xét thưởng, nâng lương cuối năm.</small>
 <br />
-<small>Vui lòng xác nhận công trong vòng 02 ngày.</small>
+<small>Vui lòng xác nhận công trong tháng hiện tại.</small>
 <br />
 <small>Chúc ngày làm việc hiệu quả.</small>
 

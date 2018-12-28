@@ -198,3 +198,13 @@ img {
 .font-12{
     font-size:12px;
 }
+.big-checkbox {
+    width: 30px;
+    height: 30px;
+}
+.dropdown-menu{
+    z-index:1001;
+}
+.btn-search-inline{
+    margin-left:10px;
+}

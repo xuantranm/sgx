@@ -4,10 +4,10 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{F1B1483C-575D-42F9-ACB2-07B7F5497E67}</ProjectGuid>
+    <ProjectGuid>{0721CB51-12DB-434A-8471-72FC0CDFDC14}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>xtimevp</RootNamespace>
-    <AssemblyName>xtimevp</AssemblyName>
+    <RootNamespace>xtime</RootNamespace>
+    <AssemblyName>xtime</AssemblyName>
     <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>

@@ -23,5 +23,17 @@ namespace ViewModels
         public IList<NgachLuong> NgachLuongs { get; set; }
         public IList<SalaryThangBangLuong> ThangBangLuongs { get; set; }
         #endregion
+
+        #region Email
+        // In Edit, Flag Welcome or Edit
+        public bool EmailSend { get; set; }
+
+        // Store EmailSchedule
+        // next data => update EmailSchedule content
+        public string EmailGroup { get; set; }
+
+        public IList<EmailGroup> EmailGroups { get; set; }
+
+        #endregion
     }
 }
