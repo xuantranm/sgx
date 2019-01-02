@@ -35,6 +35,19 @@ namespace Models
         [BsonRepresentation(BsonType.Decimal128)]
         public decimal ComKD { get; set; } = 0;
 
+        #region First time, analytics later.
+        // Because Tang Ca, CN, Le must be accept leader.
+        // Put here for fast
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal GioTangCa { get; set; } = 0;
+
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal GioLamViecCN { get; set; } = 0;
+
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal GioLamViecLeTet { get; set; } = 0;
+        #endregion
+
         public bool Enable { get; set; } = true;
 
         public string CreatedOn { get; set; } = DateTime.Now.ToString("dd/MM/yyyy HH:mm");

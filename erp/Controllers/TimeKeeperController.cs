@@ -29,6 +29,7 @@ using MimeKit;
 using MimeKit.Text;
 using Services;
 using NPOI.HSSF.Util;
+using NPOI.SS.Util;
 
 namespace erp.Controllers
 {
@@ -1032,13 +1033,16 @@ namespace erp.Controllers
             #region Filter
             var builder = Builders<EmployeeWorkTimeLog>.Filter;
             var filter = builder.Eq(m => m.Enable, true)
-                        & builder.Eq(m => m.Workcode, intKhoi)
                         & builder.Gte(m => m.Date, Tu)
                         & builder.Lte(m => m.Date, Den);
 
+            if (!string.IsNullOrEmpty(khoi))
+            {
+                filter = filter & builder.Eq(x => x.Workcode, intKhoi);
+            }
             if (!string.IsNullOrEmpty(phongban))
             {
-                filter = filter & builder.Eq(x => x.Department, phongban.Trim());
+                filter = filter & builder.Eq(x => x.DepartmentAlias, phongban.Trim());
             }
             if (!string.IsNullOrEmpty(id))
             {
@@ -1056,6 +1060,7 @@ namespace erp.Controllers
                 Den = Den,
                 Departments = departments,
                 phongban = phongban,
+                khoi = khoi,
                 Id = id
             };
 
@@ -1063,7 +1068,7 @@ namespace erp.Controllers
         }
 
         [Route(Constants.LinkTimeKeeper.Timer + "/" + Constants.ActionLink.Export)]
-        public async Task<IActionResult> BangChamCongExport(string thang, string from, string to, string phongban, string id)
+        public async Task<IActionResult> BangChamCongExport(DateTime Tu, DateTime Den, string khoi, string phongban, string id)
         {
             #region Authorization
             var login = User.Identity.Name;
@@ -1079,33 +1084,62 @@ namespace erp.Controllers
                 return RedirectToAction("login", "account");
             }
 
-            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, "nhan-su", (int)ERights.View)))
+            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.BangChamCong, (int)ERights.View)))
             {
                 return RedirectToAction("AccessDenied", "Account");
             }
 
             #endregion
 
-            #region Times
-            var toDate = Utility.WorkingMonthToDate(thang);
-            var fromDate = toDate.AddMonths(-1).AddDays(1);
-            if (string.IsNullOrEmpty(thang))
+            #region DDL
+            var departments = dbContext.Departments.Find(m => m.Enable.Equals(true)).SortBy(m => m.Order).ToList();
+
+            var builderE = Builders<Employee>.Filter;
+            var filterE = builderE.Eq(m => m.Enable, true) & !builderE.Eq(m => m.UserName, Constants.System.account);
+            var intKhoi = (int)ESalaryType.VP;
+            if (!string.IsNullOrEmpty(khoi))
             {
-                toDate = DateTime.Now;
-                fromDate = toDate.Day > 25 ? new DateTime(toDate.Year, toDate.Month, 26) : new DateTime(toDate.AddMonths(-1).Year, toDate.AddMonths(-1).Month, 26);
+                switch (khoi)
+                {
+                    case "SX":
+                        intKhoi = (int)ESalaryType.SX;
+                        break;
+                    case "NM":
+                        intKhoi = (int)ESalaryType.NM;
+                        break;
+                }
+                filterE = filterE & builderE.Eq(m => m.SalaryType, intKhoi);
             }
-            var year = toDate.Day > 25 ? toDate.AddMonths(1).Year : toDate.Year;
-            var month = toDate.Day > 25 ? toDate.AddMonths(1).Month : toDate.Month;
-            thang = string.IsNullOrEmpty(thang) ? month + "-" + year : thang;
+            var employees = await dbContext.Employees.Find(filterE).ToListAsync();
+            #endregion
+
+            #region Times
+            var today = DateTime.Now.Date;
+            // Default curent
+            if (Den < Constants.MinDate)
+            {
+                Den = today;
+            }
+            if (Tu < Constants.MinDate)
+            {
+                var previous = Den.Day > 25 ? Den : Den.AddMonths(-1);
+                Tu = new DateTime(previous.Year, previous.Month, 26);
+            }
             #endregion
 
             #region Filter
             var builder = Builders<EmployeeWorkTimeLog>.Filter;
-            var filter = builder.Eq(m => m.Enable, true) & builder.Eq(m => m.Month, month) & builder.Eq(m => m.Year, year);
+            var filter = builder.Eq(m => m.Enable, true)
+                        & builder.Gte(m => m.Date, Tu)
+                        & builder.Lte(m => m.Date, Den);
 
+            if (!string.IsNullOrEmpty(khoi))
+            {
+                filter = filter & builder.Eq(x => x.Workcode, intKhoi);
+            }
             if (!string.IsNullOrEmpty(phongban))
             {
-                filter = filter & builder.Eq(x => x.Department, phongban.Trim());
+                filter = filter & builder.Eq(x => x.DepartmentAlias, phongban.Trim());
             }
             if (!string.IsNullOrEmpty(id))
             {
@@ -1116,10 +1150,21 @@ namespace erp.Controllers
             var times = await dbContext.EmployeeWorkTimeLogs.Find(filter).SortBy(m => m.Date).ToListAsync();
 
             string exportFolder = Path.Combine(_env.WebRootPath, "exports");
-            string sFileName = @"thong-ke-cham-cong-nha-may-thang-" + thang;
+            string sFileName = @"thong-ke-cham-cong";
+
+            var duration = Tu.ToString("ddMMyyyy") + "-" + Den.ToString("ddMMyyyy");
+            sFileName += "-" + duration;
+            if (!string.IsNullOrEmpty(khoi))
+            {
+                sFileName += "-" + khoi;
+            }
             if (!string.IsNullOrEmpty(phongban))
             {
-                sFileName += phongban;
+                sFileName += "-" + phongban;
+            }
+            if (!string.IsNullOrEmpty(id))
+            {
+                sFileName += "-" + id;
             }
             sFileName += "-V" + DateTime.Now.ToString("ddMMyyyyHHmmss") + ".xlsx";
 
@@ -1130,100 +1175,284 @@ namespace erp.Controllers
             {
                 IWorkbook workbook = new XSSFWorkbook();
                 #region Styling
-                var cellStyleBorder = workbook.CreateCellStyle();
-                cellStyleBorder.BorderBottom = BorderStyle.Thin;
-                cellStyleBorder.BorderLeft = BorderStyle.Thin;
-                cellStyleBorder.BorderRight = BorderStyle.Thin;
-                cellStyleBorder.BorderTop = BorderStyle.Thin;
-                cellStyleBorder.Alignment = HorizontalAlignment.Center;
-                cellStyleBorder.VerticalAlignment = VerticalAlignment.Center;
+                XSSFCellStyle defaultStyle = (XSSFCellStyle)workbook.CreateCellStyle();
+                //defaultStyle.WrapText = true;
+                //defaultStyle.Alignment = HorizontalAlignment.Center;
+                //defaultStyle.VerticalAlignment = VerticalAlignment.Top;
+                defaultStyle.BorderBottom = BorderStyle.Thin;
+                defaultStyle.BorderTop = BorderStyle.Thin;
+                defaultStyle.BorderLeft = BorderStyle.Thin;
+                defaultStyle.BorderRight = BorderStyle.Thin;
 
                 var cellStyleHeader = workbook.CreateCellStyle();
-                //cellStyleHeader.CloneStyleFrom(cellStyleBorder);
-                //cellStyleHeader.FillForegroundColor = HSSFColor.Blue.Index2;
                 cellStyleHeader.FillForegroundColor = HSSFColor.Grey25Percent.Index;
                 cellStyleHeader.FillPattern = FillPattern.SolidForeground;
 
-                var font = workbook.CreateFont();
-                font.FontHeightInPoints = 11;
+                var fontbold = workbook.CreateFont();
+                fontbold.FontHeightInPoints = 11;
                 //font.FontName = "Calibri";
-                font.Boldweight = (short)FontBoldWeight.Bold;
+                fontbold.Boldweight = (short)FontBoldWeight.Bold;
+
+                XSSFCellStyle TitleStyle = (XSSFCellStyle)workbook.CreateCellStyle();
+                //defaultStyle.WrapText = false;
+                //TitleStyle.Alignment = HorizontalAlignment.Center;
+                //TitleStyle.VerticalAlignment = VerticalAlignment.Top;
+                TitleStyle.BorderBottom = BorderStyle.Thin;
+                TitleStyle.BorderTop = BorderStyle.Thin;
+                TitleStyle.BorderLeft = BorderStyle.Thin;
+                TitleStyle.BorderRight = BorderStyle.Thin;
+
                 #endregion
 
-                ISheet sheet1 = workbook.CreateSheet("Cong" + DateTime.Now.Month.ToString("00"));
+                ISheet sheet1 = workbook.CreateSheet("Cong-" + duration);
+
                 //sheet1.AddMergedRegion(new CellRangeAddress(2, 2, 3, 7));
                 //sheet1.AddMergedRegion(new CellRangeAddress(2, 2, 8, 13));
 
                 var rowIndex = 0;
                 IRow row = sheet1.CreateRow(rowIndex);
-                row.CreateCell(0, CellType.String).SetCellValue("Công ty TNHH CNSH SÀI GÒN XANH ");
+                //sheet1.AddMergedRegion(new CellRangeAddress(rowIndex, rowIndex, 0, 2));
+                var cell = row.CreateCell(0, CellType.String);
+                cell.SetCellValue("Công ty TNHH CNSH SÀI GÒN XANH");
+                cell.CellStyle = TitleStyle;
+                cell.CellStyle.SetFont(fontbold);
                 rowIndex++;
 
                 row = sheet1.CreateRow(rowIndex);
-                row.CreateCell(0, CellType.String).SetCellValue("127 Nguyễn Trọng Tuyển - P.15 - Q.Phú Nhuận - Tp HCM");
+                cell = row.CreateCell(0, CellType.String);
+                cell.SetCellValue("127 Nguyễn Trọng Tuyển - P.15 - Q.Phú Nhuận - Tp HCM");
+                cell.CellStyle = TitleStyle;
                 rowIndex++;
 
                 row = sheet1.CreateRow(rowIndex);
-                row.CreateCell(0, CellType.String).SetCellValue("Điện thoại: (028)-39971869 − (028)-38442457");
+                cell = row.CreateCell(0, CellType.String);
+                cell.SetCellValue("Điện thoại: (028)-39971869 − (028)-38442457");
+                cell.CellStyle = TitleStyle;
                 rowIndex++;
 
                 row = sheet1.CreateRow(rowIndex);
-                row.CreateCell(0, CellType.String).SetCellValue("BẢNG THỐNG KÊ CHẤM CÔNG");
+                cell = row.CreateCell(0, CellType.String);
+                cell.SetCellValue("BẢNG THỐNG KÊ CHẤM CÔNG");
+                cell.CellStyle = TitleStyle;
+                cell.CellStyle.SetFont(fontbold);
                 rowIndex++;
 
                 row = sheet1.CreateRow(rowIndex);
-                row.CreateCell(0, CellType.String).SetCellValue("BẢNG THỐNG KÊ CHẤM CÔNG");
+                cell = row.CreateCell(0, CellType.String);
+                cell.SetCellValue("Từ ngày " + Tu.ToString("dd/MM/yyyy") + " đến ngày " + Den.ToString("dd/MM/yyyy"));
+                cell.CellStyle = TitleStyle;
                 rowIndex++;
 
                 row = sheet1.CreateRow(rowIndex);
-                row.CreateCell(0, CellType.String).SetCellValue("Từ ngày");
-                row.CreateCell(1, CellType.Numeric).SetCellValue(DateTime.Now.Month);
-                row.CreateCell(2, CellType.String).SetCellValue("đến ngày");
-                row.CreateCell(3, CellType.Numeric).SetCellValue(DateTime.Now.Year);
+                cell = row.CreateCell(0, CellType.String);
+                cell.SetCellValue(string.Empty);
+                cell.CellStyle = TitleStyle;
+                rowIndex++;
+
+                // https://stackoverflow.com/questions/51681846/rowspan-and-colspan-in-apache-poi
 
                 row = sheet1.CreateRow(rowIndex);
-                row.CreateCell(0, CellType.String).SetCellValue("Tháng");
-                row.CreateCell(1, CellType.Numeric).SetCellValue(DateTime.Now.Month);
-                row.CreateCell(2, CellType.String).SetCellValue("Năm");
-                row.CreateCell(3, CellType.Numeric).SetCellValue(DateTime.Now.Year);
+                int cellNo = 0;
+                sheet1.AddMergedRegion(new CellRangeAddress(rowIndex, rowIndex+1, cellNo, cellNo));
+                cell = row.CreateCell(cellNo, CellType.String);
+                cell.SetCellValue("#");
+                cell.CellStyle.SetFont(fontbold);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+                cellNo++;
 
-                // Set style
-                for (int i = 0; i <= 3; i++)
+                sheet1.AddMergedRegion(new CellRangeAddress(rowIndex, rowIndex + 1, cellNo, cellNo));
+                cell = row.CreateCell(cellNo, CellType.String);
+                cell.SetCellValue("Mã NV");
+                cell.CellStyle.SetFont(fontbold);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+                cellNo++;
+
+                sheet1.AddMergedRegion(new CellRangeAddress(rowIndex, rowIndex + 1, cellNo, cellNo));
+                cell = row.CreateCell(cellNo, CellType.String);
+                cell.SetCellValue("Họ tên");
+                cell.CellStyle.SetFont(fontbold);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+                cellNo++;
+
+                sheet1.AddMergedRegion(new CellRangeAddress(rowIndex, rowIndex + 1, cellNo, cellNo));
+                cell = row.CreateCell(cellNo, CellType.String);
+                cell.SetCellValue("Chức vụ");
+                cell.CellStyle.SetFont(fontbold);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+                cellNo++;
+
+                sheet1.AddMergedRegion(new CellRangeAddress(rowIndex, rowIndex + 1, cellNo, cellNo));
+                cell = row.CreateCell(cellNo, CellType.String);
+                cell.SetCellValue("Mã chấm công");
+                cell.CellStyle.SetFont(fontbold);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+                cellNo++;
+
+                sheet1.AddMergedRegion(new CellRangeAddress(rowIndex, rowIndex + 1, cellNo, cellNo));
+                cell = row.CreateCell(cellNo, CellType.String);
+                cell.SetCellValue("");
+                cell.CellStyle.SetFont(fontbold);
+                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
+                cellNo++;
+
+                for (DateTime date = Tu; date <= Den; date = date.AddDays(1))
                 {
-                    row.Cells[i].CellStyle = cellStyleHeader;
+                    cell = row.CreateCell(cellNo); // cell B1
+                    cell.SetCellValue(date.Day);
+                    // set horizontal alignment center
+                    cell.CellStyle.SetFont(fontbold);
+                    CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, HorizontalAlignment.Center);
+                    cellNo++;
                 }
-                row.Cells[1].CellStyle.SetFont(font);
-                row.Cells[3].CellStyle.SetFont(font);
                 rowIndex++;
-                //https://stackoverflow.com/questions/51681846/rowspan-and-colspan-in-apache-poi
 
                 row = sheet1.CreateRow(rowIndex);
-                row.CreateCell(0, CellType.String).SetCellValue("#");
-                row.CreateCell(1, CellType.String).SetCellValue("Mã nhân viên");
-                row.CreateCell(2, CellType.String).SetCellValue("Họ tên");
-                row.CreateCell(3, CellType.String).SetCellValue("Chức vụ");
-                row.CreateCell(4, CellType.String).SetCellValue("Công tổng");
-                row.CreateCell(5, CellType.String).SetCellValue("Cơm SX");
-                row.CreateCell(6, CellType.String).SetCellValue("Cơm KD");
-                // Set style
-                for (int i = 0; i <= 6; i++)
+                cellNo = 6;
+                for (DateTime date = Tu; date <= Den; date = date.AddDays(1.0))
                 {
-                    row.Cells[i].CellStyle = cellStyleHeader;
+                    cell = row.CreateCell(cellNo); // cell B1
+                    cell.SetCellValue(Constants.DayOfWeekT2(date));
+                    // set horizontal alignment center
+                    cell.CellStyle.SetFont(fontbold);
+                    CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, HorizontalAlignment.Center);
+                    cellNo++;
                 }
+                rowIndex++;
 
-
-                for (int i = 1; i <= 50; i++)
+                var groups = (from s in times
+                              group s by new
+                              {
+                                  s.EmployeeId,
+                                  s.EmployeeName
+                              }
+                              into l
+                              select new
+                              {
+                                  l.Key.EmployeeId,
+                                  l.Key.EmployeeName,
+                                  timekeepers = l.ToList(),
+                              }).ToList();
+                int order = 1;
+                foreach (var group in groups)
                 {
-                    row = sheet1.CreateRow(rowIndex + 1);
-                    //row.CreateCell(0, CellType.Numeric).SetCellValue(i);
-                    row.CreateCell(1, CellType.String).SetCellValue(string.Empty);
-                    row.CreateCell(2, CellType.String).SetCellValue(string.Empty);
-                    row.CreateCell(3, CellType.String).SetCellValue(string.Empty);
-                    row.CreateCell(4, CellType.Numeric).SetCellValue(string.Empty);
-                    row.CreateCell(5, CellType.Numeric).SetCellValue(string.Empty);
-                    row.CreateCell(6, CellType.Numeric).SetCellValue(string.Empty);
+                    double workday = 0;
+                    double late = 0;
+                    double early = 0;
+                    var employeeInfo = dbContext.Employees.Find(m => m.Id.Equals(group.EmployeeId)).FirstOrDefault();
+                    row = sheet1.CreateRow(rowIndex);
+
+                    cellNo = 0;
+                    sheet1.AddMergedRegion(new CellRangeAddress(rowIndex, rowIndex + 3, cellNo, cellNo));
+                    cell = row.CreateCell(cellNo, CellType.String);
+                    cell.SetCellValue(order);
+                    cellNo++;
+
+                    sheet1.AddMergedRegion(new CellRangeAddress(rowIndex, rowIndex + 3, cellNo, cellNo));
+                    cell = row.CreateCell(cellNo, CellType.String);
+                    cell.SetCellValue(employeeInfo.Code + " (" + employeeInfo.CodeOld + ")");
+                    cellNo++;
+
+                    sheet1.AddMergedRegion(new CellRangeAddress(rowIndex, rowIndex + 3, cellNo, cellNo));
+                    cell = row.CreateCell(cellNo, CellType.String);
+                    cell.SetCellValue(employeeInfo.FullName);
+                    cellNo++;
+
+                    sheet1.AddMergedRegion(new CellRangeAddress(rowIndex, rowIndex + 3, cellNo, cellNo));
+                    cell = row.CreateCell(cellNo, CellType.String);
+                    cell.SetCellValue(employeeInfo.Title);
+                    cellNo++;
+
+                    sheet1.AddMergedRegion(new CellRangeAddress(rowIndex, rowIndex + 3, cellNo, cellNo));
+                    cell = row.CreateCell(cellNo, CellType.String);
+                    cell.SetCellValue(Convert.ToInt32(group.timekeepers[0].EnrollNumber).ToString("0000"));
+                    cellNo++;
+
+                    cell = row.CreateCell(cellNo, CellType.String);
+                    cell.SetCellValue("Vào 1");
+
                     rowIndex++;
+                    var rowout1 = sheet1.CreateRow(rowIndex);
+                    rowIndex++;
+                    var rowin2 = sheet1.CreateRow(rowIndex);
+                    rowIndex++;
+                    var rowout2 = sheet1.CreateRow(rowIndex);
+
+                    cell = rowout1.CreateCell(cellNo, CellType.String);
+                    cell.SetCellValue("Ra 1");
+
+                    cell = rowin2.CreateCell(cellNo, CellType.String);
+                    cell.SetCellValue("Vào 2");
+
+                    cell = rowout2.CreateCell(cellNo, CellType.String);
+                    cell.SetCellValue("Ra 2");
+                    cellNo++;
+
+                    var timesSort = group.timekeepers.OrderBy(m => m.Date).ToList();
+                    for (DateTime date = Tu; date <= Den; date = date.AddDays(1.0))
+                    {
+                        var item = timesSort.Where(m => m.Date.Equals(date)).FirstOrDefault();
+                        if (item != null)
+                        {
+                            workday += item.WorkDay;
+                            late += item.Late.TotalMinutes;
+                            early += item.Early.TotalMinutes;
+                            var displayIn1 = string.Empty;
+                            var displayIn2 = string.Empty;
+                            var displayOut1 = string.Empty;
+                            var displayOut2 = string.Empty;
+                            var displayReason = string.Empty;
+                            if (item.In.HasValue)
+                            {
+                                displayIn1 = item.In.ToString();
+                            }
+                            if (item.Out.HasValue)
+                            {
+                                displayOut1 = item.Out.ToString();
+                            }
+                            // displayInOut
+                            if (item.Logs != null && item.Logs.Count > 0)
+                            {
+                                foreach (var log in item.Logs)
+                                {
+                                    //< p style = "margin-bottom: 0;" >< small > @log.Date.ToString("dd/MM/yyyy HH:mm:ss") </ small ></ p >
+                                }
+                            }
+                            if (!string.IsNullOrEmpty(item.Reason))
+                            {
+                                displayReason = item.Reason;
+                                if (!string.IsNullOrEmpty(item.ReasonDetail))
+                                {
+                                    displayReason += ". Chi tiết: " + item.ReasonDetail;
+                                }
+                                // < small > @displayReason </ small >
+                            }
+
+                            cell = row.CreateCell(cellNo, CellType.String);
+                            cell.SetCellValue(displayIn1);
+
+                            cell = rowout1.CreateCell(cellNo, CellType.String);
+                            cell.SetCellValue(displayOut1);
+
+                            cellNo++;
+                        }
+                        else
+                        {
+                            cell = row.CreateCell(cellNo, CellType.String);
+                            cell.SetCellValue(Constants.NA);
+                            cellNo++;
+                        }
+                    }
+
+                    rowIndex++;
+                    order++;
                 }
+
+                //sheet1.SetColumnWidth(1, 100);
+                for (int col = 0; col <= 10; col++)
+                {
+                    sheet1.SetDefaultColumnStyle(col, defaultStyle);
+                }
+                
 
                 workbook.Write(fs);
             }

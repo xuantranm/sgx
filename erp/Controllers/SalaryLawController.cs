@@ -50,18 +50,6 @@ namespace erp.Controllers
             _logger = logger;
         }
 
-        public IActionResult Index()
-        {
-            var loginId = User.Identity.Name;
-            // get information user
-            var employee = dbContext.Employees.Find(m => m.Id.Equals(loginId)).FirstOrDefault();
-            var viewModel = new SalaryViewModel
-            {
-                Employee = employee
-            };
-            return View(viewModel);
-        }
-
         [Route(Constants.LinkSalary.BangLuong)]
         public async Task<IActionResult> BangLuong(string thang)
         {

@@ -22,6 +22,10 @@ namespace Models
 
         public string Department { get; set; }
 
+        public string DepartmentId { get; set; }
+
+        public string DepartmentAlias { get; set; }
+
         public string EmployeeTitle { get; set; }
 
         public string EnrollNumber { get; set; }

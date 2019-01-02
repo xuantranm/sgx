@@ -114,14 +114,14 @@
                             <a href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.CongTong" class="btn btn-default btn-list" data-toggle="tooltip" title="Bấm trở về.">
                                 <i class="icon icon-back"></i>Trở về
                             </a>
-                            <a href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.NhaMayTemplate" class="btn btn-success btn-list" data-toggle="tooltip" title="Bấm trở về.">
+                            <a href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.SanXuatTemplate" class="btn btn-success btn-list" data-toggle="tooltip" title="Bấm trở về.">
                                 <i class="icon icon-back"></i>Tải mẫu dữ liệu
                             </a>
                         </div>
                     </div>
                     <div class="row mb-3">
                         <div class="col-12">
-                            <form method="post" action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.NhaMayImport" enctype="multipart/form-data">
+                            <form method="post" action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.SanXuatImport" enctype="multipart/form-data">
                                 <div class="row">
                                     <div class="col-md-4">
                                         <input type="file" name="files" class="form-control fUpload" />
@@ -159,6 +159,9 @@
                                             <td>Công tổng</td>
                                             <td>Cơm SX</td>
                                             <td>Cơm KD</td>
+                                            <td>Giờ tăng ca</td>
+                                            <td>Giờ làm việc CN</td>
+                                            <td>Giờ làm việc Lễ/Tết</td>
                                         </tr>
                                     </thead>
 
@@ -166,31 +169,40 @@
                                         @{
                                             int i = 1;
                                             int iE = 0;
-                                            foreach (var item in Model.SalaryNhaMayCongs)
+                                            foreach (var item in Model.SalarySanXuatCongs)
                                             {
-                                                <tr class="tr-@iE" data-id="@iE">
-                                                    <td>
-                                                        @i
-                                                        <input type="hidden" name="SalaryNhaMayCongs[@iE].Id" value="@item.Id" />
-                                                        <input type="hidden" name="SalaryNhaMayCongs[@iE].EmployeeId" value="@item.EmployeeId" />
-                                                        <input type="hidden" name="SalaryNhaMayCongs[@iE].EmployeeName" value="@item.EmployeeName" />
-                                                        <input type="hidden" name="SalaryNhaMayCongs[@iE].EmployeeChucVu" value="@item.EmployeeChucVu" />
-                                                        <input type="hidden" name="SalaryNhaMayCongs[@iE].Month" value="@item.Month" />
-                                                        <input type="hidden" name="SalaryNhaMayCongs[@iE].Year" value="@item.Year" />
-                                                    </td>
-                                                    <td>@item.EmployeeCode</td>
-                                                    <td nowrap>@item.EmployeeName</td>
-                                                    <td nowrap>@item.EmployeeChucVu</td>
-                                                    <td>
-                                                        <input value="@item.CongTong" name="SaleKPIEmployees[@iE].CongTong" class="form-control width100 numeric congtong-@iE" data-id="congtong-@iE" />
-                                                    </td>
-                                                    <td>
-                                                        <input value="@item.ComSX" name="SaleKPIEmployees[@iE].ComSX" class="form-control width100 numeric comsx-@iE" data-id="comsx-@iE" />
-                                                    </td>
-                                                    <td>
-                                                        <input value="@item.ComKD" name="SaleKPIEmployees[@iE].ComKD" class="form-control width100 numeric comkd-@iE" data-id="comkd-@iE" />
-                                                    </td>
-                                                </tr>
+                                        <tr class="tr-@iE" data-id="@iE">
+                                            <td>
+                                                @i
+                                                <input type="hidden" name="SalarySanXuatCongs[@iE].Id" value="@item.Id" />
+                                                <input type="hidden" name="SalarySanXuatCongs[@iE].EmployeeId" value="@item.EmployeeId" />
+                                                <input type="hidden" name="SalarySanXuatCongs[@iE].EmployeeName" value="@item.EmployeeName" />
+                                                <input type="hidden" name="SalarySanXuatCongs[@iE].EmployeeChucVu" value="@item.EmployeeChucVu" />
+                                                <input type="hidden" name="SalarySanXuatCongs[@iE].Month" value="@item.Month" />
+                                                <input type="hidden" name="SalarySanXuatCongs[@iE].Year" value="@item.Year" />
+                                            </td>
+                                            <td>@item.EmployeeCode</td>
+                                            <td nowrap>@item.EmployeeName</td>
+                                            <td nowrap>@item.EmployeeChucVu</td>
+                                            <td>
+                                                <input value="@item.CongTong" name="SalarySanXuatCongs[@iE].CongTong" class="form-control width100 numeric congtong-@iE" data-id="congtong-@iE" />
+                                            </td>
+                                            <td>
+                                                <input value="@item.ComSX" name="SalarySanXuatCongs[@iE].ComSX" class="form-control width100 numeric comsx-@iE" data-id="comsx-@iE" />
+                                            </td>
+                                            <td>
+                                                <input value="@item.ComKD" name="SalarySanXuatCongs[@iE].ComKD" class="form-control width100 numeric comkd-@iE" data-id="comkd-@iE" />
+                                            </td>
+                                            <td>
+                                                <input value="@item.GioTangCa" name="SalarySanXuatCongs[@iE].GioTangCa" class="form-control width100 numeric giotangca-@iE" data-id="giotangca-@iE" />
+                                            </td>
+                                            <td>
+                                                <input value="@item.GioLamViecCN" name="SalarySanXuatCongs[@iE].GioLamViecCN" class="form-control width100 numeric giolamvieccn-@iE" data-id="giolamvieccn-@iE" />
+                                            </td>
+                                            <td>
+                                                <input value="@item.GioLamViecLeTet" name="SalarySanXuatCongs[@iE].GioLamViecLeTet" class="form-control width100 numeric giolamviecletet-@iE" data-id="giolamviecletet-@iE" />
+                                            </td>
+                                        </tr>
                                                 i++;
                                                 iE++;
                                             }
@@ -207,7 +219,7 @@
 </div>
 
 @section scripts {
-    <script type="text/javascript" src="~/js/salary-nha-may-cong-tong-update.js?@DateTime.Now.Ticks"></script>
+    <script type="text/javascript" src="~/js/salary-san-xuat-cong-tong-update.js?v-@DateTime.Now.Ticks"></script>
 }
 
 

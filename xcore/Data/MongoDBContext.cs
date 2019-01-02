@@ -326,7 +326,13 @@ namespace Data
         #endregion
 
         #region SAN XUAT
-
+        public IMongoCollection<SalarySanXuatCong> SalarySanXuatCongs
+        {
+            get
+            {
+                return _database.GetCollection<SalarySanXuatCong>("SalarySanXuatCongs");
+            }
+        }
         #endregion
 
         public IMongoCollection<TrainningType> TrainningTypes

@@ -74,6 +74,9 @@ namespace ViewModels
         // NHA MAY
         public IList<SalaryNhaMayCong> SalaryNhaMayCongs { get; set; }
 
+        // SAN XUAT
+        public IList<SalarySanXuatCong> SalarySanXuatCongs { get; set; }
+
         public int Records { get; set; }
 
         public int Pages { get; set; }

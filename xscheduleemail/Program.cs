@@ -7,6 +7,7 @@ using MongoDB.Driver;
 using Services;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -18,21 +19,26 @@ namespace xscheduleemail
     {
         static void Main(string[] args)
         {
-            SendMail();
+            #region setting
+            var mode = Convert.ToInt32(ConfigurationSettings.AppSettings.Get("mode").ToString());
+            var isMail = ConfigurationSettings.AppSettings.Get("isMail").ToString() == "true" ? true : false;
+            var connection = "mongodb://localhost:27017";
+            var database = "tribat";
+            #endregion
+
+            SendMail(mode, isMail, connection, database);
         }
 
-        static void SendMail()
+        static void SendMail(int mode, bool isMail, string connection, string database)
         {
-            #region Connection
-            //var connectString = "mongodb://192.168.2.223:27017";
-            var connectString = "mongodb://localhost:27017";
-            MongoDBContext.ConnectionString = connectString;
-            MongoDBContext.DatabaseName = "tribat";
+            #region Connection, Setting & Filter
+            MongoDBContext.ConnectionString = connection;
+            MongoDBContext.DatabaseName = database;
             MongoDBContext.IsSSL = true;
             MongoDBContext dbContext = new MongoDBContext();
             #endregion
 
-            var listEmail = dbContext.ScheduleEmails.Find(m => m.Status.Equals(4)).ToList();
+            var listEmail = dbContext.ScheduleEmails.Find(m => m.Status.Equals(mode)).ToList();
 
             if (listEmail != null && listEmail.Count > 0)
             {
@@ -51,7 +57,10 @@ namespace xscheduleemail
                             Type = item.Type
                         };
 
-                        new AuthMessageSender().SendEmailSchedule(emailMessage, item.Id);
+                        if (isMail)
+                        {
+                            new AuthMessageSender().SendEmailSchedule(emailMessage, item.Id);
+                        }
                     }
                 }
             }

@@ -206,5 +206,15 @@ db.EmployeeWorkTimeLogs.update({}, {$unset: {Workcode: 0}}, false, true);
 db.EmployeeWorkTimeLogs.update({}, {$set: {Workcode : 1 }}, false, true);
 // Run xdatafix
 
+// 25.12.2018 (runned 03.01.2019)
+db.SalaryNhaMayCongs.update({}, {$set: {GioTangCa : 0 }}, false, true);
+db.SalaryNhaMayCongs.update({}, {$set: {GioLamViecCN : 0 }}, false, true);
+db.SalaryNhaMayCongs.update({}, {$set: {GioLamViecLeTet : 0 }}, false, true);
+// Run Update DepartmentId, DepartmentAlias (for search optimize)
+/fix/cap-nhat-phong-ban-timers/
+
+
 // Continute
+
+
 

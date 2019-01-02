@@ -64,6 +64,37 @@ namespace erp.Controllers
             _logger = logger;
         }
 
+        [Route("/fix/cap-nhat-phong-ban-timers/")]
+        public IActionResult PhongBanTimers()
+        {
+            var departments = dbContext.Departments.Find(m => m.Enable.Equals(true)).ToList();
+
+            var times = dbContext.EmployeeWorkTimeLogs.Find(m => true).ToList();
+            foreach (var time in times)
+            {
+                var department = !string.IsNullOrEmpty(time.Department) ? time.Department.ToUpper() : string.Empty;
+                var departmentId = string.Empty;
+                var departmentAlias = string.Empty;
+
+                if (!string.IsNullOrEmpty(time.Department))
+                {
+                    var departmentItem = departments.Where(m => m.Name.Equals(department)).FirstOrDefault();
+                    if (departmentItem != null)
+                    {
+                        departmentId = departmentItem.Id;
+                        departmentAlias = departmentItem.Alias;
+                    }
+                }
+
+                var filter = Builders<EmployeeWorkTimeLog>.Filter.Eq(m => m.Id, time.Id);
+                var update = Builders<EmployeeWorkTimeLog>.Update
+                    .Set(m => m.DepartmentId, departmentId)
+                    .Set(m => m.DepartmentAlias, departmentAlias);
+                dbContext.EmployeeWorkTimeLogs.UpdateOne(filter, update);
+            }
+            return Json(new { result = true, source = "fix-data", message = "Cập nhật thành công" });
+        }
+
         [Route("/fix/gui-mail-nhom-nhan-su-moi/")]
         public IActionResult SendMailNewUserMulti(string group)
         {

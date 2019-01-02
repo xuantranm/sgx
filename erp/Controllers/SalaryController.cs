@@ -107,7 +107,7 @@ namespace erp.Controllers
                     Year = endDate.AddMonths(1).Year
                 });
             }
-            var sortTimes = monthYears.OrderByDescending(x => x.Year).OrderByDescending(x => x.Month).ToList();
+            var sortTimes = monthYears.OrderByDescending(x => x.Month).OrderByDescending(x => x.Year).ToList();
             #endregion
 
             #region Times
@@ -207,7 +207,7 @@ namespace erp.Controllers
                     Year = endDate.AddMonths(1).Year
                 });
             }
-            var sortTimes = monthYears.OrderByDescending(x => x.Year).OrderByDescending(x => x.Month).ToList();
+            var sortTimes = monthYears.OrderByDescending(x => x.Month).OrderByDescending(x => x.Year).ToList();
             #endregion
 
             #region Times
@@ -402,7 +402,7 @@ namespace erp.Controllers
                     Year = endDate.AddMonths(1).Year
                 });
             }
-            var sortTimes = monthYears.OrderByDescending(x => x.Year).OrderByDescending(x => x.Month).ToList();
+            var sortTimes = monthYears.OrderByDescending(x => x.Month).OrderByDescending(x => x.Year).ToList();
             #endregion
 
             #region Times
@@ -475,7 +475,7 @@ namespace erp.Controllers
                     Year = endDate.AddMonths(1).Year
                 });
             }
-            var sortTimes = monthYears.OrderByDescending(x => x.Year).OrderByDescending(x => x.Month).ToList();
+            var sortTimes = monthYears.OrderByDescending(x => x.Month).OrderByDescending(x => x.Year).ToList();
             #endregion
 
             #region Times
@@ -595,7 +595,7 @@ namespace erp.Controllers
                     Year = endDate.AddMonths(1).Year
                 });
             }
-            var sortTimes = monthYears.OrderByDescending(x => x.Year).OrderByDescending(x => x.Month).ToList();
+            var sortTimes = monthYears.OrderByDescending(x => x.Month).OrderByDescending(x => x.Year).ToList();
             #endregion
 
             #region Times
@@ -886,7 +886,7 @@ namespace erp.Controllers
                     Year = endDate.AddMonths(1).Year
                 });
             }
-            var sortTimes = monthYears.OrderByDescending(x => x.Year).OrderByDescending(x => x.Month).ToList();
+            var sortTimes = monthYears.OrderByDescending(x => x.Month).OrderByDescending(x => x.Year).ToList();
             #endregion
 
             #region Times
@@ -963,7 +963,7 @@ namespace erp.Controllers
                     Year = endDate.AddMonths(1).Year
                 });
             }
-            var sortTimes = monthYears.OrderByDescending(x => x.Year).OrderByDescending(x => x.Month).ToList();
+            var sortTimes = monthYears.OrderByDescending(x => x.Month).OrderByDescending(x => x.Year).ToList();
             #endregion
 
             #region Times
@@ -1101,7 +1101,7 @@ namespace erp.Controllers
                     Year = endDate.AddMonths(1).Year
                 });
             }
-            var sortTimes = monthYears.OrderByDescending(x => x.Year).OrderByDescending(x => x.Month).ToList();
+            var sortTimes = monthYears.OrderByDescending(x => x.Month).OrderByDescending(x => x.Year).ToList();
             #endregion
 
             #region Times
@@ -1776,7 +1776,7 @@ namespace erp.Controllers
                     Year = endDate.AddMonths(1).Year
                 });
             }
-            var sortTimes = monthYears.OrderByDescending(x => x.Year).OrderByDescending(x => x.Month).ToList();
+            var sortTimes = monthYears.OrderByDescending(x => x.Month).OrderByDescending(x => x.Year).ToList();
             #endregion
 
             #region Times
@@ -1856,7 +1856,7 @@ namespace erp.Controllers
                     Year = endDate.AddMonths(1).Year
                 });
             }
-            var sortTimes = monthYears.OrderByDescending(x => x.Year).OrderByDescending(x => x.Month).ToList();
+            var sortTimes = monthYears.OrderByDescending(x => x.Month).OrderByDescending(x => x.Year).ToList();
             #endregion
 
             #region Times
@@ -2024,7 +2024,7 @@ namespace erp.Controllers
                     Year = endDate.AddMonths(1).Year
                 });
             }
-            var sortTimes = monthYears.OrderByDescending(x => x.Year).OrderByDescending(x => x.Month).ToList();
+            var sortTimes = monthYears.OrderByDescending(x => x.Month).OrderByDescending(x => x.Year).ToList();
             #endregion
 
             #region Times

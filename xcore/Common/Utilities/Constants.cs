@@ -37,6 +37,8 @@ namespace Common.Utilities
 
         public const string DataDuplicate = "Dữ liệu đã tồn tại. Không thể tạo nhiều dữ liệu cùng tên.";
 
+        public const string NA = "N/A";
+
         // System not store db. highest right
         public static class System
         {
@@ -494,7 +496,7 @@ namespace Common.Utilities
             public const string Inputs = "Inputs";
             public const string Outputs = "Outputs";
             public const string Returns = "Returns";
-            public const string NA = "NA";
+            public const string NA = "N/A";
             public const string Employees = "Employees";
             public const string BHYTHospitals = "BHYTHospitals";
 
@@ -690,6 +692,28 @@ namespace Common.Utilities
             else
             {
                 return "00:00";
+            }
+        }
+
+        public static string DayOfWeekT2(DateTime date)
+        {
+            int today = (int)date.DayOfWeek;
+            switch (today)
+            {
+                case (int)DayOfWeek.Monday:
+                    return "T2";
+                case (int)DayOfWeek.Tuesday:
+                    return "T3";
+                case (int)DayOfWeek.Wednesday:
+                    return "T4";
+                case (int)DayOfWeek.Thursday:
+                    return "T5";
+                case (int)DayOfWeek.Friday:
+                    return "T6";
+                case (int)DayOfWeek.Saturday:
+                    return "T7";
+                default:
+                    return "CN";
             }
         }
     }

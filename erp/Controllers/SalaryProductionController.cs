@@ -95,7 +95,7 @@ namespace erp.Controllers
                     Year = endDate.AddMonths(1).Year
                 });
             }
-            var sortTimes = monthYears.OrderByDescending(x => x.Year).OrderByDescending(x => x.Month).ToList();
+            var sortTimes = monthYears.OrderByDescending(x => x.Month).OrderByDescending(x => x.Year).ToList();
 
             var departments = await dbContext.Departments.Find(m => m.Enable.Equals(true)).SortBy(m=>m.Order).ToListAsync();
 
@@ -414,6 +414,10 @@ namespace erp.Controllers
             decimal mucDatTrongThang = 0;
             decimal luongTheoDoanhThuDoanhSo = 0;
 
+            decimal congTong = 0;
+            decimal comSX = 0;
+            decimal comKD = 0;
+
             var chamCongs = dbContext.EmployeeWorkTimeMonthLogs.Find(m => m.EmployeeId.Equals(employeeId) & m.Year.Equals(year) & m.Month.Equals(month)).ToList();
 
             decimal nghikhongphep = 0;
@@ -429,9 +433,11 @@ namespace erp.Controllers
                 ngayNghiPhepNam = 0;
                 ngayNghiPhepHuongLuong = 0;
                 ngayNghiLeTetHuongLuong = 0;
-                congCNGio = 0;
-                congTangCaNgayThuongGio = 0;
-                congLeTet = 0;
+                // Because don't define cong CN, tang ca, le tet.
+                // Manage in Cong Tong
+                //congCNGio = 0;
+                //congTangCaNgayThuongGio = 0;
+                //congLeTet = 0;
                 foreach (var chamCong in chamCongs)
                 {
                     ngayConglamViec += (decimal)chamCong.Workday;
@@ -439,10 +445,9 @@ namespace erp.Controllers
                     nghikhongphep += (decimal)chamCong.NghiKhongPhep + (decimal)chamCong.KhongChamCong;
                     ngayNghiPhepHuongLuong += (decimal)chamCong.NghiHuongLuong;
                     ngayNghiLeTetHuongLuong += (decimal)chamCong.NghiLe;
-                    congCNGio += (decimal)chamCong.CongCNGio;
-                    congTangCaNgayThuongGio += (decimal)chamCong.CongTangCaNgayThuongGio;
-                    phutcongTangCaNgayThuong += congTangCaNgayThuongGio * 60;
-                    congLeTet += (decimal)chamCong.CongLeTet;
+                    //congCNGio += (decimal)chamCong.CongCNGio;
+                    //congTangCaNgayThuongGio += (decimal)chamCong.CongTangCaNgayThuongGio;
+                    //congLeTet += (decimal)chamCong.CongLeTet;
                 }
                 if (ngayConglamViec == 0)
                 {
@@ -489,6 +494,22 @@ namespace erp.Controllers
             //=L21/$N$1*M21
             decimal luongDinhMuc = luongCB / mauSo * ngayConglamViec;
 
+            // RESOLVE CONG TONG. UPDATE TO DB.
+            // Query base employee, time.
+            // Manage in collection [SalaryNhaMayCongs]
+            var dataPr = dbContext.SalarySanXuatCongs.Find(m => m.Enable.Equals(true) && m.EmployeeId.Equals(employeeId) && m.Month.Equals(month) && m.Year.Equals(year)).FirstOrDefault();
+
+            if (dataPr != null)
+            {
+                congTong = dataPr.CongTong;
+                comSX = dataPr.ComSX * mauSoTienCom;
+                comKD = dataPr.ComKD * mauSoTienCom;
+                congCNGio += dataPr.GioLamViecCN;
+                congTangCaNgayThuongGio += dataPr.GioTangCa;
+                congLeTet += dataPr.GioLamViecLeTet;
+            }
+            
+
             //=((L21/$N$1)*M21)
             //+(O21*(L21/$N$1))
             //+((P21/8)*1.5*(L21/$N$1))
@@ -501,20 +522,6 @@ namespace erp.Controllers
                                     + ((congCNGio / 8) * 2 * (luongCB / mauSo))
                                     + (congLeTet * 3 * (luongCB / mauSo))
                                     + (luongCB / mauSo) * ngayNghiLeTetHuongLuong;
-
-            // RESOLVE CONG TONG. UPDATE TO DB.
-            // Query base employee, time.
-            // Manage in collection [SalaryNhaMayCongs]
-            var dataNM = dbContext.SalaryNhaMayCongs.Find(m => m.Enable.Equals(true) && m.EmployeeId.Equals(employeeId) && m.Month.Equals(month) && m.Year.Equals(year)).FirstOrDefault();
-            decimal congTong = 0;
-            decimal comSX = 0;
-            decimal comKD = 0;
-            if (dataNM != null)
-            {
-                congTong = dataNM.CongTong;
-                comSX = dataNM.ComSX * mauSoTienCom;
-                comKD = dataNM.ComKD * mauSoTienCom;
-            }
 
             decimal luongVuotDinhMuc = congTong - luongDinhMuc;
             if (luongVuotDinhMuc < 0)
@@ -659,7 +666,7 @@ namespace erp.Controllers
             return luongCB;
         }
 
-        #region CONG TONG
+        #region CONG TONG , UPDATE ONLY. INSERT IN FILE IMPORT
         [Route(Constants.LinkSalary.CongTong)]
         public async Task<IActionResult> CongTong(string thang)
         {
@@ -706,7 +713,7 @@ namespace erp.Controllers
                     Year = endDate.AddMonths(1).Year
                 });
             }
-            var sortTimes = monthYears.OrderByDescending(x => x.Year).OrderByDescending(x => x.Month).ToList();
+            var sortTimes = monthYears.OrderByDescending(x => x.Month).OrderByDescending(x => x.Year).ToList();
             #endregion
 
             #region Times
@@ -723,11 +730,11 @@ namespace erp.Controllers
             #endregion
 
 
-            var salaryNhaMayCongs = GetSalaryNhaMayCongs(month, year);
+            var salarySanXuatCongs = GetSalarySanXuatCongs(month, year);
 
             var viewModel = new BangLuongViewModel
             {
-                SalaryNhaMayCongs = salaryNhaMayCongs,
+                SalarySanXuatCongs = salarySanXuatCongs,
                 MonthYears = sortTimes,
                 thang = thang
             };
@@ -781,7 +788,7 @@ namespace erp.Controllers
                     Year = endDate.AddMonths(1).Year
                 });
             }
-            var sortTimes = monthYears.OrderByDescending(x => x.Year).OrderByDescending(x => x.Month).ToList();
+            var sortTimes = monthYears.OrderByDescending(x => x.Month).OrderByDescending(x => x.Year).ToList();
             #endregion
 
             #region Times
@@ -798,11 +805,11 @@ namespace erp.Controllers
             #endregion
 
 
-            var salaryNhaMayCongs = GetSalaryNhaMayCongs(month, year);
+            var salarySanXuatCongs = GetSalarySanXuatCongs(month, year);
 
             var viewModel = new BangLuongViewModel
             {
-                SalaryNhaMayCongs = salaryNhaMayCongs,
+                SalarySanXuatCongs = salarySanXuatCongs,
                 MonthYears = sortTimes,
                 thang = thang
             };
@@ -836,35 +843,38 @@ namespace erp.Controllers
 
             #endregion
 
-            foreach (var item in viewModel.SalaryNhaMayCongs)
+            foreach (var item in viewModel.SalarySanXuatCongs)
             {
-                var builder = Builders<SalaryNhaMayCong>.Filter;
+                var builder = Builders<SalarySanXuatCong>.Filter;
                 var filter = builder.Eq(m => m.Id, item.Id);
-                var update = Builders<SalaryNhaMayCong>.Update
+                var update = Builders<SalarySanXuatCong>.Update
                     .Set(m => m.CongTong, item.CongTong)
                     .Set(m => m.ComSX, item.ComSX)
                     .Set(m => m.ComKD, item.ComKD)
+                    .Set(m => m.GioTangCa, item.GioTangCa)
+                    .Set(m => m.GioLamViecCN, item.GioLamViecCN)
+                    .Set(m => m.GioLamViecLeTet, item.GioLamViecLeTet)
                     .Set(m => m.UpdatedOn, DateTime.Now.ToString("dd/MM/yyyy HH:mm"));
-                dbContext.SalaryNhaMayCongs.UpdateOne(filter, update);
+                dbContext.SalarySanXuatCongs.UpdateOne(filter, update);
             }
 
             return Json(new { result = true, source = "update", message = "Thành công" });
         }
 
-        private List<SalaryNhaMayCong> GetSalaryNhaMayCongs(int month, int year)
+        private List<SalarySanXuatCong> GetSalarySanXuatCongs(int month, int year)
         {
-            var results = dbContext.SalaryNhaMayCongs.Find(m => m.Enable.Equals(true) && m.Month.Equals(month) && m.Year.Equals(year)).ToList();
+            var results = dbContext.SalarySanXuatCongs.Find(m => m.Enable.Equals(true) && m.Month.Equals(month) && m.Year.Equals(year)).ToList();
             return results;
         }
 
         #endregion
 
         #region IMPORT DATA
-        [Route(Constants.LinkSalary.NhaMayTemplate)]
-        public async Task<IActionResult> NhaMayTemplate(string fileName)
+        [Route(Constants.LinkSalary.SanXuatTemplate)]
+        public async Task<IActionResult> SanXuatTemplate(string fileName)
         {
             string exportFolder = Path.Combine(_env.WebRootPath, "exports");
-            string sFileName = @"du-lieu-nha-may-thang-" + DateTime.Now.Month + "-V" + DateTime.Now.ToString("ddMMyyyyHHmmss") + ".xlsx";
+            string sFileName = @"du-lieu-san-xuat-thang-" + DateTime.Now.Month + "-V" + DateTime.Now.ToString("ddMMyyyyHHmmss") + ".xlsx";
             string URL = string.Format("{0}://{1}/{2}", Request.Scheme, Request.Host, sFileName);
             FileInfo file = new FileInfo(Path.Combine(exportFolder, sFileName));
             var memory = new MemoryStream();
@@ -898,7 +908,7 @@ namespace erp.Controllers
 
                 var rowIndex = 0;
                 IRow row = sheet1.CreateRow(rowIndex);
-                row.CreateCell(0, CellType.String).SetCellValue("SỐ LIỆU NHÀ MÁY");
+                row.CreateCell(0, CellType.String).SetCellValue("SỐ LIỆU SẢN XUẤT");
                 rowIndex++;
 
                 row = sheet1.CreateRow(rowIndex);
@@ -924,8 +934,11 @@ namespace erp.Controllers
                 row.CreateCell(4, CellType.String).SetCellValue("Công tổng");
                 row.CreateCell(5, CellType.String).SetCellValue("Cơm SX");
                 row.CreateCell(6, CellType.String).SetCellValue("Cơm KD");
+                row.CreateCell(7, CellType.String).SetCellValue("Giờ tăng ca");
+                row.CreateCell(8, CellType.String).SetCellValue("Giờ làm việc CN");
+                row.CreateCell(9, CellType.String).SetCellValue("Giờ làm việc Lễ/Tết");
                 // Set style
-                for (int i = 0; i <= 6; i++)
+                for (int i = 0; i <= 9; i++)
                 {
                     row.Cells[i].CellStyle = cellStyleHeader;
                 }
@@ -941,6 +954,9 @@ namespace erp.Controllers
                     row.CreateCell(4, CellType.Numeric).SetCellValue(string.Empty);
                     row.CreateCell(5, CellType.Numeric).SetCellValue(string.Empty);
                     row.CreateCell(6, CellType.Numeric).SetCellValue(string.Empty);
+                    row.CreateCell(7, CellType.Numeric).SetCellValue(string.Empty);
+                    row.CreateCell(8, CellType.Numeric).SetCellValue(string.Empty);
+                    row.CreateCell(9, CellType.Numeric).SetCellValue(string.Empty);
                     rowIndex++;
                 }
 
@@ -954,9 +970,9 @@ namespace erp.Controllers
             return File(memory, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", sFileName);
         }
 
-        [Route(Constants.LinkSalary.NhaMayImport)]
+        [Route(Constants.LinkSalary.SanXuatImport)]
         [HttpPost]
-        public ActionResult NhaMayImport()
+        public ActionResult SanXuatImport()
         {
             IFormFile file = Request.Form.Files[0];
             string folderName = Constants.Storage.Hr;
@@ -1014,6 +1030,9 @@ namespace erp.Controllers
                         decimal congtong = (decimal)Utility.GetNumbericCellValue(row.GetCell(4));
                         decimal comsx = (decimal)Utility.GetNumbericCellValue(row.GetCell(5));
                         decimal comkd = (decimal)Utility.GetNumbericCellValue(row.GetCell(6));
+                        decimal giotangca = (decimal)Utility.GetNumbericCellValue(row.GetCell(7));
+                        decimal giolamvieccn = (decimal)Utility.GetNumbericCellValue(row.GetCell(8));
+                        decimal giolamviecletet = (decimal)Utility.GetNumbericCellValue(row.GetCell(9));
 
                         var employee = new Employee();
                         if (!string.IsNullOrEmpty(alias))
@@ -1040,22 +1059,25 @@ namespace erp.Controllers
                             var existEntity = dbContext.SalaryNhaMayCongs.Find(m => m.Enable.Equals(true) && m.EmployeeId.Equals(employee.Id) && m.Month.Equals(month) && m.Year.Equals(year)).FirstOrDefault();
                             if (existEntity != null)
                             {
-                                var builder = Builders<SalaryNhaMayCong>.Filter;
+                                var builder = Builders<SalarySanXuatCong>.Filter;
                                 var filter = builder.Eq(m => m.Id, existEntity.Id);
-                                var update = Builders<SalaryNhaMayCong>.Update
+                                var update = Builders<SalarySanXuatCong>.Update
                                     .Set(m => m.EmployeeCode, employee.Code)
                                     .Set(m => m.EmployeeName, employee.FullName)
                                     .Set(m => m.EmployeeChucVu, employee.Title)
                                     .Set(m => m.CongTong, congtong)
                                     .Set(m => m.ComKD, comkd)
                                     .Set(m => m.ComSX, comsx)
+                                    .Set(m => m.GioTangCa, giotangca)
+                                    .Set(m => m.GioLamViecCN, giolamvieccn)
+                                    .Set(m => m.GioLamViecLeTet, giolamviecletet)
                                     .Set(m => m.UpdatedOn, DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss"));
 
-                                dbContext.SalaryNhaMayCongs.UpdateOne(filter, update);
+                                dbContext.SalarySanXuatCongs.UpdateOne(filter, update);
                             }
                             else
                             {
-                                var newItem = new SalaryNhaMayCong
+                                var newItem = new SalarySanXuatCong
                                 {
                                     Year = year,
                                     Month = month,
@@ -1065,16 +1087,19 @@ namespace erp.Controllers
                                     EmployeeChucVu = employee.Title,
                                     CongTong = congtong,
                                     ComKD = comkd,
-                                    ComSX = comsx
+                                    ComSX = comsx,
+                                    GioTangCa = giotangca,
+                                    GioLamViecCN = giolamvieccn,
+                                    GioLamViecLeTet = giolamviecletet
                                 };
-                                dbContext.SalaryNhaMayCongs.InsertOne(newItem);
+                                dbContext.SalarySanXuatCongs.InsertOne(newItem);
                             }
                         }
                         else
                         {
                             dbContext.Misss.InsertOne(new Miss
                             {
-                                Type = "nha-may-import",
+                                Type = "san-xuat-import",
                                 Object = "time: " + month + "-" + year + ", code: " +code + "-" + fullName + "-" + title + " ,dòng " + i,
                                 Error = "No import data",
                                 DateTime = DateTime.Now.ToString()
@@ -1083,7 +1108,7 @@ namespace erp.Controllers
                     }
                 }
             }
-            return Json(new { url = "/" + Constants.LinkSalary.Main + "/" + Constants.LinkSalary.Factory + "/" + Constants.LinkSalary.CongTong });
+            return Json(new { url = "/" + Constants.LinkSalary.Main + "/" + Constants.LinkSalary.Production + "/" + Constants.LinkSalary.CongTong });
         }
 
         #endregion

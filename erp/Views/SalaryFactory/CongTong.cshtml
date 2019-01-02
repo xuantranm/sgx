@@ -123,6 +123,9 @@
                                         <td>Công tổng</td>
                                         <td>Cơm SX</td>
                                         <td>Cơm KD</td>
+                                        <td>Giờ tăng ca</td>
+                                        <td>Giờ làm việc CN</td>
+                                        <td>Giờ làm việc Lễ/Tết</td>
                                     </tr>
                                 </thead>
 
@@ -131,23 +134,32 @@
                                         int i = 1;
                                         foreach (var item in Model.SalaryNhaMayCongs)
                                         {
-                                            <tr class="tr-@item.Id" data-id="@item.Id">
-                                                <td>
-                                                    @i
-                                                </td>
-                                                <td>@item.EmployeeCode</td>
-                                                <td nowrap>@item.EmployeeName</td>
-                                                <td nowrap>@item.EmployeeChucVu</td>
-                                                <td>
-                                                    @String.Format("{0:#,###,###}", item.CongTong)
-                                                </td>
-                                                <td>
-                                                    @String.Format("{0:#,###,###}", item.ComSX)
-                                                </td>
-                                                <td>
-                                                    @String.Format("{0:#,###,###}", item.ComKD)
-                                                </td>
-                                            </tr>
+                                    <tr class="tr-@item.Id" data-id="@item.Id">
+                                        <td>
+                                            @i
+                                        </td>
+                                        <td>@item.EmployeeCode</td>
+                                        <td nowrap>@item.EmployeeName</td>
+                                        <td nowrap>@item.EmployeeChucVu</td>
+                                        <td>
+                                            @String.Format("{0:#,###,###}", item.CongTong)
+                                        </td>
+                                        <td>
+                                            @String.Format("{0:#,###,###}", item.ComSX)
+                                        </td>
+                                        <td>
+                                            @String.Format("{0:#,###,###}", item.ComKD)
+                                        </td>
+                                        <td>
+                                            @String.Format("{0:#,###,###}", item.GioTangCa)
+                                        </td>
+                                        <td>
+                                            @String.Format("{0:#,###,###}", item.GioLamViecCN)
+                                        </td>
+                                        <td>
+                                            @String.Format("{0:#,###,###}", item.GioLamViecLeTet)
+                                        </td>
+                                    </tr>
                                             i++;
                                         }
                                     }

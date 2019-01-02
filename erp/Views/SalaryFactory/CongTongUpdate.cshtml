@@ -159,6 +159,9 @@
                                             <td>Công tổng</td>
                                             <td>Cơm SX</td>
                                             <td>Cơm KD</td>
+                                            <td>Giờ tăng ca</td>
+                                            <td>Giờ làm việc CN</td>
+                                            <td>Giờ làm việc Lễ/Tết</td>
                                         </tr>
                                     </thead>
 
@@ -168,29 +171,38 @@
                                             int iE = 0;
                                             foreach (var item in Model.SalaryNhaMayCongs)
                                             {
-                                                <tr class="tr-@iE" data-id="@iE">
-                                                    <td>
-                                                        @i
-                                                        <input type="hidden" name="SalaryNhaMayCongs[@iE].Id" value="@item.Id" />
-                                                        <input type="hidden" name="SalaryNhaMayCongs[@iE].EmployeeId" value="@item.EmployeeId" />
-                                                        <input type="hidden" name="SalaryNhaMayCongs[@iE].EmployeeName" value="@item.EmployeeName" />
-                                                        <input type="hidden" name="SalaryNhaMayCongs[@iE].EmployeeChucVu" value="@item.EmployeeChucVu" />
-                                                        <input type="hidden" name="SalaryNhaMayCongs[@iE].Month" value="@item.Month" />
-                                                        <input type="hidden" name="SalaryNhaMayCongs[@iE].Year" value="@item.Year" />
-                                                    </td>
-                                                    <td>@item.EmployeeCode</td>
-                                                    <td nowrap>@item.EmployeeName</td>
-                                                    <td nowrap>@item.EmployeeChucVu</td>
-                                                    <td>
-                                                        <input value="@item.CongTong" name="SaleKPIEmployees[@iE].CongTong" class="form-control width100 numeric congtong-@iE" data-id="congtong-@iE" />
-                                                    </td>
-                                                    <td>
-                                                        <input value="@item.ComSX" name="SaleKPIEmployees[@iE].ComSX" class="form-control width100 numeric comsx-@iE" data-id="comsx-@iE" />
-                                                    </td>
-                                                    <td>
-                                                        <input value="@item.ComKD" name="SaleKPIEmployees[@iE].ComKD" class="form-control width100 numeric comkd-@iE" data-id="comkd-@iE" />
-                                                    </td>
-                                                </tr>
+                                        <tr class="tr-@iE" data-id="@iE">
+                                            <td>
+                                                @i
+                                                <input type="hidden" name="SalaryNhaMayCongs[@iE].Id" value="@item.Id" />
+                                                <input type="hidden" name="SalaryNhaMayCongs[@iE].EmployeeId" value="@item.EmployeeId" />
+                                                <input type="hidden" name="SalaryNhaMayCongs[@iE].EmployeeName" value="@item.EmployeeName" />
+                                                <input type="hidden" name="SalaryNhaMayCongs[@iE].EmployeeChucVu" value="@item.EmployeeChucVu" />
+                                                <input type="hidden" name="SalaryNhaMayCongs[@iE].Month" value="@item.Month" />
+                                                <input type="hidden" name="SalaryNhaMayCongs[@iE].Year" value="@item.Year" />
+                                            </td>
+                                            <td>@item.EmployeeCode</td>
+                                            <td nowrap>@item.EmployeeName</td>
+                                            <td nowrap>@item.EmployeeChucVu</td>
+                                            <td>
+                                                <input value="@item.CongTong" name="SalaryNhaMayCongs[@iE].CongTong" class="form-control width100 numeric congtong-@iE" data-id="congtong-@iE" />
+                                            </td>
+                                            <td>
+                                                <input value="@item.ComSX" name="SalaryNhaMayCongs[@iE].ComSX" class="form-control width100 numeric comsx-@iE" data-id="comsx-@iE" />
+                                            </td>
+                                            <td>
+                                                <input value="@item.ComKD" name="SalaryNhaMayCongs[@iE].ComKD" class="form-control width100 numeric comkd-@iE" data-id="comkd-@iE" />
+                                            </td>
+                                            <td>
+                                                <input value="@item.GioTangCa" name="SalaryNhaMayCongs[@iE].GioTangCa" class="form-control width100 numeric giotangca-@iE" data-id="giotangca-@iE" />
+                                            </td>
+                                            <td>
+                                                <input value="@item.GioLamViecCN" name="SalaryNhaMayCongs[@iE].GioLamViecCN" class="form-control width100 numeric giolamvieccn-@iE" data-id="giolamvieccn-@iE" />
+                                            </td>
+                                            <td>
+                                                <input value="@item.GioLamViecLeTet" name="SalaryNhaMayCongs[@iE].GioLamViecLeTet" class="form-control width100 numeric giolamviecletet-@iE" data-id="giolamviecletet-@iE" />
+                                            </td>
+                                        </tr>
                                                 i++;
                                                 iE++;
                                             }
