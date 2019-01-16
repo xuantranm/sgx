@@ -39,24 +39,36 @@ namespace Common.Enums
         Pending = 3
     }
 
-    public enum StatusWork
+    public enum EStatusWork
     {
         XacNhanCong = 0,
         DuCong = 1,
         DaGuiXacNhan = 2,
         DongY = 3,
+        TuChoi = 4,
+        Wait = 5
+    }
+
+    public enum ETangCa
+    {
+        None = 0,
+        CanXacNhan = 1,
+        GuiXacNhan = 2,
+        DongY = 3,
         TuChoi = 4
     }
 
-    public enum TimeWork
+    public enum ETimeWork
     {
+        None = 0,
         Normal = 1,
         Sunday = 2,
         LeavePhep = 3,
         LeaveHuongLuong = 4,
         LeaveKhongHuongLuong = 5,
         Holiday = 6,
-        Other = 7
+        Other = 7,
+        Wait = 8
     }
 
     public enum ETexts

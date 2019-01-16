@@ -25,6 +25,7 @@
 
   <ItemGroup>
     <Content Remove="Views\Factory\PhieuInCa - A4.cshtml" />
+    <Content Remove="Views\TimeKeeper\BangChamCong - Copy.cshtml" />
   </ItemGroup>
 
   <ItemGroup>

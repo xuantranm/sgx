@@ -19,7 +19,7 @@
                 <option value="2">Không gửi được</option>
                 <option value="3">Đã gửi lại</option>
                 <option value="4">Chờ gửi</option>
-                <option value="3">Chờ gửi (gấp)</option>
+                <option value="5">Chờ gửi (gấp)</option>
             </select>
         </div>
         <div class="col-md-4 col-xs-12">
@@ -90,9 +90,17 @@
                                 <td>@item.Type</td>
                                 <td>@item.Title</td>
                                 <td>
-                                    @foreach (var toItem in item.To)
-                                    {
-                                        <small>Tên <b>@toItem.Name</b> - Email: <b>@toItem.Address</b></small>
+                                    @{
+                                        var more = item.To.Count > 10 ? "..." : string.Empty;
+                                        var skipitems = item.To.Count > 10 ? item.To.Take(10) : item.To;
+                                        foreach (var toItem in skipitems)
+                                        {
+                                            <small>Tên <b>@toItem.Name</b> - Email: <b>@toItem.Address</b></small>
+                                            if (!string.IsNullOrEmpty(more))
+                                            {
+                                                <span>@more</span>
+                                            }
+                                        }
                                     }
                                 </td>
                                 <td>

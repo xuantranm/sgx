@@ -1,0 +1,364 @@
+﻿@using Common.Utilities;
+@using Common.Enums;
+@using ViewModels;
+@model BangLuongViewModel
+@{
+    Layout = "~/Views/Shared/_LayoutSocialFbFS.cshtml";
+    var login = User.Identity.Name;
+    var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+    var calDate = Convert.ToInt32((Model.Den - Model.Tu).TotalDays) + 1;
+}
+<link href="~/assets/wingman/css/big-screen.css" rel="stylesheet" />
+
+<style>
+    tbody th:nth-child(2), tbody td:nth-child(2) {
+        position: sticky;
+        left: 0px;
+    }
+
+    tbody td:nth-child(2) {
+        background-color: lightgoldenrodyellow;
+    }
+</style>
+
+<div class="main-container">
+    <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="/">Trang chủ</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">Bảng chấm công</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN -->
+    <section class="flush-with-above height-80 d-block">
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="real" role="tabpanel" aria-labelledby="real-tab">
+                <div class="container">
+                    <div class="row mb-3">
+                        <div class="col-lg-3 col-sm-6">
+                            @{ 
+                                var linkExport = "/" + Constants.LinkTimeKeeper.Main + "/" + Constants.LinkTimeKeeper.Timer + "/" + Constants.ActionLink.Export;
+
+                                var exportSub = string.Empty;
+                                exportSub += "tu=" + Model.Tu.ToString("MM-dd-yyyy");
+                                exportSub += "&den=" + Model.Den.ToString("MM-dd-yyyy");
+                                if (!string.IsNullOrEmpty(Model.khoi))
+                                {
+                                    exportSub += "&khoi=" + Model.khoi;
+                                }
+                                if (!string.IsNullOrEmpty(Model.phongban))
+                                {
+                                    exportSub += "&phongban=" + Model.phongban;
+                                }
+                                if (!string.IsNullOrEmpty(Model.Id))
+                                {
+                                    exportSub += "&id=" + Model.Id;
+                                }
+
+                                linkExport += string.IsNullOrEmpty(exportSub) ? string.Empty : "?" + exportSub;
+                            }
+                            <a class="btn btn-lg btn-block btn-info" href="@linkExport" data-toggle="tooltip" title="Xuất ra tài liệu file excel.">
+                                <i class="fas fa-download"></i> Xuất excel
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card card-sm">
+                        <div class="card-header bg-secondary d-flex justify-content-between align-items-center">
+                            <form method="get" action="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Timer" id="form-main">
+                                <div class="d-flex align-items-center">
+                                    <span class="mr-2 text-muted text-small text-nowrap">Phòng/ban:</span>
+                                    <select asp-for="phongban" class="form-control form-control-lg ddlphong">
+                                        <option value="" selected>Tất cả</option>
+                                        @{
+                                            foreach (var item in Model.Departments)
+                                            {
+                                                <option value="@item.Alias">@item.Name</option>
+                                            }
+                                        }
+                                    </select>
+                                    <span class="mr-2 text-muted text-small text-nowrap">Khối:</span>
+                                    <select asp-for="khoi" class="form-control form-control-lg ddlphong">
+                                        <option value="" selected>Tất cả</option>
+                                        <option value="@ESalaryType.VP">Văn Phòng</option>
+                                        <option value="@ESalaryType.NM">Nhà Máy</option>
+                                        <option value="@ESalaryType.SX">Sản Xuất</option>
+                                    </select>
+                                    <span class="mr-2 text-muted text-small text-nowrap">Nhân viên:</span>
+                                    <select asp-for="Id" class="form-control form-control-lg js-select2-basic-single ddlEmployeeId">
+                                        <option value="">Tất cả</option>
+                                        @foreach (var employee in Model.Employees)
+                                        {
+                                            string displayTitle = string.Empty;
+                                            if (!string.IsNullOrEmpty(employee.Title))
+                                            {
+                                                displayTitle += "[" + employee.Title + "]";
+                                            }
+                                            if (!string.IsNullOrEmpty(employee.Email))
+                                            {
+                                                displayTitle += "- " + employee.Email + "";
+                                            }
+                                            <option value="@employee.Id">@employee.FullName @displayTitle</option>
+                                        }
+                                    </select>
+                                    <span class="mr-2 text-muted text-small text-nowrap">Từ:</span>
+                                    @{
+                                        var fromdatesearch = Model.Tu > Constants.MinDate ? Model.Tu.ToString("dd/MM/yyyy") : "";
+                                        var todatesearch = Model.Den > Constants.MinDate ? Model.Den.ToString("dd/MM/yyyy") : "";
+                                    }
+                                    <input class="from-date form-control datepicker datepicker-lg" value="@fromdatesearch" />
+                                    <span class="mr-2 text-muted text-small text-nowrap">đến:</span>
+                                    <input class="to-date form-control datepicker datepicker-lg" value="@todatesearch" />
+                                    <input type="hidden" name="Tu" class="tu-ngay" value="@Model.Tu.ToString("MM-dd-yyyy")" />
+                                    <input type="hidden" name="Den" class="den-ngay" value="@Model.Den.ToString("MM-dd-yyyy")" />
+
+                                    <button type="submit" class="btn btn-lg btn-success btn-search-inline">Tìm kiếm</button>
+                                </div>
+                                
+                            </form>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12 table-responsive-sm">
+                            <table class="table table-responsive-sm table-bordered table-striped table-hover floating-header">
+                                <thead style="background-color:lightgrey">
+                                    <tr>
+                                        <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>#</th>
+                                        <th rowspan="2" style="vertical-align:middle;text-align:center;font-weight:bold" nowrap>Họ và tên</th>
+                                        <th rowspan="2" style="vertical-align:middle;text-align:center;font-weight:bold" nowrap>Chức vụ</th>
+                                        <th rowspan="2" style="vertical-align:middle;text-align:center;font-weight:bold" nowrap>Mã chấm công</th>
+                                        <th colspan="@calDate" style="text-align:center;font-weight:bold" nowrap>Chi tiết</th>
+                                        <th colspan="6" style="vertical-align:middle;font-weight:bold">Tổng</th>
+                                    </tr>
+                                    <tr>
+                                        @{
+                                            for (DateTime date = Model.Tu; date <= Model.Den; date = date.AddDays(1.0))
+                                            {
+                                                <td style="text-align:center; color:red">
+                                                    <div class="rotate">
+                                                        @date.ToString("dd/MM/yyyy")
+                                                    </div>
+                                                </td>
+                                            }
+                                        }
+                                        <td style="text-align:center; color:red">
+                                            Ngày làm việc
+                                        </td>
+                                        <td style="text-align:center; color:red">
+                                            <div class="rotate">Trễ (phút)</div>
+                                        </td>
+                                        <td style="text-align:center; color:red">
+                                            <div class="rotate">Sớm (phút)</div>
+                                        </td>
+                                        @*<td style="text-align:center; color:red">
+                                                <div class="rotate">Nghỉ hưởng lương</div>
+                                            </td>
+                                            <td style="text-align:center; color:red">
+                                                <div class="rotate">Nghỉ phép</div>
+                                            </td>
+                                            <td style="text-align:center; color:red">
+                                                <div class="rotate">Nghỉ không hưởng lương</div>
+                                            </td>*@
+                                    </tr>
+                                </thead>
+                                <tbody class="font-14">
+                                    @{
+                                        var groupsDepartments = (from s in Model.EmployeeWorkTimeLogs
+                                                                 group s by new
+                                                                 {
+                                                                     s.Department
+                                                                 }
+                                                                        into l
+                                                                 select new
+                                                                 {
+                                                                     Department = l.Key.Department,
+                                                                     times = l.ToList(),
+                                                                 }).ToList();
+
+                                        var departments = groupsDepartments.OrderBy(m => m.Department).ToList();
+                                        int iNo = 1;
+                                        foreach (var department in departments)
+                                        {
+                                            if (string.IsNullOrEmpty(department.Department))
+                                            {
+                                                continue;
+                                            }
+                                            var col = 10 + calDate;
+                                            <tr>
+                                                <td colspan="@col" style="background-color:red">
+                                                    <b>@department.Department</b>
+                                                </td>
+                                            </tr>
+                                            var groupEmployees = (from a in department.times
+                                                                  group a by new
+                                                                  {
+                                                                      a.EmployeeName,
+                                                                      a.EmployeeTitle
+                                                                  }
+                                                       into b
+                                                                  select new
+                                                                  {
+                                                                      EmployeeName = b.Key.EmployeeName,
+                                                                      EmployeeTitle = b.Key.EmployeeTitle,
+                                                                      timesEmployee = b.ToList(),
+                                                                  }).ToList();
+                                            var employees = groupEmployees.OrderBy(m => m.EmployeeName).ToList();
+                                            foreach (var time in employees)
+                                            {
+                                                if (string.IsNullOrEmpty(time.EmployeeName))
+                                                {
+                                                    continue;
+                                                }
+                                                double workday = 0;
+                                                double late = 0;
+                                                double early = 0;
+                                                <tr>
+                                                    <td>@iNo</td>
+                                                    <td>@time.EmployeeName</td>
+                                                    <td>@time.EmployeeTitle</td>
+                                                    <td>
+                                                        @time.timesEmployee[0].EnrollNumber
+                                                    </td>
+                                                    @{
+                                                        var timesSort = time.timesEmployee.OrderBy(m => m.Date).ToList();
+                                                        if (calDate != timesSort.Count)
+                                                        {
+                                                            for (DateTime date = Model.Tu; date <= Model.Den; date = date.AddDays(1.0))
+                                                            {
+                                                                <td nowrap>
+                                                                    @{
+                                                                        var item = timesSort.Where(m => m.Date.Equals(date)).FirstOrDefault();
+                                                                        if (item != null)
+                                                                        {
+                                                                            workday += item.WorkDay;
+                                                                            late += item.Late.TotalMinutes;
+                                                                            early += item.Early.TotalMinutes;
+                                                                            var displayInOut = string.Empty;
+                                                                            if (item.In.HasValue)
+                                                                            {
+                                                                                displayInOut += item.In.Value;
+                                                                            }
+                                                                            if (item.Out.HasValue)
+                                                                            {
+                                                                                if (!string.IsNullOrEmpty(displayInOut))
+                                                                                {
+                                                                                    displayInOut += " - ";
+                                                                                }
+                                                                                displayInOut += item.Out.Value;
+                                                                            }
+                                                                            <div>
+                                                                                <span>@displayInOut</span>
+                                                                            </div>
+                                                                            <div>
+                                                                                @{
+                                                                                    if (item.Logs != null && item.Logs.Count > 0)
+                                                                                    {
+                                                                                        <small>Chi tiết:</small>
+                                                                                        foreach (var log in item.Logs)
+                                                                                        {
+                                                                                            <p style="margin-bottom: 0;"><small>@log.Date.ToString("dd/MM/yyyy HH:mm:ss")</small></p>
+                                                                                        }
+                                                                                    }
+                                                                                    if (!string.IsNullOrEmpty(item.Reason))
+                                                                                    {
+                                                                                        var displayReason = item.Reason;
+                                                                                        if (!string.IsNullOrEmpty(item.ReasonDetail))
+                                                                                        {
+                                                                                            displayReason += ". Chi tiết: " + item.ReasonDetail;
+                                                                                        }
+                                                                                        <small>@displayReason</small>
+                                                                                    }
+                                                                                }
+                                                                            </div>
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <span class="badge badge-info">N/A</span>
+                                                                        }
+                                                                    }
+
+                                                                </td>
+                                                            }
+                                                        }
+                                                        else
+                                                        {
+                                                            foreach (var item in timesSort)
+                                                            {
+                                                                workday += item.WorkDay;
+                                                                late += item.Late.TotalMinutes;
+                                                                early += item.Early.TotalMinutes;
+                                                                <td nowrap>
+                                                                    <div>
+                                                                        @{
+                                                                            var displayInOut = string.Empty;
+                                                                            if (item.In.HasValue)
+                                                                            {
+                                                                                displayInOut += item.In.Value;
+                                                                            }
+                                                                            if (item.Out.HasValue)
+                                                                            {
+                                                                                if (!string.IsNullOrEmpty(displayInOut))
+                                                                                {
+                                                                                    displayInOut += " - ";
+                                                                                }
+                                                                                displayInOut += item.Out.Value;
+                                                                            }
+                                                                        }
+                                                                        <span>@displayInOut</span>
+                                                                    </div>
+                                                                    <div>
+                                                                        @{
+                                                                            if (item.Logs != null && item.Logs.Count > 0)
+                                                                            {
+                                                                                <small>Chi tiết:</small>
+                                                                                foreach (var log in item.Logs)
+                                                                                {
+                                                                                    <p style="margin-bottom: 0;"><small>@log.Date.ToString("dd/MM/yyyy HH:mm:ss")</small></p>
+                                                                                }
+                                                                            }
+                                                                            if (!string.IsNullOrEmpty(item.Reason))
+                                                                            {
+                                                                                var displayReason = item.Reason;
+                                                                                if (!string.IsNullOrEmpty(item.ReasonDetail))
+                                                                                {
+                                                                                    displayReason += ". Chi tiết: " + item.ReasonDetail;
+                                                                                }
+                                                                                <small>@displayReason</small>
+                                                                            }
+                                                                        }
+                                                                    </div>
+                                                                </td>
+                                                            }
+                                                        }
+                                                    }
+                                                    <td>@workday</td>
+                                                    <td>@Math.Round(late, 0)</td>
+                                                    <td>@Math.Round(early, 0)</td>
+                                                </tr>
+                                                iNo++;
+                                            }
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+@section scripts {
+    <script type="text/javascript" src="~/js/bang-cham-cong.js?v-@DateTime.Now.Ticks"></script>
+}
+
+
+

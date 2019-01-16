@@ -1516,8 +1516,8 @@ namespace erp.Controllers
             {
                 var statusCheck = new List<int>()
                     {
-                        (int)StatusWork.DaGuiXacNhan,
-                        (int)StatusWork.DongY
+                        (int)EStatusWork.DaGuiXacNhan,
+                        (int)EStatusWork.DongY
                     };
                 if (reason == "Quên chấm công")
                 {
@@ -1665,6 +1665,48 @@ namespace erp.Controllers
             return Json(new { result = true });
         }
 
+        #endregion
+
+        #region TANG CA
+        [HttpPost]
+        [Route(Constants.LinkTimeKeeper.XacNhanTangCa)]
+        public IActionResult XacNhanTangCa(string id, double thoigian, int trangthai)
+        {
+            var now = DateTime.Now;
+            int status = trangthai == 1 ? (int)ETangCa.DongY : (int)ETangCa.TuChoi;
+
+            var timeWork = dbContext.EmployeeWorkTimeLogs.Find(m => m.Enable.Equals(true) && m.Id.Equals(id)).FirstOrDefault();
+
+            var filter = Builders<EmployeeWorkTimeLog>.Filter.Eq(m => m.Id, id);
+            var update = Builders<EmployeeWorkTimeLog>.Update
+                .Set(m => m.StatusTangCa, status)
+                .Set(m => m.TangCaDaXacNhan, TimeSpan.FromHours(thoigian))
+                .Set(m => m.UpdatedOn, DateTime.Now);
+            dbContext.EmployeeWorkTimeLogs.UpdateOne(filter, update);
+
+            // UPDATE SUMMARY
+            var builderS = Builders<EmployeeWorkTimeMonthLog>.Filter;
+            var filterS = builderS.Eq(m => m.EmployeeId, timeWork.EmployeeId) & builderS.Eq(m => m.EnrollNumber, timeWork.EnrollNumber)
+                & builderS.Eq(m => m.Month, timeWork.Month) & builderS.Eq(m=>m.Year, timeWork.Year);
+
+            var updateS = Builders<EmployeeWorkTimeMonthLog>.Update
+                .Set(m => m.LastUpdated, now);
+            if (timeWork.Mode == (int)ETimeWork.Normal)
+            {
+                updateS = updateS.Set(m => m.CongTangCaNgayThuongGio, thoigian);
+            }
+            else if (timeWork.Mode == (int)ETimeWork.Sunday)
+            {
+                updateS = updateS.Set(m => m.CongCNGio, thoigian);
+            }
+            else
+            {
+                updateS = updateS.Set(m => m.CongLeTet, thoigian);
+            }
+            dbContext.EmployeeWorkTimeMonthLogs.UpdateOne(filterS, updateS);
+
+            return Json(new { error = 0, id, trangthai, thoigian });
+        }
         #endregion
     }
 }

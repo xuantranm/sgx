@@ -14,6 +14,7 @@ namespace Models
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
 
+        // Format to "000"
         public string EnrollNumber { get; set; }
         public string VerifyMode { get; set; }
         public string InOutMode { get; set; }

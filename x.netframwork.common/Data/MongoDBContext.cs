@@ -97,6 +97,15 @@ namespace Data
         #endregion
 
         #region HRs
+        public IMongoCollection<Department> Departments
+        {
+            get
+            {
+                return _database.GetCollection<Department>("Departments");
+            }
+        }
+
+
         public IMongoCollection<WorkTimeType> WorkTimeTypes
         {
             get
@@ -202,6 +211,14 @@ namespace Data
             get
             {
                 return _database.GetCollection<RoleUser>("RoleUsers");
+            }
+        }
+
+        public IMongoCollection<Holiday> Holidays
+        {
+            get
+            {
+                return _database.GetCollection<Holiday>("Holidays");
             }
         }
     }

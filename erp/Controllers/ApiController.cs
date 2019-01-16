@@ -242,7 +242,7 @@ namespace erp.Controllers
         #endregion
 
         #region Update Pwd
-        [Route("updatepwd")]
+        //[Route("updatepwd")]
         public ActionResult UpdatePassword(string newpassword)
         {
             var login = User.Identity.Name;

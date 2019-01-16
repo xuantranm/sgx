@@ -33,7 +33,7 @@
         Pending = 3
     }
 
-    public enum StatusWork
+    public enum EStatusWork
     {
         XacNhanCong = 0,
         DuCong = 1,
@@ -43,7 +43,16 @@
         Wait = 5
     }
 
-    public enum TimeWork
+    public enum ETangCa
+    {
+        None = 0,
+        CanXacNhan = 1,
+        GuiXacNhan = 2,
+        DongY = 3,
+        TuChoi = 4
+    }
+
+    public enum ETimeWork
     {
         None = 0,
         Normal = 1,

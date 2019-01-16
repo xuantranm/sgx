@@ -184,6 +184,8 @@ namespace Common.Utilities
             public const string Approvement = "lich-su-duyet-cong";
 
             public const string Timer = "bang-cham-cong";
+
+            public const string XacNhanTangCa = "xac-nhan-tang-ca";
         }
 
         public static class LinkSalary
@@ -576,6 +578,23 @@ namespace Common.Utilities
             }
         }
 
+        public static string StringTangCa(int status)
+        {
+            switch (status)
+            {
+                case 1:
+                    return "Cần xác nhận";
+                case 2:
+                    return "Chờ xác nhận";
+                case 3:
+                    return "Đã xác nhận";
+                case 4:
+                    return "Không xác nhận";
+                default:
+                    return string.Empty;
+            }
+        }
+
         public static string Married(string status)
         {
             switch (status)
@@ -714,6 +733,19 @@ namespace Common.Utilities
                     return "T7";
                 default:
                     return "CN";
+            }
+        }
+
+        public static string CTSTimeWork(int input)
+        {
+            switch (input)
+            {
+                case (int)ETimeWork.Sunday:
+                    return "Chủ nhật";
+                case (int)ETimeWork.Holiday:
+                    return "Lễ tết";
+                default:
+                    return "Ngày thường";
             }
         }
     }

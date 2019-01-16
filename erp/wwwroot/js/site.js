@@ -83,7 +83,7 @@ $(function () {
         if (check) {
             $.ajax({
                 type: 'post',
-                url: '/api/updatepwd?newpassword=' + $('#newpassword', $('.data-form-change-pwd')).val(),
+                url: '/api/updatepassword?newpassword=' + $('#newpassword', $('.data-form-change-pwd')).val(),
                 processData: false,
                 contentType: false,
             })

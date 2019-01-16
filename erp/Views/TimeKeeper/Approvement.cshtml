@@ -60,7 +60,7 @@
                                 <td>@i</td>
                                 <td>
                                     @{
-                                        if (log.Status == (int)StatusWork.DaGuiXacNhan)
+                                        if (log.Status == (int)EStatusWork.DaGuiXacNhan)
                                         {
                                             
                                             var linkAccept = linkapprove + "?id=" + log.Id + "&approve=3&secure=" + log.SecureCode;
@@ -72,7 +72,7 @@
                                                 <a href="@linkCancel" target="_blank" onClick="javascript:document.location.reload(true)" class="btn btn-sm btn-block btn-danger"><i class="fas fa-ban"></i> Không xác nhận</a>
                                             </p>
                                         }
-                                        else if (log.Status == (int)StatusWork.DongY)
+                                        else if (log.Status == (int)EStatusWork.DongY)
                                         {
                                             <small class="badge badge-success">@Constants.TimeKeeper(log.Status)</small>
                                         }

@@ -308,9 +308,15 @@ namespace Common.Utilities
 
         public static string AliasConvert(string text)
         {
-            text = NonUnicode(text).ToLower().Trim();
+            if (string.IsNullOrEmpty(text)) return string.Empty;
 
-            return text.Replace(" ", "-");
+            text = text.Trim().ToLower();
+            RegexOptions options = RegexOptions.None;
+            Regex regex = new Regex("[ ]{2,}", options);
+            text = regex.Replace(text, " ");
+            text = NonUnicode(text);
+            text = RemoveSpecialCharacters(text);
+            return text;
         }
 
         public static string LinkConvert(string text)

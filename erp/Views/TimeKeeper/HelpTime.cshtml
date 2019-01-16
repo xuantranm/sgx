@@ -115,24 +115,26 @@
         var lastUpdated = DateTime.Now.ToString("dd/MM/yyyy");
         double dayworking = ViewBag.DayWorking;
         double workday = dayworking;
-        double workminutes = dayworking * 8 * 60;
-        double late = 0;
-        double early = 0;
+        double thoigianthieu = 0;
+        double tangcangaythuong = 0;
+        double tangcachunhat = 0;
+        double tangcale = 0;
+        int month = DateTime.Now.Month;
+        int year = DateTime.Now.Year;
+        if (!string.IsNullOrEmpty(Model.thang))
+        {
+            month = Convert.ToInt32(Model.thang.Split("-")[0]);
+            year = Convert.ToInt32(Model.thang.Split("-")[1]);
+        }
         if (Model.EmployeeWorkTimeMonthLogs != null && Model.EmployeeWorkTimeMonthLogs.Count > 0)
         {
-            workday = 0;
-            workminutes = 0;
-            late = 0;
-            early = 0;
-            foreach (var month in Model.EmployeeWorkTimeMonthLogs)
-            {
-                workday += month.Workday;
-                workminutes += month.WorkTime;
-                late += month.Late;
-                early += month.Early;
-            }
             lastUpdated = Model.EmployeeWorkTimeMonthLogs[0].LastUpdated.ToString("dd/MM/yyyy");
-            workminutes = Math.Round(TimeSpan.FromMilliseconds(workminutes).TotalMinutes, 0);
+            var filterMonth = Model.EmployeeWorkTimeMonthLogs.FirstOrDefault(m => m.Month.Equals(month) && m.Year.Equals(year));
+            workday = filterMonth.Workday;
+            thoigianthieu = TimeSpan.FromMilliseconds(filterMonth.Late + filterMonth.Early).TotalMinutes;
+            tangcangaythuong = filterMonth.CongTangCaNgayThuongGio;
+            tangcachunhat = filterMonth.CongCNGio;
+            tangcale = filterMonth.CongLeTet;
         }
     }
     <span class="text-small"> Dữ liệu tính tới ngày @lastUpdated</span>
@@ -143,7 +145,6 @@
                 <span class="badge badge-light">@dayworking</span>
             </div>
         </li>
-
         <li class="list-group-item">
             <div class="d-flex justify-content-between">
                 <div><i class="icon-calculator mr-1"></i> Chấm công: (ngày)</div>
@@ -152,25 +153,36 @@
         </li>
         <li class="list-group-item">
             <div class="d-flex justify-content-between">
-                <div><i class="icon-calculator mr-1"></i> Tổng thời gian chấm công: (phút)</div>
+                <div><i class="icon-calculator mr-1"></i> Giờ tăng ca ngày thường</div>
                 <span class="badge badge-light">
-                    @String.Format("{0:#,###,###}", workminutes)
+                    @Math.Round(tangcangaythuong, 2)
                 </span>
             </div>
         </li>
         <li class="list-group-item">
             <div class="d-flex justify-content-between">
-                <div><i class="icon-calculator mr-1"></i> Đi trễ: (phút)</div>
-                <span class="badge badge-light">@String.Format("{0:#,###,###}", Math.Round(TimeSpan.FromMilliseconds(late).TotalMinutes, 0))</span>
+                <div><i class="icon-calculator mr-1"></i> Giờ tăng ca chủ nhật</div>
+                <span class="badge badge-light">
+                    @Math.Round(tangcachunhat, 2)
+                </span>
             </div>
         </li>
         <li class="list-group-item">
             <div class="d-flex justify-content-between">
-                <div><i class="icon-calculator mr-1"></i> Về sớm: (phút)</div>
-                <span class="badge badge-light">@Math.Round(TimeSpan.FromMilliseconds(early).TotalMinutes, 0)</span>
+                <div><i class="icon-calculator mr-1"></i> Giờ tăng ca lễ tết</div>
+                <span class="badge badge-light">
+                    @Math.Round(tangcale, 2)
+                </span>
+            </div>
+        </li>
+        <li class="list-group-item">
+            <div class="d-flex justify-content-between">
+                <div><i class="icon-calculator mr-1"></i> Thời gian thiếu: (phút)</div>
+                <span class="badge badge-light">@String.Format("{0:#,###,###}", thoigianthieu)</span>
             </div>
         </li>
     </ul>
+    <small>Chỉ hiển thị giờ tăng ca đã xác nhận.</small>
 </div>
 
 <div class="card card-sm">
@@ -178,6 +190,17 @@
         <div>
             <h6>Lịch sử chấm công</h6>
         </div>
+        <form class="d-flex align-items-center" method="get" action="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Index" id="form-main">
+            <span class="mr-2 text-muted text-small text-nowrap">Tháng:</span>
+            <select asp-for="thang" class="custom-select ddl-times">
+                @{
+                    foreach (var item in Model.MonthYears)
+                    {
+                        <option value="@item.Month-@item.Year">@item.Month/@item.Year</option>
+                    }
+                }
+            </select>
+        </form>
     </div>
 </div>
 
@@ -188,16 +211,20 @@
             <table class="table table-sm table-striped">
                 <thead>
                     <tr>
-                        <th scope="col"></th>
-                        <th scope="col">#</th>
-                        <th scope="col">Ngày</th>
-                        <th scope="col">Vào</th>
-                        <th scope="col">Ra</th>
-                        <th scope="col">Ca làm việc</th>
-                        <th scope="col">Đi trễ (phút)</th>
-                        <th scope="col">Về sớm (phút)</th>
-                        <th scope="col">Ngày làm việc</th>
-                        <th scope="col">Nơi chấm công</th>
+                        <th scope="col" rowspan="2"></th>
+                        <th scope="col" rowspan="2">#</th>
+                        <th scope="col" rowspan="2">Ngày</th>
+                        <th scope="col" rowspan="2">Vào</th>
+                        <th scope="col" rowspan="2">Ra</th>
+                        <th scope="col" rowspan="2">Chi tiết</th>
+                        <th scope="col" rowspan="2">Ca</th>
+                        <th scope="col" rowspan="2">Công (ngày)</th>
+                        <th scope="col" rowspan="2">Thiếu (phút)</th>
+                        <th scope="col" colspan="2" style="text-align:center">Tăng ca</th>
+                    </tr>
+                    <tr>
+                        <th nowrap>Thực tế <br /><small>(chờ xác nhận)</small></th>
+                        <th nowrap>Đã xác nhận</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -205,74 +232,99 @@
                         // Cho phép xác nhận tháng tính lương và hiện tại
                         var today = DateTime.Now.Date;
                         var currentMonth = today.Day > 25 ? today.AddMonths(1).Month : today.Month;
-                        //var iXacNhan = -8;
                         var i = 1;
-                        //if (today.AddDays(iXacNhan).DayOfWeek == DayOfWeek.Sunday)
-                        //{
-                        //    iXacNhan--;
-                        //}
                         foreach (var log in Model.EmployeeWorkTimeLogs)
                         {
+                            bool isCalHour = false;
+                            bool isToday = false;
+                            if (log.Mode == (int)ETimeWork.Holiday || log.Mode == (int)ETimeWork.Sunday)
+                            {
+                                isCalHour = true;
+                            }
+                            if (log.Date == today)
+                            {
+                                isToday = true;
+                            }
                             <tr>
                                 <td class="log-@log.Id">
                                     @{
-                                        if (log.Date == today)
+                                        if (isToday)
                                         {
-                                            <span class="badge badge-light">Đang lấy dữ liệu</span>
+                                            <span class="badge badge-light">Chờ dữ liệu</span>
                                         }
                                         else
                                         {
-                                            if (log.Status == (int)StatusWork.XacNhanCong)
+                                            // Normal & tang ca
+                                            if (log.Mode == (int)ETimeWork.Normal)
                                             {
-                                                if (log.Month == currentMonth)
+                                                if (log.Status == (int)EStatusWork.XacNhanCong)
                                                 {
-                                                    <input type="button" class="btn btn-sm btn-danger" value="Xác nhận" data-toggle="modal" data-target="#requestTimeKeeperModal" data-id="@log.Id" />
+                                                    if (log.Month == currentMonth)
+                                                    {
+                                                        <input type="button" class="btn btn-sm btn-danger" value="Xác nhận công" data-toggle="modal" data-target="#requestTimeKeeperModal" data-id="@log.Id" />
+                                                    }
+                                                    else
+                                                    {
+                                                        var displayStatus = string.Empty;
+                                                        if (Math.Round(log.Late.TotalMinutes, 0) > 0)
+                                                        {
+                                                            displayStatus += string.IsNullOrEmpty(displayStatus) ? "" : " - ";
+                                                            displayStatus += "Trễ";
+                                                        }
+                                                        if (Math.Round(log.Early.TotalMinutes, 0) > 0)
+                                                        {
+                                                            displayStatus += string.IsNullOrEmpty(displayStatus) ? "" : " - ";
+                                                            displayStatus += "Sớm";
+                                                        }
+                                                        if (!log.In.HasValue && !log.Out.HasValue)
+                                                        {
+                                                            displayStatus += string.IsNullOrEmpty(displayStatus) ? "" : " - ";
+                                                            displayStatus += "Thiếu";
+                                                        }
+                                                        else if (!log.In.HasValue)
+                                                        {
+                                                            displayStatus += string.IsNullOrEmpty(displayStatus) ? "" : " - ";
+                                                            displayStatus += "Thiếu vào";
+                                                        }
+                                                        else if (!log.Out.HasValue)
+                                                        {
+                                                            displayStatus += string.IsNullOrEmpty(displayStatus) ? "" : " - ";
+                                                            displayStatus += "Thiếu ra";
+                                                        }
+                                                        <small class="badge badge-secondary">@displayStatus</small>
+                                                    }
                                                 }
                                                 else
                                                 {
-                                                    var displayStatus = string.Empty;
-                                                    if (Math.Round(log.Late.TotalMinutes, 0) > 0)
-                                                    {
-                                                        displayStatus += string.IsNullOrEmpty(displayStatus) ? "" : " - ";
-                                                        displayStatus += "Trễ";
-                                                    }
-                                                    if (Math.Round(log.Early.TotalMinutes, 0) > 0)
-                                                    {
-                                                        displayStatus += string.IsNullOrEmpty(displayStatus) ? "" : " - ";
-                                                        displayStatus += "Sớm";
-                                                    }
-                                                    if (!log.In.HasValue && !log.Out.HasValue)
-                                                    {
-                                                        displayStatus += string.IsNullOrEmpty(displayStatus) ? "" : " - ";
-                                                        displayStatus += "Thiếu";
-                                                    }
-                                                    else if (!log.In.HasValue)
-                                                    {
-                                                        displayStatus += string.IsNullOrEmpty(displayStatus) ? "" : " - ";
-                                                        displayStatus += "Thiếu vào";
-                                                    }
-                                                    else if (!log.Out.HasValue)
-                                                    {
-                                                        displayStatus += string.IsNullOrEmpty(displayStatus) ? "" : " - ";
-                                                        displayStatus += "Thiếu ra";
-                                                    }
-                                                    <small class="badge badge-secondary">@displayStatus</small>
+                                                    var statusBag = log.Status == (int)EStatusWork.TuChoi ? "badge-pill" : "badge-info";
+                                                    <span class="badge @statusBag">@Constants.TimeKeeper(log.Status)</span>
                                                 }
                                             }
                                             else
                                             {
-                                                var statusBag = log.Status == (int)StatusWork.TuChoi ? "badge-pill" : "badge-info";
-                                                <span class="badge @statusBag">@Constants.TimeKeeper(log.Status)</span>
-                                                if (log.Mode == (int)TimeWork.Normal && !string.IsNullOrEmpty(log.Reason))
+                                                var loaitangca = string.Empty;
+                                                var statusTangCa = log.StatusTangCa;
+                                                if (statusTangCa == (int)ETangCa.CanXacNhan)
                                                 {
-                                                    var displayReason = log.Reason;
-                                                    if (!string.IsNullOrEmpty(log.ReasonDetail))
-                                                    {
-                                                        displayReason += ". Chi tiết: " + log.ReasonDetail;
-                                                    }
-                                                    <p><small class="badge badge-light reason-info-text" data-toggle="tooltip" title="@displayReason">Lý do</small></p>
+                                                    <input type="button" class="btn btn-sm btn-danger" value="Xác nhận tăng ca @loaitangca" data-toggle="modal" data-target="#requestTimeKeeperModal" data-id="@log.Id" />
+                                                }
+                                                else if (statusTangCa > (int)ETangCa.CanXacNhan)
+                                                {
+                                                    var statusBag = statusTangCa == (int)ETangCa.TuChoi ? "badge-pill" : "badge-info";
+                                                    <span class="badge @statusBag">@Constants.StringTangCa(log.StatusTangCa)</span>
                                                 }
                                             }
+
+                                            if (!string.IsNullOrEmpty(log.Reason))
+                                            {
+                                                var displayReason = log.Reason;
+                                                if (!string.IsNullOrEmpty(log.ReasonDetail))
+                                                {
+                                                    displayReason += ". Chi tiết: " + log.ReasonDetail;
+                                                }
+                                                <p><small class="badge badge-light reason-info-text" data-toggle="tooltip" title="@displayReason">Lý do</small></p>
+                                            }
+
                                         }
                                     }
                                 </td>
@@ -281,10 +333,43 @@
                                 <td scope="row">
                                     <span class="text-muted">@log.Date.ToString("dd/MM/yyyy")</span>
                                 </td>
-                                <td><span>@log.In</span></td>
-                                <td><span>@log.Out</span></td>
                                 <td>
                                     @{
+                                        var vao = string.Empty;
+                                        if (log.In.HasValue)
+                                        {
+                                            vao = log.In.Value.ToString(@"hh\:mm");
+                                        }
+                                    }
+                                    <span>@vao</span>
+                                </td>
+                                <td>
+                                    @if (!isToday)
+                                    {
+                                        var ra = string.Empty;
+                                        if (log.Out.HasValue)
+                                        {
+                                            ra = log.Out.Value.ToString(@"hh\:mm");
+                                        }
+                                        <span>@ra</span>
+                                    }
+                                </td>
+                                <td>
+                                    @{
+                                        if (log.Logs != null && log.Logs.Count > 0)
+                                        {
+                                            foreach (var logtime in log.Logs)
+                                            {
+                                                <small>@logtime.Date.ToString("HH:mm:ss")</small>
+                                                <br />
+                                            }
+                                            <small class="badge badge-light">@log.WorkplaceCode</small>
+                                        }
+                                    }
+                                </td>
+                                <td>
+                                    @if (!isCalHour)
+                                    {
                                         var detail = string.Empty;
                                         if (log.Start.TotalMilliseconds != 0)
                                         {
@@ -294,47 +379,64 @@
                                         {
                                             detail += "-" + log.End.ToString(@"hh\:mm");
                                         }
-                                    }
-                                    <small>@detail</small>
-                                </td>
-                                <td>
-                                    @if ((log.StatusLate == (int)StatusWork.XacNhanCong || log.StatusLate == (int)StatusWork.DaGuiXacNhan || log.StatusLate == (int)StatusWork.TuChoi) && log.Late.TotalMilliseconds > 0)
-                                    {
-                                        <span>@Math.Round(log.Late.TotalMinutes, 0)</span>
+                                        <small>@detail</small>
                                     }
                                 </td>
                                 <td>
-                                    @if ((log.StatusEarly == (int)StatusWork.XacNhanCong || log.StatusEarly == (int)StatusWork.DaGuiXacNhan || log.StatusEarly == (int)StatusWork.TuChoi) && log.Early.TotalMilliseconds > 0)
+                                    @if (!isToday)
                                     {
-                                        <span>@Math.Round(log.Early.TotalMinutes, 0)</span>
-                                    }
-                                </td>
-                                <td>
-                                    @if (log.Status == (int)StatusWork.DongY)
-                                    {
-                                        <span>1</span>
-                                    }
-                                    else
-                                    {
-                                        if (log.WorkDay == 0)
+                                        if (isCalHour)
                                         {
-                                            if (!string.IsNullOrEmpty(log.Reason))
-                                            {
-                                                var displayReason = log.Reason;
-                                                if (!string.IsNullOrEmpty(log.ReasonDetail))
-                                                {
-                                                    displayReason += ". Chi tiết: " + log.ReasonDetail;
-                                                }
-                                                <small>@displayReason</small>
-                                            }
+                                            <small>@log.Reason</small>
                                         }
                                         else
                                         {
-                                            <span>@log.WorkDay</span>
+                                            if (log.Status == (int)EStatusWork.DongY)
+                                            {
+                                                <span>1</span>
+                                            }
+                                            else
+                                            {
+                                                <span>@log.WorkDay</span>
+                                            }
                                         }
                                     }
                                 </td>
-                                <td><small>@log.WorkplaceCode</small></td>
+                                <td>
+                                    @if (!isCalHour && !isToday)
+                                    {
+                                        if ((log.Status == (int)EStatusWork.XacNhanCong || log.Status == (int)EStatusWork.DaGuiXacNhan || log.Status == (int)EStatusWork.TuChoi))
+                                        {
+                                            var miss = (log.Early + log.Late).TotalMinutes;
+                                            if (miss > 0)
+                                            {
+                                                <span>@Math.Round(miss, 0)</span>
+                                            }
+                                        }
+                                    }
+                                </td>
+                                <td>
+                                    @if (!isToday)
+                                    {
+                                        var tangcathucte = string.Empty;
+                                        if (log.TangCaThucTe.TotalHours >= 0.5)
+                                        {
+                                            tangcathucte = log.TangCaThucTe.ToString(@"hh\:mm");
+                                        }
+                                        <span>@tangcathucte</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (!isToday)
+                                    {
+                                        var giotangcaxacnhan = string.Empty;
+                                        if (log.TangCaDaXacNhan.TotalHours > 0)
+                                        {
+                                            giotangcaxacnhan = log.TangCaDaXacNhan.ToString(@"hh\:mm");
+                                        }
+                                        <span>@giotangcaxacnhan</span>
+                                    }
+                                </td>
                             </tr>
                             i++;
                         }
@@ -342,9 +444,7 @@
                 </tbody>
             </table>
         </div>
-        <!--end of col-->
     </div>
-    <!--end of row-->
 }
 else
 {

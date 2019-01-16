@@ -977,5 +977,13 @@ namespace Data
                 return _database.GetCollection<News>("News");
             }
         }
+
+        public IMongoCollection<Holiday> Holidays
+        {
+            get
+            {
+                return _database.GetCollection<Holiday>("Holidays");
+            }
+        }
     }
 }

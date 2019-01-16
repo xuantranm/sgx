@@ -76,8 +76,11 @@
     <Compile Include="Models\Email\EmailAddress.cs" />
     <Compile Include="Models\Email\EmailMessage.cs" />
     <Compile Include="Models\Extensions\Common.cs" />
+    <Compile Include="Models\Extensions\ExtensionNew.cs" />
     <Compile Include="Models\Extensions\Extension.cs" />
     <Compile Include="Models\Extensions\Tracking.cs" />
+    <Compile Include="Models\Holiday.cs" />
+    <Compile Include="Models\HRs\Department.cs" />
     <Compile Include="Models\HRs\EmployeeExtend.cs" />
     <Compile Include="Models\HRs\Employee.cs" />
     <Compile Include="Models\HRs\EmployeeManager.cs" />

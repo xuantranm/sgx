@@ -32,6 +32,7 @@ using MongoDB.Bson;
 using MimeKit.Text;
 using MailKit.Net.Smtp;
 using System.Globalization;
+using Helpers;
 
 namespace erp.Controllers
 {
@@ -100,9 +101,7 @@ namespace erp.Controllers
         {
             var arrs = new List<string>
             {
-                "luan.nt",
-                "loc.tm",
-                "thuan.nc"
+                "phuong.na"
             };
 
             // 1. Get information Employee
@@ -124,6 +123,7 @@ namespace erp.Controllers
             nhansumoi += "<td nowrap='nowrap' style='border: solid windowtext 1.0pt; background: #76923C; padding: 0cm 5.4pt 0cm 5.4pt;'><b>STT</b></td>";
             nhansumoi += "<td nowrap='nowrap' style='border: solid windowtext 1.0pt; border-left: none; background: #76923C; padding: 0cm 5.4pt 0cm 5.4pt;'><b>HỌ VÀ TÊN</b></td>";
             nhansumoi += "<td nowrap='nowrap' style='border: solid windowtext 1.0pt; border-left: none; background: #76923C; padding: 0cm 5.4pt 0cm 5.4pt;'><b>CHỨC VỤ</b></td>";
+            nhansumoi += "<td nowrap='nowrap' style='border: solid windowtext 1.0pt; border-left: none; background: #76923C; padding: 0cm 5.4pt 0cm 5.4pt;'><b>PHÒNG/BAN</b></td>";
             nhansumoi += "<td nowrap='nowrap' style='border: solid windowtext 1.0pt; border-left: none; background: #76923C; padding: 0cm 5.4pt 0cm 5.4pt;'><b>SỐ ĐT LIÊN HỆ</b></td>";
             nhansumoi += "<td nowrap='nowrap' style='border: solid windowtext 1.0pt; border-left: none; background: #76923C; padding: 0cm 5.4pt 0cm 5.4pt;'><b>EMAIL</b></td>";
             nhansumoi += "<td nowrap='nowrap' style='border: solid windowtext 1.0pt; border-left: none; background: #76923C; padding: 0cm 5.4pt 0cm 5.4pt;'><b>NGÀY NHẬN VIỆC</b></td>";
@@ -142,11 +142,14 @@ namespace erp.Controllers
                 nhansumoi += "<td nowrap='nowrap' style='border: solid windowtext 1.0pt; border-top: none; padding: 0cm 5.4pt 0cm 5.4pt;'>" + i.ToString("00") + "</td>";
                 nhansumoi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + entity.FullName + "</td>";
                 nhansumoi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + entity.Title + "</td>";
+                nhansumoi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + entity.Department + "</td>";
                 nhansumoi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'><a href='tel:" + contact + "'>"+ contact + "</a></td>";
                 nhansumoi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + entity.Email + "</td>";
                 nhansumoi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + entity.Joinday.ToString("dd/MM/yyyy") + "</td>";
                 nhansumoi += "</tr>";
                 i++;
+
+                SendMailRegister(entity);
             }
 
             nhansumoi += "</tbody>";
@@ -158,7 +161,7 @@ namespace erp.Controllers
                 "C.01",
                 "C.02"
             };
-            var employees = dbContext.Employees.Find(m => m.Enable.Equals(true) && !string.IsNullOrEmpty(m.Email)).ToList();
+            var employees = dbContext.Employees.Find(m => m.Enable.Equals(true) && !string.IsNullOrEmpty(m.Email) && !m.UserName.Equals(Constants.System.account)).ToList();
             foreach (var employee in employees)
             {
                 if (!string.IsNullOrEmpty(employee.NgachLuong) && listboss.Any(str => str.Contains(employee.NgachLuong)))
@@ -180,19 +183,19 @@ namespace erp.Controllers
             }
 
             #region UAT
-            var uat = dbContext.Settings.Find(m => m.Key.Equals("UAT")).FirstOrDefault();
-            if (uat != null && uat.Value == "true")
-            {
-                tos = new List<EmailAddress>
-                        {
-                            new EmailAddress { Name = "Xuan", Address = "xuan.tm1988@gmail.com" }
-                        };
+            //var uat = dbContext.Settings.Find(m => m.Key.Equals("UAT")).FirstOrDefault();
+            //if (uat != null && uat.Value == "true")
+            //{
+            //    tos = new List<EmailAddress>
+            //            {
+            //                new EmailAddress { Name = "Xuan", Address = "xuan.tm1988@gmail.com" }
+            //            };
 
-                ccs = new List<EmailAddress>
-                        {
-                            new EmailAddress { Name = "Xuan CC", Address = "xuantranm@gmail.com" }
-                        };
-            }
+            //    ccs = new List<EmailAddress>
+            //            {
+            //                new EmailAddress { Name = "Xuan CC", Address = "xuantranm@gmail.com" }
+            //            };
+            //}
             #endregion
 
             var pathToFile = _env.WebRootPath
@@ -236,7 +239,74 @@ namespace erp.Controllers
             dbContext.ScheduleEmails.InsertOne(scheduleEmail);
             //_emailSender.SendEmail(emailMessage);
 
-            return Json(new { result = true, source = "cap-nhat-chuc-vu-theo-thang-luong", message = "Cập nhật chức vụ thành công" });
+            return Json(new { result = true, source = "gui-thong-bao-nhan-su-moi", message = "Cập nhật thành công" });
+        }
+
+        public void SendMailRegister(Employee entity)
+        {
+            var password = Guid.NewGuid().ToString("N").Substring(0, 12);
+            var sysPassword = Helper.HashedPassword(password);
+
+            var filterUpdate = Builders<Employee>.Filter.Eq(m => m.Id, entity.Id);
+            var update = Builders<Employee>.Update
+                .Set(m => m.Password, sysPassword);
+            dbContext.Employees.UpdateOne(filterUpdate, update);
+
+            var title = string.Empty;
+            if (!string.IsNullOrEmpty(entity.Gender))
+            {
+                if (entity.AgeBirthday > 50)
+                {
+                    title = entity.Gender == "Nam" ? "anh" : "chị";
+                }
+            }
+            var url = Constants.System.domain;
+            var subject = "Thông tin đăng nhập hệ thống.";
+            var tos = new List<EmailAddress>
+            {
+                new EmailAddress { Name = entity.FullName, Address = entity.Email }
+            };
+            var pathToFile = _env.WebRootPath
+                    + Path.DirectorySeparatorChar.ToString()
+                    + "Templates"
+                    + Path.DirectorySeparatorChar.ToString()
+                    + "EmailTemplate"
+                    + Path.DirectorySeparatorChar.ToString()
+                    + "Confirm_Account_Registration.html";
+            var builder = new BodyBuilder();
+            using (StreamReader SourceReader = System.IO.File.OpenText(pathToFile))
+            {
+                builder.HtmlBody = SourceReader.ReadToEnd();
+            }
+            string messageBody = string.Format(builder.HtmlBody,
+                subject,
+                title + " " + entity.FullName,
+                url,
+                entity.UserName,
+                password,
+                entity.Email);
+
+            var emailMessage = new EmailMessage()
+            {
+                ToAddresses = tos,
+                Subject = subject,
+                BodyContent = messageBody,
+                Type = "thong-tin-dang-nhap"
+            };
+
+            // For faster update.
+            var scheduleEmail = new ScheduleEmail
+            {
+                Status = (int)EEmailStatus.Schedule,
+                To = emailMessage.ToAddresses,
+                CC = emailMessage.CCAddresses,
+                BCC = emailMessage.BCCAddresses,
+                Type = emailMessage.Type,
+                Title = emailMessage.Subject,
+                Content = emailMessage.BodyContent
+            };
+            dbContext.ScheduleEmails.InsertOne(scheduleEmail);
+            //_emailSender.SendEmail(emailMessage);
         }
 
         [Route("/fix/cap-nhat-chuc-vu-theo-thang-luong/")]

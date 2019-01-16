@@ -401,16 +401,15 @@
                                 {
                                     <div class="row">
                                         <div class="col-10">
-                                            <select asp-for="Employee.SalaryChucVuViTriCode" class="form-control form-control-lg js-select2-basic-single">
-                                                <option value="">Chọn</option>
+                                            <select asp-for="Employee.Title" class="form-control form-control-lg js-select2-basic-single">
+                                                <option value="" selected>Chọn</option>
                                                 @{
-                                                    foreach (var item in Model.ThangBangLuongs)
+                                                    foreach (var item in ViewBag.Titles)
                                                     {
-                                                        <option value="@item.ViTriCode" data-name="@item.ViTri">@item.ViTri [@item.ViTriCode]</option>
+                                                        <option value="@item.Name">@item.Name</option>
                                                     }
                                                 }
                                             </select>
-                                            <input type="hidden" asp-for="Employee.Title" />
                                         </div>
                                         <div class="col-2 align-middle">
                                             <button class="btn btn-sm btn-add-title" type="button" data-toggle="modal" data-target="#newTitle" title="Tạo mới Công việc">+</button>
@@ -442,30 +441,30 @@
                                 }
                                 else
                                 {
-                                        <select name="Employee.ManagerId" id="ManagerId" class="form-control form-control-lg js-select2-basic-single">
-                                            <option value="">Không có quản lý</option>
-                                            @{
-                                                foreach (var item in Model.Employees)
+                                    <select name="Employee.ManagerId" id="ManagerId" class="form-control form-control-lg js-select2-basic-single">
+                                        <option value="">Không có quản lý</option>
+                                        @{
+                                            foreach (var item in Model.Employees)
+                                            {
+                                                string displayTitle = string.Empty;
+                                                if (!string.IsNullOrEmpty(item.Title))
                                                 {
-                                                    string displayTitle = string.Empty;
-                                                    if (!string.IsNullOrEmpty(item.Title))
-                                                    {
-                                                        displayTitle += "[" + item.Title + "]";
-                                                    }
-                                                    if (!string.IsNullOrEmpty(item.Email))
-                                                    {
-                                                        displayTitle += "- " + item.Email + "";
-                                                    }
-                                                    <option value="@item.Id">@item.FullName @displayTitle</option>
+                                                    displayTitle += "[" + item.Title + "]";
                                                 }
+                                                if (!string.IsNullOrEmpty(item.Email))
+                                                {
+                                                    displayTitle += "- " + item.Email + "";
+                                                }
+                                                <option value="@item.Id">@item.FullName @displayTitle</option>
                                             }
-                                        </select>
+                                        }
+                                    </select>
                                 }
 
                                 <input type="hidden" value="@Model.Employee.ManagerId" id="hidManagerId" />
                                 @*<script id="tmplManagePeople" type="text/x-jsrender">
-                                    <option value="{{:id}}">{{:fullName}} [{{:title}}]</option>
-                                </script>*@
+                                        <option value="{{:id}}">{{:fullName}} [{{:title}}]</option>
+                                    </script>*@
                             </div>
                         </div>
                         <div class="col-6">
@@ -3328,6 +3327,9 @@
         /**/
 
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
+        <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC7PCKw6JWnv5YTgKQbl-mi2wsxAXQTPeM&libraries=places&region=vn&language=vi" defer></script>
+        @*<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC7PCKw6JWnv5YTgKQbl-mi2wsxAXQTPeM&libraries=places&region=vn&language=vi"
+            async defer></script>*@
         <script src="~/js/employee-data.js?v-@DateTime.Now.Ticks"></script>
     }
 }

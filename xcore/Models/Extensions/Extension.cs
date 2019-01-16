@@ -1,8 +1,5 @@
 ﻿using Common.Utilities;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Models
 {
@@ -18,13 +15,8 @@ namespace Models
         public string OgDescription { get; set; }
         public string SeoFooter { get; set; }
         public string Robots { get; set; } = Constants.Seo.indexFollow;
-
-        // Id relation category
         public string RelationshipCategory { get; set; }
-
         public string RelationshipItem { get; set; }
         #endregion
-
-        //...
     }
 }

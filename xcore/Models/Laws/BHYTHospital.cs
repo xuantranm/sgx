@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Models
 {
-    public class BHYTHospital
+    public class BHYTHospital: Extension
     {
         [BsonId]
         // Mvc don't know how to create ObjectId from string
@@ -45,9 +45,6 @@ namespace Models
         // For check use?
         public int Usage { get; set; } = 0;
 
-        // For multi update, general by system
-        public string Timestamp { get; set; } = DateTime.Now.ToString("yyyyMMddHHmmssfff");
-
         public DateTime CreatedDate { get; set; } = DateTime.Now;
 
         public string CreatedBy { get; set; }
@@ -55,5 +52,8 @@ namespace Models
         public DateTime ModifiedDate { get; set; } = DateTime.Now;
 
         public string ModifiedBy { get; set; }
+
+        // For multi update, general by system
+        public string Timestamp { get; set; } = DateTime.Now.ToString("yyyyMMddHHmmssfff");
     }
 }
