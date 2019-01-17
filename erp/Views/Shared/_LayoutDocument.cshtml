@@ -94,51 +94,27 @@
     @RenderBody()
 
     <div class="main-container">
-        <footer class="footer-short">
+        <footer class="footer">
             <div class="container">
-                <hr>
-                <nav class="row justify-content-between align-items-center">
-                    <div class="col-auto">
-                        <ul class="list-inline">
-                            <li class="list-inline-item">
-                                <a href="/">
-                                    <img alt="Image" src="~/images/logo.png" style="height:30px;margin-top: -15px;" />
-                                </a>
-                            </li>
-                            <li class="list-inline-item">
-                                <a href="/">Trang chủ</a>
-                            </li>
-                            <li class="list-inline-item">
-                                <a href="/tai-lieu/">Tài liệu</a>
-                            </li>
-                            <li class="list-inline-item">
-                                <a href="/v/phien-ban/">Phiên bản</a>
-                            </li>
-                        </ul>
-                    </div>
-                    <!--end of col-->
-                    <div class="col-auto text-sm-right d-none">
-                        <ul class="list-inline">
-                            <li class="list-inline-item">
-                                <a href="/"><i class="socicon-twitter"></i></a>
-                            </li>
-                            <li class="list-inline-item">
-                                <a href="https://www.facebook.com/tribat.saigonxanh" target="_blank"><i class="socicon-facebook"></i></a>
-                            </li>
-                        </ul>
-                    </div>
-                    <!--end of col-->
-                </nav>
-                <!--end of row-->
                 <div class="row">
-                    <div class="col">
-                        <small>&copy; 2018 Tribat</small>
+                    <div class="col-md-3 col-xs-6">
+                        <a href="/">
+                            <img alt="Image" src="~/images/logo.png" style="height:30px;" />
+                        </a>
+                        <br />
+                        <small style="font-weight:bold;">&copy; @DateTime.Now.Year Công ty TNHH CNSH SÀI GÒN XANH</small>
                     </div>
-                    <!--end of col-->
+                    <div class="col-md-3 col-xs-6">
+                        <a href="/">Trang chủ</a>
+                    </div>
+                    <div class="col-md-3 col-xs-6">
+                        <a href="/@Constants.LinkDocument.Main/@Constants.LinkDocument.GettingStarted" alt="Hướng dẫn sử dụng" target="_blank" data-toggle="tooltip" title="Bấm vô để mở hướng dẫn chi tiết bằng hình ảnh.">Hướng dẫn</a>
+                    </div>
+                    <div class="col-md-3 col-xs-6">
+                        <a href="http://tribat.vn" target="_blank">tribat.vn</a>
+                    </div>
                 </div>
-                <!--end of row-->
             </div>
-            <!--end of container-->
         </footer>
     </div>
 

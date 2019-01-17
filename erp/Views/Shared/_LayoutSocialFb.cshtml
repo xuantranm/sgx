@@ -84,7 +84,11 @@
             @ViewData["Disable"]
         </div>
     }
-
+        <div class="d-none d-lg-block">
+            <img style="position:absolute;top:0;right:0px;z-index:1002;" src="~/images/holidays/phaophai2019.png">
+            <img style="position:absolute;top:0;left:0px;z-index:1002;" src="~/images/holidays/phaotrai2019.png">
+        </div>
+   
     <div class="nav-container">
         <div class="bg-light navbar-light" data-sticky="top">
             <div class="container">
@@ -317,8 +321,8 @@
                                 <div class="d-none">
                                     @*<button class="btn btn-outline-primary"><i class="icon-add-user"></i> Theo dõi</button>*@
                                     @*<button class="btn btn-outline-primary">
-                                            <i class="icon-mail"></i>
-                                        </button>*@
+                                        <i class="icon-mail"></i>
+                                    </button>*@
                                 </div>
                             </div>
                         </div>
@@ -339,9 +343,9 @@
                                 </div>
                                 <div class="d-none">
                                     @*<button class="btn btn-outline-primary"><i class="icon-add-user"></i> Theo dõi</button>
-                                        <button class="btn btn-outline-primary">
-                                                <i class="icon-mail"></i>
-                                            </button>*@
+                                    <button class="btn btn-outline-primary">
+                                            <i class="icon-mail"></i>
+                                        </button>*@
                                 </div>
                             </div>
                         </script>
@@ -432,13 +436,13 @@
                                     </div>
                                 </a>
                                 @*<a class="list-group-item d-flex justify-content-between d-none" href="/@Constants.LinkNotication.Main/@Constants.LinkNotication.Index">
-                                        <div>
-                                            <span>Thông báo</span>
-                                        </div>
-                                        <div>
-                                            <i class="icon-chevron-right"></i>
-                                        </div>
-                                    </a>*@
+                                    <div>
+                                        <span>Thông báo</span>
+                                    </div>
+                                    <div>
+                                        <i class="icon-chevron-right"></i>
+                                    </div>
+                                </a>*@
 
                                 @if (rightNhaMay)
                                 {
@@ -541,12 +545,12 @@
                     <!--end of col-->
                     <div class="col-12 col-md-8">
                         @*<div class="alert alert-info text-small mb-0" role="alert">
-                                <i class="icon-shield"></i>
-                                <span>
-                                    We will never distribute your email address to third parties. Read about email communication in our privacy policy.
-                                </span>
-                                <a href="/nhan-su/thong-tin">Xem thêm ›</a>
-                            </div>*@
+                            <i class="icon-shield"></i>
+                            <span>
+                                We will never distribute your email address to third parties. Read about email communication in our privacy policy.
+                            </span>
+                            <a href="/nhan-su/thong-tin">Xem thêm ›</a>
+                        </div>*@
 
                         @RenderBody()
 
@@ -558,160 +562,134 @@
             <!--end of container-->
         </section>
 
-        <footer class="footer-short">
+        <footer class="footer">
             <div class="container">
-                <hr>
-                <nav class="row justify-content-between align-items-center">
-                    <div class="col-auto">
-                        <ul class="list-inline">
-                            <li class="list-inline-item">
-                                <a href="/">
-                                    <img alt="Image" src="~/images/logo.png" style="height:30px;margin-top: -15px;" />
-                                </a>
-                            </li>
-                            <li class="list-inline-item">
-                                <a href="/">Trang chủ</a>
-                            </li>
-                            @if (rightSystem)
-                            {
-                                <li class="list-inline-item">
-                                    <a href="/tai-lieu/">Tài liệu</a>
-                                </li>
-                            }
-                            <li class="list-inline-item">
-                                <a href="/v/phien-ban/">Phiên bản</a>
-                            </li>
-                            <li class="list-inline-item">
-                                <a href="/@Constants.LinkDocument.Main/@Constants.LinkDocument.GettingStarted" alt="Hướng dẫn sử dụng" target="_blank" data-toggle="tooltip" title="Bấm vô để mở hướng dẫn chi tiết bằng hình ảnh.">Hướng dẫn sử dụng</a>
-                            </li>
-                        </ul>
-                    </div>
-                    <!--end of col-->
-                    <div class="col-auto text-sm-right d-none">
-                        <ul class="list-inline">
-                            <li class="list-inline-item">
-                                <a href="/"><i class="socicon-twitter"></i></a>
-                            </li>
-                            <li class="list-inline-item">
-                                <a href="https://www.facebook.com/tribat.saigonxanh" target="_blank"><i class="socicon-facebook"></i></a>
-                            </li>
-                        </ul>
-                    </div>
-                    <!--end of col-->
-                </nav>
-                <!--end of row-->
                 <div class="row">
-                    <div class="col">
-                        <small>&copy; 2018 Tribat</small>
+                    <div class="col-md-3 col-xs-6">
+                        <a href="/">
+                            <img alt="Image" src="~/images/logo.png" style="height:30px;" />
+                        </a>
+                        <br />
+                        <small style="font-weight:bold;">&copy; @DateTime.Now.Year Công ty TNHH CNSH SÀI GÒN XANH</small>
                     </div>
-                    <!--end of col-->
+                    <div class="col-md-3 col-xs-6">
+                        <a href="/">Trang chủ</a>
+                    </div>
+                    <div class="col-md-3 col-xs-6">
+                        <a href="/@Constants.LinkDocument.Main/@Constants.LinkDocument.GettingStarted" alt="Hướng dẫn sử dụng" target="_blank" data-toggle="tooltip" title="Bấm vô để mở hướng dẫn chi tiết bằng hình ảnh.">Hướng dẫn</a>
+                    </div>
+                    <div class="col-md-3 col-xs-6">
+                        <a href="http://tribat.vn" target="_blank">tribat.vn</a>
+                    </div>
                 </div>
-                <!--end of row-->
             </div>
-            <!--end of container-->
         </footer>
-    </div>
 
-    <div class="alert alert-light d-none" role="alert">
-        Account beta testing: sysadmin - pwd: 06021988
-    </div>
-
-    <div class="modal fade" id="pwdModal" tabindex="-1" role="dialog" aria-labelledby="pwdModal" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content" id="modalPwd">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Thay đổi mật khẩu</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <form class="data-form-change-pwd">
-                    <div class="modal-body">
-                        <div class="form-group">
-                            <label for="recipient-name" class="col-form-label">Mật khẩu mới:</label>
-                            <input type="password" class="form-control form-control-lg" name="newpassword" id="newpassword" />
-                            <span toggle="#newpassword" class="fa fa-fw fa-eye field-icon toggle-password"></span>
-                        </div>
-                        <div class="form-group">
-                            <label for="message-text" class="col-form-label">Nhập lại mật khẩu mới:</label>
-                            <input type="password" class="form-control form-control-lg" id="renewpassword" />
-                            <span toggle="#renewpassword" class="fa fa-fw fa-eye field-icon toggle-password"></span>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
-                        <button type="button" class="btn btn-primary btn-save-pwd">Lưu mật khẩu mới</button>
-                    </div>
-                </form>
-            </div>
+        <div class="d-none d-lg-block">
+            <img class="maidao lazyloaded img-responsive" data-original="~/images/holidays/maidao2019.png" src="~/images/holidays/maidao2019.png">
         </div>
     </div>
 
-    <input type="hidden" value=""
-           name="clientScreenHeight" id="clientScreenHeight" />
-    <input type="hidden" value=""
-           name="clientScreenWidth" id="clientScreenWidth" />
+        <div class="alert alert-light d-none" role="alert">
+            Account beta testing: sysadmin - pwd: 06021988
+        </div>
+
+        <div class="modal fade" id="pwdModal" tabindex="-1" role="dialog" aria-labelledby="pwdModal" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content" id="modalPwd">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Thay đổi mật khẩu</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <form class="data-form-change-pwd">
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label for="recipient-name" class="col-form-label">Mật khẩu mới:</label>
+                                <input type="password" class="form-control form-control-lg" name="newpassword" id="newpassword" />
+                                <span toggle="#newpassword" class="fa fa-fw fa-eye field-icon toggle-password"></span>
+                            </div>
+                            <div class="form-group">
+                                <label for="message-text" class="col-form-label">Nhập lại mật khẩu mới:</label>
+                                <input type="password" class="form-control form-control-lg" id="renewpassword" />
+                                <span toggle="#renewpassword" class="fa fa-fw fa-eye field-icon toggle-password"></span>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                            <button type="button" class="btn btn-primary btn-save-pwd">Lưu mật khẩu mới</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <input type="hidden" value=""
+               name="clientScreenHeight" id="clientScreenHeight" />
+        <input type="hidden" value=""
+               name="clientScreenWidth" id="clientScreenWidth" />
 
 
-    <script>
-        $(document).ready(function () {
-            $("#clientScreenWidth").val($(window).width());
-            $("#clientScreenHeight").val($(window).height());
-        });
-    </script>
-    <script type="text/javascript" src="~/lib/jquery-ui-1.12.1/jquery-ui.min.js"></script>
-    <script type="text/javascript" src="~/lib/popper/popper.min.js"></script>
-    <script type="text/javascript" src="~/assets/wingman/js/jquery.smartWizard.min.js"></script>
-    <script type="text/javascript" src="~/lib/flickity/flickity.pkgd.min.js"></script>
-    <script type="text/javascript" src="~/assets/wingman/js/scrollMonitor.js"></script>
-    <script type="text/javascript" src="~/lib/smooth-scroll/smooth-scroll.polyfills.min.js"></script>
-    <script type="text/javascript" src="~/lib/prism/prism.min.js"></script>
-    <script type="text/javascript" src="~/lib/zoom/zoom-vanilla.min.js"></script>
-    <script type="text/javascript" src="~/lib/bootstrap-4.0.0-dist/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="~/assets/wingman/js/theme.js"></script>
-    @*<script type="text/javascript" src="~/lib/jquery-autocomplete/jquery.autocomplete.min.js"></script>*@
-    <script type="text/javascript" src="~/lib/bootstrap-multiselect/dist/js/bootstrap-multiselect.js"></script>
-    <script type="text/javascript" src="~/lib/autosize/jquery.textarea_autosize.js"></script>
-    <script type="text/javascript" src="~/lib/bootstrap-datepicker-1.6.4-dist/js/bootstrap-datepicker.min.js"></script>
-    <script type="text/javascript" src="~/lib/bootstrap-datepicker-1.6.4-dist/locales/bootstrap-datepicker.vi.min.js" charset="UTF-8"></script>
-    <script type="text/javascript" src="~/lib/moment/moment.min.js"></script>
-    <script type="text/javascript" src="~/lib/moment/moment-with-locales.min.js"></script>
-    <script type="text/javascript" src="~/lib/chart.js/Chart.min.js"></script>
-    <script type="text/javascript" src="~/lib/autoNumber-4-1/autoNumeric.js"></script>
-    <script type="text/javascript" src="~/lib/accounting.js/accounting.min.js"></script>
-    <script type="text/javascript" src="~/lib/toastr/toastr.min.js"></script>
-    <script type="text/javascript" src="~/lib/daterangepicker/daterangepicker.js"></script>
-    <script type="text/javascript" src="~/lib/datetimepicker-tempusdominus/js/tempusdominus-bootstrap-4.min.js"></script>
-    <script type="text/javascript" src="~/lib/js-render/jsrender.min.js"></script>
-    <script type="text/javascript" src="~/lib/select2/select2.min.js"></script>
-    <script type="text/javascript" src="~/lib/jquery.floatThead/dist/jquery.floatThead.min.js"></script>
-    
-    <script type="text/javascript" src="~/js/site.js?@DateTime.Now.Ticks"></script>
+        <script>
+            $(document).ready(function () {
+                $("#clientScreenWidth").val($(window).width());
+                $("#clientScreenHeight").val($(window).height());
+            });
+        </script>
+        <script type="text/javascript" src="~/lib/jquery-ui-1.12.1/jquery-ui.min.js"></script>
+        <script type="text/javascript" src="~/lib/popper/popper.min.js"></script>
+        <script type="text/javascript" src="~/assets/wingman/js/jquery.smartWizard.min.js"></script>
+        <script type="text/javascript" src="~/lib/flickity/flickity.pkgd.min.js"></script>
+        <script type="text/javascript" src="~/assets/wingman/js/scrollMonitor.js"></script>
+        <script type="text/javascript" src="~/lib/smooth-scroll/smooth-scroll.polyfills.min.js"></script>
+        <script type="text/javascript" src="~/lib/prism/prism.min.js"></script>
+        <script type="text/javascript" src="~/lib/zoom/zoom-vanilla.min.js"></script>
+        <script type="text/javascript" src="~/lib/bootstrap-4.0.0-dist/js/bootstrap.min.js"></script>
+        <script type="text/javascript" src="~/assets/wingman/js/theme.js"></script>
+        @*<script type="text/javascript" src="~/lib/jquery-autocomplete/jquery.autocomplete.min.js"></script>*@
+        <script type="text/javascript" src="~/lib/bootstrap-multiselect/dist/js/bootstrap-multiselect.js"></script>
+        <script type="text/javascript" src="~/lib/autosize/jquery.textarea_autosize.js"></script>
+        <script type="text/javascript" src="~/lib/bootstrap-datepicker-1.6.4-dist/js/bootstrap-datepicker.min.js"></script>
+        <script type="text/javascript" src="~/lib/bootstrap-datepicker-1.6.4-dist/locales/bootstrap-datepicker.vi.min.js" charset="UTF-8"></script>
+        <script type="text/javascript" src="~/lib/moment/moment.min.js"></script>
+        <script type="text/javascript" src="~/lib/moment/moment-with-locales.min.js"></script>
+        <script type="text/javascript" src="~/lib/chart.js/Chart.min.js"></script>
+        <script type="text/javascript" src="~/lib/autoNumber-4-1/autoNumeric.js"></script>
+        <script type="text/javascript" src="~/lib/accounting.js/accounting.min.js"></script>
+        <script type="text/javascript" src="~/lib/toastr/toastr.min.js"></script>
+        <script type="text/javascript" src="~/lib/daterangepicker/daterangepicker.js"></script>
+        <script type="text/javascript" src="~/lib/datetimepicker-tempusdominus/js/tempusdominus-bootstrap-4.min.js"></script>
+        <script type="text/javascript" src="~/lib/js-render/jsrender.min.js"></script>
+        <script type="text/javascript" src="~/lib/select2/select2.min.js"></script>
+        <script type="text/javascript" src="~/lib/jquery.floatThead/dist/jquery.floatThead.min.js"></script>
 
-    @RenderSection("scripts", required: false)
+        <script type="text/javascript" src="~/js/site.js?@DateTime.Now.Ticks"></script>
 
-    <!--Start of Tawk.to Script-->
-    <script type="text/javascript">
-        var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
-        (function () {
-            var s1 = document.createElement("script"), s0 = document.getElementsByTagName("script")[0];
-            s1.async = true;
-            s1.src = 'https://embed.tawk.to/5adae73a227d3d7edc242b43/default';
-            s1.charset = 'UTF-8';
-            s1.setAttribute('crossorigin', '*');
-            s0.parentNode.insertBefore(s1, s0);
-        })();
-    </script>
-    <!--End of Tawk.to Script-->
+        @RenderSection("scripts", required: false)
 
-    <script type="text/javascript">
-        $(document).ready(function () {
-            console.log("Time until DOMready: ", Date.now() - start);
-        });
-        $(window).on("load", function () {
-            console.log("Time until everything loaded: ", Date.now() - start);
-        });
-    </script>
+        <!--Start of Tawk.to Script-->
+        <script type="text/javascript">
+            var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
+            (function () {
+                var s1 = document.createElement("script"), s0 = document.getElementsByTagName("script")[0];
+                s1.async = true;
+                s1.src = 'https://embed.tawk.to/5adae73a227d3d7edc242b43/default';
+                s1.charset = 'UTF-8';
+                s1.setAttribute('crossorigin', '*');
+                s0.parentNode.insertBefore(s1, s0);
+            })();
+        </script>
+        <!--End of Tawk.to Script-->
+
+        <script type="text/javascript">
+            $(document).ready(function () {
+                console.log("Time until DOMready: ", Date.now() - start);
+            });
+            $(window).on("load", function () {
+                console.log("Time until everything loaded: ", Date.now() - start);
+            });
+        </script>
 </body>
 
 </html>

@@ -31,7 +31,7 @@ using Helpers;
 
 namespace erp.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [Route(Constants.LinkNotication.Main)]
     public class NotificationController : Controller
     {
@@ -56,10 +56,10 @@ namespace erp.Controllers
             _logger = logger;
         }
 
-        [Route(Constants.LinkNotication.Index)]
-        public ActionResult Index(string name)
+        [Route(Constants.LinkNotication.Index + "/" + Constants.LinkNotication.List)]
+        public ActionResult List()
         {
-            var sort = Builders<Setting>.Sort.Descending(m=>m.ModifiedDate);
+            var sort = Builders<Setting>.Sort.Descending(m => m.ModifiedDate);
             var settings = dbContext.Settings.Find(m => m.Enable.Equals(true)).Sort(sort).ToList();
 
             var settingsDisable = dbContext.Settings.Find(m => m.Enable.Equals(false)).Sort(sort).ToList();
@@ -70,6 +70,28 @@ namespace erp.Controllers
             };
             return View(viewModel);
         }
+
+        [Route(Constants.LinkNotication.Index + "/nghi-tet-nguyen-dan-ky-hoi")]
+        public ActionResult Index(string name)
+        {
+            return View();
+        }
+
+        [Route(Constants.LinkNotication.Index + "/cac-chuong-trinh-cuoi-nam-mau-tuat")]
+        public ActionResult Index2(string name)
+        {
+            return View();
+        }
+        //[Route(Constants.LinkNotication.Index + "/{name}")]
+        //public ActionResult Index(string name)
+        //{
+        //    var viewModel = new NotificationViewModel
+        //    {
+
+        //    };
+        //    return View(viewModel);
+        //}
+
 
         [HttpGet]
         public JsonResult Item(string id)

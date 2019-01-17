@@ -181,6 +181,22 @@
         }
     });
 
+    $('.chkEmailSend').on('change', function () {
+        if ($(this).is(':checked')) {
+            $('#EmailSend').val(true);
+        } else {
+            $('#EmailSend').val(false);
+        }
+    });
+
+    $('.chkEmailLeaveSend').on('change', function () {
+        if ($(this).is(':checked')) {
+            $('#EmailLeave').val(true);
+        } else {
+            $('#EmailLeave').val(false);
+        }
+    });
+
     $('#check-enable').on('change', function () {
         if ($(this).is(':checked')) {
             $('input[name="Employee.Enable"]').val(false);

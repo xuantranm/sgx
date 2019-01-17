@@ -276,6 +276,7 @@
                                 <i class="icon icon-login"></i>
                                 <label asp-for="Employee.UserName" class="control-label"></label><span class="text-red">*</span>
                                 <p><span>@Model.Employee.UserName</span></p>
+                                <input asp-for="Employee.UserName" type="hidden" />
                                 @*<input asp-for="Employee.UserName" class="form-control form-control-lg" readonly />*@
                                 <small>Thông tin này hiển thị trên hồ sơ công khai của bạn</small>
                             </div>
@@ -775,6 +776,33 @@
                             <div class="form-group">
                                 <label class="control-label">Nội dung bàn giao</label>
                                 <textarea asp-for="Employee.LeaveHandover" class="form-control form-control-lg"></textarea>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 leave-extend @displayLeave">
+                            <div class="form-group">
+                                <label class="control-label">Nhóm gửi email</label>
+                                <input asp-for="EmailLeaveGroup" class="form-control form-control-lg" />
+                                <small><span class="badge badge-info">1</span> Đặt tên nhóm theo ngày, theo ký tự nào đó. Vd: 20122018.</small>
+                                <small><span class="badge badge-info">2</span> Sau khi hoàn tất muốn gửi mail theo nhóm thì đánh dấu bên dưới. Muốn tạo thêm thông tin theo nhóm thì bỏ chọn bên dưới.</small>
+                                <small>*** Hệ thống sẽ gửi email thông báo theo tên nhóm. Sau khi lên lịch gửi tên nhóm sẽ hủy.</small>
+                            </div>
+                        </div>
+                        <div class="col-12 leave-extend @displayLeave">
+                            <div class="form-group">
+                                <div class="float-left">
+                                    @{
+                                        if (Model.EmailLeave)
+                                        {
+                                            <input type="checkbox" checked class="big-checkbox chkEmailLeaveSend">
+                                        }
+                                        else
+                                        {
+                                            <input type="checkbox" class="big-checkbox chkEmailLeaveSend">
+                                        }
+                                    }
+                                    <input asp-for="EmailLeave" type="hidden" />
+                                </div>
+                                <div class="float-left" style="margin-left:8px"><b>Gửi email thông báo</b></div>
                             </div>
                         </div>
                     }
@@ -3104,7 +3132,6 @@
                         <small>*** Hệ thống sẽ gửi email thông báo theo tên nhóm. Sau khi lên lịch gửi tên nhóm sẽ hủy.</small>
                     </div>
                 </div>
-                <div class="col-12 divEmailGroupInfo"></div>
                 <div class="col-12">
                     <div class="form-group">
                         <div class="float-left">

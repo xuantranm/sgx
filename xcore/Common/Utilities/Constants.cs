@@ -271,6 +271,8 @@ namespace Common.Utilities
         {
             public const string Main = "nt";
             public const string Index = "thong-bao";
+
+            public const string List = "danh-sach";
             public const string Create = "tao";
             public const string CalculatorDate = "calculator-date";
             // API

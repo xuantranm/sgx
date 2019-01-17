@@ -5,7 +5,8 @@ namespace Common.Enums
 
     public enum EEmailGroup
     {
-        Hr = 1
+        New = 1,
+        Leave = 2,
     }
 
     public enum EEmailStatus

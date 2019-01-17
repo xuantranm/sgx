@@ -28,9 +28,13 @@ namespace ViewModels
         // In Edit, Flag Welcome or Edit
         public bool EmailSend { get; set; }
 
+        public bool EmailLeave { get; set; }
+
         // Store EmailSchedule
         // next data => update EmailSchedule content
         public string EmailGroup { get; set; }
+
+        public string EmailLeaveGroup { get; set; }
 
         public IList<EmailGroup> EmailGroups { get; set; }
 

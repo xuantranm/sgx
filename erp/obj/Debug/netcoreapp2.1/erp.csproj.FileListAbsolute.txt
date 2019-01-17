@@ -197,3 +197,6 @@ C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\Salary\Tha
 C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\SalaryThangLuong\ThangLuong.g.cshtml.cs
 C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\SalaryThangLuong\ThangLuongTaiLieu.g.cshtml.cs
 C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\Holiday\Index.g.cshtml.cs
+C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\Notification\Create.g.cshtml.cs
+C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\Shared\_LayoutNotification.g.cshtml.cs
+C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\Notification\Index2.g.cshtml.cs
