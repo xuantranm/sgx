@@ -198,6 +198,98 @@ namespace Data
         }
         #endregion
 
+        #region FACTORIES
+        public IMongoCollection<FactoryProduct> FactoryProducts
+        {
+            get
+            {
+                return _database.GetCollection<FactoryProduct>("FactoryProducts");
+            }
+        }
+
+        public IMongoCollection<FactoryCongViec> FactoryCongViecs
+        {
+            get
+            {
+                return _database.GetCollection<FactoryCongViec>("FactoryCongViecs");
+            }
+        }
+
+        public IMongoCollection<FactoryProductDinhMuc> FactoryProductDinhMucs
+        {
+            get
+            {
+                return _database.GetCollection<FactoryProductDinhMuc>("FactoryProductDinhMucs");
+            }
+        }
+
+        public IMongoCollection<FactoryProductDinhMucTangCa> FactoryProductDinhMucTangCas
+        {
+            get
+            {
+                return _database.GetCollection<FactoryProductDinhMucTangCa>("FactoryProductDinhMucTangCas");
+            }
+        }
+
+        public IMongoCollection<FactoryProductDinhMucTiLe> FactoryProductDinhMucTiLes
+        {
+            get
+            {
+                return _database.GetCollection<FactoryProductDinhMucTiLe>("FactoryProductDinhMucTiLes");
+            }
+        }
+
+        public IMongoCollection<FactoryProductDonGiaM3> FactoryProductDonGiaM3s
+        {
+            get
+            {
+                return _database.GetCollection<FactoryProductDonGiaM3>("FactoryProductDonGiaM3s");
+            }
+        }
+
+        public IMongoCollection<FactoryProductCongTheoThang> FactoryProductCongTheoThangs
+        {
+            get
+            {
+                return _database.GetCollection<FactoryProductCongTheoThang>("FactoryProductCongTheoThangs");
+            }
+        }
+
+        public IMongoCollection<FactoryProductCongTheoNgay> FactoryProductCongTheoNgays
+        {
+            get
+            {
+                return _database.GetCollection<FactoryProductCongTheoNgay>("FactoryProductCongTheoNgays");
+            }
+        }
+        #endregion
+
+        #region SALARIES
+        public IMongoCollection<EmployeeCong> EmployeeCongs
+        {
+            get
+            {
+                return _database.GetCollection<EmployeeCong>("EmployeeCongs");
+            }
+        }
+
+        public IMongoCollection<SalaryEmployeeMonth> SalaryEmployeeMonths
+        {
+            get
+            {
+                return _database.GetCollection<SalaryEmployeeMonth>("SalaryEmployeeMonths");
+            }
+        }
+
+        #endregion
+        public IMongoCollection<CreditEmployee> CreditEmployees
+        {
+            get
+            {
+                return _database.GetCollection<CreditEmployee>("CreditEmployees");
+            }
+        }
+
         public IMongoCollection<Role> Roles
         {
             get

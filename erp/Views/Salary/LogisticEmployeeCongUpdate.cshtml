@@ -109,7 +109,7 @@
                             </div>
                             <form class="d-flex align-items-center" method="get" action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.LogisticEmployeeCong" id="form-main">
                                 <span class="mr-2 text-muted text-small text-nowrap">Tháng:</span>
-                                <select asp-for="thang" class="custom-select ddl-times">
+                                <select asp-for="Thang" class="custom-select ddl-times">
                                     @{
                                         foreach (var item in Model.MonthYears)
                                         {
@@ -232,7 +232,7 @@
                     </div>
 
                     <form action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.LogisticEmployeeCong/@Constants.LinkSalary.Update" method="post" class="data-form">
-                        <input type="hidden" name="thang" value="@Model.thang" class="hidThang" />
+                        <input type="hidden" name="thang" value="@Model.Thang" class="hidThang" />
                         <input type="hidden" id="hidCalculator" value="/@Constants.LinkSalary.Main/@Constants.LinkSalary.LogisticEmployeeCongCalculator" />
                         <input type="hidden" id="hidSubmitDonGiaBun" value="/@Constants.LinkSalary.Main/@Constants.LinkSalary.LogisticGiaBunPost" />
                         <div class="row mb-3">

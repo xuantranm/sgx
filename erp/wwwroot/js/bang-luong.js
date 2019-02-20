@@ -8,7 +8,7 @@
             theme: "bootstrap"
         });
 
-    $('#thang').on('change', function (e) {
+    $('#Thang').on('change', function (e) {
         formSubmit();
     });
 });

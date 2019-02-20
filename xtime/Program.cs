@@ -140,6 +140,7 @@ namespace xtime
                 }
                 var employeeId = employee.Id;
                 var employeeFinger = employeeLocation.Fingerprint;
+                var fingerInt = employeeFinger != null ? Convert.ToInt32(employeeFinger) : 0;
                 if (!string.IsNullOrEmpty(employeeLocation.WorkingScheduleTime))
                 {
                     startWorkingScheduleTime = TimeSpan.Parse(employeeLocation.WorkingScheduleTime.Split('-')[0].Trim());
@@ -159,7 +160,8 @@ namespace xtime
                 {
                     startDate = today.AddMonths(-4);
                 }
-                
+                var conditionDate = startDate;
+
                 Console.WriteLine("End date +: " + endDay);
                 #region PROCESS
                 while (startDate <= endDay)
@@ -172,13 +174,13 @@ namespace xtime
 
                     // Phan tich truong hop ca dem. Vd: ca 1: 6h-14h ; 14h-22h ; 22h-6h
                     // Later
-                    var timekeepings = times.Where(m => m.groupCode.Equals(employeeFinger) && m.Date >= startDateMonth && m.Date <= endDateMonth).OrderBy(m => m.Date).ToList();
+                    var timekeepings = times.Where(m => m.groupCode.Equals(fingerInt.ToString()) && m.Date >= startDateMonth && m.Date <= endDateMonth).OrderBy(m => m.Date).ToList();
                     for (DateTime date = startDateMonth; date <= endDateMonth; date = date.AddDays(1))
                     {
                         Console.WriteLine("Date: " + date);
                         if (!modeData)
                         {
-                            if (date < startDate)
+                            if (date < conditionDate)
                             {
                                 continue;
                             }
@@ -194,9 +196,10 @@ namespace xtime
                             EmployeeName = employee.FullName,
                             EmployeeTitle = employee.Title.ToUpper(),
                             Department = employee.Department.ToUpper(),
+                            DepartmentId = employee.DepartmentId,
                             DepartmentAlias = employee.DepartmentAlias,
                             Part = employee.Part.ToUpper(),
-                            EnrollNumber = employeeLocation.Fingerprint,
+                            EnrollNumber = employeeFinger,
                             Year = year,
                             Month = month,
                             Date = date,
@@ -208,11 +211,16 @@ namespace xtime
 
                         // Check in holiday & leave
                         var holiday = holidays.Where(m => m.Date.Equals(date)).FirstOrDefault();
-                        var existLeave = leaves.FirstOrDefault(item => item.Enable.Equals(true) && date.Equals(item.From.Date));
+
+                        var existLeave = leaves.FirstOrDefault(item => item.Enable.Equals(true) 
+                                                && date >= item.From.Date 
+                                                && date <= item.To.Date);
+
 
                         if (date.DayOfWeek == DayOfWeek.Sunday)
                         {
                             employeeWorkTimeLog.Mode = (int)ETimeWork.Sunday;
+                            employeeWorkTimeLog.Reason = "Chủ nhật";
                             //ChuNhat++;
                         }
                         if (holiday != null)
@@ -222,6 +230,7 @@ namespace xtime
                             employeeWorkTimeLog.ReasonDetail = holiday.Detail;
                             //NghiLe++;
                         }
+
                         if (existLeave != null)
                         {
                             decimal numberLeave = existLeave.Number;
@@ -291,19 +300,21 @@ namespace xtime
 
                             if (incheck == outcheck)
                             {
-                                workTime = outLogTime - inLogTime;
-                                if (workTime.TotalHours > 8)
+                                if (incheck > startWorkingScheduleTime.Add(new TimeSpan(4, 0, 0)).Hours)
                                 {
-                                    tangcathucte = workTime - new TimeSpan(8, 0, 0);
+                                    workTime = outLogTime - endWorkingScheduleTime.Add(new TimeSpan(4, 0, 0));
                                 }
+                                else
+                                {
+                                    workTime = startWorkingScheduleTime.Add(new TimeSpan(4,0,0)) - inLogTime;
+                                }
+
                                 if (employeeWorkTimeLog.Mode != (int)ETimeWork.Normal)
                                 {
                                     tangcathucte = workTime;
                                 }
-
                                 status = (int)EStatusWork.XacNhanCong;
                                 workDay = 0.5;
-                                //workTime = TimeSpan.FromHours(4) - early;
                                 if (incheck == startWorkingScheduleTime.Hours)
                                 {
                                     statusEarly = (int)EStatusWork.XacNhanCong;
@@ -349,8 +360,6 @@ namespace xtime
                             }
                             else
                             {
-                                //if (inLogTime < startWorkingScheduleTime) inLogTime = startWorkingScheduleTime;
-                                //if (outLogTime > endWorkingScheduleTime) outLogTime = endWorkingScheduleTime;
                                 workTime = (outLogTime - inLogTime) - lunch;
                                 if (workTime.TotalHours > 8)
                                 {
@@ -401,7 +410,7 @@ namespace xtime
                                 }
                             }
 
-                            if (tangcathucte.TotalHours >=1)
+                            if (tangcathucte.TotalHours >= 1)
                             {
                                 employeeWorkTimeLog.StatusTangCa = (int)ETangCa.GuiXacNhan;
                             }
@@ -412,8 +421,11 @@ namespace xtime
 
                             employeeWorkTimeLog.VerifyMode = records[0].VerifyMode;
                             employeeWorkTimeLog.InOutMode = records[0].InOutMode;
+
+
                             employeeWorkTimeLog.In = inLogTime;
                             employeeWorkTimeLog.Out = outLogTime;
+
                             employeeWorkTimeLog.WorkTime = workTime;
                             employeeWorkTimeLog.TangCaThucTe = tangcathucte;
                             employeeWorkTimeLog.WorkDay = workDay;
@@ -450,6 +462,7 @@ namespace xtime
                             {
                                 var filter = Builders<EmployeeWorkTimeLog>.Filter.Eq(m => m.Id, workTimeLogDb.Id);
                                 var update = Builders<EmployeeWorkTimeLog>.Update
+                                    .Set(m => m.EnrollNumber, employeeWorkTimeLog.EnrollNumber)
                                     .Set(m => m.In, employeeWorkTimeLog.In)
                                     .Set(m => m.Out, employeeWorkTimeLog.Out)
                                     .Set(m => m.WorkTime, employeeWorkTimeLog.WorkTime)
@@ -464,6 +477,7 @@ namespace xtime
                                     .Set(m => m.Mode, employeeWorkTimeLog.Mode)
                                     .Set(m => m.StatusTangCa, employeeWorkTimeLog.StatusTangCa)
                                     .Set(m => m.TangCaThucTe, employeeWorkTimeLog.TangCaThucTe)
+                                    .Set(m => m.Reason, employeeWorkTimeLog.Reason)
                                     .Set(m => m.UpdatedOn, DateTime.Now);
                                 dbContext.EmployeeWorkTimeLogs.UpdateOne(filter, update);
                             }

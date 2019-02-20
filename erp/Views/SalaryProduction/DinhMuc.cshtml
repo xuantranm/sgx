@@ -1,0 +1,494 @@
+﻿@using System;
+@using System.Globalization;
+@using Common.Utilities;
+@using Common.Enums;
+@using ViewModels;
+
+@model BangLuongViewModel
+@{
+    Layout = "~/Views/Shared/_LayoutSocialFbFS.cshtml";
+    CultureInfo culture = CultureInfo.CreateSpecificCulture("en-US");
+    var login = User.Identity.Name;
+    var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+    var thang = Model.Thang;
+
+    var donggois = Model.DonGiaDMFulls.Where(m => m.Type.Equals((int)EDinhMuc.DongGoi)).ToList();
+    var bocvacs = Model.DonGiaDMFulls.Where(m => m.Type.Equals((int)EDinhMuc.BocVac)).ToList();
+    var tiledonggois = Model.TiLeDMs.Where(m => m.Type.Equals((int)EDinhMuc.DongGoi)).ToList();
+    var tilebocvacs = Model.TiLeDMs.Where(m => m.Type.Equals((int)EDinhMuc.BocVac)).ToList();
+
+}
+<link href="~/assets/wingman/css/big-screen.css" rel="stylesheet" />
+<style>
+    .table-dinh-muc-dong-goi tbody th:nth-child(1), .table-dinh-muc-dong-goi tbody td:nth-child(1) {
+        position: sticky;
+        left: 0px;
+    }
+
+    .table-dinh-muc-dong-goi tbody td:nth-child(1) {
+        background-color: lightgoldenrodyellow;
+    }
+
+    .table-dinh-muc-boc-vac tbody th:nth-child(1), .table-dinh-muc-boc-vac tbody td:nth-child(1) {
+        position: sticky;
+        left: 0px;
+    }
+
+    .table-dinh-muc-boc-vac tbody td:nth-child(1) {
+        background-color: lightgoldenrodyellow;
+    }
+    
+</style>
+<div class="main-container">
+    <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="/">Trang chủ</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">Định mức</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="flush-with-above space-0">
+        <div class="bg-white">
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <ul class="nav nav-tabs" id="myTab" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.BangLuong">BẢNG LƯƠNG</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.TheLuong">THẺ LƯƠNG</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" target="_blank" href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Timer?thang=@thang&khoi=@EKhoiLamViec.SX">CHẤM CÔNG</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.TongHopTrongGio">TỔNG HỢP TRONG GIỜ</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.TongHopNgoaiGio">TỔNG HỢP NGOÀI GIỜ</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.PhuCap">PHỤ CẤP</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" target="_blank" href="/@Constants.LinkCredit.Main/@Constants.LinkCredit.Credits?thang=@thang&khoi=@EKhoiLamViec.SX">ỨNG LƯƠNG</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.DongGoiTrongGio">ĐÓNG GÓI TRONG GIỜ</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.DongGoiNgoaiGio">ĐÓNG GÓI NGOÀI GIỜ</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.BocHangTrongGio">BÓC HÀNG TRONG GIỜ</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.BocHangNgoaiGio">BÓC HÀNG NGOÀI GIỜ</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link active" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.DinhMuc">ĐỊNH MỨC</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" target="_blank" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.ThangLuongTrue/@Constants.LinkSalary.ThangLuong">THANG LƯƠNG</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" target="_blank" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.Setting">THAM SỐ</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MAIN -->
+    <section class="flush-with-above height-80 d-block">
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="real" role="tabpanel" aria-labelledby="real-tab">
+                <div class="container">
+                    <div class="row mb-3 d-none">
+                        <div class="col-lg-3 col-md-4 col-xs-12e">
+                            <a class="btn btn-lg btn-block btn-success btn-edit-real" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.TongHopTrongGio/@Constants.LinkSalary.Update" data-toggle="tooltip" title="Bấm thay đổi dữ liệu.">
+                                <i class="icon icon-edit"></i>Chỉnh sửa
+                            </a>
+                        </div>
+                        <div class="col-lg-3 col-md-4 col-xs-12">
+                            <a class="btn btn-lg btn-block btn-info" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.TongHopTrongGio/@Constants.LinkSalary.Export" data-toggle="tooltip" title="Xuất ra tài liệu file excel.">
+                                <i class="fas fa-download"></i> Xuất excel
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3 d-none">
+                        <a class="nav-link custom-more collapsed" data-toggle="collapse" href="#uploadarea" aria-expanded="false" aria-controls="more">
+                            <i class="icon icon-magnifying-glass"></i> Đẩy dữ liệu
+                        </a>
+                    </div>
+                    <div id="uploadarea" class="col-12 collapse">
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <span>Chọn dữ liệu tháng:</span>
+                                <select asp-for="Thang" id="ddlMonthImport">
+                                    @{
+                                        foreach (var item in Model.MonthYears)
+                                        {
+                                            <option value="@item.Month-@item.Year">@item.Month/@item.Year</option>
+                                        }
+                                    }
+                                </select>
+                                <a href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.SanXuatTongHopTrongGioTemplate?thang=@thang" class="btn btn-success btn-list btn-link-import" data-toggle="tooltip" title="Bấm tải về mẫu tài liệu.">
+                                    <i class="icon icon-back"></i>Tải mẫu dữ liệu
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <form method="post" action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.SanXuatTongHopTrongGioPost" enctype="multipart/form-data">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <input type="file" name="files" class="form-control fUpload" />
+                                        </div>
+                                        <div class="col-md-8">
+                                            <input type="button" class="btn btn-danger btnUpload" value="Tải lên" />
+                                            <button class="btn btn-danger btn-upload-process d-none" type="button" disabled>
+                                                <i class="fas fa-spinner"></i>
+                                                Đang xử lý...
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <br />
+                                    <div class="progress">
+                                        <div class="progress-bar progress-bar-striped progress-bar-animated" style="width:0%"></div>
+                                    </div>
+                                    <div id="dvData"></div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <form method="get" action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.DinhMuc" id="form-main">
+                        <div class="card card-sm">
+                            <div class="card-header bg-secondary d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h3 style="background-color:lightgreen">ĐỊNH MỨC LƯƠNG CÔNG NHÂN SẢN XUẤT</h3>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <span class="mr-2 text-muted text-small text-nowrap">Tháng:</span>
+                                    <select asp-for="Thang" class="custom-select ddl-times">
+                                        @{
+                                            foreach (var item in Model.MonthYears)
+                                            {
+                                                <option value="@item.Month-@item.Year">@item.Month/@item.Year</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb-3" style="margin-top: -1.5rem;">
+                            <div class="col-md-1 col-sm-6 col-xs-12">
+                                <span class="badge badge-primary">Tìm kiếm:</span>
+                            </div>
+                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                <span class="mr-2 text-muted text-small text-nowrap">Thành phẩm</span>
+                                <select asp-for="Id" class="custom-select js-select2-basic-single ddlThanhPham">
+                                    <option value="">Tất cả</option>
+                                    @foreach (var thanhpham in Model.ThanhPhams)
+                                    {
+                                        <option value="@thanhpham.Code">@thanhpham.Name (@thanhpham.Code)</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+
+                    <div>
+                        <h6>ĐƠN GIÁ ĐÓNG SẢN PHẨM THEO KHỐI LƯỢNG HOÀN THÀNH</h6>
+                    </div>
+
+                    <div class="row">
+                        @{
+                            <div class="col-12 table-responsive-sm table-dinh-muc-dong-goi">
+                                <table class="table table-responsive-sm table-bordered table-bordered-black table-striped table-hover floating-header">
+                                    <thead style="font-weight:bold; color:black;">
+                                        <tr>
+                                            <td style="background-color:lightgreen">MÃ</td>
+                                            <td style="background-color:lightgreen">Thành phẩm</td>
+                                            <td>Nhóm</td>
+                                            <td>Đơn vị tính</td>
+                                            <td>Số bao/nhóm/ngày </td>
+                                            <td>Định mức 1 nhân sự đóng / ngày 7.3h(bao)</td>
+                                            <td>Định mức 1 nhân sự đóng /h(bao)</td>
+                                            <td>ĐƠN GIÁ</td>
+                                            <td>ĐƠN GIÁ ĐIỀU CHỈNH</td>
+                                            <td>ĐƠN GIÁ TĂNG CA</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="font-14">
+                                        @foreach (var donggoi in donggois)
+                                        {
+                                            <tr>
+                                                <td nowrap>
+                                                    @donggoi.ProductCode
+                                                </td>
+                                                <td>
+                                                    @donggoi.ProductName
+                                                </td>
+                                                <td>
+                                                    @donggoi.ProductGroup
+                                                </td>
+                                                <td>
+                                                    @donggoi.ProductUnit
+                                                </td>
+                                                <td>
+                                                    @donggoi.SoBaoNhomNgay.ToString("N0", culture)
+                                                </td>
+                                                <td>
+                                                    @donggoi.DinhMucTheoNgay.ToString("N2", culture)
+                                                </td>
+                                                <td>
+                                                    @donggoi.DinhMucTheoGio.ToString("N2", culture)
+                                                </td>
+                                                <td>
+                                                    @donggoi.DonGia.ToString("N2", culture)
+                                                </td>
+                                                <td>
+                                                    @donggoi.DonGiaDieuChinh.ToString("N2", culture)
+                                                </td>
+                                                <td>
+                                                    @donggoi.DonGiaTangCa.ToString("N2", culture)
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="row">
+                        @{
+                            <div class="col-12 table-responsive-sm">
+                                <table class="table table-responsive-sm table-bordered table-bordered-black table-striped table-hover floating-header">
+                                    <tbody class="font-14">
+                                        <tr>
+                                            <td style="background-color:lightgreen" nowrap>
+                                                TỈ LỆ
+                                            </td>
+                                            @foreach (var tiledonggoi in tiledonggois)
+                                            {
+                                                <td style="background-color:lightgreen" nowrap>
+                                                    @tiledonggoi.TiLe %
+                                                </td>
+                                            }
+                                        </tr>
+                                        <tr>
+                                            <td style="background-color:lightgreen" nowrap>
+                                                MỨC LƯƠNG
+                                            </td>
+                                            @foreach (var tiledonggoi in tiledonggois)
+                                            {
+                                                <td nowrap>
+                                                    @tiledonggoi.MucLuong.ToString("N0", culture)
+                                                </td>
+                                            }
+                                        </tr>
+                                        <tr>
+                                            <td style="background-color:lightgreen" nowrap>
+                                                ĐƠN GIÁ
+                                            </td>
+                                            @foreach (var tiledonggoi in tiledonggois)
+                                            {
+                                                <td nowrap>
+                                                    @tiledonggoi.DonGia.ToString("N0", culture)
+                                                </td>
+                                            }
+                                        </tr>
+                                        <tr>
+                                            <td style="background-color:lightgreen" nowrap>
+                                                NGÀY CÔNG
+                                            </td>
+                                            @foreach (var tiledonggoi in tiledonggois)
+                                            {
+                                                <td nowrap>
+                                                    @tiledonggoi.NgayCong
+                                                </td>
+                                            }
+                                        </tr>
+                                        <tr>
+                                            <td style="background-color:lightgreen" nowrap>
+                                                THỜI GIAN (GIỜ)
+                                            </td>
+                                            @foreach (var tiledonggoi in tiledonggois)
+                                            {
+                                                <td nowrap>
+                                                    @tiledonggoi.ThoiGian
+                                                </td>
+                                            }
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                    </div>
+
+                    <div>
+                        <h6>ĐƠN GIÁ BỐC VÁC SẢN PHẨM THEO KHỐI LƯỢNG HOÀN THÀNH</h6>
+                    </div>
+
+                    <div class="row">
+                        @{
+                            <div class="col-12 table-responsive-sm table-dinh-muc-boc-vac">
+                                <table class="table table-responsive-sm table-bordered table-bordered-black table-striped table-hover floating-header">
+                                    <thead style="font-weight:bold; color:black;">
+                                        <tr>
+                                            <td style="background-color:lightgreen">MÃ</td>
+                                            <td style="background-color:lightgreen">Thành phẩm</td>
+                                            <td>Nhóm</td>
+                                            <td>Đơn vị tính</td>
+                                            <td>Số bao/nhóm/ngày </td>
+                                            <td>Định mức 1 nhân sự đóng / ngày 7.3h(bao)</td>
+                                            <td>Định mức 1 nhân sự đóng /h(bao)</td>
+                                            <td>ĐƠN GIÁ</td>
+                                            <td>ĐƠN GIÁ ĐIỀU CHỈNH</td>
+                                            <td>ĐƠN GIÁ TĂNG CA</td>
+                                            <td>ĐƠN GIÁ M3</td>
+                                            <td>ĐƠN GIÁ M3 TĂNG CA</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="font-14">
+                                        @foreach (var bocvac in bocvacs)
+                                        {
+                                        <tr>
+                                            <td nowrap>
+                                                @bocvac.ProductCode
+                                            </td>
+                                            <td>
+                                                @bocvac.ProductName
+                                            </td>
+                                            <td>
+                                                @bocvac.ProductGroup
+                                            </td>
+                                            <td>
+                                                @bocvac.ProductUnit
+                                            </td>
+                                            <td>
+                                                @bocvac.SoBaoNhomNgay.ToString("N0", culture)
+                                            </td>
+                                            <td>
+                                                @bocvac.DinhMucTheoNgay.ToString("N2", culture)
+                                            </td>
+                                            <td>
+                                                @bocvac.DinhMucTheoGio.ToString("N2", culture)
+                                            </td>
+                                            <td>
+                                                @bocvac.DonGia.ToString("N2", culture)
+                                            </td>
+                                            <td>
+                                                @bocvac.DonGiaDieuChinh.ToString("N2", culture)
+                                            </td>
+                                            <td>
+                                                @bocvac.DonGiaTangCa.ToString("N2", culture)
+                                            </td>
+                                            <td>
+                                                @bocvac.DonGiaM3.ToString("N2", culture)
+                                            </td>
+                                            <td>
+                                                @bocvac.DonGiaTangCaM3.ToString("N2", culture)
+                                            </td>
+                                        </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="row">
+                        @{
+                            <div class="col-12 table-responsive-sm">
+                                <table class="table table-responsive-sm table-bordered table-bordered-black table-striped table-hover floating-header">
+                                    <tbody class="font-14">
+                                        <tr>
+                                            <td style="background-color:lightgreen" nowrap>
+                                                TỈ LỆ
+                                            </td>
+                                            @foreach (var tilebocvac in tilebocvacs)
+                                            {
+                                                <td style="background-color:lightgreen" nowrap>
+                                                    @tilebocvac.TiLe %
+                                                </td>
+                                            }
+                                        </tr>
+                                        <tr>
+                                            <td style="background-color:lightgreen" nowrap>
+                                                MỨC LƯƠNG
+                                            </td>
+                                            @foreach (var tilebocvac in tilebocvacs)
+                                            {
+                                                <td nowrap>
+                                                    @tilebocvac.MucLuong.ToString("N0", culture)
+                                                </td>
+                                            }
+                                        </tr>
+                                        <tr>
+                                            <td style="background-color:lightgreen" nowrap>
+                                                ĐƠN GIÁ
+                                            </td>
+                                            @foreach (var tilebocvac in tilebocvacs)
+                                            {
+                                                <td nowrap>
+                                                    @tilebocvac.DonGia.ToString("N0", culture)
+                                                </td>
+                                            }
+                                        </tr>
+                                        <tr>
+                                            <td style="background-color:lightgreen" nowrap>
+                                                NGÀY CÔNG
+                                            </td>
+                                            @foreach (var tilebocvac in tilebocvacs)
+                                            {
+                                                <td nowrap>
+                                                    @tilebocvac.NgayCong
+                                                </td>
+                                            }
+                                        </tr>
+                                        <tr>
+                                            <td style="background-color:lightgreen" nowrap>
+                                                THỜI GIAN (GIỜ)
+                                            </td>
+                                            @foreach (var tilebocvac in tilebocvacs)
+                                            {
+                                                <td nowrap>
+                                                    @tilebocvac.ThoiGian
+                                                </td>
+                                            }
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+@section scripts {
+    <script type="text/javascript" src="~/js/luong-san-xuat-dinh-muc.js?v-@DateTime.Now.Ticks"></script>
+}
+
+
+

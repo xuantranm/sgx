@@ -177,11 +177,11 @@ namespace Data
             }
         }
 
-        public IMongoCollection<SalaryCredit> SalaryCredits
+        public IMongoCollection<CreditEmployee> CreditEmployees
         {
             get
             {
-                return _database.GetCollection<SalaryCredit>("SalaryCredits");
+                return _database.GetCollection<CreditEmployee>("CreditEmployees");
             }
         }
 
@@ -315,25 +315,13 @@ namespace Data
         }
         #endregion
 
-        #region NHA MAY
-        public IMongoCollection<SalaryNhaMayCong> SalaryNhaMayCongs
+        public IMongoCollection<EmployeeCong> EmployeeCongs
         {
             get
             {
-                return _database.GetCollection<SalaryNhaMayCong>("SalaryNhaMayCongs");
+                return _database.GetCollection<EmployeeCong>("EmployeeCongs");
             }
         }
-        #endregion
-
-        #region SAN XUAT
-        public IMongoCollection<SalarySanXuatCong> SalarySanXuatCongs
-        {
-            get
-            {
-                return _database.GetCollection<SalarySanXuatCong>("SalarySanXuatCongs");
-            }
-        }
-        #endregion
 
         public IMongoCollection<TrainningType> TrainningTypes
         {
@@ -453,7 +441,7 @@ namespace Data
 
         #endregion
 
-        #region Factories
+        #region FACTORIES
         // Store date by date from FactoryProducts: for tracking
         public IMongoCollection<FactoryProduct> FactoryProductHistories
         {
@@ -463,6 +451,10 @@ namespace Data
             }
         }
 
+        /// <summary>
+        /// Thanh pham, ban thanh pham, nguyen lieu,...
+        /// + Xem so luong hien tai
+        /// </summary>
         public IMongoCollection<FactoryProduct> FactoryProducts
         {
             get
@@ -470,6 +462,71 @@ namespace Data
                 return _database.GetCollection<FactoryProduct>("FactoryProducts");
             }
         }
+
+        /// <summary>
+        /// Mang cong viec: 
+        /// + Main: false - Cong viec khac
+        /// + Main: true - Cong viec chinh
+        /// </summary>
+        public IMongoCollection<FactoryCongViec> FactoryCongViecs
+        {
+            get
+            {
+                return _database.GetCollection<FactoryCongViec>("FactoryCongViecs");
+            }
+        }
+
+        public IMongoCollection<FactoryProductDinhMuc> FactoryProductDinhMucs
+        {
+            get
+            {
+                return _database.GetCollection<FactoryProductDinhMuc>("FactoryProductDinhMucs");
+            }
+        }
+
+        public IMongoCollection<FactoryProductDinhMucTangCa> FactoryProductDinhMucTangCas
+        {
+            get
+            {
+                return _database.GetCollection<FactoryProductDinhMucTangCa>("FactoryProductDinhMucTangCas");
+            }
+        }
+
+        public IMongoCollection<FactoryProductDinhMucTiLe> FactoryProductDinhMucTiLes
+        {
+            get
+            {
+                return _database.GetCollection<FactoryProductDinhMucTiLe>("FactoryProductDinhMucTiLes");
+            }
+        }
+
+        public IMongoCollection<FactoryProductDonGiaM3> FactoryProductDonGiaM3s
+        {
+            get
+            {
+                return _database.GetCollection<FactoryProductDonGiaM3>("FactoryProductDonGiaM3s");
+            }
+        }
+
+        public IMongoCollection<FactoryProductCongTheoThang> FactoryProductCongTheoThangs
+        {
+            get
+            {
+                return _database.GetCollection<FactoryProductCongTheoThang>("FactoryProductCongTheoThangs");
+            }
+        }
+
+        public IMongoCollection<FactoryProductCongTheoNgay> FactoryProductCongTheoNgays
+        {
+            get
+            {
+                return _database.GetCollection<FactoryProductCongTheoNgay>("FactoryProductCongTheoNgays");
+            }
+        }
+
+
+
+
 
         public IMongoCollection<FactoryShift> FactoryShifts
         {

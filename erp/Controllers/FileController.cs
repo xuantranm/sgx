@@ -2168,19 +2168,12 @@ namespace erp.Controllers
 
         public DateTime ParseExcelDate(string date)
         {
-            DateTime dt;
-            if (DateTime.TryParse(date, out dt))
+            if (DateTime.TryParse(date, out DateTime dt))
             {
                 return dt;
             }
 
-            double oaDate;
-            if (double.TryParse(date, out oaDate))
-            {
-                return DateTime.FromOADate(oaDate);
-            }
-
-            return DateTime.MinValue;
+            return double.TryParse(date, out double oaDate) ? DateTime.FromOADate(oaDate) : DateTime.MinValue;
         }
     }
 }

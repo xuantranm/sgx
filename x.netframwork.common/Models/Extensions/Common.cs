@@ -14,6 +14,7 @@ namespace Models
 
         public string Language { get; set; } = Constants.Languages.Vietnamese;
 
+        // Lastest value in current is true. (all data changed is false and sort by date)
         public bool Enable { get; set; } = true;
 
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]

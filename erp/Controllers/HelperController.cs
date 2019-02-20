@@ -24,7 +24,7 @@ namespace erp.Controllers
     public class HelperController : Controller
     {
         MongoDBContext dbContext = new MongoDBContext();
-        IHostingEnvironment _hostingEnvironment;
+        readonly IHostingEnvironment _hostingEnvironment;
 
         private readonly ILogger _logger;
 
@@ -207,7 +207,7 @@ namespace erp.Controllers
         public JsonResult LogsSanPham(string code)
         {
             var logs = dbContext.ProductLogs.Find(m => m.Code.Equals(code)).SortByDescending(s => s.Id).ToList();
-            return Json(new { logs = logs });
+            return Json(new { logs });
         }
 
         public JsonResult StockStatus()
@@ -254,20 +254,20 @@ namespace erp.Controllers
                 groupCode = childs.First().Code;
             }
             var newCode = NewCode(groupCode);
-            return Json(new { groups = childs.OrderBy(m=>m.Code), newCode = newCode, groupCode = groupCode });
+            return Json(new { groups = childs.OrderBy(m=>m.Code), newCode, groupCode });
         }
 
         public JsonResult DataChildGroup(string group)
         {
             var newCode = NewCode(group);
-            return Json(new { newCode = newCode });
+            return Json(new { newCode });
         }
 
         private string NewCode(string groupCode)
         {
             var newCodeFormat = "001";
             var lastProduct = dbContext.Products.Find(m => m.GroupDevide.Equals(groupCode)).SortByDescending(m => m.Id).Limit(1);
-            if (lastProduct.Count() > 0)
+            if (lastProduct != null)
             {
                 var lastCode = lastProduct.First().Code;
                 var newCode = int.Parse(lastCode.Substring(3)) + 1;

@@ -1,4 +1,5 @@
-﻿using Common.Utilities;
+﻿using Common.Enums;
+using Common.Utilities;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System;
@@ -11,25 +12,25 @@ namespace Models
     public class FactoryProduct : Common
     {
         [BsonId]
-        // Mvc don't know how to create ObjectId from string
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
 
-        // NVL/BTP/TP
-        [Display(Name = "Loại")]
-        public string Type { get; set; }
+        public int Type { get; set; } = (int)EProductType.TP;
 
-        [Required]
-        [Display(Name="Tên")]
+        public string Code { get; set; } 
+
         public string Name { get; set; }
 
         public string Alias { get; set; }
 
-        [Display(Name="ĐVT")]
+        // 2 , 4, 6,...
+        public string Group { get; set; }
+
         public string Unit { get; set; }
 
-        [Display(Name = "Số lượng")]
-        [BsonRepresentation(BsonType.Decimal128)]
+        // Big number
         public decimal Quantity { get; set; } = 0;
+
+        public int Sort { get; set; } = 1;
     }
 }

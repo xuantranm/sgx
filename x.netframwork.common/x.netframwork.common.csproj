@@ -79,6 +79,14 @@
     <Compile Include="Models\Extensions\ExtensionNew.cs" />
     <Compile Include="Models\Extensions\Extension.cs" />
     <Compile Include="Models\Extensions\Tracking.cs" />
+    <Compile Include="Models\Factories\FactoryCongViec.cs" />
+    <Compile Include="Models\Factories\FactoryProduct.cs" />
+    <Compile Include="Models\Factories\FactoryProductCongTheoNgay.cs" />
+    <Compile Include="Models\Factories\FactoryProductCongTheoThang.cs" />
+    <Compile Include="Models\Factories\FactoryProductDinhMuc.cs" />
+    <Compile Include="Models\Factories\FactoryProductDonGiaM3.cs" />
+    <Compile Include="Models\Factories\FactoryProductDinhMucTangCa.cs" />
+    <Compile Include="Models\Factories\FactoryProductDinhMucTiLe.cs" />
     <Compile Include="Models\Holiday.cs" />
     <Compile Include="Models\HRs\Department.cs" />
     <Compile Include="Models\HRs\EmployeeExtend.cs" />
@@ -95,6 +103,9 @@
     <Compile Include="Models\Image.cs" />
     <Compile Include="Models\Rights\Role.cs" />
     <Compile Include="Models\Rights\RoleUser.cs" />
+    <Compile Include="Models\CreditEmployee.cs" />
+    <Compile Include="Models\Salaries\SalaryEmployeeMonth.cs" />
+    <Compile Include="Models\Salaries\EmployeeCong.cs" />
     <Compile Include="Models\Sys\Setting.cs" />
     <Compile Include="Models\Sys\Text.cs" />
     <Compile Include="Models\TimeKeeper\AttLog.cs" />

@@ -168,7 +168,7 @@ namespace Models
         public decimal CongTacXa { get; set; }
 
         [BsonRepresentation(BsonType.Decimal128)]
-        public decimal KhoiLuongBun { get; set; }
+        public double KhoiLuongBun { get; set; }
 
         [BsonRepresentation(BsonType.Decimal128)]
         public decimal ThanhTienBun { get; set; }

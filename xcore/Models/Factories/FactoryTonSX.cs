@@ -72,6 +72,7 @@ namespace Models
         [BsonRepresentation(BsonType.Decimal128)]
         public decimal TaiNhap { get; set; } = 0;
 
+        // Big number
         [Display(Name = "Tồn cuối ngày")]
         [BsonRepresentation(BsonType.Decimal128)]
         public decimal TonCuoiNgay { get; set; } = 0;

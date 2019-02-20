@@ -328,7 +328,7 @@ namespace Models
         /// Because chance employee. Manager here.
         /// Base [SalaryType]
         /// </summary>
-        public int SalaryType { get; set; } = (int)ESalaryType.VP;
+        public int SalaryType { get; set; } = (int)EKhoiLamViec.VP;
 
         // Update on future: 0: hand, 1: bank
         public int SalaryPayMethod { get; set; } = 0;

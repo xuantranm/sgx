@@ -25,6 +25,8 @@
 
   <ItemGroup>
     <Content Remove="Views\Factory\PhieuInCa - A4.cshtml" />
+    <Content Remove="Views\SalaryProduction\CongTong.cshtml" />
+    <Content Remove="Views\SalaryProduction\CongTongUpdate.cshtml" />
     <Content Remove="Views\TimeKeeper\BangChamCong - Copy.cshtml" />
   </ItemGroup>
 
@@ -743,12 +745,6 @@
     <Content Update="Views\Account\UpdatePassword.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
-    <Content Update="Views\Credit\CreditNM.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Credit\CreditNMUpdate.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
     <Content Update="Views\Doc\Timer.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
@@ -794,6 +790,33 @@
     <Content Update="Views\Role\Index.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
+    <Content Update="Views\SalaryProduction\BocHangNgoaiGio.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\SalaryProduction\PhuCap.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\SalaryProduction\TheLuong.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\SalaryProduction\BocHangTrongGio.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\SalaryProduction\DinhMuc.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\SalaryProduction\DongGoiNgoaiGio.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\SalaryProduction\DongGoiTrongGio.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\SalaryProduction\TongHopNgoaiGio.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\SalaryProduction\TongHopTrongGio.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
     <Content Update="Views\SalaryThangLuong\ThangLuong.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
@@ -802,14 +825,6 @@
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
     <Content Update="Views\SalaryProduction\BangLuongUpdate.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
-    <Content Update="Views\SalaryProduction\CongTong.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
-    <Content Update="Views\SalaryProduction\CongTongUpdate.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
@@ -836,12 +851,6 @@
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
     <Content Update="Views\SalaryFactory\CongTongUpdate.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Salary\BangLuongReal-Minutes.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Salary\BangLuongRealUpdate-Minutes.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
     <Content Update="Views\Salary\BangLuongUpdate.cshtml">

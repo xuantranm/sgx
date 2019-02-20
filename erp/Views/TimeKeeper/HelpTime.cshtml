@@ -14,7 +14,7 @@
         <div class="col-md-6 col-xs-12">
             <div class="form-group">
                 <label class="control-label">Nhân viên</label>
-                <select asp-for="id" class="form-control form-control-lg js-select2-basic-single ddl-employees">
+                <select asp-for="Id" class="form-control form-control-lg js-select2-basic-single ddl-employees">
                     <option value="">Chọn</option>
                     @foreach (var employee in Model.Employees)
                     {
@@ -35,7 +35,7 @@
         <div class="col-md-6 col-xs-12">
             <div class="form-group">
                 <label class="control-label">Tháng</label>
-                <select asp-for="thang" class="form-control form-control-lg js-select2-basic-single ddl-times">
+                <select asp-for="Thang" class="form-control form-control-lg js-select2-basic-single ddl-times">
                     @foreach (var item in Model.MonthYears)
                     {
                         <option value="@item.Month-@item.Year">@item.Month/@item.Year</option>
@@ -114,27 +114,34 @@
     @{
         var lastUpdated = DateTime.Now.ToString("dd/MM/yyyy");
         double dayworking = ViewBag.DayWorking;
-        double workday = dayworking;
+        double workday = ViewBag.DayWorking;
         double thoigianthieu = 0;
         double tangcangaythuong = 0;
         double tangcachunhat = 0;
         double tangcale = 0;
         int month = DateTime.Now.Month;
         int year = DateTime.Now.Year;
-        if (!string.IsNullOrEmpty(Model.thang))
+        if (!string.IsNullOrEmpty(Model.Thang))
         {
-            month = Convert.ToInt32(Model.thang.Split("-")[0]);
-            year = Convert.ToInt32(Model.thang.Split("-")[1]);
+            month = Convert.ToInt32(Model.Thang.Split("-")[0]);
+            year = Convert.ToInt32(Model.Thang.Split("-")[1]);
         }
         if (Model.EmployeeWorkTimeMonthLogs != null && Model.EmployeeWorkTimeMonthLogs.Count > 0)
         {
             lastUpdated = Model.EmployeeWorkTimeMonthLogs[0].LastUpdated.ToString("dd/MM/yyyy");
             var filterMonth = Model.EmployeeWorkTimeMonthLogs.FirstOrDefault(m => m.Month.Equals(month) && m.Year.Equals(year));
-            workday = filterMonth.Workday;
-            thoigianthieu = TimeSpan.FromMilliseconds(filterMonth.Late + filterMonth.Early).TotalMinutes;
-            tangcangaythuong = filterMonth.CongTangCaNgayThuongGio;
-            tangcachunhat = filterMonth.CongCNGio;
-            tangcale = filterMonth.CongLeTet;
+            if (filterMonth != null)
+            {
+                workday = filterMonth.Workday;
+                thoigianthieu = TimeSpan.FromMilliseconds(filterMonth.Late + filterMonth.Early).TotalMinutes;
+                tangcangaythuong = filterMonth.CongTangCaNgayThuongGio;
+                tangcachunhat = filterMonth.CongCNGio;
+                tangcale = filterMonth.CongLeTet;
+            }
+            else
+            {
+                workday = 0;
+            }
         }
     }
     <span class="text-small"> Dữ liệu tính tới ngày @lastUpdated</span>
@@ -192,7 +199,7 @@
         </div>
         <form class="d-flex align-items-center" method="get" action="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Index" id="form-main">
             <span class="mr-2 text-muted text-small text-nowrap">Tháng:</span>
-            <select asp-for="thang" class="custom-select ddl-times">
+            <select asp-for="Thang" class="custom-select ddl-times">
                 @{
                     foreach (var item in Model.MonthYears)
                     {
@@ -298,6 +305,15 @@
                                                 {
                                                     var statusBag = log.Status == (int)EStatusWork.TuChoi ? "badge-pill" : "badge-info";
                                                     <span class="badge @statusBag">@Constants.TimeKeeper(log.Status)</span>
+                                                    if (!string.IsNullOrEmpty(log.Reason))
+                                                    {
+                                                        var displayReason = log.Reason;
+                                                        if (!string.IsNullOrEmpty(log.ReasonDetail))
+                                                        {
+                                                            displayReason += ". Chi tiết: " + log.ReasonDetail;
+                                                        }
+                                                        <p><small class="badge badge-light reason-info-text" data-toggle="tooltip" title="@displayReason">Lý do</small></p>
+                                                    }
                                                 }
                                             }
                                             else
@@ -314,17 +330,6 @@
                                                     <span class="badge @statusBag">@Constants.StringTangCa(log.StatusTangCa)</span>
                                                 }
                                             }
-
-                                            if (!string.IsNullOrEmpty(log.Reason))
-                                            {
-                                                var displayReason = log.Reason;
-                                                if (!string.IsNullOrEmpty(log.ReasonDetail))
-                                                {
-                                                    displayReason += ". Chi tiết: " + log.ReasonDetail;
-                                                }
-                                                <p><small class="badge badge-light reason-info-text" data-toggle="tooltip" title="@displayReason">Lý do</small></p>
-                                            }
-
                                         }
                                     }
                                 </td>

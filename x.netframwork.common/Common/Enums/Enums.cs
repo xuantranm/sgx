@@ -1,5 +1,40 @@
 ﻿namespace Common.Enums
 {
+    public enum ECreditStatus
+    {
+        New = 0,
+        Approved = 1,
+        Cancel = 2,
+        Process = 3,
+        Completed = 4
+    }
+
+    public enum ECredit
+    {
+        UngLuong = 1,
+        Vay = 2
+    }
+
+    public enum EProductType
+    {
+        TP = 1,
+        BTP = 2,
+        NVL = 3
+    }
+
+    public enum EMode
+    {
+        TrongGio = 1,
+        NgoaiGio = 2
+    }
+
+    public enum EDinhMuc
+    {
+        DongGoi = 1,
+        BocVac = 2,
+        CongViecKhac = 3
+    }
+
     public enum Phase { Years, Months, Days, Done }
 
     public enum EEmailStatus
@@ -18,7 +53,7 @@
         PL = 2
     }
 
-    public enum ESalaryType
+    public enum EKhoiLamViec
     {
         VP = 1,
         NM = 2,

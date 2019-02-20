@@ -27,16 +27,16 @@ namespace ViewModels
         public DateTime EndWorkingDate { get; set; }
 
         #region Search
-        public string thang { get; set; }
+        public string Thang { get; set; }
 
         // employeeId
-        public string id { get; set; }
+        public string Id { get; set; }
 
-        public string code { get; set; }
+        public string Code { get; set; }
 
-        public string finger { get; set; }
+        public string Finger { get; set; }
 
-        public string nl { get; set; }
+        public string Nl { get; set; }
         #endregion
 
         public IList<IdName> Approves { get; set; }

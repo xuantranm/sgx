@@ -14,15 +14,16 @@ namespace Common.Utilities
             public const string Update = "cap-nhat";
             public const string Delete = "danh-sach";
             public const string Disable = "nhap-lieu";
+            public const string Post = "post";
         }
 
         public static string Location(int loc)
         {
             switch (loc)
             {
-                case (int)ESalaryType.NM:
+                case (int)EKhoiLamViec.NM:
                     return "Nhà Máy";
-                case (int)ESalaryType.SX:
+                case (int)EKhoiLamViec.SX:
                     return "Nhà Máy";
                 default:
                     return "Văn Phòng";
@@ -186,6 +187,10 @@ namespace Common.Utilities
             public const string Timer = "bang-cham-cong";
 
             public const string XacNhanTangCa = "xac-nhan-tang-ca";
+
+            public const string OvertimeTemplate = "bang-tang-ca-mau";
+
+            public const string OvertimeTemplateFull = "bang-tang-ca-mau-full";
         }
 
         public static class LinkSalary
@@ -244,7 +249,38 @@ namespace Common.Utilities
             public const string SanXuatTemplate = "san-xuat-so-lieu-mau";
             public const string SanXuatImport = "san-xuat-so-lieu-import";
 
+            public const string SanXuatTongHopTrongGioTemplate = "tong-hop-trong-gio-mau";
+            public const string SanXuatTongHopTrongGioPost = "tong-hop-trong-gio-post";
+
+            public const string SanXuatTongHopNgoaiGioTemplate = "tong-hop-ngoai-gio-mau";
+            public const string SanXuatTongHopNgoaiGioPost = "tong-hop-ngoai-gio-post";
+
             public const string Timer = "bang-cong";
+
+            public const string PhuCap = "phu-cap";
+
+            public const string UngLuong = "ung-luong";
+
+            public const string DongGoiTrongGio = "dong-goi-trong-gio";
+
+            public const string DongGoiNgoaiGio = "dong-goi-ngoai-gio";
+
+            public const string BocHangTrongGio = "boc-hang-trong-gio";
+
+            public const string BocHangNgoaiGio = "boc-hang-ngoai-gio";
+
+            public const string TongHopTrongGio = "tong-hop-trong-gio";
+
+            public const string TongHopNgoaiGio = "tong-hop-ngoai-gio";
+
+            public const string DinhMuc = "dinh-muc";
+
+            public const string SanXuatTamUngTemplate = "tam-ung-mau";
+            public const string SanXuatTamUngPost = "tam-ung-post";
+            public const string SanXuatNgayCongThuongBHXHTemplate = "ngay-cong-thuong-bhxh-mau";
+            public const string SanXuatNgayCongThuongBHXHPost = "ngay-cong-thuong-bhxh-post";
+            public const string SanXuatNgoaiGioPhuCapTemplate = "ngoai-gio-phu-cap-mau";
+            public const string SanXuatNgoaiGioPhuCapPost = "ngoai-gio-phu-cap-post";
         }
 
         public static class LinkCredit
@@ -261,6 +297,18 @@ namespace Common.Utilities
         {
             public const string Main = "tn";
             public const string Index = "dao-tao";
+            public const string Create = "tao";
+            public const string CalculatorDate = "calculator-date";
+            // API
+            public const string Approve = "duyet-phep";
+        }
+
+        public static class NewsLink
+        {
+            public const string Main = "nws";
+            public const string Index = "tin-tuc";
+
+            public const string List = "danh-sach";
             public const string Create = "tao";
             public const string CalculatorDate = "calculator-date";
             // API
@@ -477,6 +525,7 @@ namespace Common.Utilities
         {
             public const string SalaryThangBangLuong = "SalaryThangBangLuong";
 
+            public const string Notifications = "Notifications";
             public const string Settings = "Settings";
             public const string Texts = "Texts";
             public const string Links = "Links";

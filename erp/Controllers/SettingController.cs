@@ -32,7 +32,7 @@ namespace erp.Controllers
     {
         MongoDBContext dbContext = new MongoDBContext();
         private readonly IDistributedCache _cache;
-        IHostingEnvironment _hostingEnvironment;
+        readonly IHostingEnvironment _hostingEnvironment;
 
         private readonly ILogger _logger;
 
@@ -295,7 +295,7 @@ namespace erp.Controllers
 
         public bool CheckExist(Setting entity)
         {
-            return dbContext.Settings.Find(m => m.Enable.Equals(true) && m.Key.Equals(entity.Key)).Count() > 0 ? false : true;
+            return dbContext.Settings.CountDocuments(m => m.Enable.Equals(true) && m.Key.Equals(entity.Key)) > 0 ? false : true;
         }
 
         public bool CheckUpdate(Setting entity)
@@ -318,7 +318,7 @@ namespace erp.Controllers
 
         public bool CheckActive(Setting entity)
         {
-            return dbContext.Settings.Find(m => m.Enable.Equals(true) && m.Key.Equals(entity.Key)).Count() > 0 ? false : true;
+            return dbContext.Settings.CountDocuments(m => m.Enable.Equals(true) && m.Key.Equals(entity.Key)) > 0 ? false : true;
         }
 
         public bool CheckDelete(Setting entity)

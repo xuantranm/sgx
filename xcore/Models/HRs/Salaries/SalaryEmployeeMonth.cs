@@ -5,6 +5,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Models
 {
+    /// <summary>
+    /// Quan ly BHXH moi thang.
+    /// Thuong le tet moi thang
+    /// </summary>
     public class SalaryEmployeeMonth
     {
         [BsonId]
@@ -150,44 +154,33 @@ namespace Models
         [BsonRepresentation(BsonType.Decimal128)]
         public decimal LuongCoBanBaoGomPhuCap { get; set; } = 0;
 
-        [BsonRepresentation(BsonType.Decimal128)]
-        public decimal NgayCongLamViec { get; set; } = 0;
+        public double NgayCongLamViec { get; set; } = 0;
 
-        [BsonRepresentation(BsonType.Decimal128)]
-        public decimal PhutCongLamViec { get; set; } = 0;
+        public double PhutCongLamViec { get; set; } = 0;
 
-        [BsonRepresentation(BsonType.Decimal128)]
-        public decimal NgayNghiPhepNam { get; set; } = 0;
+        public double NgayNghiPhepNam { get; set; } = 0;
 
         // Thai san, dam cuoi,...
-        [BsonRepresentation(BsonType.Decimal128)]
-        public decimal NgayNghiPhepHuongLuong { get; set; } = 0;
+        public double NgayNghiPhepHuongLuong { get; set; } = 0;
 
-        [BsonRepresentation(BsonType.Decimal128)]
-        public decimal NgayNghiLeTetHuongLuong { get; set; } = 0;
+        public double NgayNghiLeTetHuongLuong { get; set; } = 0;
 
-        [BsonRepresentation(BsonType.Decimal128)]
-        public decimal CongCNGio { get; set; } = 0;
+        public double CongCNGio { get; set; } = 0;
 
-        [BsonRepresentation(BsonType.Decimal128)]
-        public decimal CongCNPhut { get; set; } = 0;
+        public double CongCNPhut { get; set; } = 0;
 
-        [BsonRepresentation(BsonType.Decimal128)]
-        public decimal CongTangCaNgayThuongGio { get; set; } = 0;
+        public double CongTangCaNgayThuongGio { get; set; } = 0;
 
-        [BsonRepresentation(BsonType.Decimal128)]
-        public decimal CongTangCaNgayThuongPhut { get; set; } = 0;
+        public double CongTangCaNgayThuongPhut { get; set; } = 0;
 
-        [BsonRepresentation(BsonType.Decimal128)]
-        public decimal CongLeTet { get; set; } = 0;
+        public double CongLeTet { get; set; } = 0;
 
-        [BsonRepresentation(BsonType.Decimal128)]
-        public decimal CongLeTetPhut { get; set; } = 0;
+        public double CongLeTetPhut { get; set; } = 0;
 
         [BsonRepresentation(BsonType.Decimal128)]
         public decimal TienPhepNamLeTet { get; set; } = 0;
 
-        public int YearLogistic { get; set; }  = DateTime.Now.Year;
+        public int YearLogistic { get; set; } = DateTime.Now.Year;
 
         public int MonthLogistic { get; set; } = DateTime.Now.Month;
 
@@ -204,8 +197,7 @@ namespace Models
         [BsonRepresentation(BsonType.Decimal128)]
         public decimal LuongTheoDoanhThuDoanhSo { get; set; } = 0;
 
-        [BsonRepresentation(BsonType.Decimal128)]
-        public decimal TongBunBoc { get; set; } = 0;
+        public double TongBunBoc { get; set; } = 0;
 
         [BsonRepresentation(BsonType.Decimal128)]
         public decimal ThanhTienBunBoc { get; set; } = 0;
@@ -263,8 +255,7 @@ namespace Models
         [BsonRepresentation(BsonType.Decimal128)]
         public decimal ThucLanhMinute { get; set; } = 0;
 
-        [BsonRepresentation(BsonType.Decimal128)]
-        public decimal MauSo { get; set; } = 26;
+        public double MauSo { get; set; } = 26;
 
         // sử dụng sau. dùng FlagReal trước
         // muc luong theo luat VN, false theo cong ty

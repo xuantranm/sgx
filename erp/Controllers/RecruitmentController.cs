@@ -35,16 +35,15 @@ namespace erp.Controllers
     [Route(Constants.LinkRecruitment.Main)]
     public class RecruitmentController : Controller
     {
-        MongoDBContext dbContext = new MongoDBContext();
+        readonly MongoDBContext dbContext = new MongoDBContext();
         private readonly IDistributedCache _cache;
-        IHostingEnvironment _hostingEnvironment;
+        readonly IHostingEnvironment _hostingEnvironment;
 
         private readonly ILogger _logger;
 
         public IConfiguration Configuration { get; }
         private readonly IEmailSender _emailSender;
         private readonly ISmsSender _smsSender;
-        private bool bhxh;
 
         public RecruitmentController(IDistributedCache cache, IConfiguration configuration, IHostingEnvironment env, IEmailSender emailSender,
             ISmsSender smsSender, ILogger<RecruitmentController> logger)

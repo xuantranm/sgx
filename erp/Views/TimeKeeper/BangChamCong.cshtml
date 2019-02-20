@@ -43,31 +43,63 @@
             <div class="tab-pane fade show active" id="real" role="tabpanel" aria-labelledby="real-tab">
                 <div class="container">
                     <div class="row mb-3">
-                        <div class="col-lg-3 col-sm-6">
-                            @{
-                                var linkExport = "/" + Constants.LinkTimeKeeper.Main + "/" + Constants.LinkTimeKeeper.Timer + "/" + Constants.ActionLink.Export;
 
-                                var exportSub = string.Empty;
+                        @{
+                            var linkExport = "/" + Constants.LinkTimeKeeper.Main + "/" + Constants.LinkTimeKeeper.Timer + "/" + Constants.ActionLink.Export;
+                            var linkPrototype = "/" + Constants.LinkTimeKeeper.Main + "/" + Constants.LinkTimeKeeper.OvertimeTemplate;
+
+                            var exportSub = string.Empty;
+                            if (!string.IsNullOrEmpty(Model.Thang))
+                            {
+                                exportSub += "thang=" + Model.Thang;
+                            }
+                            else
+                            {
                                 exportSub += "tu=" + Model.Tu.ToString("MM-dd-yyyy");
                                 exportSub += "&den=" + Model.Den.ToString("MM-dd-yyyy");
-                                if (!string.IsNullOrEmpty(Model.khoi))
-                                {
-                                    exportSub += "&khoi=" + Model.khoi;
-                                }
-                                if (!string.IsNullOrEmpty(Model.phongban))
-                                {
-                                    exportSub += "&phongban=" + Model.phongban;
-                                }
-                                if (!string.IsNullOrEmpty(Model.Id))
-                                {
-                                    exportSub += "&id=" + Model.Id;
-                                }
-
-                                linkExport += string.IsNullOrEmpty(exportSub) ? string.Empty : "?" + exportSub;
                             }
+
+                            if (!string.IsNullOrEmpty(Model.Khoi))
+                            {
+                                exportSub += "&khoi=" + Model.Khoi;
+                            }
+                            if (!string.IsNullOrEmpty(Model.Phongban))
+                            {
+                                exportSub += "&phongban=" + Model.Phongban;
+                            }
+                            if (!string.IsNullOrEmpty(Model.Id))
+                            {
+                                exportSub += "&id=" + Model.Id;
+                            }
+
+                            linkExport += string.IsNullOrEmpty(exportSub) ? string.Empty : "?" + exportSub;
+                        }
+                        <div class="col-lg-3 col-sm-6">
                             <a class="btn btn-lg btn-block btn-info" href="@linkExport" data-toggle="tooltip" title="Xuất ra tài liệu file excel.">
                                 <i class="fas fa-download"></i> Xuất excel
                             </a>
+                        </div>
+                        <div class="col-lg-3 col-sm-6">
+                            <a class="btn btn-lg btn-block btn-info" href="@linkPrototype" data-toggle="tooltip" title="Xuất ra tài liệu file excel.">
+                                <i class="fas fa-download"></i> Dữ liệu mẫu
+                            </a>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <h3>Cập nhật bằng tài liệu mẫu</h3>
+                        </div>
+                        <div class="col-12">
+                            <form method="post" action="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.OvertimeTemplate/@Constants.ActionLink.Post" enctype="multipart/form-data">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <input type="file" name="files" class="form-control fUpload" />
+                                    </div>
+                                    <div class="col-md-8">
+                                        <input type="button" class="btn btn-danger btnUpload" value="Cập nhật" />
+                                    </div>
+                                </div>
+                            </form>
                         </div>
                     </div>
                     <div class="card card-sm">
@@ -75,7 +107,7 @@
                             <form method="get" action="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Timer" id="form-main">
                                 <div class="d-flex align-items-center">
                                     <span class="mr-2 text-muted text-small text-nowrap">Phòng/ban:</span>
-                                    <select asp-for="phongban" class="form-control form-control-lg ddlphong">
+                                    <select asp-for="Phongban" class="form-control form-control-lg ddlphong">
                                         <option value="" selected>Tất cả</option>
                                         @{
                                             foreach (var item in Model.Departments)
@@ -85,11 +117,11 @@
                                         }
                                     </select>
                                     <span class="mr-2 text-muted text-small text-nowrap">Khối:</span>
-                                    <select asp-for="khoi" class="form-control form-control-lg ddlphong">
+                                    <select asp-for="Khoi" class="form-control form-control-lg ddlphong">
                                         <option value="" selected>Tất cả</option>
-                                        <option value="@ESalaryType.VP">Văn Phòng</option>
-                                        <option value="@ESalaryType.NM">Nhà Máy</option>
-                                        <option value="@ESalaryType.SX">Sản Xuất</option>
+                                        <option value="@EKhoiLamViec.VP">Văn Phòng</option>
+                                        <option value="@EKhoiLamViec.NM">Nhà Máy</option>
+                                        <option value="@EKhoiLamViec.SX">Sản Xuất</option>
                                     </select>
                                     <span class="mr-2 text-muted text-small text-nowrap">Nhân viên:</span>
                                     <select asp-for="Id" class="form-control form-control-lg js-select2-basic-single ddlEmployeeId">
@@ -108,14 +140,46 @@
                                             <option value="@employee.Id">@employee.FullName @displayTitle</option>
                                         }
                                     </select>
-                                    <span class="mr-2 text-muted text-small text-nowrap">Từ:</span>
                                     @{
                                         var fromdatesearch = Model.Tu > Constants.MinDate ? Model.Tu.ToString("dd/MM/yyyy") : "";
                                         var todatesearch = Model.Den > Constants.MinDate ? Model.Den.ToString("dd/MM/yyyy") : "";
+                                        var disableThang = false;
+                                        if (string.IsNullOrEmpty(Model.Thang))
+                                        {
+                                            disableThang = true;
+                                        }
                                     }
-                                    <input class="from-date form-control datepicker datepicker-lg" value="@fromdatesearch" />
-                                    <span class="mr-2 text-muted text-small text-nowrap">đến:</span>
-                                    <input class="to-date form-control datepicker datepicker-lg" value="@todatesearch" />
+                                    <span class="mr-2 text-muted text-small text-nowrap">Tháng:</span>
+                                    @if (disableThang)
+                                    {
+                                        <select asp-for="Thang" class="form-control form-control-lg custom-select ddl-times" disabled>
+                                            @{
+                                                foreach (var item in Model.MonthYears)
+                                                {
+                                                    <option value="@item.Month-@item.Year">@item.Month/@item.Year</option>
+                                                }
+                                            }
+                                        </select>
+                                        <span class="mr-2 text-muted text-small text-nowrap">Từ:</span>
+                                        <input class="from-date form-control datepicker datepicker-lg" value="@fromdatesearch" />
+                                        <span class="mr-2 text-muted text-small text-nowrap">đến:</span>
+                                        <input class="to-date form-control datepicker datepicker-lg" value="@todatesearch" />
+                                    }
+                                    else
+                                    {
+                                        <select asp-for="Thang" class="form-control form-control-lg custom-select ddl-times">
+                                            @{
+                                                foreach (var item in Model.MonthYears)
+                                                {
+                                                    <option value="@item.Month-@item.Year">@item.Month/@item.Year</option>
+                                                }
+                                            }
+                                        </select>
+                                        <span class="mr-2 text-muted text-small text-nowrap">Từ:</span>
+                                        <input class="from-date form-control datepicker datepicker-lg" value="@fromdatesearch" disabled />
+                                        <span class="mr-2 text-muted text-small text-nowrap">đến:</span>
+                                        <input class="to-date form-control datepicker datepicker-lg" value="@todatesearch" disabled />
+                                    }
                                     <input type="hidden" name="Tu" class="tu-ngay" value="@Model.Tu.ToString("MM-dd-yyyy")" />
                                     <input type="hidden" name="Den" class="den-ngay" value="@Model.Den.ToString("MM-dd-yyyy")" />
 
@@ -249,109 +313,109 @@
                                                                 workday += item.WorkDay;
                                                                 late += item.Late.TotalMinutes;
                                                                 early += item.Early.TotalMinutes;
-                                                    <td nowrap>
-                                                        <div>
-                                                            @{
-                                                                var displayInOut = string.Empty;
-                                                                if (item.In.HasValue)
-                                                                {
-                                                                    displayInOut += item.In.Value.ToString(@"hh\:mm");
-                                                                }
-                                                                if (item.Out.HasValue)
-                                                                {
-                                                                    if (!string.IsNullOrEmpty(displayInOut))
-                                                                    {
-                                                                        displayInOut += " - ";
-                                                                    }
-                                                                    displayInOut += item.Out.Value.ToString(@"hh\:mm");
-                                                                }
-                                                            }
-                                                            <span>@displayInOut</span>
-                                                        </div>
-                                                        <div>
-                                                            @{
-                                                                if (item.Logs != null && item.Logs.Count > 0)
-                                                                {
-                                                                    <small>Chi tiết:</small>
-                                                                    foreach (var log in item.Logs)
-                                                                    {
-                                                                        <p style="margin-bottom: 0;"><small>@log.Date.ToString("dd/MM/yyyy HH:mm:ss")</small></p>
-                                                                    }
-                                                                    var giotangca = Math.Round(item.TangCaThucTe.TotalHours, 2);
-                                                                    //var phuttangca = Math.Round(item.TangCaThucTe.TotalMinutes, 2);
-                                                                    var statusTangCa = item.StatusTangCa;
-                                                                    if (giotangca >= 0.5)
-                                                                    {
-                                                                        <div class="card">
-                                                                            <div class="card-body">
-                                                                                <span>Thông tin tăng ca:</span>
-                                                                                <br />
-                                                                                <span class="badge badge-danger">@Constants.CTSTimeWork(item.Mode)</span>
-                                                                                <br />
-                                                                                <small>Giờ thực tế: <span class="badge badge-info">@item.TangCaThucTe.ToString(@"hh\:mm") <=> @giotangca</span></small>
-                                                                                <br />
-                                                                                @if (statusTangCa < (int)ETangCa.DongY)
+                                                                <td nowrap>
+                                                                    <div>
+                                                                        @{
+                                                                            var displayInOut = string.Empty;
+                                                                            if (item.In.HasValue)
+                                                                            {
+                                                                                displayInOut += item.In.Value.ToString(@"hh\:mm");
+                                                                            }
+                                                                            if (item.Out.HasValue)
+                                                                            {
+                                                                                if (!string.IsNullOrEmpty(displayInOut))
                                                                                 {
-                                                                                    <form class="xac-nhan-tang-ca-form" method="post" action="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.XacNhanTangCa" enctype="multipart/form-data">
-                                                                                        <input type="hidden" name="id" value="@item.Id" />
-                                                                                        <input type="hidden" name="trangthai" value="1" />
-                                                                                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                                                                                        <div class="mb-2">
-                                                                                            <small>
-                                                                                                Xác nhận:
-                                                                                                <input type="text" name="thoigian" value="@giotangca" class="form-control-tang-ca" />
-                                                                                            </small>
-                                                                                        </div>
-                                                                                        <div class="mb-2">
-                                                                                            <button type="submit" class="btn btn-sm btn-primary btn-xac-nhan-tang-ca"><i class="icon-save"></i>Xác nhận</button>
-                                                                                        </div>
-                                                                                    </form>
-                                                                                    <form class="khong-xac-nhan-tang-ca-form" method="post" action="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.XacNhanTangCa" enctype="multipart/form-data">
-                                                                                        <input type="hidden" name="id" value="@item.Id" />
-                                                                                        <input type="hidden" name="trangthai" value="0" />
-                                                                                        <div>
-                                                                                            <button type="submit" class="btn btn-sm btn-secondary btn-khong-xac-nhan-tang-ca" data-dismiss="modal"><i class="fas fa-times"></i>Không xác nhận</button>
-                                                                                        </div>
-                                                                                    </form>
+                                                                                    displayInOut += " - ";
                                                                                 }
-                                                                                else
+                                                                                displayInOut += item.Out.Value.ToString(@"hh\:mm");
+                                                                            }
+                                                                        }
+                                                                        <span>@displayInOut</span>
+                                                                    </div>
+                                                                    <div>
+                                                                        @{
+                                                                            if (item.Logs != null && item.Logs.Count > 0)
+                                                                            {
+                                                                                <small>Chi tiết:</small>
+                                                                                foreach (var log in item.Logs)
                                                                                 {
-                                                                                    var giotangcaxacnhan = Math.Round(item.TangCaDaXacNhan.TotalHours, 2);
-                                                                                    if (statusTangCa == (int)ETangCa.DongY)
-                                                                                    {
-                                                                                        if (item.Mode == (int)ETimeWork.Normal)
-                                                                                        {
-                                                                                            tangcangaythuong += item.TangCaDaXacNhan.TotalHours;
-                                                                                        }
-                                                                                        else if (item.Mode == (int)ETimeWork.Sunday)
-                                                                                        {
-                                                                                            tangcachunhat += item.TangCaDaXacNhan.TotalHours;
-                                                                                        }
-                                                                                        else if (item.Mode == (int)ETimeWork.Holiday)
-                                                                                        {
-                                                                                            tangcale += item.TangCaDaXacNhan.TotalHours;
-                                                                                        }
-                                                                                    }
-                                                                                    var statusBag = statusTangCa == (int)ETangCa.TuChoi ? "badge-pill" : "badge-info";
-                                                                                    <small>Giờ xác nhận: <span class="badge @statusBag">@item.TangCaDaXacNhan.ToString(@"hh\:mm") <=> @giotangcaxacnhan</span></small>
+                                                                                    <p style="margin-bottom: 0;"><small>@log.Date.ToString("dd/MM/yyyy HH:mm:ss")</small></p>
                                                                                 }
-                                                                            </div>
-                                                                        </div>
-                                                                    }
-                                                                }
+                                                                                var giotangca = Math.Round(item.TangCaThucTe.TotalHours, 2);
+                                                                                //var phuttangca = Math.Round(item.TangCaThucTe.TotalMinutes, 2);
+                                                                                var statusTangCa = item.StatusTangCa;
+                                                                                if (giotangca >= 0.5)
+                                                                                {
+                                                                                    <div class="card">
+                                                                                        <div class="card-body">
+                                                                                            <span>Thông tin tăng ca:</span>
+                                                                                            <br />
+                                                                                            <span class="badge badge-danger">@Constants.CTSTimeWork(item.Mode)</span>
+                                                                                            <br />
+                                                                                            <small>Giờ thực tế: <span class="badge badge-info">@giotangca</span></small>
+                                                                                            <br />
+                                                                                            @if (statusTangCa < (int)ETangCa.DongY)
+                                                                                            {
+                                                                                                <form class="xac-nhan-tang-ca-form" method="post" action="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.XacNhanTangCa" enctype="multipart/form-data">
+                                                                                                    <input type="hidden" name="id" value="@item.Id" />
+                                                                                                    <input type="hidden" name="trangthai" value="1" />
+                                                                                                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                                                                                                    <div class="mb-2">
+                                                                                                        <small>
+                                                                                                            Xác nhận:
+                                                                                                            <input type="text" name="thoigian" value="@giotangca" class="form-control-tang-ca" />
+                                                                                                        </small>
+                                                                                                    </div>
+                                                                                                    <div class="mb-2">
+                                                                                                        <button type="submit" class="btn btn-sm btn-primary btn-xac-nhan-tang-ca"><i class="icon-save"></i>Xác nhận</button>
+                                                                                                    </div>
+                                                                                                </form>
+                                                                                                <form class="khong-xac-nhan-tang-ca-form" method="post" action="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.XacNhanTangCa" enctype="multipart/form-data">
+                                                                                                    <input type="hidden" name="id" value="@item.Id" />
+                                                                                                    <input type="hidden" name="trangthai" value="0" />
+                                                                                                    <div>
+                                                                                                        <button type="submit" class="btn btn-sm btn-secondary btn-khong-xac-nhan-tang-ca" data-dismiss="modal"><i class="fas fa-times"></i>Không xác nhận</button>
+                                                                                                    </div>
+                                                                                                </form>
+                                                                                            }
+                                                                                            else
+                                                                                            {
+                                                                                                var giotangcaxacnhan = Math.Round(item.TangCaDaXacNhan.TotalHours, 2);
+                                                                                                if (statusTangCa == (int)ETangCa.DongY)
+                                                                                                {
+                                                                                                    if (item.Mode == (int)ETimeWork.Normal)
+                                                                                                    {
+                                                                                                        tangcangaythuong += item.TangCaDaXacNhan.TotalHours;
+                                                                                                    }
+                                                                                                    else if (item.Mode == (int)ETimeWork.Sunday)
+                                                                                                    {
+                                                                                                        tangcachunhat += item.TangCaDaXacNhan.TotalHours;
+                                                                                                    }
+                                                                                                    else if (item.Mode == (int)ETimeWork.Holiday)
+                                                                                                    {
+                                                                                                        tangcale += item.TangCaDaXacNhan.TotalHours;
+                                                                                                    }
+                                                                                                }
+                                                                                                var statusBag = statusTangCa == (int)ETangCa.TuChoi ? "badge-pill" : "badge-info";
+                                                                                                <small>Giờ xác nhận: <span class="badge @statusBag">@giotangcaxacnhan</span></small>
+                                                                                            }
+                                                                                        </div>
+                                                                                    </div>
+                                                                                }
+                                                                            }
 
-                                                                if (!string.IsNullOrEmpty(item.Reason))
-                                                                {
-                                                                    var displayReason = item.Reason;
-                                                                    if (!string.IsNullOrEmpty(item.ReasonDetail))
-                                                                    {
-                                                                        displayReason += ". Chi tiết: " + item.ReasonDetail;
-                                                                    }
-                                                                    <small>@displayReason</small>
-                                                                }
-                                                            }
-                                                        </div>
-                                                    </td>
+                                                                            if (!string.IsNullOrEmpty(item.Reason))
+                                                                            {
+                                                                                var displayReason = item.Reason;
+                                                                                if (!string.IsNullOrEmpty(item.ReasonDetail))
+                                                                                {
+                                                                                    displayReason += ". Chi tiết: " + item.ReasonDetail;
+                                                                                }
+                                                                                <small>@displayReason</small>
+                                                                            }
+                                                                        }
+                                                                    </div>
+                                                                </td>
                                                             }
                                                             else
                                                             {

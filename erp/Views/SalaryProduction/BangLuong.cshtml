@@ -6,15 +6,17 @@
     Layout = "~/Views/Shared/_LayoutSocialFbFS.cshtml";
     var login = User.Identity.Name;
     var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+    var thang = Model.Thang;
+
 }
 <link href="~/assets/wingman/css/big-screen.css" rel="stylesheet" />
 <style>
-    tbody th:nth-child(3), tbody td:nth-child(3) {
+    tbody th:nth-child(2), tbody td:nth-child(2) {
         position: sticky;
         left: 0px;
     }
 
-    tbody td:nth-child(3) {
+    tbody td:nth-child(2) {
         background-color: lightgoldenrodyellow;
     }
 </style>
@@ -27,7 +29,7 @@
                         <li class="breadcrumb-item">
                             <a href="/">Trang chủ</a>
                         </li>
-                        <li class="breadcrumb-item active" aria-current="page">Bảng lương Nhà Máy</li>
+                        <li class="breadcrumb-item active" aria-current="page">Bảng lương Sản xuất</li>
                     </ol>
                 </div>
             </div>
@@ -44,19 +46,43 @@
                                 <a class="nav-link active" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.BangLuong">BẢNG LƯƠNG</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.CongTong">CÔNG TỔNG & HỔ TRỢ CƠM</a>
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.TheLuong">THẺ LƯƠNG</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" target="_blank" href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Timer?khoi=@ESalaryType.SX">CHẤM CÔNG</a>
+                                <a class="nav-link" target="_blank" href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Timer?thang=@Model.Thang&khoi=@EKhoiLamViec.SX">CHẤM CÔNG</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkCredit.Main/@Constants.LinkSalary.Production/@Constants.LinkCredit.CreditsNM">ỨNG LƯƠNG</a>
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.TongHopTrongGio">TỔNG HỢP TRONG GIỜ</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.TongHopNgoaiGio">TỔNG HỢP NGOÀI GIỜ</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.PhuCap">PHỤ CẤP</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" target="_blank" href="/@Constants.LinkCredit.Main/@Constants.LinkCredit.Credits?thang=@Model.Thang&khoi=@EKhoiLamViec.SX">ỨNG LƯƠNG</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.DongGoiTrongGio">ĐÓNG GÓI TRONG GIỜ</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.DongGoiNgoaiGio">ĐÓNG GÓI NGOÀI GIỜ</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.BocHangTrongGio">BÓC HÀNG TRONG GIỜ</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.BocHangNgoaiGio">BÓC HÀNG NGOÀI GIỜ</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.DinhMuc">ĐỊNH MỨC</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" target="_blank" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.ThangLuongTrue/@Constants.LinkSalary.ThangLuong">THANG LƯƠNG</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.Setting">THAM SỐ</a>
+                                <a class="nav-link" target="_blank" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.Setting">THAM SỐ</a>
                             </li>
                         </ul>
                     </div>
@@ -71,25 +97,116 @@
             <div class="tab-pane fade show active" id="real" role="tabpanel" aria-labelledby="real-tab">
                 <div class="container">
                     <div class="row mb-3">
-                        <div class="col-lg-3 col-md-6">
+                        <div class="col-lg-3 col-md-4 col-xs-12">
                             <a class="btn btn-lg btn-block btn-success btn-edit-real" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.BangLuong/@Constants.LinkSalary.Update" data-toggle="tooltip" title="Bấm thay đổi thang bảng lương.">
                                 <i class="icon icon-edit"></i>Chỉnh sửa
                             </a>
                         </div>
-                        <div class="col-lg-3 col-md-6">
+                        <div class="col-lg-3 col-md-4 col-xs-12">
                             <a class="btn btn-lg btn-block btn-info" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.ThangLuong/@Constants.LinkSalary.Export" data-toggle="tooltip" title="Xuất ra tài liệu file excel.">
                                 <i class="fas fa-download"></i> Xuất excel
                             </a>
                         </div>
                     </div>
-                    <div class="row mb-3">
-                        <div class="col-12 d-none">
+                    <div class="row d-none">
+                        <div class="col-12">
                             <b>MỨC LƯƠNG TỐI THIỂU VÙNG:</b> <b>@String.Format("{0:#,###,###}", Model.SalaryMucLuongVung.ToiThieuVungQuiDinh)</b> đồng/tháng
                         </div>
                         <div class="col-12">
                             Mức lương tối thiểu mà doanh nghiệp đang áp dụng: <b>@String.Format("{0:#,###,###}", Model.SalaryMucLuongVung.ToiThieuVungDoanhNghiepApDung)</b> đồng/tháng
                         </div>
                     </div>
+
+                    <div class="row mb-3">
+                        <a class="nav-link custom-more collapsed" data-toggle="collapse" href="#uploadarea" aria-expanded="false" aria-controls="more">
+                            <i class="icon icon-magnifying-glass"></i> Cập nhật dữ liệu: Ngày làm việc, phép năm, lễ tết, tạm ứng, thưởng, đóng bhxh, tăng ca - phụ cấp. 
+                        </a>
+                    </div>
+                    <div id="uploadarea" class="col-12 collapse">
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <span>Chọn dữ liệu tháng:</span>
+                                <select asp-for="Thang" id="ddlMonthImport">
+                                    @{
+                                        foreach (var item in Model.MonthYears)
+                                        {
+                                            <option value="@item.Month-@item.Year">@item.Month/@item.Year</option>
+                                        }
+                                    }
+                                </select>
+                                <a href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.SanXuatNgoaiGioPhuCapTemplate?thang=@thang" class="btn btn-success btn-list btn-link-tang-ca" data-toggle="tooltip" title="Bấm tải về mẫu tài liệu.">
+                                    <i class="icon icon-back"></i>Tải mẫu [Tăng ca - Phụ cấp]
+                                </a>
+                                <a href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.SanXuatTamUngTemplate?thang=@thang" class="btn btn-success btn-list btn-link-tam-ung" data-toggle="tooltip" title="Bấm tải về mẫu tài liệu.">
+                                    <i class="icon icon-back"></i>Tải mẫu [Ứng lương]
+                                </a>
+                                <a href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.SanXuatNgayCongThuongBHXHTemplate?thang=@thang" class="btn btn-success btn-list btn-link-thuong-bhxh" data-toggle="tooltip" title="Bấm tải về mẫu tài liệu.">
+                                    <i class="icon icon-back"></i>Tải mẫu [Điều chỉnh ngày công, thưởng, đóng bhxh]
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <form method="post" action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.SanXuatTamUngPost" enctype="multipart/form-data">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <input type="file" name="files" class="form-control fUpload" />
+                                        </div>
+                                        <div class="col-md-8">
+                                            <input type="button" class="btn btn-danger btnUpload" value="Tải lên [Ứng lương]" />
+                                            <button class="btn btn-danger btn-upload-process d-none" type="button" disabled>
+                                                <i class="fas fa-spinner"></i>
+                                                Đang xử lý...
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <form method="post" action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.SanXuatNgayCongThuongBHXHPost" enctype="multipart/form-data">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <input type="file" name="files" class="form-control fUpload" />
+                                        </div>
+                                        <div class="col-md-8">
+                                            <input type="button" class="btn btn-danger btnUpload" value="Tải lên [Ngày làm việc, phép năm, lễ tết, thưởng, đóng bhxh]" />
+                                            <button class="btn btn-danger btn-upload-process d-none" type="button" disabled>
+                                                <i class="fas fa-spinner"></i>
+                                                Đang xử lý...
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <form method="post" action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.SanXuatNgoaiGioPhuCapPost" enctype="multipart/form-data">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <input type="file" name="files" class="form-control fUpload" />
+                                        </div>
+                                        <div class="col-md-8">
+                                            <input type="button" class="btn btn-danger btnUpload" value="Tải lên [Tăng ca - Phụ cấp]" />
+                                            <button class="btn btn-danger btn-upload-process d-none" type="button" disabled>
+                                                <i class="fas fa-spinner"></i>
+                                                Đang xử lý...
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+
                     <form method="get" action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.BangLuong" id="form-main">
                         <div class="card card-sm">
                             <div class="card-header bg-secondary d-flex justify-content-between align-items-center">
@@ -98,7 +215,7 @@
                                 </div>
                                 <div class="d-flex align-items-center">
                                     <span class="mr-2 text-muted text-small text-nowrap">Tháng:</span>
-                                    <select asp-for="thang" class="custom-select ddl-times">
+                                    <select asp-for="Thang" class="custom-select ddl-times">
                                         @{
                                             foreach (var item in Model.MonthYears)
                                             {
@@ -115,7 +232,7 @@
                             </div>
                             <div class="col-md-4 col-sm-6 col-xs-12">
                                 <span class="mr-2 text-muted text-small text-nowrap">Nhân viên</span>
-                                <select asp-for="Id" class="custom-select ddlEmployeeId">
+                                <select asp-for="Id" class="custom-select js-select2-basic-single ddlEmployeeId">
                                     <option value="">Tất cả</option>
                                     @foreach (var employee in Model.EmployeesDdl)
                                     {
@@ -132,9 +249,9 @@
                                     }
                                 </select>
                             </div>
-                            <div class="col-md-4 col-sm-6 col-xs-12">
+                            <div class="col-md-4 col-sm-6 col-xs-12 display-none">
                                 <span class="mr-2 text-muted text-small text-nowrap">Phòng ban:</span>
-                                <select asp-for="phongban" class="custom-select">
+                                <select asp-for="Phongban" class="custom-select">
                                     <option value="">Tất cả</option>
                                     @foreach (var item in Model.Departments)
                                     {
@@ -151,42 +268,46 @@
                                 <table class="table table-responsive-sm table-bordered table-striped table-hover floating-header">
                                     <thead style="background-color:lightgrey">
                                         <tr>
-                                            <td>#</td>
-                                            <td>Mã <br /><small>(Mã cũ)</small></td>
-                                            <td nowrap>Họ và tên</td>
-                                            <td>Chức vụ</td>
-                                            <td>Phòng ban</td>
-                                            <td>Ngày vào làm việc</td>
-                                            <td>Số tháng thâm niên</td>
-                                            <td>Hệ số thâm niên</td>
-                                            <td>Ngạch lương</td>
-                                            <td>Hệ số lương</td>
-                                            <td>Lương CB</td>
-                                            <td>Ngày công lv</td>
-                                            <td>Lương định mức</td>
-                                            <td>Ngày phép năm</td>
-                                            <td>Giờ tăng ca</td>
-                                            <td>Giờ làm việc CN</td>
-                                            <td>Ngày nghỉ lễ tết</td>
-                                            <td>Ngày LV lễ tết</td>
-                                            <td>Thành tiền lương CB</td>
-                                            <td>Lương vượt định mức</td>
-                                            <td>Phụ cấp thâm niên</td>
-                                            <td>Phụ cấp chuyên cần</td>
-                                            <td>Phụ cấp khác</td>
-                                            <td>Tổng phụ cấp</td>
-                                            <td>Tổng thu nhập</td>
-                                            <td>Trừ tạm ứng</td>
-                                            <td>Trừ BHXH</td>
-                                            <td>Lương đóng BHXH</td>
-                                            <td>Thưởng Lễ</td>
-                                            <td>Thực lãnh</td>
-                                            <td>Tiền cơm (KD)</td>
-                                            <td>Tiền cơm (SX)</td>
-                                            <td>Hỗ trợ thêm</td>
-                                            <td>
-                                                Thực lãnh (Tròn Số)
+                                            <th rowspan="2">Mã NV</th>
+                                            <th rowspan="2" nowrap>Họ và tên</th>
+                                            <th rowspan="2">Chức vụ</th>
+                                            <th rowspan="2">Ngày vào làm việc</th>
+                                            <th rowspan="2">Số tháng thâm niên</th>
+                                            <th rowspan="2">Hệ số thâm niên</th>
+                                            <th rowspan="2">Ngạch lương</th>
+                                            <th rowspan="2">Hệ số lương</th>
+                                            <th rowspan="2">Lương CB</th>
+                                            <th rowspan="2">Ngày làm việc</th>
+                                            <th rowspan="2">Phép năm</th>
+                                            <th rowspan="2">Lễ tết</th>
+                                            <th rowspan="2">Lương định mức</th>
+                                            <th rowspan="2">Tiền phép năm, lễ tết</th>
+                                            <th rowspan="2">Thành tiền lương CB</th>
+                                            <td colspan="6" style="vertical-align:middle;font-weight:bold">
+                                                Phụ cấp
                                             </td>
+                                            <th rowspan="2">Tổng phụ cấp</th>
+                                            <th rowspan="2">Lương vượt định mức</th>
+                                            <th rowspan="2">Tổng thu nhập</th>
+                                            <th rowspan="2">Trừ tạm ứng</th>
+                                            <th rowspan="2">Thưởng lễ,tết</th>
+                                            <th rowspan="2">Lương đóng BHXH</th>
+                                            <td colspan="3" style="vertical-align:middle;font-weight:bold">
+                                                Các khoản trích người lao động
+                                            </td>
+                                            <th rowspan="2">Cộng</th>
+                                            <th rowspan="2">Thực lãnh</th>
+                                        </tr>
+                                        <tr>
+                                            <td>Ăn trưa</td>
+                                            <td>Nhà ở</td>
+                                            <td>Xăng xe</td>
+                                            <td>Nặng nhọc, độc hại</td>
+                                            <td>Thâm niên</td>
+                                            <td>Trách nhiệm</td>
+                                            <td>BHXH (8%)</td>
+                                            <td>BHYT (1.5%)</td>
+                                            <td>BHTN (1%)</td>
                                         </tr>
                                     </thead>
                                     <tbody class="font-14">
@@ -195,9 +316,6 @@
                                             foreach (var item in Model.SalaryEmployeeMonths)
                                             {
                                                 <tr>
-                                                    <td>
-                                                        @i
-                                                    </td>
                                                     <td nowrap>
                                                         @item.MaNhanVien <small>@item.ViTriCode</small>
                                                     </td>
@@ -206,9 +324,6 @@
                                                     </td>
                                                     <td>
                                                         <small class="bold">@item.ChucVu</small>
-                                                    </td>
-                                                    <td>
-                                                        <small class="bold">@item.PhongBan</small>
                                                     </td>
                                                     <td>
                                                         @item.ThamNienLamViec.ToString("dd/MM/yyyy")
@@ -232,40 +347,43 @@
                                                         @item.NgayCongLamViec
                                                     </td>
                                                     <td>
-                                                        @String.Format("{0:#,###,###}", item.LuongDinhMuc)
-                                                    </td>
-                                                    <td>
                                                         @item.NgayNghiPhepNam
                                                     </td>
                                                     <td>
-                                                        @String.Format("{0:#,###,###}", item.CongTangCaNgayThuongGio)
+                                                        @item.NgayNghiLeTetHuongLuong
                                                     </td>
                                                     <td>
-                                                        @String.Format("{0:#,###,###}", item.CongCNGio)
+                                                        @String.Format("{0:#,###,###}", item.LuongDinhMuc)
                                                     </td>
                                                     <td>
-                                                        @String.Format("{0:#,###,###}", item.NgayNghiLeTetHuongLuong)
-                                                    </td>
-                                                    <td>
-                                                        @String.Format("{0:#,###,###}", item.CongLeTet)
+                                                        @String.Format("{0:#,###,###}", item.TienPhepNamLeTet)
                                                     </td>
                                                     <td>
                                                         @String.Format("{0:#,###,###}", item.ThanhTienLuongCanBan)
                                                     </td>
                                                     <td>
-                                                        @String.Format("{0:#,###,###}", item.LuongVuotDinhMuc)
+                                                        @String.Format("{0:#,###,###}", item.Com)
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", item.NhaO)
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", item.Xang)
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", item.NangNhocDocHai)
                                                     </td>
                                                     <td>
                                                         @String.Format("{0:#,###,###}", item.ThamNien)
                                                     </td>
                                                     <td>
-                                                        @String.Format("{0:#,###,###}", item.PhuCapChuyenCan)
-                                                    </td>
-                                                    <td>
-                                                        @String.Format("{0:#,###,###}", item.PhuCapKhac)
+                                                        @String.Format("{0:#,###,###}", item.TrachNhiem)
                                                     </td>
                                                     <td>
                                                         @String.Format("{0:#,###,###}", item.TongPhuCap)
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", item.LuongVuotDinhMuc)
                                                     </td>
                                                     <td>
                                                         @String.Format("{0:#,###,###}", item.TongThuNhap)
@@ -274,25 +392,23 @@
                                                         @String.Format("{0:#,###,###}", item.TamUng)
                                                     </td>
                                                     <td>
-                                                        @String.Format("{0:#,###,###}", item.BHXHBHYT)
+                                                        @String.Format("{0:#,###,###}", item.ThuongLeTet)
                                                     </td>
                                                     <td>
                                                         @String.Format("{0:#,###,###}", item.LuongThamGiaBHXH)
                                                     </td>
+
                                                     <td>
-                                                        @String.Format("{0:#,###,###}", item.ThuongLeTet)
+                                                        @String.Format("{0:#,###,###}", item.BHXH)
                                                     </td>
                                                     <td>
-                                                        @String.Format("{0:#,###,###}", item.ThucLanh)
+                                                        @String.Format("{0:#,###,###}", item.BHYT)
                                                     </td>
                                                     <td>
-                                                        @String.Format("{0:#,###,###}", item.ComKD)
+                                                        @String.Format("{0:#,###,###}", item.BHTN)
                                                     </td>
                                                     <td>
-                                                        @String.Format("{0:#,###,###}", item.ComSX)
-                                                    </td>
-                                                    <td>
-                                                        @String.Format("{0:#,###,###}", item.HoTroNgoaiLuong)
+                                                        @String.Format("{0:#,###,###}", (item.BHXH + item.BHYT + item.BHTN))
                                                     </td>
                                                     <td>
                                                         @String.Format("{0:#,###,###}", item.ThucLanhTronSo)
@@ -313,7 +429,7 @@
 </div>
 
 @section scripts {
-    <script type="text/javascript" src="~/js/bang-luong-nha-may.js?@DateTime.Now.Ticks"></script>
+    <script type="text/javascript" src="~/js/bang-luong-san-xuat.js?v-@DateTime.Now.Ticks"></script>
 }
 
 

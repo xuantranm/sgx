@@ -81,17 +81,17 @@
                                         @{
                                             int i = 1;
                                             int iEntity = 0;
-                                            foreach (var item in Model.SalaryCredits)
+                                            foreach (var item in Model.Credits)
                                             {
                                                 <tr class="tr-@iEntity" data-id="@item.Id">
                                                     <td>
                                                         @i
-                                                        <input type="hidden" asp-for="SalaryCredits[iEntity].Id" />
+                                                        <input type="hidden" asp-for="Credits[iEntity].Id" />
                                                     </td>
                                                     <td>@item.FullName</td>
-                                                    <td>@item.MaNhanVien</td>
+                                                    <td>@item.EmployeeCode</td>
                                                     <td>
-                                                        <input value="@Math.Round(Model.SalaryCredits[iEntity].MucThanhToanHangThang/1000, 0)" name="SalaryCredits[@iEntity].MucThanhToanHangThang" class="form-control width100 numeric mucthanhtoanhangthang-@iEntity" data-id="mucthanhtoanhangthang-@iEntity" />
+                                                        <input value="@Math.Round(Model.Credits[iEntity].MucThanhToanHangThang/1000, 0)" name="Credits[@iEntity].MucThanhToanHangThang" class="form-control width100 numeric mucthanhtoanhangthang-@iEntity" data-id="mucthanhtoanhangthang-@iEntity" />
                                                     </td>
                                                 </tr>
                                                 i++;

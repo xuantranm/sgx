@@ -1,4 +1,5 @@
-﻿using Models;
+﻿using Common.Utilities;
+using Models;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System;
@@ -23,13 +24,13 @@ namespace ViewModels
 
         public IList<SalaryThangBangPhuCapPhucLoi> SalaryThangBangPhuCapPhucLoisReal { get; set; }
 
-        public string thang { get; set; }
+        public string Thang { get; set; }
 
-        public string saleTimes { get; set; }
+        public string SaleTimes { get; set; }
 
-        public string logisticTimes { get; set; }
+        public string LogisticTimes { get; set; }
 
-        public bool calBHXH { get; set; }
+        public bool CalBHXH { get; set; }
 
         public IList<MonthYear> MonthYears { get; set; }
 
@@ -39,7 +40,7 @@ namespace ViewModels
 
         public IList<SaleKPIEmployee> SaleKPIEmployees { get; set; }
 
-        public IList<SalaryCredit> SalaryCredits { get; set; }
+        public IList<CreditEmployee> Credits { get; set; }
 
         public IList<LogisticGiaChuyenXe> LogisticGiaChuyenXes { get; set; }
 
@@ -59,9 +60,9 @@ namespace ViewModels
 
         public IList<Department> Departments { get; set; }
 
-        public string phongban { get; set; }
+        public string Phongban { get; set; }
 
-        public string khoi { get; set; }
+        public string Khoi { get; set; }
 
         public DateTime Tu { get; set; }
 
@@ -71,11 +72,23 @@ namespace ViewModels
 
         public DateTime ToDate { get; set; }
 
-        // NHA MAY
-        public IList<SalaryNhaMayCong> SalaryNhaMayCongs { get; set; }
+        public IList<EmployeeCong> Congs { get; set; }
 
-        // SAN XUAT
-        public IList<SalarySanXuatCong> SalarySanXuatCongs { get; set; }
+        #region SAN XUAT
+        public IList<FactoryProductCongTheoThang> MCongs { get; set; }
+
+        public IList<FactoryProduct> ThanhPhams { get; set; }
+
+        public IList<FactoryCongViec> CongViecs { get; set; }
+
+        public IList<FactoryProductDinhMuc> DonGiaDMs { get; set; }
+
+        public IList<FactoryProductDinhMucTiLe> TiLeDMs { get; set; }
+
+        public FactoryProductDonGiaM3 DonGiaM3 { get; set; }
+
+        public IList<FactoryProductDinhMucViewModel> DonGiaDMFulls { get; set; }
+        #endregion
 
         public int Records { get; set; }
 

@@ -68,7 +68,7 @@
                                 <a class="nav-link " href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Factory/@Constants.LinkSalary.BangLuong/@Constants.ActionLink.Update">BẢNG LƯƠNG</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" target="_blank" href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Timer?khoi=@ESalaryType.NM">CHẤM CÔNG</a>
+                                <a class="nav-link" target="_blank" href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Timer?khoi=@EKhoiLamViec.NM">CHẤM CÔNG</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="/@Constants.LinkCredit.Main/@Constants.LinkSalary.Factory/@Constants.LinkCredit.CreditsNM/@Constants.ActionLink.Update">ỨNG LƯƠNG</a>
@@ -97,7 +97,7 @@
                             </div>
                             <form class="d-flex align-items-center" method="get" action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Factory/@Constants.LinkSalary.CongTong/@Constants.ActionLink.Update" id="form-main">
                                 <span class="mr-2 text-muted text-small text-nowrap">Tháng:</span>
-                                <select asp-for="thang" class="custom-select ddl-times">
+                                <select asp-for="Thang" class="custom-select ddl-times">
                                     @{
                                         foreach (var item in Model.MonthYears)
                                         {
@@ -140,7 +140,7 @@
                     </div>
 
                     <form action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Factory/@Constants.LinkSalary.CongTong/@Constants.LinkSalary.Update" method="post" class="data-form">
-                        <input type="hidden" name="thang" value="@Model.thang" />
+                        <input type="hidden" name="thang" value="@Model.Thang" />
                         <input type="hidden" id="hidCalculator" value="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Factory/@Constants.LinkSalary.Calculator" />
                         <div class="row mb-3">
                             <div class="col-md-3 col-sm-6 col-12">
@@ -159,9 +159,9 @@
                                             <td>Công tổng</td>
                                             <td>Cơm SX</td>
                                             <td>Cơm KD</td>
-                                            <td>Giờ tăng ca</td>
+                                            @*<td>Giờ tăng ca</td>
                                             <td>Giờ làm việc CN</td>
-                                            <td>Giờ làm việc Lễ/Tết</td>
+                                            <td>Giờ làm việc Lễ/Tết</td>*@
                                         </tr>
                                     </thead>
 
@@ -169,39 +169,39 @@
                                         @{
                                             int i = 1;
                                             int iE = 0;
-                                            foreach (var item in Model.SalaryNhaMayCongs)
+                                            foreach (var item in Model.Congs)
                                             {
                                         <tr class="tr-@iE" data-id="@iE">
                                             <td>
                                                 @i
-                                                <input type="hidden" name="SalaryNhaMayCongs[@iE].Id" value="@item.Id" />
-                                                <input type="hidden" name="SalaryNhaMayCongs[@iE].EmployeeId" value="@item.EmployeeId" />
-                                                <input type="hidden" name="SalaryNhaMayCongs[@iE].EmployeeName" value="@item.EmployeeName" />
-                                                <input type="hidden" name="SalaryNhaMayCongs[@iE].EmployeeChucVu" value="@item.EmployeeChucVu" />
-                                                <input type="hidden" name="SalaryNhaMayCongs[@iE].Month" value="@item.Month" />
-                                                <input type="hidden" name="SalaryNhaMayCongs[@iE].Year" value="@item.Year" />
+                                                <input type="hidden" name="Congs[@iE].Id" value="@item.Id" />
+                                                <input type="hidden" name="Congs[@iE].EmployeeId" value="@item.EmployeeId" />
+                                                <input type="hidden" name="Congs[@iE].EmployeeName" value="@item.EmployeeName" />
+                                                <input type="hidden" name="Congs[@iE].EmployeeChucVu" value="@item.EmployeeChucVu" />
+                                                <input type="hidden" name="Congs[@iE].Month" value="@item.Month" />
+                                                <input type="hidden" name="Congs[@iE].Year" value="@item.Year" />
                                             </td>
                                             <td>@item.EmployeeCode</td>
                                             <td nowrap>@item.EmployeeName</td>
                                             <td nowrap>@item.EmployeeChucVu</td>
                                             <td>
-                                                <input value="@item.CongTong" name="SalaryNhaMayCongs[@iE].CongTong" class="form-control width100 numeric congtong-@iE" data-id="congtong-@iE" />
+                                                <input value="@item.CongTong" name="Congs[@iE].CongTong" class="form-control width100 numeric congtong-@iE" data-id="congtong-@iE" />
                                             </td>
                                             <td>
-                                                <input value="@item.ComSX" name="SalaryNhaMayCongs[@iE].ComSX" class="form-control width100 numeric comsx-@iE" data-id="comsx-@iE" />
+                                                <input value="@item.ComSX" name="Congs[@iE].ComSX" class="form-control width100 numeric comsx-@iE" data-id="comsx-@iE" />
                                             </td>
                                             <td>
-                                                <input value="@item.ComKD" name="SalaryNhaMayCongs[@iE].ComKD" class="form-control width100 numeric comkd-@iE" data-id="comkd-@iE" />
+                                                <input value="@item.ComKD" name="Congs[@iE].ComKD" class="form-control width100 numeric comkd-@iE" data-id="comkd-@iE" />
+                                            </td>
+                                            @*<td>
+                                                <input value="@item.GioTangCa" name="Congs[@iE].GioTangCa" class="form-control width100 numeric giotangca-@iE" data-id="giotangca-@iE" />
                                             </td>
                                             <td>
-                                                <input value="@item.GioTangCa" name="SalaryNhaMayCongs[@iE].GioTangCa" class="form-control width100 numeric giotangca-@iE" data-id="giotangca-@iE" />
+                                                <input value="@item.GioLamViecCN" name="Congs[@iE].GioLamViecCN" class="form-control width100 numeric giolamvieccn-@iE" data-id="giolamvieccn-@iE" />
                                             </td>
                                             <td>
-                                                <input value="@item.GioLamViecCN" name="SalaryNhaMayCongs[@iE].GioLamViecCN" class="form-control width100 numeric giolamvieccn-@iE" data-id="giolamvieccn-@iE" />
-                                            </td>
-                                            <td>
-                                                <input value="@item.GioLamViecLeTet" name="SalaryNhaMayCongs[@iE].GioLamViecLeTet" class="form-control width100 numeric giolamviecletet-@iE" data-id="giolamviecletet-@iE" />
-                                            </td>
+                                                <input value="@item.GioLamViecLeTet" name="Congs[@iE].GioLamViecLeTet" class="form-control width100 numeric giolamviecletet-@iE" data-id="giolamviecletet-@iE" />
+                                            </td>*@
                                         </tr>
                                                 i++;
                                                 iE++;

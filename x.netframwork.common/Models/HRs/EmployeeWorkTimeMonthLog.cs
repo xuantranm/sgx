@@ -68,6 +68,12 @@ namespace Models
 
         public string Rule { get; set; } = "26-25";
 
+        #region Dieu Chinh Tay (Lấy dữ liệu ở đây)
+        public double NgayLamViecChinhTay { get; set; }
+        public double PhepNamChinhTay { get; set; }
+        public double LeTetChinhTay { get; set; }
+        #endregion
+
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime LastUpdated { get; set; } = DateTime.Now;
     }

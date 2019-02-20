@@ -128,7 +128,7 @@ namespace erp.Controllers
             #endregion
 
             var employees = await dbContext.Employees.Find(m => m.Enable.Equals(true)
-                                                        && m.SalaryType.Equals((int)ESalaryType.VP)
+                                                        && m.SalaryType.Equals((int)EKhoiLamViec.VP)
                                                         && !m.UserName.Equals(Constants.System.account)).ToListAsync();
             var salaryEmployeeMonths = new List<SalaryEmployeeMonth>();
             foreach (var employee in employees)
@@ -155,8 +155,8 @@ namespace erp.Controllers
                 SalaryMucLuongVung = mucluongvung,
                 SalaryEmployeeMonths = salaryEmployeeMonths,
                 MonthYears = sortTimes,
-                thang = thang,
-                saleTimes = saleTimes
+                Thang = thang,
+                SaleTimes = saleTimes
             };
 
             return View(viewModel);
@@ -255,8 +255,8 @@ namespace erp.Controllers
                 SalaryMucLuongVung = mucluongvung,
                 SalaryEmployeeMonths = salaryEmployeeMonths,
                 MonthYears = sortTimes,
-                thang = thang,
-                saleTimes = monthSale + "-" + yearSale
+                Thang = thang,
+                SaleTimes = monthSale + "-" + yearSale
             };
 
             return View(viewModel);
@@ -293,7 +293,7 @@ namespace erp.Controllers
             {
                 #region Times
                 var now = DateTime.Now;
-                var thang = viewModel.thang;
+                var thang = viewModel.Thang;
                 var toDate = Utility.WorkingMonthToDate(thang);
                 var fromDate = toDate.AddMonths(-1).AddDays(1);
                 if (string.IsNullOrEmpty(thang))
@@ -544,7 +544,7 @@ namespace erp.Controllers
                 SalaryMucLuongVung = mucluongvungs,
                 SalaryThangBangLuongs = thangbangluongs,
                 SalaryThangBangPhuCapPhucLoisReal = pcpls,
-                thang = thang,
+                Thang = thang,
                 MonthYears = sortTimes
             };
             return View(viewModel);
@@ -664,7 +664,7 @@ namespace erp.Controllers
                 SalaryMucLuongVung = mucluongvungs,
                 SalaryThangBangLuongs = thangbangluongs,
                 SalaryThangBangPhuCapPhucLoisReal = pcpls,
-                thang = thang,
+                Thang = thang,
                 MonthYears = sortTimes
             };
 
@@ -700,7 +700,7 @@ namespace erp.Controllers
             {
                 var now = DateTime.Now;
 
-                var thang = viewModel.thang;
+                var thang = viewModel.Thang;
                 var toDate = Utility.WorkingMonthToDate(thang);
                 var fromDate = toDate.AddMonths(-1).AddDays(1);
                 if (string.IsNullOrEmpty(thang))
@@ -911,7 +911,7 @@ namespace erp.Controllers
                 SaleKPIs = salekpis,
                 SaleKPIEmployees = saleKPIEmployees,
                 MonthYears = sortTimes,
-                thang = thang
+                Thang = thang
             };
 
             return View(viewModel);
@@ -988,7 +988,7 @@ namespace erp.Controllers
                 SaleKPIs = salekpis,
                 SaleKPIEmployees = saleKPIEmployees,
                 MonthYears = sortTimes,
-                thang = thang
+                Thang = thang
             };
 
             return View(viewModel);
@@ -1123,7 +1123,7 @@ namespace erp.Controllers
             {
                 SaleKPIs = kpis,
                 MonthYears = sortTimes,
-                thang = thang
+                Thang = thang
             };
 
             return View(viewModel);
@@ -1157,7 +1157,7 @@ namespace erp.Controllers
 
             #region Times
             var now = DateTime.Now;
-            var thang = viewModel.thang;
+            var thang = viewModel.Thang;
             var toDate = Utility.WorkingMonthToDate(thang);
             var fromDate = toDate.AddMonths(-1).AddDays(1);
             if (string.IsNullOrEmpty(thang))
@@ -1803,7 +1803,7 @@ namespace erp.Controllers
                 LogisticGiaChuyenXes = giachuyenxes,
                 LogisticEmployeeCongs = logisticEmployeeCongs,
                 MonthYears = sortTimes,
-                thang = thang,
+                Thang = thang,
                 DonGiaBun = dongiabun
             };
 
@@ -1883,7 +1883,7 @@ namespace erp.Controllers
                 LogisticGiaChuyenXes = giachuyenxes,
                 LogisticEmployeeCongs = logisticEmployeeCongs,
                 MonthYears = sortTimes,
-                thang = thang,
+                Thang = thang,
                 DonGiaBun = dongiabun
             };
 
@@ -2046,7 +2046,7 @@ namespace erp.Controllers
             {
                 LogisticGiaChuyenXes = giachuyenxes,
                 MonthYears = sortTimes,
-                thang = thang
+                Thang = thang
             };
 
             return View(viewModel);
@@ -2080,7 +2080,7 @@ namespace erp.Controllers
 
             #region Times
             var now = DateTime.Now;
-            var thang = viewModel.thang;
+            var thang = viewModel.Thang;
             var toDate = Utility.WorkingMonthToDate(thang);
             var fromDate = toDate.AddMonths(-1).AddDays(1);
             if (string.IsNullOrEmpty(thang))
@@ -2389,9 +2389,9 @@ namespace erp.Controllers
             CongTacXa += DongNaiXeNho * priceDONGNAIN.HoTroTienComTinh;
             CongTacXa += DongNaiXeLon * priceDONGNAIL.HoTroTienComTinh;
 
-            decimal KhoiLuongBun = newData.KhoiLuongBun;
+            double KhoiLuongBun = newData.KhoiLuongBun;
             decimal dongiabun = GetLogisticGiaBun(thang);
-            decimal ThanhTienBun = KhoiLuongBun * dongiabun;
+            decimal ThanhTienBun = (decimal)KhoiLuongBun * dongiabun;
 
             newData.LuongTheoDoanhThuDoanhSo = Math.Round(LuongTheoDoanhThuDoanhSo, 0);
             newData.TongSoChuyen = TongSoChuyen;
@@ -2664,7 +2664,7 @@ namespace erp.Controllers
                         entity.TienGiangXeLon = (decimal)Utility.GetNumbericCellValue(row.GetCell(44));
                         entity.DongNaiXeNho = (decimal)Utility.GetNumbericCellValue(row.GetCell(45));
                         entity.DongNaiXeLon = (decimal)Utility.GetNumbericCellValue(row.GetCell(46));
-                        entity.KhoiLuongBun = (decimal)Utility.GetNumbericCellValue(row.GetCell(47));
+                        entity.KhoiLuongBun = Utility.GetNumbericCellValue(row.GetCell(47));
 
                         var employee = new Employee();
                         if (!string.IsNullOrEmpty(alias))
@@ -3908,7 +3908,7 @@ namespace erp.Controllers
             #endregion
 
             var thamsoEntity = dbContext.SalarySettings.Find(m => m.Enable.Equals(true)).ToList();
-            var mauSo = Convert.ToDecimal(thamsoEntity.Find(m => m.Key.Equals("mau-so-lam-viec")).Value);
+            var mauSo = Convert.ToDouble(thamsoEntity.Find(m => m.Key.Equals("mau-so-lam-viec")).Value);
             var mauSoBaoVe = Convert.ToDecimal(thamsoEntity.Find(m => m.Key.Equals("mau-so-bao-ve")).Value);
             var tyledongbh = Convert.ToDecimal(thamsoEntity.Find(m => m.Key.Equals("ty-le-dong-bh")).Value);
 
@@ -3917,8 +3917,8 @@ namespace erp.Controllers
             {
                 dayworking = Utility.BusinessDaysUntil(fromDate, DateTime.Now);
             }
-            decimal ngayConglamViec = dayworking;
-            decimal phutconglamviec = ngayConglamViec * 8 * 60;
+            double ngayConglamViec = dayworking;
+            double phutconglamviec = ngayConglamViec * 8 * 60;
 
             var employee = dbContext.Employees.Find(m => m.Id.Equals(employeeId)).FirstOrDefault();
             var thamnienlamviec = employee.Joinday;
@@ -4057,16 +4057,16 @@ namespace erp.Controllers
             decimal thuongletet = currentSalary.ThuongLeTet;
             decimal luongcbbaogomphucap = currentSalary.LuongCoBanBaoGomPhuCap;
             luongcbbaogomphucap = luongCB + nangnhoc + trachnhiem + thamnien + thuhut + dienthoai + xang + com + nhao + kiemnhiem + bhytdacbiet + vitricanknnhieunam + vitridacthu;
-            decimal ngayNghiPhepHuongLuong = 0;
-            decimal ngayNghiLeTetHuongLuong = 0;
-            decimal congCNGio = 0;
-            decimal phutcongCN = 0;
-            decimal congTangCaNgayThuongGio = 0;
-            decimal phutcongTangCaNgayThuong = 0;
-            decimal congLeTet = 0;
-            decimal phutcongLeTet = 0;
+            double ngayNghiPhepHuongLuong = 0;
+            double ngayNghiLeTetHuongLuong = 0;
+            double congCNGio = 0;
+            double phutcongCN = 0;
+            double congTangCaNgayThuongGio = 0;
+            double phutcongTangCaNgayThuong = 0;
+            double congLeTet = 0;
+            double phutcongLeTet = 0;
             decimal congTacXa = 0;
-            decimal tongBunBoc = 0;
+            double tongBunBoc = 0;
             decimal thanhTienBunBoc = 0;
             decimal mucDatTrongThang = 0;
             decimal luongTheoDoanhThuDoanhSo = 0;
@@ -4089,14 +4089,14 @@ namespace erp.Controllers
                 phutcongLeTet = 0;
                 foreach (var chamCong in chamCongs)
                 {
-                    ngayConglamViec += (decimal)chamCong.Workday;
-                    phutconglamviec += (decimal)Math.Round(TimeSpan.FromMilliseconds(chamCong.WorkTime).TotalMinutes, 0);
-                    ngayNghiPhepHuongLuong += (decimal)chamCong.NghiPhepNam + (decimal)chamCong.NghiHuongLuong;
-                    ngayNghiLeTetHuongLuong += (decimal)chamCong.NghiLe;
-                    congCNGio += (decimal)chamCong.CongCNGio;
-                    congTangCaNgayThuongGio += (decimal)chamCong.CongTangCaNgayThuongGio;
+                    ngayConglamViec += chamCong.Workday;
+                    phutconglamviec += Math.Round(TimeSpan.FromMilliseconds(chamCong.WorkTime).TotalMinutes, 0);
+                    ngayNghiPhepHuongLuong += chamCong.NghiPhepNam + chamCong.NghiHuongLuong;
+                    ngayNghiLeTetHuongLuong += chamCong.NghiLe;
+                    congCNGio += chamCong.CongCNGio;
+                    congTangCaNgayThuongGio += chamCong.CongTangCaNgayThuongGio;
                     phutcongTangCaNgayThuong += congTangCaNgayThuongGio * 60;
-                    congLeTet += (decimal)chamCong.CongLeTet;
+                    congLeTet += chamCong.CongLeTet;
                 }
                 phutcongCN += congCNGio * 60;
                 phutcongLeTet = congLeTet * 60;
@@ -4126,8 +4126,8 @@ namespace erp.Controllers
 
             mauSo = employee.SalaryMauSo != 26 ? 30 : 26;
 
-            decimal tongthunhap = luongcbbaogomphucap / mauSo * (ngayConglamViec + congCNGio / 8 * 2 + congTangCaNgayThuongGio / 8 * (decimal)1.5 + congLeTet * 3)
-                                + luongCB / mauSo * (ngayNghiPhepHuongLuong + ngayNghiLeTetHuongLuong)
+            decimal tongthunhap = luongcbbaogomphucap / (decimal)mauSo * (decimal)(ngayConglamViec + congCNGio / 8 * 2 + congTangCaNgayThuongGio / 8 * 1.5 + congLeTet * 3)
+                                + luongCB / (decimal)mauSo * (decimal)(ngayNghiPhepHuongLuong + ngayNghiLeTetHuongLuong)
                                 + congTacXa + luongTheoDoanhThuDoanhSo + thanhTienBunBoc + luongKhac + thiDua + hoTroNgoaiLuong;
 
             if (logisticData != null && logisticData.ChucVu != "Tài xế")
@@ -4135,19 +4135,22 @@ namespace erp.Controllers
                 tongthunhap = tongthunhap + mucDatTrongThang;
             }
 
-            decimal thunhapbydate = luongcbbaogomphucap / mauSo;
+            decimal thunhapbydate = luongcbbaogomphucap / (decimal)mauSo;
             decimal thunhapbyminute = thunhapbydate / 8 / 60;
-            decimal tongthunhapminute = thunhapbyminute * (phutconglamviec + (phutcongCN * 2) + (phutcongTangCaNgayThuong * (decimal)1.5) + (phutcongLeTet * 3))
-                                + luongCB / mauSo * (ngayNghiPhepHuongLuong + ngayNghiLeTetHuongLuong)
+            decimal tongthunhapminute = thunhapbyminute * (decimal)(phutconglamviec + (phutcongCN * 2) + (phutcongTangCaNgayThuong * 1.5) + (phutcongLeTet * 3))
+                                + luongCB / (decimal)mauSo * (decimal)(ngayNghiPhepHuongLuong + ngayNghiLeTetHuongLuong)
                                 + congTacXa + luongTheoDoanhThuDoanhSo + thanhTienBunBoc + luongKhac + thiDua + hoTroNgoaiLuong;
 
             decimal bhxhbhyt = luongthamgiabhxh * tyledongbh;
 
             decimal tamung = 0;
-            var creditData = dbContext.SalaryCredits.Find(m => m.EmployeeId.Equals(employee.Id) & !m.Status.Equals(2)).FirstOrDefault();
-            if (creditData != null)
+            var credits = dbContext.CreditEmployees.Find(m => m.EmployeeId.Equals(employeeId) && m.Month.Equals(month) && m.Year.Equals(year)).ToList();
+            if (credits != null && credits.Count > 0)
             {
-                tamung = creditData.MucThanhToanHangThang;
+                foreach (var credit in credits)
+                {
+                    tamung += credit.Money;
+                }
             }
             decimal thuclanh = tongthunhap - bhxhbhyt - tamung + thuongletet;
             decimal thuclanhminute = tongthunhapminute - bhxhbhyt - tamung + thuongletet;

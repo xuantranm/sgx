@@ -1762,7 +1762,7 @@ namespace erp.Controllers
                     dbContext.SalaryEmployeeMonths.DeleteMany(m => true);
 
                     headerCal = 7;
-                    var location = Constants.Location((int)ESalaryType.NM);
+                    var location = Constants.Location((int)EKhoiLamViec.NM);
                     int locationOrder = 0;
                     int groupChucDanhOrder = 0;
                     var groupChucDanh = string.Empty;
@@ -1949,20 +1949,20 @@ namespace erp.Controllers
                                 ViTriDacThu = (decimal)viTriDacThu,
                                 #endregion
                                 LuongCoBanBaoGomPhuCap = (decimal)luongCanBanBaoGomPhuCap,
-                                NgayCongLamViec = (decimal)ngayConglamViec,
-                                PhutCongLamViec = (decimal)phutconglamviec,
-                                NgayNghiPhepHuongLuong = (decimal)ngayNghiPhepHuongLuong,
-                                NgayNghiLeTetHuongLuong = (decimal)ngayNghiLeTetHuongLuong,
-                                CongCNGio = (decimal)congCNGio,
-                                CongCNPhut = (decimal)phutcongCN,
-                                CongTangCaNgayThuongGio = (decimal)congTangCaNgayThuongGio,
-                                CongTangCaNgayThuongPhut = (decimal)phutcongTangCaNgayThuong,
-                                CongLeTet = (decimal)congLeTet,
-                                CongLeTetPhut = (decimal)phutcongLeTet,
+                                NgayCongLamViec = ngayConglamViec,
+                                PhutCongLamViec = phutconglamviec,
+                                NgayNghiPhepHuongLuong = ngayNghiPhepHuongLuong,
+                                NgayNghiLeTetHuongLuong = ngayNghiLeTetHuongLuong,
+                                CongCNGio = congCNGio,
+                                CongCNPhut = phutcongCN,
+                                CongTangCaNgayThuongGio = congTangCaNgayThuongGio,
+                                CongTangCaNgayThuongPhut = phutcongTangCaNgayThuong,
+                                CongLeTet = congLeTet,
+                                CongLeTetPhut = phutcongLeTet,
                                 CongTacXa = (decimal)congTacXa,
                                 MucDatTrongThang = (decimal)mucDatTrongThang,
                                 LuongTheoDoanhThuDoanhSo = (decimal)luongTheoDoanhThuDoanhSo,
-                                TongBunBoc = (decimal)tongBunBoc,
+                                TongBunBoc = tongBunBoc,
                                 ThanhTienBunBoc = (decimal)thanhTienBunBoc,
                                 LuongKhac = (decimal)luongKhac,
                                 ThiDua = (decimal)thiDua,
@@ -2154,7 +2154,7 @@ namespace erp.Controllers
                                 // debug
                                 if (employeeId == "5b6bb22fe73a301f941c5884")
                                 {
-                                    var a = "aa";
+                                    //var a = "aa";
                                 }
                                 var chucdanhCode = string.Empty;
                                 var chucVuAlias = Utility.AliasConvert(chucVu);
@@ -2356,7 +2356,7 @@ namespace erp.Controllers
                                 // proccess
                                 var filter = Builders<Employee>.Filter.Eq(m => m.Id, employee.Id);
                                 var update = Builders<Employee>.Update
-                                    .Set(m => m.SalaryType, (int)ESalaryType.NM)
+                                    .Set(m => m.SalaryType, (int)EKhoiLamViec.NM)
                                     .Set(m => m.NgachLuong, ngachLuong)
                                     .Set(m => m.SalaryLevel, hesoLuong)
                                     .Set(m => m.Salary, (decimal)luong)
@@ -2364,37 +2364,40 @@ namespace erp.Controllers
                                     .Set(m => m.LuongBHXH, (decimal)luongBHXH);
                                 dbContext.Employees.UpdateOne(filter, update);
 
-                                // SalaryCredits thang 7.
+                                // CreditEmployees thang 7.
                                 // check exist to update
-                                var existEntity = dbContext.SalaryCredits.Find(m => m.Enable.Equals(true) && m.EmployeeId.Equals(employee.Id) && m.Month.Equals(month) && m.Year.Equals(year)).FirstOrDefault();
+                                var existEntity = dbContext.CreditEmployees.Find(m => m.Enable.Equals(true) && m.EmployeeId.Equals(employee.Id) && m.Month.Equals(month) && m.Year.Equals(year)).FirstOrDefault();
                                 if (existEntity != null)
                                 {
-                                    var builderC = Builders<SalaryCredit>.Filter;
+                                    var builderC = Builders<CreditEmployee>.Filter;
                                     var filterC = builderC.Eq(m => m.Id, existEntity.Id);
-                                    var updateC = Builders<SalaryCredit>.Update
-                                        .Set(m => m.MaNhanVien, employee.Code)
+                                    var updateC = Builders<CreditEmployee>.Update
+                                        .Set(m => m.EmployeeCode, employee.Code)
                                         .Set(m => m.FullName, employee.FullName)
-                                        .Set(m => m.ChucVu, employee.Title)
-                                        .Set(m => m.PhongBan, employee.Department)
-                                        .Set(m => m.UngLuong, (decimal)truTamUng)
+                                        .Set(m => m.EmployeeTitle, employee.Title)
+                                        .Set(m => m.EmployeeDepartment, employee.DepartmentId)
+                                        .Set(m => m.EmployeePart, employee.PartId)
+                                        .Set(m => m.Money, (decimal)truTamUng)
                                         .Set(m => m.UpdatedOn, DateTime.Now);
 
-                                    dbContext.SalaryCredits.UpdateOne(filterC, updateC);
+                                    dbContext.CreditEmployees.UpdateOne(filterC, updateC);
                                 }
                                 else
                                 {
-                                    var newItem = new SalaryCredit
+                                    var newItem = new CreditEmployee
                                     {
                                         Year = year,
                                         Month = month,
                                         EmployeeId = employee.Id,
-                                        MaNhanVien = employee.Code,
+                                        EmployeeCode = employee.Code,
                                         FullName = employee.FullName,
-                                        ChucVu = employee.Title,
-                                        PhongBan = employee.Department,
-                                        UngLuong = (decimal)truTamUng
+                                        EmployeeTitle = employee.Title,
+                                        EmployeeDepartment = employee.DepartmentId,
+                                        EmployeePart = employee.PartId,
+                                        Type = (int)ECredit.UngLuong,
+                                        Money = (decimal)truTamUng
                                     };
-                                    dbContext.SalaryCredits.InsertOne(newItem);
+                                    dbContext.CreditEmployees.InsertOne(newItem);
                                 }
                             }
                             else
@@ -2487,7 +2490,7 @@ namespace erp.Controllers
                                 // proccess
                                 var filter = Builders<Employee>.Filter.Eq(m => m.Id, employee.Id);
                                 var update = Builders<Employee>.Update
-                                    .Set(m => m.SalaryType, (int)ESalaryType.SX)
+                                    .Set(m => m.SalaryType, (int)EKhoiLamViec.SX)
                                     .Set(m => m.NgachLuong, ngachLuong)
                                     .Set(m => m.SalaryLevel, hesoLuong);
                                 dbContext.Employees.UpdateOne(filter, update);

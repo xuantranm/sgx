@@ -25,6 +25,32 @@ namespace Common.Utilities
         {
         }
 
+        public static List<MonthYear> DllMonths()
+        {
+            var monthYears = new List<MonthYear>();
+            var date = new DateTime(2018, 02, 01);
+            var endDate = DateTime.Now;
+            while (date.Year < endDate.Year || (date.Year == endDate.Year && date.Month <= endDate.Month))
+            {
+                monthYears.Add(new MonthYear
+                {
+                    Month = date.Month,
+                    Year = date.Year
+                });
+                date = date.AddMonths(1);
+            }
+            if (endDate.Day > 25)
+            {
+                monthYears.Add(new MonthYear
+                {
+                    Month = endDate.AddMonths(1).Month,
+                    Year = endDate.AddMonths(1).Year
+                });
+            }
+            var sortTimes = monthYears.OrderByDescending(x => x.Month).OrderByDescending(x => x.Year).ToList();
+            return sortTimes;
+        }
+
         #region Salaries
         public static string GetChucDanhCongViec(string code)
         {
@@ -139,6 +165,16 @@ namespace Common.Utilities
                 //text = text.Replace(arr1[i], arr2[i]);
                 text = text.Replace(arr1[i], arr2[i]);
             }
+
+            #region Resolve error
+            // Copy for text error above. No write. (because special character)
+            string[] earr1 = new string[] { "á" };
+            string[] earr2 = new string[] { "a" };
+            for (int i = 0; i < earr1.Length; i++)
+            {
+                text = text.Replace(earr1[i], earr2[i]);
+            }
+            #endregion
             return text;
         }
 
@@ -665,11 +701,6 @@ namespace Common.Utilities
         {
             if (string.IsNullOrEmpty(times))
             {
-                // calculator date: 26 - > 25
-                // now: 25/08 => [to] times: -> 25/07
-                // now: 26/08 => [to] times: -> 25/08
-                // now: 01/09 => [to] times: -> 25/08
-                // now: 24/09 => [to] times: -> 25/08
                 var now = DateTime.Now;
                 times = now.Month + "-" + now.Year;
                 if (now.Day < 26)
@@ -680,6 +711,19 @@ namespace Common.Utilities
             }
             int month = Convert.ToInt32(times.Split("-")[0]);
             int year = Convert.ToInt32(times.Split("-")[1]);
+            return new DateTime(year, month, 25);
+        }
+
+        public static DateTime GetToDate(string thang)
+        {
+            if (string.IsNullOrEmpty(thang))
+            {
+                var today = DateTime.Now;
+                return today.Day > 25 ? new DateTime(today.AddMonths(1).Year, today.AddMonths(1).Month, 25) : new DateTime(today.Year, today.Month, 25);
+            }
+
+            int month = Convert.ToInt32(thang.Split("-")[0]);
+            int year = Convert.ToInt32(thang.Split("-")[1]);
             return new DateTime(year, month, 25);
         }
 
@@ -807,34 +851,31 @@ namespace Common.Utilities
                 {
                     object value1 = typeof(T).GetProperty(pi.Name).GetValue(obj1, null);
                     object value2 = typeof(T).GetProperty(pi.Name).GetValue(obj2, null);
-                    if (value2 != null)
+                    if (!string.IsNullOrEmpty(value2.ToString()))
                     {
-                        if (value2 != "")
+                        Type type = pi.PropertyType;
+                        if (type.Namespace == "System.Collections.Generic")
                         {
-                            Type type = pi.PropertyType;
-                            if (type.Namespace == "System.Collections.Generic")
+                            var a = (IList)value1;
+                            var b = (IList)value2;
+                            var i = 0;
+                            foreach (var item in a)
                             {
-                                var a = (IList)value1;
-                                var b = (IList)value2;
-                                var i = 0;
-                                foreach (var item in a)
-                                {
-                                    var otherItem = b[i];
-                                    var newDiffe = item.ChildCompare(otherItem);
-                                    i++;
-                                }
+                                var otherItem = b[i];
+                                var newDiffe = item.ChildCompare(otherItem);
+                                i++;
                             }
-                            else
+                        }
+                        else
+                        {
+                            if (value1 != value2 && (value1 == null || !value1.Equals(value2)))
                             {
-                                if (value1 != value2 && (value1 == null || !value1.Equals(value2)))
+                                variances.Add(new Variance
                                 {
-                                    variances.Add(new Variance
-                                    {
-                                        Prop = pi.Name,
-                                        ValA = value1,
-                                        ValB = value2
-                                    });
-                                }
+                                    Prop = pi.Name,
+                                    ValA = value1,
+                                    ValB = value2
+                                });
                             }
                         }
                     }
@@ -1136,19 +1177,12 @@ namespace Common.Utilities
 
         public static DateTime ParseExcelDate(string date)
         {
-            DateTime dt;
-            if (DateTime.TryParse(date, out dt))
+            if (DateTime.TryParse(date, out DateTime dt))
             {
                 return dt;
             }
 
-            double oaDate;
-            if (double.TryParse(date, out oaDate))
-            {
-                return DateTime.FromOADate(oaDate);
-            }
-
-            return DateTime.MinValue;
+            return double.TryParse(date, out double oaDate) ? DateTime.FromOADate(oaDate) : DateTime.MinValue;
         }
         #endregion
     }

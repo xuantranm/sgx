@@ -7,6 +7,6 @@ namespace ViewModels
 {
     public class SalaryCreditViewModel : ExtensionViewModel
     {
-        public IList<SalaryCredit> SalaryCredits { get; set; }
+        public IList<CreditEmployee> SalaryCredits { get; set; }
     }
 }

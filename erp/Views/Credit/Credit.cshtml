@@ -1,8 +1,12 @@
-﻿@using Common.Utilities;
+﻿@using System;
+@using System.Globalization;
+@using Common.Utilities;
+@using Common.Enums;
 @using ViewModels;
 @model BangLuongViewModel
 @{
     Layout = "~/Views/Shared/_LayoutSocialFbFS.cshtml";
+    CultureInfo culture = CultureInfo.CreateSpecificCulture("en-US");
     var login = User.Identity.Name;
     var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
 }
@@ -66,9 +70,9 @@
                             <div>
                                 <h6>TẠM ỨNG & VAY</h6>(ĐVT: 1,000 đồng)
                             </div>
-                            <form class="d-flex align-items-center" method="get" action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Credits" id="form-main">
+                            <form class="d-flex align-items-center" method="get" action="/@Constants.LinkCredit.Main/@Constants.LinkCredit.Credits" id="form-main">
                                 <span class="mr-2 text-muted text-small text-nowrap">Tháng:</span>
-                                <select asp-for="thang" class="custom-select ddl-times">
+                                <select asp-for="Thang" class="custom-select ddl-times">
                                     @{
                                         foreach (var item in Model.MonthYears)
                                         {
@@ -80,7 +84,7 @@
                         </div>
                     </div>
                     @{
-                        if (Model.SalaryCredits.Count > 0)
+                        if (Model.Credits.Count > 0)
                         {
                             <div class="row">
                                 <div class="col-12 table-responsive-sm">
@@ -100,16 +104,16 @@
                                             @{
                                                 int i = 1;
                                                 int iEntity = 0;
-                                                foreach (var item in Model.SalaryCredits)
+                                                foreach (var item in Model.Credits)
                                                 {
                                                     <tr class="tr-@iEntity" data-id="@item.Id">
                                                         <td>
                                                             @i
                                                         </td>
                                                         <td>@item.FullName</td>
-                                                        <td>@item.MaNhanVien</td>
+                                                        <td>@item.EmployeeCode</td>
                                                         <td>
-                                                            @item.MucThanhToanHangThang
+                                                            @item.Money.ToString("N0", culture)
                                                         </td>
                                                         <td>
                                                             @item.MucThanhToanHangThang
@@ -117,9 +121,7 @@
                                                         <td>
                                                             @item.MucThanhToanHangThang
                                                         </td>
-                                                        <td>
-                                                            @item.MucThanhToanHangThang
-                                                        </td>
+                                                        <td></td>
                                                     </tr>
                                                     i++;
                                                 }
@@ -143,7 +145,7 @@
 </div>
 
 @section scripts {
-    <script type="text/javascript" src="~/js/salary-credit.js?@DateTime.Now.Ticks"></script>
+    <script type="text/javascript" src="~/js/credit-employee.js?@DateTime.Now.Ticks"></script>
 }
 
 

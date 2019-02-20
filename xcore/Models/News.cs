@@ -7,6 +7,11 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Models
 {
+    /// <summary>
+    /// Thông báo của công ty
+    /// Tin tức
+    /// ...
+    /// </summary>
     public class News: Extension
     {
         [BsonId]

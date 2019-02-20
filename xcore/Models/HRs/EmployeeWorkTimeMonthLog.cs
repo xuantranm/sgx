@@ -1,12 +1,11 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 
 namespace Models
 {
     // Mục đích lấy dữ liệu nhanh, phục vụ tính lương, danh sách, report,...
+    // Them cot dieu chinh tay
     // Mỗi tháng 1 records.
     public class EmployeeWorkTimeMonthLog
     {
@@ -65,6 +64,12 @@ namespace Models
         public double ChuNhat { get; set; } = 0;
 
         public string Rule { get; set; } = "26-25";
+
+        #region Dieu Chinh Tay (Lấy dữ liệu ở đây)
+        public double NgayLamViecChinhTay { get; set; }
+        public double PhepNamChinhTay { get; set; }
+        public double LeTetChinhTay { get; set; }
+        #endregion
 
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime LastUpdated { get; set; } = DateTime.Now;

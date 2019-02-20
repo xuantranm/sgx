@@ -1,0 +1,451 @@
+﻿@using System;
+@using System.Globalization;
+@using Common.Utilities;
+@using Common.Enums;
+@using ViewModels;
+
+@model BangLuongViewModel
+@{
+    Layout = "~/Views/Shared/_LayoutSocialFbFS.cshtml";
+    CultureInfo culture = CultureInfo.CreateSpecificCulture("en-US");
+    var login = User.Identity.Name;
+    var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+    var thang = Model.Thang;
+
+    var thanhphams = Model.ThanhPhams;
+    var congviecs = Model.CongViecs;
+    var dongias = Model.DonGiaDMs;
+    var dongiaM3 = Model.DonGiaM3;
+    var tpCount = thanhphams.Count;
+    var cvCount = congviecs.Count;
+    var sxcongs = Model.Congs;
+
+}
+<link href="~/assets/wingman/css/big-screen.css" rel="stylesheet" />
+<style>
+    tbody th:nth-child(3), tbody td:nth-child(3) {
+        position: sticky;
+        left: 0px;
+    }
+
+    tbody td:nth-child(3) {
+        background-color: lightgoldenrodyellow;
+    }
+</style>
+<div class="main-container">
+    <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="/">Trang chủ</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">Tổng hợp trong giờ</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="flush-with-above space-0">
+        <div class="bg-white">
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <ul class="nav nav-tabs" id="myTab" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.BangLuong">BẢNG LƯƠNG</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.TheLuong">THẺ LƯƠNG</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" target="_blank" href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Timer?thang=@thang&khoi=@EKhoiLamViec.SX">CHẤM CÔNG</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link active" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.TongHopTrongGio">TỔNG HỢP TRONG GIỜ</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.TongHopNgoaiGio">TỔNG HỢP NGOÀI GIỜ</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.PhuCap">PHỤ CẤP</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" target="_blank" href="/@Constants.LinkCredit.Main/@Constants.LinkCredit.Credits?thang=@thang&khoi=@EKhoiLamViec.SX">ỨNG LƯƠNG</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.DongGoiTrongGio">ĐÓNG GÓI TRONG GIỜ</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.DongGoiNgoaiGio">ĐÓNG GÓI NGOÀI GIỜ</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.BocHangTrongGio">BÓC HÀNG TRONG GIỜ</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.BocHangNgoaiGio">BÓC HÀNG NGOÀI GIỜ</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.DinhMuc">ĐỊNH MỨC</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" target="_blank" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.ThangLuongTrue/@Constants.LinkSalary.ThangLuong">THANG LƯƠNG</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" target="_blank" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.Setting">THAM SỐ</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MAIN -->
+    <section class="flush-with-above height-80 d-block">
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="real" role="tabpanel" aria-labelledby="real-tab">
+                <div class="container">
+                    <div class="row mb-3 d-none">
+                        <div class="col-lg-3 col-md-4 col-xs-12e">
+                            <a class="btn btn-lg btn-block btn-success btn-edit-real" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.TongHopTrongGio/@Constants.LinkSalary.Update" data-toggle="tooltip" title="Bấm thay đổi dữ liệu.">
+                                <i class="icon icon-edit"></i>Chỉnh sửa
+                            </a>
+                        </div>
+                        <div class="col-lg-3 col-md-4 col-xs-12">
+                            <a class="btn btn-lg btn-block btn-info" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.TongHopTrongGio/@Constants.LinkSalary.Export" data-toggle="tooltip" title="Xuất ra tài liệu file excel.">
+                                <i class="fas fa-download"></i> Xuất excel
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <a class="nav-link custom-more collapsed" data-toggle="collapse" href="#uploadarea" aria-expanded="false" aria-controls="more">
+                            <i class="icon icon-magnifying-glass"></i> Đẩy dữ liệu
+                        </a>
+                    </div>
+                    <div id="uploadarea" class="col-12 collapse">
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <span>Chọn dữ liệu tháng:</span>
+                                <select asp-for="Thang" id="ddlMonthImport">
+                                    @{
+                                        foreach (var item in Model.MonthYears)
+                                        {
+                                            <option value="@item.Month-@item.Year">@item.Month/@item.Year</option>
+                                        }
+                                    }
+                                </select>
+                                <a href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.SanXuatTongHopTrongGioTemplate?thang=@thang" class="btn btn-success btn-list btn-link-import" data-toggle="tooltip" title="Bấm tải về mẫu tài liệu.">
+                                    <i class="icon icon-back"></i>Tải mẫu dữ liệu
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <form method="post" action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.SanXuatTongHopTrongGioPost" enctype="multipart/form-data">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <input type="file" name="files" class="form-control fUpload" />
+                                        </div>
+                                        <div class="col-md-8">
+                                            <input type="button" class="btn btn-danger btnUpload" value="Tải lên" />
+                                            <button class="btn btn-danger btn-upload-process d-none" type="button" disabled>
+                                                <i class="fas fa-spinner"></i>
+                                                Đang xử lý...
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <br />
+                                    <div class="progress">
+                                        <div class="progress-bar progress-bar-striped progress-bar-animated" style="width:0%"></div>
+                                    </div>
+                                    <div id="dvData"></div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <form method="get" action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.TongHopTrongGio" id="form-main">
+                        <div class="card card-sm">
+                            <div class="card-header bg-secondary d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6>TỔNG HỢP TRONG GIỜ</h6>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <span class="mr-2 text-muted text-small text-nowrap">Tháng:</span>
+                                    <select asp-for="Thang" class="custom-select ddl-times">
+                                        @{
+                                            foreach (var item in Model.MonthYears)
+                                            {
+                                                <option value="@item.Month-@item.Year">@item.Month/@item.Year</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb-3" style="margin-top: -1.5rem;">
+                            <div class="col-md-1 col-sm-6 col-xs-12">
+                                <span class="badge badge-primary">Tìm kiếm:</span>
+                            </div>
+                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                <span class="mr-2 text-muted text-small text-nowrap">Nhân viên</span>
+                                <select asp-for="Id" class="custom-select js-select2-basic-single ddlEmployeeId">
+                                    <option value="">Tất cả</option>
+                                    @foreach (var employee in Model.EmployeesDdl)
+                                    {
+                                        string displayTitle = string.Empty;
+                                        if (!string.IsNullOrEmpty(employee.Title))
+                                        {
+                                            displayTitle += "[" + employee.Title + "]";
+                                        }
+                                        if (!string.IsNullOrEmpty(employee.Email))
+                                        {
+                                            displayTitle += "- " + employee.Email + "";
+                                        }
+                                        <option value="@employee.Id">@employee.FullName @displayTitle</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+
+                    <div class="row">
+                        @{
+                            <div class="col-12 table-responsive-sm">
+                                <table class="table table-responsive-sm table-bordered table-bordered-black table-striped table-hover floating-header">
+                                    <thead style="font-weight:bold; color:black;">
+                                        <tr>
+                                            <td colspan="2" style="background-color:lightgreen">TÊN SẢN PHẨM</td>
+                                            <td style="background-color:darkblue"></td>
+                                            @foreach (var thanhpham in thanhphams)
+                                            {
+                                                <td style="background-color:green">@thanhpham.Name</td>
+                                            }
+                                            <td style="background-color:darkblue"></td>
+                                            <td style="background-color:rgb(248,203,173)">Số M3</td>
+                                            <td style="background-color:darkblue"></td>
+                                            @foreach (var congviec in congviecs)
+                                            {
+                                                <td style="background-color:blue">@congviec.Name</td>
+                                            }
+                                            <td style="background-color:blue">Cộng thời gian làm công việc khác</td>
+                                            <td style="background-color:blue">Tổng công việc khác</td>
+                                            <td style="background-color:blue">THÀNH TIỀN TRONG GIỜ</td>
+                                            <td style="background-color:blue">THÀNH TIỀN NGOÀI GIỜ</td>
+                                            <td style="background-color:red">TỔNG LƯƠNG</td>
+                                            <td style="background-color:red">NGÀY LÀM VIỆC</td>
+                                            <td style="background-color:red">LƯƠNG ĐỊNH MỨC</td>
+                                            <td style="background-color:red">ĐẠT</td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2" style="background-color:lightgreen">MÃ SẢN PHẨM</td>
+                                            <td style="background-color:darkblue"></td>
+                                            @foreach (var thanhpham in thanhphams)
+                                            {
+                                                <td style="background-color:green">@thanhpham.Code</td>
+                                            }
+                                            <td style="background-color:darkblue"></td>
+                                            <td style="background-color:rgb(248,203,173)">@string.Empty</td>
+                                            <td style="background-color:darkblue"></td>
+                                            @{
+                                                for (var itp = 1; itp <= cvCount; itp++)
+                                                {
+                                                    <td style="background-color:blue">@string.Empty</td>
+                                                }
+                                            }
+                                            <td style="background-color:blue">@string.Empty</td>
+                                            <td style="background-color:blue">@string.Empty</td>
+                                            <td style="background-color:blue">@string.Empty</td>
+                                            <td style="background-color:blue">@string.Empty</td>
+                                            <td style="background-color:red">@string.Empty</td>
+                                            <td style="background-color:red">@string.Empty</td>
+                                            <td style="background-color:red">@string.Empty</td>
+                                            <td style="background-color:red">@string.Empty</td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2" style="background-color:lightgreen">ĐƠN GIÁ</td>
+                                            <td style="background-color:darkblue"></td>
+                                            @foreach (var dongia in dongias)
+                                            {
+                                                <td style="background-color:green">@dongia.DonGiaDieuChinh.ToString("N0", culture)</td>
+                                            }
+                                            <td style="background-color:darkblue"></td>
+                                            <td style="background-color:rgb(248,203,173)">@dongiaM3.Price.ToString("N0", culture)</td>
+                                            <td style="background-color:darkblue"></td>
+                                            @foreach (var congviec in congviecs)
+                                            {
+                                                <td style="background-color:blue">@congviec.Price.ToString("N0", culture)</td>
+                                            }
+                                            <td style="background-color:blue">@string.Empty</td>
+                                            <td style="background-color:blue">@string.Empty</td>
+                                            <td style="background-color:blue">@string.Empty</td>
+                                            <td style="background-color:blue">@string.Empty</td>
+                                            <td style="background-color:red">@string.Empty</td>
+                                            <td style="background-color:red">@string.Empty</td>
+                                            <td style="background-color:red">@string.Empty</td>
+                                            <td style="background-color:red">@string.Empty</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="background-color:lightgreen" nowrap>Mã NV</td>
+                                            <td style="background-color:lightgreen" nowrap>Tên NV</td>
+                                            <td style="background-color:darkblue"></td>
+                                            @{
+                                                for (var itp = 1; itp <= tpCount; itp++)
+                                                {
+                                                    <td style="background-color:green">@string.Empty</td>
+                                                }
+                                            }
+                                            <td style="background-color:darkblue"></td>
+                                            <td style="background-color:rgb(248,203,173)">@dongiaM3.Price</td>
+                                            <td style="background-color:darkblue"></td>
+                                            @{
+                                                for (var icv = 1; icv <= cvCount; icv++)
+                                                {
+                                                    <td style="background-color:blue">@string.Empty</td>
+                                                }
+                                            }
+                                            <td style="background-color:blue">@string.Empty</td>
+                                            <td style="background-color:blue">@string.Empty</td>
+                                            <td style="background-color:blue">@string.Empty</td>
+                                            <td style="background-color:blue">@string.Empty</td>
+                                            <td style="background-color:red">@string.Empty</td>
+                                            <td style="background-color:red">@string.Empty</td>
+                                            <td style="background-color:red">@string.Empty</td>
+                                            <td style="background-color:red">@string.Empty</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="font-14">
+                                        @{
+                                            var luongTS = 7000000;
+                                            var ngayTS = 26;
+                                            var groupNvs = (from s in Model.MCongs
+                                                            group s by new
+                                                            {
+                                                                s.EmployeeId,
+                                                                s.EmployeeCode,
+                                                                s.EmployeeName
+                                                            }
+                                                                                                                                into l
+                                                            select new
+                                                            {
+                                                                l.Key.EmployeeId,
+                                                                l.Key.EmployeeCode,
+                                                                l.Key.EmployeeName,
+                                                                congs = l.ToList(),
+                                                            }).ToList();
+
+                                            foreach (var groupNv in groupNvs)
+                                            {
+                                                var congthanhphams = groupNv.congs.Where(m => m.Type.Equals((int)EDinhMuc.DongGoi)).OrderBy(m => m.ObjectSort).ToList();
+                                                var congcongvieckhacs = groupNv.congs.Where(m => m.Type.Equals((int)EDinhMuc.CongViecKhac)).OrderBy(m => m.ObjectSort).ToList();
+                                                var congbocvac = groupNv.congs.Find(m => m.Type.Equals((int)EDinhMuc.BocVac));
+                                                decimal dongiabochang = 11200;
+                                                double tongthoigiancongvieckhac = 0;
+                                                decimal tongcongvieckhac = 0;
+                                                decimal thanhtienthanhpham = 0;
+                                                decimal thanhtienbochang = 0;
+                                                decimal thanhtientronggio = 0;
+
+                                                var congngoaigioentity = sxcongs.FirstOrDefault(m => m.EmployeeId.Equals(groupNv.EmployeeId));
+                                                decimal thanhtienngoaigio = congngoaigioentity != null ? congngoaigioentity.ThanhTienNgoaiGio :0;
+                                                decimal tongluong = 0;
+                                                double ngaylamviec = 26;
+                                                decimal luongdinhmuc = 0;
+                                                double dat = 0;
+
+                                                <tr>
+                                                    <td nowrap>
+                                                        @groupNv.EmployeeCode
+                                                    </td>
+                                                    <td nowrap>
+                                                        @groupNv.EmployeeName
+                                                    </td>
+                                                    <td style="background-color:darkblue"></td>
+                                                    @foreach (var congthanhpham in congthanhphams)
+                                                    {
+                                                        thanhtienthanhpham += Convert.ToDecimal(congthanhpham.Value * (double)congthanhpham.ObjectPrice);
+                                                        <td>@Math.Round(congthanhpham.Value, 0).ToString("N0", culture)</td>
+                                                    }
+                                                    <td style="background-color:darkblue"></td>
+                                                    <td>
+                                                        @{
+                                                            var valuebocvac = congbocvac != null ? congbocvac.Value : 0;
+                                                            thanhtienbochang += Convert.ToDecimal(valuebocvac * (double)dongiabochang);
+                                                            <span>@Math.Round(valuebocvac, 2).ToString("N2", culture)</span>
+                                                        }
+                                                    </td>
+                                                    <td style="background-color:darkblue"></td>
+                                                    @{
+                                                        foreach (var congcongvieckhac in congcongvieckhacs)
+                                                        {
+                                                            tongthoigiancongvieckhac += congcongvieckhac.Value;
+                                                            tongcongvieckhac += Convert.ToDecimal(congcongvieckhac.Value * (double)congcongvieckhac.ObjectPrice);
+                                                            <td>@Math.Round(congcongvieckhac.Value, 0).ToString("N0", culture)</td>
+                                                        }
+                                                    }
+
+                                                    <td>
+                                                        <span>@Math.Round(tongthoigiancongvieckhac / 60, 2)</span>
+                                                    </td>
+                                                    <td>
+                                                        <span>@Math.Round(tongcongvieckhac / 60, 0).ToString("N0", culture)</span>
+                                                    </td>
+                                                    <td>
+                                                        @{ 
+                                                            thanhtientronggio = thanhtienthanhpham + thanhtienbochang + (tongcongvieckhac/60);
+                                                        }
+                                                        <span>@Math.Round(thanhtientronggio, 0).ToString("N0", culture)</span>
+                                                    </td>
+                                                    <td><span>@Math.Round(thanhtienngoaigio, 0).ToString("N0", culture)</span></td>
+                                                    <td>
+                                                        @{
+                                                            tongluong = thanhtientronggio + thanhtienngoaigio;
+                                                        }
+                                                        <span>@Math.Round(tongluong, 0).ToString("N0", culture)</span>
+                                                    </td>
+                                                    <td>
+                                                        @{
+                                                            <span>@ngaylamviec</span>
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        @{
+                                                            luongdinhmuc = Convert.ToDecimal((double)luongTS / (double)ngayTS * (double)ngaylamviec);
+                                                            <span>@luongdinhmuc.ToString("N0", culture)</span>
+                                                        }
+                                                    </td>
+                                                    <td nowrap>
+                                                        @{
+                                                            if (tongluong > 0)
+                                                            {
+                                                                dat = (double)thanhtientronggio / (double)luongdinhmuc *100;
+                                                            }
+                                                            <span>@Math.Round(dat, 0) %</span>
+                                                        }
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+@section scripts {
+    <script type="text/javascript" src="~/js/luong-san-xuat-tong-hop-trong-gio.js?v-@DateTime.Now.Ticks"></script>
+}
+
+
+

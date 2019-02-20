@@ -37,6 +37,7 @@ namespace Models
     {
         public string Code { get; set; }
         public string Name { get; set; }
+        // Format 000
         public string Fingerprint { get; set; }
         public string WorkingScheduleTime { get; set; }
         public bool Enable { get; set; } = true;

@@ -36,7 +36,7 @@ namespace erp.Controllers
     {
         readonly MongoDBContext dbContext = new MongoDBContext();
         private readonly IDistributedCache _cache;
-        IHostingEnvironment _env;
+        readonly IHostingEnvironment _env;
 
         private readonly ILogger _logger;
 
@@ -147,22 +147,20 @@ namespace erp.Controllers
                 decimal hoTroNgoaiLuong = 0;
                 decimal thuongletet = 0;
                 decimal luongcbbaogomphucap = 0;
-                decimal ngayNghiPhepHuongLuong = 0;
-                decimal ngayNghiLeTetHuongLuong = 0;
-                decimal congCNGio = 0;
-                decimal phutcongCN = 0;
-                decimal congTangCaNgayThuongGio = 0;
-                decimal phutcongTangCaNgayThuong = 0;
-                decimal congLeTet = 0;
-                decimal phutcongLeTet = 0;
+                double ngayNghiPhepHuongLuong = 0;
+                double ngayNghiLeTetHuongLuong = 0;
+                double congCNGio = 0;
+                double phutcongCN = 0;
+                double congTangCaNgayThuongGio = 0;
+                double phutcongTangCaNgayThuong = 0;
+                double congLeTet = 0;
+                double phutcongLeTet = 0;
                 decimal congTacXa = 0;
-                decimal tongBunBoc = 0;
                 decimal thanhTienBunBoc = 0;
-                decimal mucDatTrongThang = 0;
                 decimal luongTheoDoanhThuDoanhSo = 0;
-                decimal mauSo = item.MauSo;
-                decimal ngayConglamViec = Utility.BusinessDaysUntil(fromDate, toDate);
-                decimal phutconglamviec = ngayConglamViec * 8 * 60;
+                double mauSo = item.MauSo;
+                double ngayConglamViec = Utility.BusinessDaysUntil(fromDate, toDate);
+                double phutconglamviec = ngayConglamViec * 8 * 60;
 
                 luongCB = item.LuongThamGiaBHXH;
                 item.LuongCanBan = luongCB;
@@ -232,15 +230,15 @@ namespace erp.Controllers
                 luongcbbaogomphucap = luongCB + nangnhoc + trachnhiem + thamnien + thuhut + dienthoai + xang + com + nhao + kiemnhiem + bhytdacbiet + vitricanknnhieunam + vitridacthu;
                 item.LuongCoBanBaoGomPhuCap = luongcbbaogomphucap;
 
-                decimal tongthunhap = luongcbbaogomphucap / mauSo * (ngayConglamViec + congCNGio / 8 * 2 + congTangCaNgayThuongGio / 8 * (decimal)1.5 + congLeTet * 3)
-                                    + luongCB / mauSo * (ngayNghiPhepHuongLuong + ngayNghiLeTetHuongLuong)
+                decimal tongthunhap = luongcbbaogomphucap / (decimal)mauSo * ((decimal)ngayConglamViec + (decimal)congCNGio / 8 * 2 + (decimal)congTangCaNgayThuongGio / 8 * (decimal)1.5 + (decimal)congLeTet * 3)
+                                    + luongCB / (decimal)mauSo * (decimal)(ngayNghiPhepHuongLuong + ngayNghiLeTetHuongLuong)
                                     + congTacXa + luongTheoDoanhThuDoanhSo + thanhTienBunBoc + luongKhac + thiDua + hoTroNgoaiLuong;
                 item.TongThuNhap = tongthunhap;
 
-                decimal thunhapbydate = luongcbbaogomphucap / mauSo;
+                decimal thunhapbydate = luongcbbaogomphucap / (decimal)mauSo;
                 decimal thunhapbyminute = thunhapbydate / 8 / 60;
-                decimal tongthunhapminute = thunhapbyminute * (phutconglamviec + (phutcongCN * 2) + (phutcongTangCaNgayThuong * (decimal)1.5) + (phutcongLeTet * 3))
-                                    + luongCB / mauSo * (ngayNghiPhepHuongLuong + ngayNghiLeTetHuongLuong)
+                decimal tongthunhapminute = thunhapbyminute * (decimal)(phutconglamviec + (phutcongCN * 2) + (phutcongTangCaNgayThuong * 1.5) + (phutcongLeTet * 3))
+                                    + luongCB / (decimal)mauSo * (decimal)(ngayNghiPhepHuongLuong + ngayNghiLeTetHuongLuong)
                                     + congTacXa + luongTheoDoanhThuDoanhSo + thanhTienBunBoc + luongKhac + thiDua + hoTroNgoaiLuong;
                 item.TongThuNhapMinute = tongthunhapminute;
                 decimal bhxhbhyt = 0;
@@ -257,7 +255,7 @@ namespace erp.Controllers
                 SalaryEmployeeMonths = salaryEmployeeMonths,
                 SalaryMucLuongVung = mucluongvung,
                 MonthYears = sortTimes,
-                thang = thang
+                Thang = thang
             };
 
             return View(viewModel);

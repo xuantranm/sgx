@@ -66,6 +66,7 @@
         var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
         var rightSystem = false;
         var rightHr = false;
+        var rightBangChamCong = false;
         var rightLuong = false;
         var rightLuongVanPhong = false;
         var rightLuongNhaMay = false;
@@ -75,6 +76,7 @@
         {
             rightSystem = Utility.IsRight(login, Constants.Rights.System, (int)ERights.View);
             rightHr = Utility.IsRight(login, Constants.Rights.HR, (int)ERights.View);
+            rightBangChamCong = Utility.IsRight(login, Constants.Rights.BangChamCong, (int)ERights.View);
             rightLuong = Utility.IsRight(login, Constants.Rights.Luong, (int)ERights.View);
             rightLuongVanPhong = Utility.IsRight(login, Constants.Rights.LuongVP, (int)ERights.View);
             rightLuongNhaMay = Utility.IsRight(login, Constants.Rights.LuongNM, (int)ERights.View);
@@ -209,6 +211,14 @@
                             <li class="nav-item">
                                 <a href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Index" class="nav-link" data-toggle="tooltip" title="Bấm vô xem lịch sử chấm công, xác nhận công."><i class="fas fa-fingerprint"></i> Chấm công</a>
                             </li>
+                            @if (rightBangChamCong)
+                            {
+                                <li class="nav-item">
+                                    <a href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Timer" class="nav-link" data-toggle="tooltip" title="Bấm vô xem bảng chấm công.">
+                                        <i class="far fa-calendar-alt"></i> Bảng chấm công
+                                    </a>
+                                </li>
+                            }
                             <li class="nav-item">
                                 <span data-toggle="modal" data-target="#pwdModal">
                                     <a href="javascript:;" class="nav-link" title="Bấm thay đổi mật khẩu." data-toggle="tooltip">

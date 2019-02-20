@@ -222,6 +222,11 @@ db.EmployeeWorkTimeLogs.update({}, {$set: {Lunch : '01:00:00' }}, false, true);
 db.EmployeeWorkTimeLogs.update({}, {$set: {OtherRelax : '00:00:00' }}, false, true);
 + Run fix update UpdateTimekeepingCode (fixdata) - 15.01.2019 Runned
 
+// 18.02.2019
+db.SalarySanXuatCongs.drop()
+db.SalaryNhaMayCongs.drop()
+db.SalaryCredits.drop()
+
 
 
 

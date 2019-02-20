@@ -38,7 +38,7 @@ namespace erp.Controllers
     {
         MongoDBContext dbContext = new MongoDBContext();
         private readonly IDistributedCache _cache;
-        IHostingEnvironment _hostingEnvironment;
+        readonly IHostingEnvironment _hostingEnvironment;
 
         private readonly ILogger _logger;
 

@@ -17,7 +17,7 @@ namespace Common.Utilities
 {
     public static class Utility
     {
-        private static MongoDBContext dbContext = new MongoDBContext();
+        private static readonly MongoDBContext dbContext = new MongoDBContext();
 
         static Utility()
         {
@@ -93,8 +93,17 @@ namespace Common.Utilities
             for (int i = 0; i < arr1.Length; i++)
             {
                 text = text.Replace(arr1[i], arr2[i]);
-                text = text.Replace(arr1[i].ToUpper(), arr2[i].ToUpper());
             }
+            #region Resolve error
+            // Copy for text error above. No write. (because special character)
+            string[] earr1 = new string[] { "á", "ạ" };
+            string[] earr2 = new string[] { "a" , "a" };
+            for (int i = 0; i < earr1.Length; i++)
+            {
+                text = text.Replace(earr1[i], earr2[i]);
+            }
+            #endregion
+
             return text;
         }
 
@@ -328,7 +337,7 @@ namespace Common.Utilities
 
         public static string RemoveSpecialCharacters(string str)
         {
-            return Regex.Replace(str, "[^a-zA-Z0-9_.]+", "", RegexOptions.Compiled);
+            return Regex.Replace(str, "[^0-9a-zA-Z]+", "-");
         }
 
         public static string TranslateText(string input, string languagePair)
@@ -633,6 +642,19 @@ namespace Common.Utilities
             }
 
             return closest;
+        }
+
+        public static DateTime GetToDate(string thang)
+        {
+            if (string.IsNullOrEmpty(thang))
+            {
+                var today = DateTime.Now;
+                return today.Day > 25 ? new DateTime(today.AddMonths(1).Year, today.AddMonths(1).Month, 25) : new DateTime(today.Year, today.Month, 25);
+            }
+
+            int month = Convert.ToInt32(thang.Split('-')[0]);
+            int year = Convert.ToInt32(thang.Split('-')[1]);
+            return new DateTime(year, month, 25);
         }
     }
 }

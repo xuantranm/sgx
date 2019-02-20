@@ -95,7 +95,7 @@ WriteAttributeValue("", 523, Constants.LinkNotication.Index, 523, 31, false);
             WriteLiteral(" class=\"card-link\">Các chương trình cuối năm Mậu Tuất ›</a>\r\n</div>\r\n<p></p>\r\n<div class=\"container\">\r\n    <div class=\"row\">\r\n        <div class=\"col-12\">\r\n            ");
             EndContext();
             BeginContext(758, 131, false);
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("iframe", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "9a9581350ce84ffcb2e34bb054c74224", async() => {
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("iframe", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "e813c5704aad4ae391cc421f7d251198", async() => {
             }
             );
             __Microsoft_AspNetCore_Mvc_Razor_TagHelpers_UrlResolutionTagHelper = CreateTagHelper<global::Microsoft.AspNetCore.Mvc.Razor.TagHelpers.UrlResolutionTagHelper>();

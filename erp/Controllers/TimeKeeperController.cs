@@ -245,7 +245,7 @@ namespace erp.Controllers
                 StartWorkingDate = fromDate,
                 EndWorkingDate = toDate,
                 Approves = approves,
-                thang = thang,
+                Thang = thang,
                 RightRequest = quyenXacNhanCong,
                 RightManager = quyenBangCong,
                 Approver = approver
@@ -389,8 +389,8 @@ namespace erp.Controllers
                 StartWorkingDate = fromDate,
                 EndWorkingDate = toDate,
                 Approves = approves,
-                id = id,
-                thang = thang,
+                Id = id,
+                Thang = thang,
                 RightManager = quyenBangCong
             };
             return View(viewModel);
@@ -516,7 +516,7 @@ namespace erp.Controllers
                 StartWorkingDate = fromDate,
                 EndWorkingDate = toDate,
                 Approves = approves,
-                thang = thang,
+                Thang = thang,
                 RightRequest = isRight
             };
             return View(viewModel);
@@ -971,7 +971,7 @@ namespace erp.Controllers
 
         #region CHAM CONG
         [Route(Constants.LinkTimeKeeper.Timer)]
-        public async Task<IActionResult> BangChamCong(DateTime Tu, DateTime Den, string khoi, string phongban, string id)
+        public async Task<IActionResult> BangChamCong(DateTime Tu, DateTime Den, string thang, string khoi, string phongban, string id)
         {
             #region Authorization
             var login = User.Identity.Name;
@@ -995,20 +995,21 @@ namespace erp.Controllers
             #endregion
 
             #region DDL
+            var sortTimes = Utility.DllMonths();
             var departments = dbContext.Departments.Find(m => m.Enable.Equals(true)).SortBy(m => m.Order).ToList();
 
             var builderE = Builders<Employee>.Filter;
             var filterE = builderE.Eq(m => m.Enable, true) & !builderE.Eq(m => m.UserName, Constants.System.account);
-            var intKhoi = (int)ESalaryType.VP;
+            var intKhoi = (int)EKhoiLamViec.VP;
             if (!string.IsNullOrEmpty(khoi))
             {
                 switch (khoi)
                 {
                     case "SX":
-                        intKhoi = (int)ESalaryType.SX;
+                        intKhoi = (int)EKhoiLamViec.SX;
                         break;
                     case "NM":
-                        intKhoi = (int)ESalaryType.NM;
+                        intKhoi = (int)EKhoiLamViec.NM;
                         break;
                 }
                 filterE = filterE & builderE.Eq(m => m.SalaryType, intKhoi);
@@ -1018,15 +1019,24 @@ namespace erp.Controllers
 
             #region Times
             var today = DateTime.Now.Date;
-            // Default curent
-            if (Den < Constants.MinDate)
+            if (!string.IsNullOrEmpty(thang))
             {
-                Den = today;
+                Den = Utility.GetToDate(thang);
+                Tu = Den.AddMonths(-1).AddDays(1);
+                var year = Den.Year;
+                var month = Den.Month;
             }
-            if (Tu < Constants.MinDate)
+            else
             {
-                var previous = Den.Day > 25 ? Den : Den.AddMonths(-1);
-                Tu = new DateTime(previous.Year, previous.Month, 26);
+                if (Den < Constants.MinDate)
+                {
+                    Den = today;
+                }
+                if (Tu < Constants.MinDate)
+                {
+                    var previous = Den.Day > 25 ? Den : Den.AddMonths(-1);
+                    Tu = new DateTime(previous.Year, previous.Month, 26);
+                }
             }
             #endregion
 
@@ -1056,12 +1066,14 @@ namespace erp.Controllers
             {
                 Employees = employees,
                 EmployeeWorkTimeLogs = times,
+                Thang = thang,
                 Tu = Tu,
                 Den = Den,
                 Departments = departments,
-                phongban = phongban,
-                khoi = khoi,
-                Id = id
+                Phongban = phongban,
+                Khoi = khoi,
+                Id = id,
+                MonthYears = sortTimes
             };
 
             return View(viewModel);
@@ -1096,16 +1108,16 @@ namespace erp.Controllers
 
             var builderE = Builders<Employee>.Filter;
             var filterE = builderE.Eq(m => m.Enable, true) & !builderE.Eq(m => m.UserName, Constants.System.account);
-            var intKhoi = (int)ESalaryType.VP;
+            var intKhoi = (int)EKhoiLamViec.VP;
             if (!string.IsNullOrEmpty(khoi))
             {
                 switch (khoi)
                 {
                     case "SX":
-                        intKhoi = (int)ESalaryType.SX;
+                        intKhoi = (int)EKhoiLamViec.SX;
                         break;
                     case "NM":
-                        intKhoi = (int)ESalaryType.NM;
+                        intKhoi = (int)EKhoiLamViec.NM;
                         break;
                 }
                 filterE = filterE & builderE.Eq(m => m.SalaryType, intKhoi);
@@ -1175,148 +1187,344 @@ namespace erp.Controllers
             {
                 IWorkbook workbook = new XSSFWorkbook();
                 #region Styling
-                XSSFCellStyle defaultStyle = (XSSFCellStyle)workbook.CreateCellStyle();
-                //defaultStyle.WrapText = true;
-                //defaultStyle.Alignment = HorizontalAlignment.Center;
-                //defaultStyle.VerticalAlignment = VerticalAlignment.Top;
-                defaultStyle.BorderBottom = BorderStyle.Thin;
-                defaultStyle.BorderTop = BorderStyle.Thin;
-                defaultStyle.BorderLeft = BorderStyle.Thin;
-                defaultStyle.BorderRight = BorderStyle.Thin;
+                var font = workbook.CreateFont();
+                font.FontHeightInPoints = 8;
+                font.FontName = "Arial";
 
-                var cellStyleHeader = workbook.CreateCellStyle();
-                cellStyleHeader.FillForegroundColor = HSSFColor.Grey25Percent.Index;
-                cellStyleHeader.FillPattern = FillPattern.SolidForeground;
+                var fontSmall = workbook.CreateFont();
+                fontSmall.FontHeightInPoints = 5;
+                fontSmall.FontName = "Arial";
 
                 var fontbold = workbook.CreateFont();
-                fontbold.FontHeightInPoints = 11;
-                //font.FontName = "Calibri";
+                fontbold.FontHeightInPoints = 8;
+                fontbold.FontName = "Arial";
                 fontbold.Boldweight = (short)FontBoldWeight.Bold;
 
-                XSSFCellStyle TitleStyle = (XSSFCellStyle)workbook.CreateCellStyle();
-                //defaultStyle.WrapText = false;
-                //TitleStyle.Alignment = HorizontalAlignment.Center;
-                //TitleStyle.VerticalAlignment = VerticalAlignment.Top;
-                TitleStyle.BorderBottom = BorderStyle.Thin;
-                TitleStyle.BorderTop = BorderStyle.Thin;
-                TitleStyle.BorderLeft = BorderStyle.Thin;
-                TitleStyle.BorderRight = BorderStyle.Thin;
+                var fontbold8 = workbook.CreateFont();
+                fontbold8.FontHeightInPoints = 8;
+                fontbold8.FontName = "Arial";
+                fontbold8.Boldweight = (short)FontBoldWeight.Bold;
 
+                var fontbold10 = workbook.CreateFont();
+                fontbold10.FontHeightInPoints = 10;
+                fontbold10.FontName = "Arial";
+                fontbold10.Boldweight = (short)FontBoldWeight.Bold;
+
+                var fontbold12 = workbook.CreateFont();
+                fontbold12.FontHeightInPoints = 12;
+                fontbold12.FontName = "Arial";
+                fontbold12.Boldweight = (short)FontBoldWeight.Bold;
+
+                var styleBorder = workbook.CreateCellStyle();
+                styleBorder.BorderBottom = BorderStyle.Thin;
+                styleBorder.BorderLeft = BorderStyle.Thin;
+                styleBorder.BorderRight = BorderStyle.Thin;
+                styleBorder.BorderTop = BorderStyle.Thin;
+
+                var styleBorderDot = workbook.CreateCellStyle();
+                styleBorderDot.BorderBottom = BorderStyle.Dotted;
+                styleBorderDot.BorderLeft = BorderStyle.Thin;
+                styleBorderDot.BorderRight = BorderStyle.Thin;
+                styleBorderDot.BorderTop = BorderStyle.Thin;
+
+                var styleCenter = workbook.CreateCellStyle();
+                styleCenter.Alignment = HorizontalAlignment.Center;
+                styleCenter.VerticalAlignment = VerticalAlignment.Center;
+
+                var styleCenterBorder = workbook.CreateCellStyle();
+                styleCenterBorder.CloneStyleFrom(styleBorder);
+                styleCenterBorder.Alignment = HorizontalAlignment.Center;
+                styleCenterBorder.VerticalAlignment = VerticalAlignment.Center;
+
+                var cellStyleBorderAndColorGreen = workbook.CreateCellStyle();
+                cellStyleBorderAndColorGreen.CloneStyleFrom(styleBorder);
+                cellStyleBorderAndColorGreen.CloneStyleFrom(styleCenter);
+                cellStyleBorderAndColorGreen.FillPattern = FillPattern.SolidForeground;
+                ((XSSFCellStyle)cellStyleBorderAndColorGreen).SetFillForegroundColor(new XSSFColor(new byte[] { 198, 239, 206 }));
+
+                var cellStyleBorderAndColorYellow = workbook.CreateCellStyle();
+                cellStyleBorderAndColorYellow.CloneStyleFrom(styleBorder);
+                cellStyleBorderAndColorYellow.FillPattern = FillPattern.SolidForeground;
+                ((XSSFCellStyle)cellStyleBorderAndColorYellow).SetFillForegroundColor(new XSSFColor(new byte[] { 255, 235, 156 }));
+
+                var styleDedault = workbook.CreateCellStyle();
+                styleDedault.CloneStyleFrom(styleBorder);
+                styleDedault.SetFont(font);
+
+                var styleDot = workbook.CreateCellStyle();
+                styleDot.CloneStyleFrom(styleBorderDot);
+                styleDot.SetFont(font);
+
+                var styleTitle = workbook.CreateCellStyle();
+                styleTitle.CloneStyleFrom(styleCenter);
+                styleTitle.SetFont(fontbold12);
+
+                var styleSubTitle = workbook.CreateCellStyle();
+                styleSubTitle.CloneStyleFrom(styleCenter);
+                styleSubTitle.SetFont(fontbold8);
+
+                var styleHeader = workbook.CreateCellStyle();
+                styleHeader.CloneStyleFrom(styleCenterBorder);
+                styleHeader.SetFont(fontbold8);
+
+                var styleDedaultMerge = workbook.CreateCellStyle();
+                styleDedaultMerge.CloneStyleFrom(styleCenter);
+                styleDedaultMerge.SetFont(font);
+
+                var styleBold = workbook.CreateCellStyle();
+                styleBold.SetFont(fontbold8);
+
+                var styleSmall = workbook.CreateCellStyle();
+                styleSmall.CloneStyleFrom(styleBorder);
+                styleSmall.SetFont(fontSmall);
                 #endregion
 
                 ISheet sheet1 = workbook.CreateSheet("Cong-" + duration);
 
-                //sheet1.AddMergedRegion(new CellRangeAddress(2, 2, 3, 7));
-                //sheet1.AddMergedRegion(new CellRangeAddress(2, 2, 8, 13));
-
                 var rowIndex = 0;
+                var columnIndex = 0;
                 IRow row = sheet1.CreateRow(rowIndex);
-                //sheet1.AddMergedRegion(new CellRangeAddress(rowIndex, rowIndex, 0, 2));
-                var cell = row.CreateCell(0, CellType.String);
+                var cell = row.CreateCell(columnIndex, CellType.String);
                 cell.SetCellValue("Công ty TNHH CNSH SÀI GÒN XANH");
-                cell.CellStyle = TitleStyle;
-                cell.CellStyle.SetFont(fontbold);
+                cell.CellStyle = styleBold;
                 rowIndex++;
 
                 row = sheet1.CreateRow(rowIndex);
-                cell = row.CreateCell(0, CellType.String);
-                cell.SetCellValue("127 Nguyễn Trọng Tuyển - P.15 - Q.Phú Nhuận - Tp HCM");
-                cell.CellStyle = TitleStyle;
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Địa chỉ: 127 Nguyễn Trọng Tuyển - P.15 - Q.Phú Nhuận - Tp HCM");
+                cell.CellStyle = styleBold;
                 rowIndex++;
 
                 row = sheet1.CreateRow(rowIndex);
-                cell = row.CreateCell(0, CellType.String);
-                cell.SetCellValue("Điện thoại: (028)-39971869 − (028)-38442457");
-                cell.CellStyle = TitleStyle;
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Điện thoại: (08)-39971869 - 38442457 - Fax: 08-39971869");
+                cell.CellStyle = styleBold;
                 rowIndex++;
 
                 row = sheet1.CreateRow(rowIndex);
-                cell = row.CreateCell(0, CellType.String);
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("MST: 0302519810");
+                cell.CellStyle = styleBold;
+                rowIndex++;
+
+                row = sheet1.CreateRow(rowIndex);
+                CellRangeAddress cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex, columnIndex, columnIndex + 9);
+                sheet1.AddMergedRegion(cellRangeAddress);
+                cell = row.CreateCell(columnIndex, CellType.String);
                 cell.SetCellValue("BẢNG THỐNG KÊ CHẤM CÔNG");
-                cell.CellStyle = TitleStyle;
-                cell.CellStyle.SetFont(fontbold);
+                cell.CellStyle = styleTitle;
                 rowIndex++;
 
                 row = sheet1.CreateRow(rowIndex);
-                cell = row.CreateCell(0, CellType.String);
+                cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex, columnIndex, columnIndex + 9);
+                sheet1.AddMergedRegion(cellRangeAddress);
+                cell = row.CreateCell(columnIndex, CellType.String);
                 cell.SetCellValue("Từ ngày " + Tu.ToString("dd/MM/yyyy") + " đến ngày " + Den.ToString("dd/MM/yyyy"));
-                cell.CellStyle = TitleStyle;
+                cell.CellStyle = styleSubTitle;
+                rowIndex++;
                 rowIndex++;
 
                 row = sheet1.CreateRow(rowIndex);
-                cell = row.CreateCell(0, CellType.String);
-                cell.SetCellValue(string.Empty);
-                cell.CellStyle = TitleStyle;
-                rowIndex++;
-
-                // https://stackoverflow.com/questions/51681846/rowspan-and-colspan-in-apache-poi
-
-                row = sheet1.CreateRow(rowIndex);
-                int cellNo = 0;
-                sheet1.AddMergedRegion(new CellRangeAddress(rowIndex, rowIndex+1, cellNo, cellNo));
-                cell = row.CreateCell(cellNo, CellType.String);
+                //cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 1, columnIndex, columnIndex);
+                //sheet1.AddMergedRegion(cellRangeAddress);
+                cell = row.CreateCell(columnIndex, CellType.String);
                 cell.SetCellValue("#");
-                cell.CellStyle.SetFont(fontbold);
-                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
-                cellNo++;
+                cell.CellStyle = styleHeader;
+                columnIndex++;
 
-                sheet1.AddMergedRegion(new CellRangeAddress(rowIndex, rowIndex + 1, cellNo, cellNo));
-                cell = row.CreateCell(cellNo, CellType.String);
+                //cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 1, columnIndex, columnIndex);
+                //sheet1.AddMergedRegion(cellRangeAddress);
+                cell = row.CreateCell(columnIndex, CellType.String);
                 cell.SetCellValue("Mã NV");
-                cell.CellStyle.SetFont(fontbold);
-                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
-                cellNo++;
+                cell.CellStyle = styleHeader;
+                columnIndex++;
 
-                sheet1.AddMergedRegion(new CellRangeAddress(rowIndex, rowIndex + 1, cellNo, cellNo));
-                cell = row.CreateCell(cellNo, CellType.String);
+                //cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 1, columnIndex, columnIndex);
+                //sheet1.AddMergedRegion(cellRangeAddress);
+                cell = row.CreateCell(columnIndex, CellType.String);
                 cell.SetCellValue("Họ tên");
-                cell.CellStyle.SetFont(fontbold);
-                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
-                cellNo++;
+                cell.CellStyle = styleHeader;
+                columnIndex++;
 
-                sheet1.AddMergedRegion(new CellRangeAddress(rowIndex, rowIndex + 1, cellNo, cellNo));
-                cell = row.CreateCell(cellNo, CellType.String);
+                //cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 1, columnIndex, columnIndex);
+                //sheet1.AddMergedRegion(cellRangeAddress);
+                cell = row.CreateCell(columnIndex, CellType.String);
                 cell.SetCellValue("Chức vụ");
-                cell.CellStyle.SetFont(fontbold);
-                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
-                cellNo++;
+                cell.CellStyle = styleHeader;
+                columnIndex++;
 
-                sheet1.AddMergedRegion(new CellRangeAddress(rowIndex, rowIndex + 1, cellNo, cellNo));
-                cell = row.CreateCell(cellNo, CellType.String);
+                //cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 1, columnIndex, columnIndex);
+                //sheet1.AddMergedRegion(cellRangeAddress);
+                cell = row.CreateCell(columnIndex, CellType.String);
                 cell.SetCellValue("Mã chấm công");
-                cell.CellStyle.SetFont(fontbold);
-                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
-                cellNo++;
+                cell.CellStyle = styleHeader;
+                columnIndex++;
 
-                sheet1.AddMergedRegion(new CellRangeAddress(rowIndex, rowIndex + 1, cellNo, cellNo));
-                cell = row.CreateCell(cellNo, CellType.String);
-                cell.SetCellValue("");
-                cell.CellStyle.SetFont(fontbold);
-                CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, VerticalAlignment.Center);
-                cellNo++;
+                //cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 1, columnIndex, columnIndex);
+                //sheet1.AddMergedRegion(cellRangeAddress);
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue(string.Empty);
+                cell.CellStyle = styleHeader;
+                columnIndex++;
 
                 for (DateTime date = Tu; date <= Den; date = date.AddDays(1))
                 {
-                    cell = row.CreateCell(cellNo); // cell B1
+                    cell = row.CreateCell(columnIndex);
                     cell.SetCellValue(date.Day);
-                    // set horizontal alignment center
-                    cell.CellStyle.SetFont(fontbold);
-                    CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, HorizontalAlignment.Center);
-                    cellNo++;
+                    cell.CellStyle = styleHeader;
+                    columnIndex++;
                 }
+
+                cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex, columnIndex, columnIndex + 1);
+                sheet1.AddMergedRegion(cellRangeAddress);
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Ngày công");
+                cell.CellStyle = styleHeader;
+                RegionUtil.SetBorderTop((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                RegionUtil.SetBorderLeft((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                RegionUtil.SetBorderRight((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                RegionUtil.SetBorderBottom((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                columnIndex = columnIndex + 1;
+                columnIndex++;
+
+                cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex, columnIndex, columnIndex + 1);
+                sheet1.AddMergedRegion(cellRangeAddress);
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Giờ công");
+                cell.CellStyle = styleHeader;
+                RegionUtil.SetBorderTop((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                RegionUtil.SetBorderLeft((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                RegionUtil.SetBorderRight((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                RegionUtil.SetBorderBottom((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                columnIndex = columnIndex + 1;
+                columnIndex++;
+
+                cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex, columnIndex, columnIndex + 1);
+                sheet1.AddMergedRegion(cellRangeAddress);
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Vào trễ");
+                cell.CellStyle = styleHeader;
+                RegionUtil.SetBorderTop((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                RegionUtil.SetBorderLeft((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                RegionUtil.SetBorderRight((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                RegionUtil.SetBorderBottom((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                columnIndex = columnIndex + 1;
+                columnIndex++;
+
+                cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex, columnIndex, columnIndex + 1);
+                sheet1.AddMergedRegion(cellRangeAddress);
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Ra sớm");
+                cell.CellStyle = styleHeader;
+                RegionUtil.SetBorderTop((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                RegionUtil.SetBorderLeft((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                RegionUtil.SetBorderRight((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                RegionUtil.SetBorderBottom((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                columnIndex = columnIndex + 1;
+                columnIndex++;
+
+                cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex, columnIndex, columnIndex + 2);
+                sheet1.AddMergedRegion(cellRangeAddress);
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Tăng ca");
+                cell.CellStyle = styleHeader;
+                RegionUtil.SetBorderTop((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                RegionUtil.SetBorderLeft((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                RegionUtil.SetBorderRight((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                RegionUtil.SetBorderBottom((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                columnIndex = columnIndex + 2;
+                columnIndex++;
+
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Vắng");
+                cell.CellStyle = styleHeader;
+                columnIndex++;
+
+                cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex, columnIndex, columnIndex + 2);
+                sheet1.AddMergedRegion(cellRangeAddress);
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Ngày nghỉ");
+                cell.CellStyle = styleHeader;
+                RegionUtil.SetBorderTop((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                RegionUtil.SetBorderLeft((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                RegionUtil.SetBorderRight((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                RegionUtil.SetBorderBottom((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+
                 rowIndex++;
 
                 row = sheet1.CreateRow(rowIndex);
-                cellNo = 6;
+                columnIndex = 6;
                 for (DateTime date = Tu; date <= Den; date = date.AddDays(1.0))
                 {
-                    cell = row.CreateCell(cellNo); // cell B1
+                    cell = row.CreateCell(columnIndex); // cell B1
                     cell.SetCellValue(Constants.DayOfWeekT2(date));
-                    // set horizontal alignment center
-                    cell.CellStyle.SetFont(fontbold);
-                    CellUtil.SetCellStyleProperty(cell, workbook, CellUtil.VERTICAL_ALIGNMENT, HorizontalAlignment.Center);
-                    cellNo++;
+                    cell.CellStyle = styleHeader;
+                    columnIndex++;
                 }
+                cell = row.CreateCell(columnIndex);
+                cell.SetCellValue("NT");
+                cell.CellStyle = styleHeader;
+                columnIndex++;
+                cell = row.CreateCell(columnIndex);
+                cell.SetCellValue("CT");
+                cell.CellStyle = styleHeader;
+                columnIndex++;
+                cell = row.CreateCell(columnIndex);
+                cell.SetCellValue("NT");
+                cell.CellStyle = styleHeader;
+                columnIndex++;
+                cell = row.CreateCell(columnIndex);
+                cell.SetCellValue("CT");
+                cell.CellStyle = styleHeader;
+                columnIndex++;
+                cell = row.CreateCell(columnIndex);
+                cell.SetCellValue("Lần");
+                cell.CellStyle = styleHeader;
+                columnIndex++;
+                cell = row.CreateCell(columnIndex);
+                cell.SetCellValue("Phút");
+                cell.CellStyle = styleHeader;
+                columnIndex++;
+                cell = row.CreateCell(columnIndex);
+                cell.SetCellValue("Lần");
+                cell.CellStyle = styleHeader;
+                columnIndex++;
+                cell = row.CreateCell(columnIndex);
+                cell.SetCellValue("Phút");
+                cell.CellStyle = styleHeader;
+                columnIndex++;
+                cell = row.CreateCell(columnIndex);
+                cell.SetCellValue("TC1");
+                cell.CellStyle = styleHeader;
+                columnIndex++;
+                cell = row.CreateCell(columnIndex);
+                cell.SetCellValue("TC2");
+                cell.CellStyle = styleHeader;
+                columnIndex++;
+
+                cell = row.CreateCell(columnIndex);
+                cell.SetCellValue("TC3");
+                cell.CellStyle = styleHeader;
+                columnIndex++;
+
+                cell = row.CreateCell(columnIndex);
+                cell.SetCellValue("KP");
+                cell.CellStyle = styleHeader;
+                columnIndex++;
+
+                cell = row.CreateCell(columnIndex);
+                cell.SetCellValue("OM");
+                cell.CellStyle = styleHeader;
+                columnIndex++;
+
+                cell = row.CreateCell(columnIndex);
+                cell.SetCellValue("TS");
+                cell.CellStyle = styleHeader;
+                columnIndex++;
+
+                cell = row.CreateCell(columnIndex);
+                cell.SetCellValue("R");
+                cell.CellStyle = styleHeader;
                 rowIndex++;
 
                 var groups = (from s in times
@@ -1335,57 +1543,86 @@ namespace erp.Controllers
                 int order = 1;
                 foreach (var group in groups)
                 {
-                    double workday = 0;
-                    double late = 0;
-                    double early = 0;
+                    double ngayCongNT = 0;
+                    double ngayCongCT = 0;
+                    double gioCongNT = 0;
+                    double gioCongCT = 0;
+                    int vaoTreLan = 0;
+                    double vaoTrePhut = 0;
+                    int raSomLan = 0;
+                    double raSomPhut = 0;
+                    double TC1 = 0;
+                    double TC2 = 0;
+                    double TC3 = 0;
+                    double vangKP = 0;
+                    double ngayNghiOM = 0;
+                    double ngayNghiTS = 0;
+                    double ngayNghiR = 0;
+
                     var employeeInfo = dbContext.Employees.Find(m => m.Id.Equals(group.EmployeeId)).FirstOrDefault();
                     row = sheet1.CreateRow(rowIndex);
 
-                    cellNo = 0;
-                    sheet1.AddMergedRegion(new CellRangeAddress(rowIndex, rowIndex + 3, cellNo, cellNo));
-                    cell = row.CreateCell(cellNo, CellType.String);
+                    columnIndex = 0;
+                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
+                    sheet1.AddMergedRegion(cellRangeAddress);
+                    cell = row.CreateCell(columnIndex, CellType.String);
                     cell.SetCellValue(order);
-                    cellNo++;
+                    cell.CellStyle = styleDedaultMerge;
+                    columnIndex++;
 
-                    sheet1.AddMergedRegion(new CellRangeAddress(rowIndex, rowIndex + 3, cellNo, cellNo));
-                    cell = row.CreateCell(cellNo, CellType.String);
+                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
+                    sheet1.AddMergedRegion(cellRangeAddress);
+                    cell = row.CreateCell(columnIndex, CellType.String);
                     cell.SetCellValue(employeeInfo.Code + " (" + employeeInfo.CodeOld + ")");
-                    cellNo++;
+                    cell.CellStyle = styleDedaultMerge;
+                    columnIndex++;
 
-                    sheet1.AddMergedRegion(new CellRangeAddress(rowIndex, rowIndex + 3, cellNo, cellNo));
-                    cell = row.CreateCell(cellNo, CellType.String);
+                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
+                    sheet1.AddMergedRegion(cellRangeAddress);
+                    cell = row.CreateCell(columnIndex, CellType.String);
                     cell.SetCellValue(employeeInfo.FullName);
-                    cellNo++;
+                    cell.CellStyle = styleDedaultMerge;
+                    columnIndex++;
 
-                    sheet1.AddMergedRegion(new CellRangeAddress(rowIndex, rowIndex + 3, cellNo, cellNo));
-                    cell = row.CreateCell(cellNo, CellType.String);
+                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
+                    sheet1.AddMergedRegion(cellRangeAddress);
+                    cell = row.CreateCell(columnIndex, CellType.String);
                     cell.SetCellValue(employeeInfo.Title);
-                    cellNo++;
+                    cell.CellStyle = styleDedaultMerge;
+                    columnIndex++;
 
-                    sheet1.AddMergedRegion(new CellRangeAddress(rowIndex, rowIndex + 3, cellNo, cellNo));
-                    cell = row.CreateCell(cellNo, CellType.String);
-                    cell.SetCellValue(Convert.ToInt32(group.timekeepers[0].EnrollNumber).ToString("0000"));
-                    cellNo++;
+                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
+                    sheet1.AddMergedRegion(cellRangeAddress);
+                    cell = row.CreateCell(columnIndex, CellType.String);
+                    cell.SetCellValue(Convert.ToInt32(group.timekeepers[0].EnrollNumber).ToString("000"));
+                    cell.CellStyle = styleDedaultMerge;
+                    columnIndex++;
 
-                    cell = row.CreateCell(cellNo, CellType.String);
+                    cell = row.CreateCell(columnIndex, CellType.String);
                     cell.SetCellValue("Vào 1");
+                    cell.CellStyle = styleDedault;
 
-                    rowIndex++;
-                    var rowout1 = sheet1.CreateRow(rowIndex);
-                    rowIndex++;
-                    var rowin2 = sheet1.CreateRow(rowIndex);
-                    rowIndex++;
-                    var rowout2 = sheet1.CreateRow(rowIndex);
+                    var rowout1 = sheet1.CreateRow(rowIndex + 1);
+                    var rowin2 = sheet1.CreateRow(rowIndex + 2);
+                    var rowout2 = sheet1.CreateRow(rowIndex + 3);
+                    var rowreason = sheet1.CreateRow(rowIndex + 4);
 
-                    cell = rowout1.CreateCell(cellNo, CellType.String);
+                    cell = rowout1.CreateCell(columnIndex, CellType.String);
                     cell.SetCellValue("Ra 1");
+                    cell.CellStyle = styleDedault;
 
-                    cell = rowin2.CreateCell(cellNo, CellType.String);
+                    cell = rowin2.CreateCell(columnIndex, CellType.String);
                     cell.SetCellValue("Vào 2");
+                    cell.CellStyle = styleDedault;
 
-                    cell = rowout2.CreateCell(cellNo, CellType.String);
+                    cell = rowout2.CreateCell(columnIndex, CellType.String);
                     cell.SetCellValue("Ra 2");
-                    cellNo++;
+                    cell.CellStyle = styleDedault;
+
+                    cell = rowreason.CreateCell(columnIndex, CellType.String);
+                    cell.SetCellValue("Xác nhận-Lý do");
+                    cell.CellStyle = styleDedault;
+                    columnIndex++;
 
                     var timesSort = group.timekeepers.OrderBy(m => m.Date).ToList();
                     for (DateTime date = Tu; date <= Den; date = date.AddDays(1.0))
@@ -1393,14 +1630,58 @@ namespace erp.Controllers
                         var item = timesSort.Where(m => m.Date.Equals(date)).FirstOrDefault();
                         if (item != null)
                         {
-                            workday += item.WorkDay;
-                            late += item.Late.TotalMinutes;
-                            early += item.Early.TotalMinutes;
+                            var modeMiss = false;
+                            if (item.Mode == (int)ETimeWork.Normal)
+                            {
+                                switch (item.Status)
+                                {
+                                    case (int)EStatusWork.XacNhanCong:
+                                        {
+                                            modeMiss = true;
+                                            break;
+                                        }
+                                    case (int)EStatusWork.DaGuiXacNhan:
+                                        {
+                                            modeMiss = true;
+                                            break;
+                                        }
+                                    case (int)EStatusWork.DongY:
+                                        {
+                                            ngayCongNT++;
+                                            break;
+                                        }
+                                    case (int)EStatusWork.TuChoi:
+                                        {
+                                            modeMiss = true;
+                                            break;
+                                        }
+                                    default:
+                                        {
+                                            ngayCongNT++;
+                                            break;
+                                        }
+                                }
+                            }
+
+                            if (modeMiss)
+                            {
+                                if (item.Late.TotalMinutes > 1)
+                                {
+                                    vaoTreLan++;
+                                    vaoTrePhut += item.Late.TotalMinutes;
+                                }
+                                if (item.Early.TotalMinutes > 1)
+                                {
+                                    raSomLan++;
+                                    raSomPhut += item.Early.TotalMinutes;
+                                }
+
+                            }
+
                             var displayIn1 = string.Empty;
                             var displayIn2 = string.Empty;
                             var displayOut1 = string.Empty;
                             var displayOut2 = string.Empty;
-                            var displayReason = string.Empty;
                             if (item.In.HasValue)
                             {
                                 displayIn1 = item.In.ToString();
@@ -1417,42 +1698,169 @@ namespace erp.Controllers
                                     //< p style = "margin-bottom: 0;" >< small > @log.Date.ToString("dd/MM/yyyy HH:mm:ss") </ small ></ p >
                                 }
                             }
-                            if (!string.IsNullOrEmpty(item.Reason))
+
+                            cell = row.CreateCell(columnIndex, CellType.String);
+                            cell.SetCellValue(displayIn1);
+                            cell.CellStyle = styleDot;
+
+                            cell = rowout1.CreateCell(columnIndex, CellType.String);
+                            cell.SetCellValue(displayOut1);
+                            cell.CellStyle = styleDedault;
+
+                            cell = rowin2.CreateCell(columnIndex, CellType.String);
+                            cell.SetCellValue(displayIn2);
+                            if (!string.IsNullOrEmpty(displayIn2))
                             {
-                                displayReason = item.Reason;
-                                if (!string.IsNullOrEmpty(item.ReasonDetail))
-                                {
-                                    displayReason += ". Chi tiết: " + item.ReasonDetail;
-                                }
-                                // < small > @displayReason </ small >
+                                cell.CellStyle = styleDot;
                             }
 
-                            cell = row.CreateCell(cellNo, CellType.String);
-                            cell.SetCellValue(displayIn1);
+                            cell = rowout2.CreateCell(columnIndex, CellType.String);
+                            cell.SetCellValue(displayOut2);
+                            if (!string.IsNullOrEmpty(displayOut2))
+                            {
+                                cell.CellStyle = styleDedault;
+                            }
 
-                            cell = rowout1.CreateCell(cellNo, CellType.String);
-                            cell.SetCellValue(displayOut1);
-
-                            cellNo++;
+                            cell = rowreason.CreateCell(columnIndex, CellType.String);
+                            cell.SetCellValue(item.Reason);
+                            cell.CellStyle = styleSmall;
+                            columnIndex++;
                         }
                         else
                         {
-                            cell = row.CreateCell(cellNo, CellType.String);
+                            cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
+                            sheet1.AddMergedRegion(cellRangeAddress);
+                            cell = row.CreateCell(columnIndex, CellType.String);
                             cell.SetCellValue(Constants.NA);
-                            cellNo++;
+                            cell.CellStyle = styleDedaultMerge;
+                            columnIndex++;
                         }
                     }
 
+                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
+                    sheet1.AddMergedRegion(cellRangeAddress);
+                    cell = row.CreateCell(columnIndex, CellType.Numeric);
+                    cell.SetCellValue(Math.Round(ngayCongNT, 2));
+                    cell.CellStyle = styleDedaultMerge;
+                    columnIndex++;
+
+                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
+                    sheet1.AddMergedRegion(cellRangeAddress);
+                    cell = row.CreateCell(columnIndex, CellType.Numeric);
+                    cell.SetCellValue(Math.Round(ngayCongCT, 2));
+                    cell.CellStyle = styleDedaultMerge;
+                    columnIndex++;
+
+                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
+                    sheet1.AddMergedRegion(cellRangeAddress);
+                    cell = row.CreateCell(columnIndex, CellType.Numeric);
+                    cell.SetCellValue(Math.Round(gioCongNT, 2));
+                    cell.CellStyle = styleDedaultMerge;
+                    columnIndex++;
+
+                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
+                    sheet1.AddMergedRegion(cellRangeAddress);
+                    cell = row.CreateCell(columnIndex, CellType.Numeric);
+                    cell.SetCellValue(Math.Round(gioCongCT, 2));
+                    cell.CellStyle = styleDedaultMerge;
+                    columnIndex++;
+
+                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
+                    sheet1.AddMergedRegion(cellRangeAddress);
+                    cell = row.CreateCell(columnIndex, CellType.Numeric);
+                    cell.SetCellValue(vaoTreLan);
+                    cell.CellStyle = styleDedaultMerge;
+                    columnIndex++;
+
+                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
+                    sheet1.AddMergedRegion(cellRangeAddress);
+                    cell = row.CreateCell(columnIndex, CellType.Numeric);
+                    cell.SetCellValue(Math.Round(vaoTrePhut, 2));
+                    cell.CellStyle = styleDedaultMerge;
+                    columnIndex++;
+
+                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
+                    sheet1.AddMergedRegion(cellRangeAddress);
+                    cell = row.CreateCell(columnIndex, CellType.Numeric);
+                    cell.SetCellValue(raSomLan);
+                    cell.CellStyle = styleDedaultMerge;
+                    columnIndex++;
+
+                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
+                    sheet1.AddMergedRegion(cellRangeAddress);
+                    cell = row.CreateCell(columnIndex, CellType.Numeric);
+                    cell.SetCellValue(Math.Round(raSomPhut, 2));
+                    cell.CellStyle = styleDedaultMerge;
+                    columnIndex++;
+
+                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
+                    sheet1.AddMergedRegion(cellRangeAddress);
+                    cell = row.CreateCell(columnIndex, CellType.Numeric);
+                    cell.SetCellValue(TC1);
+                    cell.CellStyle = styleDedaultMerge;
+                    columnIndex++;
+
+                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
+                    sheet1.AddMergedRegion(cellRangeAddress);
+                    cell = row.CreateCell(columnIndex, CellType.Numeric);
+                    cell.SetCellValue(TC2);
+                    cell.CellStyle = styleDedaultMerge;
+                    columnIndex++;
+
+                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
+                    sheet1.AddMergedRegion(cellRangeAddress);
+                    cell = row.CreateCell(columnIndex, CellType.Numeric);
+                    cell.SetCellValue(TC3);
+                    cell.CellStyle = styleDedaultMerge;
+                    columnIndex++;
+
+                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
+                    sheet1.AddMergedRegion(cellRangeAddress);
+                    cell = row.CreateCell(columnIndex, CellType.Numeric);
+                    cell.SetCellValue(vangKP);
+                    cell.CellStyle = styleDedaultMerge;
+                    columnIndex++;
+
+                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
+                    sheet1.AddMergedRegion(cellRangeAddress);
+                    cell = row.CreateCell(columnIndex, CellType.Numeric);
+                    cell.SetCellValue(ngayNghiOM);
+                    cell.CellStyle = styleDedaultMerge;
+                    columnIndex++;
+
+                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
+                    sheet1.AddMergedRegion(cellRangeAddress);
+                    cell = row.CreateCell(columnIndex, CellType.Numeric);
+                    cell.SetCellValue(ngayNghiTS);
+                    cell.CellStyle = styleDedaultMerge;
+                    columnIndex++;
+
+                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
+                    sheet1.AddMergedRegion(cellRangeAddress);
+                    cell = row.CreateCell(columnIndex, CellType.Numeric);
+                    cell.SetCellValue(ngayNghiR);
+                    cell.CellStyle = styleDedaultMerge;
+                    columnIndex++;
+
+                    rowIndex = rowIndex + 4;
                     rowIndex++;
                     order++;
                 }
 
-                //sheet1.SetColumnWidth(1, 100);
-                for (int col = 0; col <= 10; col++)
+                #region fix border
+                var rowF = 6;
+                var rowT = 7;
+                for (var i = 0; i < 6; i++)
                 {
-                    sheet1.SetDefaultColumnStyle(col, defaultStyle);
+                    var rowCellRangeAddress = new CellRangeAddress(rowF, rowT, i, i);
+                    sheet1.AddMergedRegion(rowCellRangeAddress);
+                    RegionUtil.SetBorderTop((int)BorderStyle.Thin, rowCellRangeAddress, sheet1, workbook);
+                    RegionUtil.SetBorderLeft((int)BorderStyle.Thin, rowCellRangeAddress, sheet1, workbook);
+                    RegionUtil.SetBorderRight((int)BorderStyle.Thin, rowCellRangeAddress, sheet1, workbook);
+                    RegionUtil.SetBorderBottom((int)BorderStyle.Thin, rowCellRangeAddress, sheet1, workbook);
                 }
-                
+                #endregion
+
 
                 workbook.Write(fs);
             }
@@ -1687,7 +2095,7 @@ namespace erp.Controllers
             // UPDATE SUMMARY
             var builderS = Builders<EmployeeWorkTimeMonthLog>.Filter;
             var filterS = builderS.Eq(m => m.EmployeeId, timeWork.EmployeeId) & builderS.Eq(m => m.EnrollNumber, timeWork.EnrollNumber)
-                & builderS.Eq(m => m.Month, timeWork.Month) & builderS.Eq(m=>m.Year, timeWork.Year);
+                & builderS.Eq(m => m.Month, timeWork.Month) & builderS.Eq(m => m.Year, timeWork.Year);
 
             var updateS = Builders<EmployeeWorkTimeMonthLog>.Update
                 .Set(m => m.LastUpdated, now);
@@ -1706,6 +2114,647 @@ namespace erp.Controllers
             dbContext.EmployeeWorkTimeMonthLogs.UpdateOne(filterS, updateS);
 
             return Json(new { error = 0, id, trangthai, thoigian });
+        }
+        #endregion
+
+        #region IMPORT DATA: TANG CA, CHAM CONG,...
+        [Route(Constants.LinkTimeKeeper.OvertimeTemplateFull)]
+        public async Task<IActionResult> OvertimeTemplateFull(string fileName, int year, int month)
+        {
+            year = year == 0 ? DateTime.Now.Year : year;
+            month = month == 0 ? DateTime.Now.Month : month;
+
+            string exportFolder = Path.Combine(_env.WebRootPath, "exports");
+            string sFileName = @"du-lieu-cham-cong-thang-" + month + "-" + year + "-V" + DateTime.Now.ToString("ddMMyyyyHHmmss") + ".xlsx";
+            string URL = string.Format("{0}://{1}/{2}", Request.Scheme, Request.Host, sFileName);
+            FileInfo file = new FileInfo(Path.Combine(exportFolder, sFileName));
+            var memory = new MemoryStream();
+            using (var fs = new FileStream(Path.Combine(exportFolder, sFileName), FileMode.Create, FileAccess.Write))
+            {
+                IWorkbook workbook = new XSSFWorkbook();
+                #region Styling
+                var styleBorder = workbook.CreateCellStyle();
+                styleBorder.BorderBottom = BorderStyle.Thin;
+                styleBorder.BorderLeft = BorderStyle.Thin;
+                styleBorder.BorderRight = BorderStyle.Thin;
+                styleBorder.BorderTop = BorderStyle.Thin;
+
+                var styleCenter = workbook.CreateCellStyle();
+                styleCenter.Alignment = HorizontalAlignment.Center;
+                styleCenter.VerticalAlignment = VerticalAlignment.Center;
+
+                var cellStyleHeader = workbook.CreateCellStyle();
+                cellStyleHeader.FillForegroundColor = HSSFColor.Grey25Percent.Index;
+                cellStyleHeader.FillPattern = FillPattern.SolidForeground;
+
+                var font = workbook.CreateFont();
+                font.FontHeightInPoints = 11;
+                font.FontName = "Times New Roman";
+
+                var fontbold18TimesNewRoman = workbook.CreateFont();
+                fontbold18TimesNewRoman.FontHeightInPoints = 18;
+                fontbold18TimesNewRoman.FontName = "Times New Roman";
+                fontbold18TimesNewRoman.Boldweight = (short)FontBoldWeight.Bold;
+
+                var fontbold11TimesNewRoman = workbook.CreateFont();
+                fontbold11TimesNewRoman.FontHeightInPoints = 11;
+                fontbold11TimesNewRoman.FontName = "Times New Roman";
+                fontbold11TimesNewRoman.Boldweight = (short)FontBoldWeight.Bold;
+
+                var fontbold10TimesNewRoman = workbook.CreateFont();
+                fontbold10TimesNewRoman.FontHeightInPoints = 10;
+                fontbold10TimesNewRoman.FontName = "Times New Roman";
+                fontbold10TimesNewRoman.Boldweight = (short)FontBoldWeight.Bold;
+
+                var fontbold9TimesNewRoman = workbook.CreateFont();
+                fontbold9TimesNewRoman.FontHeightInPoints = 9;
+                fontbold9TimesNewRoman.FontName = "Times New Roman";
+                fontbold9TimesNewRoman.Boldweight = (short)FontBoldWeight.Bold;
+
+                var styleRow0 = workbook.CreateCellStyle();
+                styleRow0.SetFont(fontbold18TimesNewRoman);
+                styleRow0.Alignment = HorizontalAlignment.Center;
+                styleRow0.VerticalAlignment = VerticalAlignment.Center;
+                styleRow0.BorderBottom = BorderStyle.Thin;
+                styleRow0.BorderTop = BorderStyle.Thin;
+                styleRow0.BorderLeft = BorderStyle.Thin;
+                styleRow0.BorderRight = BorderStyle.Thin;
+
+                var styleBorderBold11Background = workbook.CreateCellStyle();
+                styleBorderBold11Background.SetFont(fontbold11TimesNewRoman);
+                styleBorderBold11Background.Alignment = HorizontalAlignment.Center;
+                styleBorderBold11Background.VerticalAlignment = VerticalAlignment.Center;
+                styleBorderBold11Background.BorderBottom = BorderStyle.Thin;
+                styleBorderBold11Background.BorderTop = BorderStyle.Thin;
+                styleBorderBold11Background.BorderLeft = BorderStyle.Thin;
+                styleBorderBold11Background.BorderRight = BorderStyle.Thin;
+                styleBorderBold11Background.FillForegroundColor = HSSFColor.Grey50Percent.Index;
+                styleBorderBold11Background.FillPattern = FillPattern.SolidForeground;
+
+                var styleBorderBold10Background = workbook.CreateCellStyle();
+                styleBorderBold10Background.SetFont(fontbold10TimesNewRoman);
+                styleBorderBold10Background.BorderBottom = BorderStyle.Thin;
+                styleBorderBold10Background.BorderLeft = BorderStyle.Thin;
+                styleBorderBold10Background.BorderRight = BorderStyle.Thin;
+                styleBorderBold10Background.BorderTop = BorderStyle.Thin;
+                styleBorderBold10Background.Alignment = HorizontalAlignment.Center;
+                styleBorderBold10Background.VerticalAlignment = VerticalAlignment.Center;
+                styleBorderBold10Background.FillForegroundColor = HSSFColor.Grey50Percent.Index;
+                styleBorderBold10Background.FillPattern = FillPattern.SolidForeground;
+
+                var styleBorderBold9Background = workbook.CreateCellStyle();
+                styleBorderBold9Background.SetFont(fontbold9TimesNewRoman);
+                styleBorderBold9Background.BorderBottom = BorderStyle.Thin;
+                styleBorderBold9Background.BorderLeft = BorderStyle.Thin;
+                styleBorderBold9Background.BorderRight = BorderStyle.Thin;
+                styleBorderBold9Background.BorderTop = BorderStyle.Thin;
+                styleBorderBold9Background.FillForegroundColor = HSSFColor.Grey50Percent.Index;
+                styleBorderBold9Background.FillPattern = FillPattern.SolidForeground;
+
+                #endregion
+
+                ISheet sheet1 = workbook.CreateSheet("NMT" + DateTime.Now.Month.ToString("00"));
+
+                //sheet1.AddMergedRegion(new CellRangeAddress(2, 2, 8, 13));
+
+                var toDate = new DateTime(year, month, 25);
+                var fromDate = toDate.AddMonths(-1).AddDays(1);
+                var fromToNum = Convert.ToInt32((toDate - fromDate).TotalDays);
+
+                var rowIndex = 0;
+                IRow row = sheet1.CreateRow(rowIndex);
+                var columnIndex = 2;
+                CellRangeAddress cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex, columnIndex, columnIndex + fromToNum);
+                sheet1.AddMergedRegion(cellRangeAddress);
+                var cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("BẢNG CHẤM CÔNG TRONG GIỜ THÁNG " + month + "/" + year);
+                cell.CellStyle = styleRow0;
+                RegionUtil.SetBorderTop((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                RegionUtil.SetBorderLeft((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                RegionUtil.SetBorderRight((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                RegionUtil.SetBorderBottom((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                columnIndex++;
+
+                columnIndex = columnIndex + fromToNum + 4;
+                cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex, columnIndex, columnIndex + fromToNum);
+                sheet1.AddMergedRegion(cellRangeAddress);
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("BẢNG CHẤM CÔNG NGOÀI GIỜ THÁNG " + month + "/" + year);
+                cell.CellStyle = styleRow0;
+                RegionUtil.SetBorderTop((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                RegionUtil.SetBorderLeft((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                RegionUtil.SetBorderRight((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                RegionUtil.SetBorderBottom((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                rowIndex++;
+
+                row = sheet1.CreateRow(rowIndex);
+                columnIndex = 2;
+                for (DateTime date = fromDate; date <= toDate; date = date.AddDays(1.0))
+                {
+                    cell = row.CreateCell(columnIndex, CellType.Numeric);
+                    cell.SetCellValue(date.Day);
+                    cell.CellStyle.SetFont(font);
+                    columnIndex++;
+                }
+                columnIndex = columnIndex + 4;
+                for (DateTime date = fromDate; date <= toDate; date = date.AddDays(1.0))
+                {
+                    cell = row.CreateCell(columnIndex, CellType.Numeric);
+                    cell.SetCellValue(date.Day);
+                    cell.CellStyle.SetFont(font);
+                    columnIndex++;
+                }
+                rowIndex++;
+
+                row = sheet1.CreateRow(rowIndex);
+                columnIndex = 0;
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue(string.Empty);
+                cell.CellStyle = styleBorderBold11Background;
+                columnIndex++;
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue(string.Empty);
+                cell.CellStyle = styleBorderBold11Background;
+                columnIndex++;
+
+                cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex, columnIndex, columnIndex + fromToNum);
+                sheet1.AddMergedRegion(cellRangeAddress);
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("NGÀY LÀM VIỆC TRONG THÁNG");
+                cell.CellStyle = styleBorderBold11Background;
+                RegionUtil.SetBorderTop((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                RegionUtil.SetBorderLeft((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                RegionUtil.SetBorderRight((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                RegionUtil.SetBorderBottom((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                columnIndex = columnIndex + fromToNum;
+                columnIndex++;
+
+                cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex, columnIndex, columnIndex + 1);
+                sheet1.AddMergedRegion(cellRangeAddress);
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Ngày công");
+                cell.CellStyle = styleBorderBold11Background;
+                RegionUtil.SetBorderTop((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                RegionUtil.SetBorderLeft((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                RegionUtil.SetBorderRight((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                RegionUtil.SetBorderBottom((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                columnIndex = columnIndex + 1;
+                columnIndex++;
+
+                cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex, columnIndex, columnIndex + 1);
+                sheet1.AddMergedRegion(cellRangeAddress);
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Nghỉ hưởng lương");
+                cell.CellStyle = styleBorderBold11Background;
+                RegionUtil.SetBorderTop((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                RegionUtil.SetBorderLeft((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                RegionUtil.SetBorderRight((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                RegionUtil.SetBorderBottom((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                columnIndex = columnIndex + 1;
+                columnIndex++;
+
+                cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex, columnIndex, columnIndex + fromToNum);
+                sheet1.AddMergedRegion(cellRangeAddress);
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Giờ tăng ca trong tháng");
+                cell.CellStyle = styleBorderBold11Background;
+                RegionUtil.SetBorderTop((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                RegionUtil.SetBorderLeft((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                RegionUtil.SetBorderRight((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                RegionUtil.SetBorderBottom((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                rowIndex++;
+
+
+
+                row = sheet1.CreateRow(rowIndex);
+                columnIndex = 0;
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Mã NV");
+                cell.CellStyle = styleBorderBold10Background;
+                columnIndex++;
+
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Họ và Tên");
+                cell.CellStyle = styleBorderBold10Background;
+                columnIndex++;
+
+                for (DateTime date = fromDate; date <= toDate; date = date.AddDays(1.0))
+                {
+                    cell = row.CreateCell(columnIndex, CellType.String);
+                    cell.SetCellValue(Constants.DayOfWeekT2(date));
+                    cell.CellStyle = styleBorderBold10Background;
+                    columnIndex++;
+                }
+
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Ngày LV");
+                cell.CellStyle = styleBorderBold10Background;
+                columnIndex++;
+
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Lễ tết");
+                cell.CellStyle = styleBorderBold10Background;
+                columnIndex++;
+
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Phép");
+                cell.CellStyle = styleBorderBold10Background;
+                columnIndex++;
+
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Lễ tết");
+                cell.CellStyle = styleBorderBold10Background;
+                columnIndex++;
+
+                for (DateTime date = fromDate; date <= toDate; date = date.AddDays(1.0))
+                {
+                    cell = row.CreateCell(columnIndex, CellType.String);
+                    cell.SetCellValue(Constants.DayOfWeekT2(date));
+                    cell.CellStyle = styleBorderBold10Background;
+                    columnIndex++;
+                }
+
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Ngày thường");
+                cell.CellStyle = styleBorderBold10Background;
+                columnIndex++;
+
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("CN");
+                cell.CellStyle = styleBorderBold10Background;
+                columnIndex++;
+
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Lễ tết");
+                cell.CellStyle = styleBorderBold10Background;
+                columnIndex++;
+
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("CƠM");
+                cell.CellStyle = styleBorderBold10Background;
+                rowIndex++;
+
+                row = sheet1.CreateRow(rowIndex);
+                columnIndex = 0;
+                cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex, columnIndex, (columnIndex + 11 + fromToNum * 2));
+                sheet1.AddMergedRegion(cellRangeAddress);
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("KẾ HOẠCH SẢN XUẤT");
+                cell.CellStyle = styleBorderBold9Background;
+                RegionUtil.SetBorderTop((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                RegionUtil.SetBorderLeft((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                RegionUtil.SetBorderRight((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                RegionUtil.SetBorderBottom((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+
+                workbook.Write(fs);
+            }
+            using (var stream = new FileStream(Path.Combine(exportFolder, sFileName), FileMode.Open))
+            {
+                await stream.CopyToAsync(memory);
+            }
+            memory.Position = 0;
+            return File(memory, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", sFileName);
+        }
+
+        [Route(Constants.LinkTimeKeeper.OvertimeTemplate)]
+        public async Task<IActionResult> OvertimeTemplate(string fileName, int year, int month)
+        {
+            year = year == 0 ? DateTime.Now.Year : year;
+            month = month == 0 ? DateTime.Now.Month : month;
+
+            string exportFolder = Path.Combine(_env.WebRootPath, "exports");
+            string sFileName = @"du-lieu-cham-cong-thang-" + month + "-" + year + "-V" + DateTime.Now.ToString("ddMMyyyyHHmmss") + ".xlsx";
+            string URL = string.Format("{0}://{1}/{2}", Request.Scheme, Request.Host, sFileName);
+            FileInfo file = new FileInfo(Path.Combine(exportFolder, sFileName));
+            var memory = new MemoryStream();
+            using (var fs = new FileStream(Path.Combine(exportFolder, sFileName), FileMode.Create, FileAccess.Write))
+            {
+                IWorkbook workbook = new XSSFWorkbook();
+                #region Styling
+                var styleBorder = workbook.CreateCellStyle();
+                styleBorder.BorderBottom = BorderStyle.Thin;
+                styleBorder.BorderLeft = BorderStyle.Thin;
+                styleBorder.BorderRight = BorderStyle.Thin;
+                styleBorder.BorderTop = BorderStyle.Thin;
+
+                var styleCenter = workbook.CreateCellStyle();
+                styleCenter.Alignment = HorizontalAlignment.Center;
+                styleCenter.VerticalAlignment = VerticalAlignment.Center;
+
+                var cellStyleHeader = workbook.CreateCellStyle();
+                cellStyleHeader.FillForegroundColor = HSSFColor.Grey25Percent.Index;
+                cellStyleHeader.FillPattern = FillPattern.SolidForeground;
+
+                var font = workbook.CreateFont();
+                font.FontHeightInPoints = 11;
+                font.FontName = "Times New Roman";
+
+                var fontbold18TimesNewRoman = workbook.CreateFont();
+                fontbold18TimesNewRoman.FontHeightInPoints = 18;
+                fontbold18TimesNewRoman.FontName = "Times New Roman";
+                fontbold18TimesNewRoman.Boldweight = (short)FontBoldWeight.Bold;
+
+                var fontbold11TimesNewRoman = workbook.CreateFont();
+                fontbold11TimesNewRoman.FontHeightInPoints = 11;
+                fontbold11TimesNewRoman.FontName = "Times New Roman";
+                fontbold11TimesNewRoman.Boldweight = (short)FontBoldWeight.Bold;
+
+                var fontbold10TimesNewRoman = workbook.CreateFont();
+                fontbold10TimesNewRoman.FontHeightInPoints = 10;
+                fontbold10TimesNewRoman.FontName = "Times New Roman";
+                fontbold10TimesNewRoman.Boldweight = (short)FontBoldWeight.Bold;
+
+                var fontbold9TimesNewRoman = workbook.CreateFont();
+                fontbold9TimesNewRoman.FontHeightInPoints = 9;
+                fontbold9TimesNewRoman.FontName = "Times New Roman";
+                fontbold9TimesNewRoman.Boldweight = (short)FontBoldWeight.Bold;
+
+                var styleRow0 = workbook.CreateCellStyle();
+                styleRow0.SetFont(fontbold18TimesNewRoman);
+                styleRow0.Alignment = HorizontalAlignment.Center;
+                styleRow0.VerticalAlignment = VerticalAlignment.Center;
+                styleRow0.BorderBottom = BorderStyle.Thin;
+                styleRow0.BorderTop = BorderStyle.Thin;
+                styleRow0.BorderLeft = BorderStyle.Thin;
+                styleRow0.BorderRight = BorderStyle.Thin;
+
+                var styleBorderBold11Background = workbook.CreateCellStyle();
+                styleBorderBold11Background.SetFont(fontbold11TimesNewRoman);
+                styleBorderBold11Background.Alignment = HorizontalAlignment.Center;
+                styleBorderBold11Background.VerticalAlignment = VerticalAlignment.Center;
+                styleBorderBold11Background.BorderBottom = BorderStyle.Thin;
+                styleBorderBold11Background.BorderTop = BorderStyle.Thin;
+                styleBorderBold11Background.BorderLeft = BorderStyle.Thin;
+                styleBorderBold11Background.BorderRight = BorderStyle.Thin;
+                styleBorderBold11Background.FillForegroundColor = HSSFColor.Grey50Percent.Index;
+                styleBorderBold11Background.FillPattern = FillPattern.SolidForeground;
+
+                var styleBorderBold10Background = workbook.CreateCellStyle();
+                styleBorderBold10Background.SetFont(fontbold10TimesNewRoman);
+                styleBorderBold10Background.BorderBottom = BorderStyle.Thin;
+                styleBorderBold10Background.BorderLeft = BorderStyle.Thin;
+                styleBorderBold10Background.BorderRight = BorderStyle.Thin;
+                styleBorderBold10Background.BorderTop = BorderStyle.Thin;
+                styleBorderBold10Background.Alignment = HorizontalAlignment.Center;
+                styleBorderBold10Background.VerticalAlignment = VerticalAlignment.Center;
+                styleBorderBold10Background.FillForegroundColor = HSSFColor.Grey50Percent.Index;
+                styleBorderBold10Background.FillPattern = FillPattern.SolidForeground;
+
+                var styleBorderBold9Background = workbook.CreateCellStyle();
+                styleBorderBold9Background.SetFont(fontbold9TimesNewRoman);
+                styleBorderBold9Background.BorderBottom = BorderStyle.Thin;
+                styleBorderBold9Background.BorderLeft = BorderStyle.Thin;
+                styleBorderBold9Background.BorderRight = BorderStyle.Thin;
+                styleBorderBold9Background.BorderTop = BorderStyle.Thin;
+                styleBorderBold9Background.FillForegroundColor = HSSFColor.Grey50Percent.Index;
+                styleBorderBold9Background.FillPattern = FillPattern.SolidForeground;
+
+                #endregion
+
+                ISheet sheet1 = workbook.CreateSheet("NMT" + DateTime.Now.Month.ToString("00"));
+
+                //sheet1.AddMergedRegion(new CellRangeAddress(2, 2, 8, 13));
+
+                var toDate = new DateTime(year, month, 25);
+                var fromDate = toDate.AddMonths(-1).AddDays(1);
+                var fromToNum = Convert.ToInt32((toDate - fromDate).TotalDays);
+
+                var rowIndex = 0;
+                IRow row = sheet1.CreateRow(rowIndex);
+                var columnIndex = 2;
+                CellRangeAddress cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex, columnIndex, columnIndex + fromToNum);
+                sheet1.AddMergedRegion(cellRangeAddress);
+                var cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("BẢNG CHẤM CÔNG NGOÀI GIỜ THÁNG " + month + "/" + year);
+                cell.CellStyle = styleRow0;
+                RegionUtil.SetBorderTop((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                RegionUtil.SetBorderLeft((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                RegionUtil.SetBorderRight((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                RegionUtil.SetBorderBottom((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                rowIndex++;
+
+                row = sheet1.CreateRow(rowIndex);
+                columnIndex = 2;
+                for (DateTime date = fromDate; date <= toDate; date = date.AddDays(1.0))
+                {
+                    cell = row.CreateCell(columnIndex, CellType.Numeric);
+                    cell.SetCellValue(date.Day);
+                    cell.CellStyle.SetFont(font);
+                    columnIndex++;
+                }
+                rowIndex++;
+
+                row = sheet1.CreateRow(rowIndex);
+                columnIndex = 0;
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue(string.Empty);
+                cell.CellStyle = styleBorderBold11Background;
+                columnIndex++;
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue(string.Empty);
+                cell.CellStyle = styleBorderBold11Background;
+                columnIndex++;
+
+                cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex, columnIndex, columnIndex + fromToNum);
+                sheet1.AddMergedRegion(cellRangeAddress);
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Giờ tăng ca trong tháng");
+                cell.CellStyle = styleBorderBold11Background;
+                RegionUtil.SetBorderTop((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                RegionUtil.SetBorderLeft((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                RegionUtil.SetBorderRight((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                RegionUtil.SetBorderBottom((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                rowIndex++;
+
+                row = sheet1.CreateRow(rowIndex);
+                columnIndex = 0;
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Mã NV");
+                cell.CellStyle = styleBorderBold10Background;
+                columnIndex++;
+
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Họ và Tên");
+                cell.CellStyle = styleBorderBold10Background;
+                columnIndex++;
+
+                for (DateTime date = fromDate; date <= toDate; date = date.AddDays(1.0))
+                {
+                    cell = row.CreateCell(columnIndex, CellType.String);
+                    cell.SetCellValue(Constants.DayOfWeekT2(date));
+                    cell.CellStyle = styleBorderBold10Background;
+                    columnIndex++;
+                }
+
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Ngày thường");
+                cell.CellStyle = styleBorderBold10Background;
+                columnIndex++;
+
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("CN");
+                cell.CellStyle = styleBorderBold10Background;
+                columnIndex++;
+
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Lễ tết");
+                cell.CellStyle = styleBorderBold10Background;
+                columnIndex++;
+
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("CƠM");
+                cell.CellStyle = styleBorderBold10Background;
+                rowIndex++;
+
+                row = sheet1.CreateRow(rowIndex);
+                columnIndex = 0;
+                cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex, columnIndex, (columnIndex + 6 + fromToNum));
+                sheet1.AddMergedRegion(cellRangeAddress);
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("KẾ HOẠCH SẢN XUẤT");
+                cell.CellStyle = styleBorderBold9Background;
+                RegionUtil.SetBorderTop((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                RegionUtil.SetBorderLeft((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                RegionUtil.SetBorderRight((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                RegionUtil.SetBorderBottom((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+
+                workbook.Write(fs);
+            }
+            using (var stream = new FileStream(Path.Combine(exportFolder, sFileName), FileMode.Open))
+            {
+                await stream.CopyToAsync(memory);
+            }
+            memory.Position = 0;
+            return File(memory, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", sFileName);
+        }
+
+        [Route(Constants.LinkTimeKeeper.OvertimeTemplate + "/" + Constants.ActionLink.Post)]
+        [HttpPost]
+        public ActionResult OvertimeTemplatePost()
+        {
+            IFormFile file = Request.Form.Files[0];
+            string folderName = Constants.Storage.Hr;
+            string webRootPath = _env.WebRootPath;
+            string newPath = Path.Combine(webRootPath, folderName);
+            if (!Directory.Exists(newPath))
+            {
+                Directory.CreateDirectory(newPath);
+            }
+            if (file.Length > 0)
+            {
+                string sFileExtension = Path.GetExtension(file.FileName).ToLower();
+                ISheet sheet;
+                string fullPath = Path.Combine(newPath, file.FileName);
+                using (var stream = new FileStream(fullPath, FileMode.Create))
+                {
+                    file.CopyTo(stream);
+                    stream.Position = 0;
+                    if (sFileExtension == ".xls")
+                    {
+                        HSSFWorkbook hssfwb = new HSSFWorkbook(stream); //This will read the Excel 97-2000 formats  
+                        sheet = hssfwb.GetSheetAt(0);
+                    }
+                    else
+                    {
+                        XSSFWorkbook hssfwb = new XSSFWorkbook(stream); //This will read 2007 Excel format  
+                        sheet = hssfwb.GetSheetAt(0); //get first sheet from workbook   
+                    }
+
+                    var month = 1;
+                    var year = 2019;
+                    var toDate = new DateTime(year, month, 25);
+                    var fromDate = toDate.AddMonths(-1).AddDays(1);
+                    var fromToNum = Convert.ToInt32((toDate - fromDate).TotalDays);
+                    for (int i = 5; i <= sheet.LastRowNum; i++)
+                    {
+                        IRow row = sheet.GetRow(i);
+                        if (row == null) continue;
+                        if (row.Cells.All(d => d.CellType == CellType.Blank)) continue;
+                        if (row.Cells.All(d => d.CellType == CellType.Error)) continue;
+                        if (row.Cells.All(d => d.CellType == CellType.Unknown)) continue;
+
+                        int columnIndex = 0;
+                        var manhanvien = Utility.GetFormattedCellValue(row.GetCell(columnIndex));
+                        columnIndex++;
+                        var tennhanvien = Utility.GetFormattedCellValue(row.GetCell(columnIndex));
+                        columnIndex++;
+                        var alias = Utility.AliasConvert(tennhanvien);
+
+                        var employee = new Employee();
+                        if (!string.IsNullOrEmpty(alias))
+                        {
+                            employee = dbContext.Employees.Find(m => m.Enable.Equals(true) & m.AliasFullName.Equals(alias)).FirstOrDefault();
+                        }
+                        if (employee == null)
+                        {
+                            if (!string.IsNullOrEmpty(manhanvien))
+                            {
+                                employee = dbContext.Employees.Find(m => m.Enable.Equals(true) & m.CodeOld.Equals(manhanvien)).FirstOrDefault();
+                            }
+                        }
+                        if (employee != null)
+                        {
+                            var timeouts = new List<EmployeeWorkTimeLog>();
+                            for (DateTime date = fromDate; date <= toDate; date = date.AddDays(1.0))
+                            {
+                                var builderTime = Builders<EmployeeWorkTimeLog>.Filter;
+                                var filterTime = builderTime.Eq(m => m.EmployeeId, employee.Id)
+                                                & builderTime.Eq(m => m.Date, date);
+                                var updateTime = Builders<EmployeeWorkTimeLog>.Update
+                                    .Set(m => m.TangCaDaXacNhan, TimeSpan.FromHours(Utility.GetNumbericCellValue(row.GetCell(columnIndex))))
+                                    .Set(m => m.StatusTangCa, (int)ETangCa.DongY)
+                                    .Set(m => m.UpdatedOn, DateTime.Now);
+                                dbContext.EmployeeWorkTimeLogs.UpdateOne(filterTime, updateTime);
+                                columnIndex++;
+                            }
+                            // Ngay thuong
+                            columnIndex++; // CN
+                            columnIndex++; //Le Tet
+                            columnIndex++;
+                            var comsx = Utility.GetNumbericCellValue(row.GetCell(columnIndex));
+                            // check exist to update
+                            var existEntity = dbContext.EmployeeCongs.Find(m => m.Enable.Equals(true) && m.EmployeeId.Equals(employee.Id) && m.Month.Equals(month) && m.Year.Equals(year)).FirstOrDefault();
+                            if (existEntity != null)
+                            {
+                                var builder = Builders<EmployeeCong>.Filter;
+                                var filter = builder.Eq(m => m.Id, existEntity.Id);
+                                var update = Builders<EmployeeCong>.Update
+                                    .Set(m => m.EmployeeCode, employee.Code)
+                                    .Set(m => m.EmployeeName, employee.FullName)
+                                    .Set(m => m.EmployeeChucVu, employee.Title)
+                                    .Set(m => m.ComSX, comsx)
+                                    .Set(m => m.UpdatedOn, DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss"));
+                                dbContext.EmployeeCongs.UpdateOne(filter, update);
+                            }
+                            else
+                            {
+                                var newItem = new EmployeeCong
+                                {
+                                    Year = year,
+                                    Month = month,
+                                    EmployeeId = employee.Id,
+                                    EmployeeCode = employee.Code,
+                                    EmployeeName = employee.FullName,
+                                    EmployeeChucVu = employee.Title,
+                                    ComSX = comsx
+                                };
+                                dbContext.EmployeeCongs.InsertOne(newItem);
+                            }
+                        }
+                        else
+                        {
+                            dbContext.Misss.InsertOne(new Miss
+                            {
+                                Type = "san-xuat-import",
+                                Object = "time: " + month + "-" + year + ", code: " + manhanvien + "-" + tennhanvien + " ,dòng " + i,
+                                Error = "No import data",
+                                DateTime = DateTime.Now.ToString()
+                            });
+                        }
+                    }
+                }
+            }
+            return Json(new { result = true });
         }
         #endregion
     }

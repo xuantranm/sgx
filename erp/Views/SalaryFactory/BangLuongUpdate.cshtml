@@ -47,7 +47,7 @@
                                 <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Factory/@Constants.LinkSalary.CongTong/@Constants.ActionLink.Update">CÔNG TỔNG & HỔ TRỢ CƠM</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" target="_blank" href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Timer?khoi=@ESalaryType.NM">CHẤM CÔNG</a>
+                                <a class="nav-link" target="_blank" href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Timer?khoi=@EKhoiLamViec.NM">CHẤM CÔNG</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Factory/@Constants.LinkSalary.Credits/@Constants.ActionLink.Update">ỨNG LƯƠNG</a>
@@ -98,7 +98,7 @@
                                 </div>
                                 <div class="d-flex align-items-center">
                                     <span class="mr-2 text-muted text-small text-nowrap">Tháng:</span>
-                                    <select asp-for="thang" class="custom-select ddl-times">
+                                    <select asp-for="Thang" class="custom-select ddl-times">
                                         @{
                                             foreach (var item in Model.MonthYears)
                                             {
@@ -134,7 +134,7 @@
                             </div>
                             <div class="col-md-4 col-sm-6 col-xs-12">
                                 <span class="mr-2 text-muted text-small text-nowrap">Phòng ban:</span>
-                                <select asp-for="phongban" class="custom-select">
+                                <select asp-for="Phongban" class="custom-select">
                                     <option value="">Tất cả</option>
                                     @foreach (var item in Model.Departments)
                                     {

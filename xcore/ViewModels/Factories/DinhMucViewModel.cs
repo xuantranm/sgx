@@ -14,29 +14,25 @@ namespace ViewModels
         #endregion
 
         #region Search
-        public string ca { get; set; }
+        public string Ca { get; set; }
 
-        public string cv { get; set; }
+        public string Cv { get; set; }
 
-        public string cd { get; set; }
+        public string Cd { get; set; }
 
-        public string xm { get; set; }
+        public string Xm { get; set; }
 
-        public string nvl { get; set; }
+        public string Nvl { get; set; }
 
-        public string lot { get; set; }
+        public string Lot { get; set; }
 
-        public DateTime? from { get; set; }
+        public int Page { get; set; }
 
-        public DateTime? to { get; set; }
+        public int Size { get; set; }
 
-        public int page { get; set; }
+        public string SortField { get; set; }
 
-        public int size { get; set; }
-
-        public string sortField { get; set; }
-
-        public string sort { get; set; }
+        public string Sort { get; set; }
         #endregion
 
         public int Records { get; set; }
