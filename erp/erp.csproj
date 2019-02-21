@@ -790,6 +790,12 @@
     <Content Update="Views\Role\Index.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
+    <Content Update="Views\SalaryFactory\Setting.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\SalaryProduction\Setting.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
     <Content Update="Views\SalaryProduction\BocHangNgoaiGio.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>

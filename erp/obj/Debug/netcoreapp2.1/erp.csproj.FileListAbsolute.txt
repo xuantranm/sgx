@@ -203,3 +203,5 @@ C:\Projects\Tribat\sourcecode\erp\bin\Debug\netcoreapp2.1\xcore.dll
 C:\Projects\Tribat\sourcecode\erp\bin\Debug\netcoreapp2.1\xcore.pdb
 C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\erp.Views.pdb
 C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\erp.csproj.CopyComplete
+C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\SalaryFactory\Setting.g.cshtml.cs
+C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\SalaryProduction\Setting.g.cshtml.cs

@@ -1,13 +1,16 @@
-﻿@using Common.Utilities;
+﻿@using System;
+@using System.Globalization;
+@using Common.Utilities;
 @using Common.Enums;
 @using ViewModels;
+
 @model BangLuongViewModel
 @{
     Layout = "~/Views/Shared/_LayoutSocialFbFS.cshtml";
+    CultureInfo culture = CultureInfo.CreateSpecificCulture("en-US");
     var login = User.Identity.Name;
     var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
     var thang = Model.Thang;
-
 }
 <link href="~/assets/wingman/css/big-screen.css" rel="stylesheet" />
 <style>
@@ -108,18 +111,10 @@
                             </a>
                         </div>
                     </div>
-                    <div class="row d-none">
-                        <div class="col-12">
-                            <b>MỨC LƯƠNG TỐI THIỂU VÙNG:</b> <b>@String.Format("{0:#,###,###}", Model.SalaryMucLuongVung.ToiThieuVungQuiDinh)</b> đồng/tháng
-                        </div>
-                        <div class="col-12">
-                            Mức lương tối thiểu mà doanh nghiệp đang áp dụng: <b>@String.Format("{0:#,###,###}", Model.SalaryMucLuongVung.ToiThieuVungDoanhNghiepApDung)</b> đồng/tháng
-                        </div>
-                    </div>
 
                     <div class="row mb-3">
                         <a class="nav-link custom-more collapsed" data-toggle="collapse" href="#uploadarea" aria-expanded="false" aria-controls="more">
-                            <i class="icon icon-magnifying-glass"></i> Cập nhật dữ liệu: Ngày làm việc, phép năm, lễ tết, tạm ứng, thưởng, đóng bhxh, tăng ca - phụ cấp. 
+                            <i class="icon icon-magnifying-glass"></i> Cập nhật dữ liệu: Ngày làm việc, phép năm, lễ tết, tạm ứng, thưởng, đóng bhxh, tăng ca - phụ cấp.
                         </a>
                     </div>
                     <div id="uploadarea" class="col-12 collapse">

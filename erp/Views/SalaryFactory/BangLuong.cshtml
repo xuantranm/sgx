@@ -1,11 +1,16 @@
-﻿@using Common.Utilities;
+﻿@using System;
+@using System.Globalization;
+@using Common.Utilities;
 @using Common.Enums;
 @using ViewModels;
+
 @model BangLuongViewModel
 @{
     Layout = "~/Views/Shared/_LayoutSocialFbFS.cshtml";
+    CultureInfo culture = CultureInfo.CreateSpecificCulture("en-US");
     var login = User.Identity.Name;
     var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+    var thang = Model.Thang;
 }
 <link href="~/assets/wingman/css/big-screen.css" rel="stylesheet" />
 <style>
@@ -44,19 +49,19 @@
                                 <a class="nav-link active" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Factory/@Constants.LinkSalary.BangLuong">BẢNG LƯƠNG</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Factory/@Constants.LinkSalary.CongTong">CÔNG TỔNG & HỔ TRỢ CƠM</a>
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Factory/@Constants.LinkSalary.TheLuong">THẺ LƯƠNG</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" target="_blank" href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Timer?khoi=@EKhoiLamViec.NM">CHẤM CÔNG</a>
+                                <a class="nav-link" target="_blank" href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Timer?thang=@Model.Thang&khoi=@EKhoiLamViec.NM">CHẤM CÔNG</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Factory/@Constants.LinkSalary.Credits">ỨNG LƯƠNG</a>
+                                <a class="nav-link" target="_blank" href="/@Constants.LinkCredit.Main/@Constants.LinkCredit.Credits?thang=@Model.Thang&khoi=@EKhoiLamViec.NM">ỨNG LƯƠNG</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" target="_blank" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.ThangLuongTrue/@Constants.LinkSalary.ThangLuong">THANG LƯƠNG</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Factory/@Constants.LinkSalary.Setting">THAM SỐ</a>
+                                <a class="nav-link" target="_blank" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Factory/@Constants.LinkSalary.Setting">THAM SỐ</a>
                             </li>
                         </ul>
                     </div>
@@ -70,7 +75,7 @@
         <div class="tab-content">
             <div class="tab-pane fade show active" id="real" role="tabpanel" aria-labelledby="real-tab">
                 <div class="container">
-                    <div class="row mb-3">
+                    <div class="row mb-3 d-none">
                         <div class="col-lg-3 col-md-6">
                             <a class="btn btn-lg btn-block btn-success btn-edit-real" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Factory/@Constants.LinkSalary.BangLuong/@Constants.LinkSalary.Update" data-toggle="tooltip" title="Bấm thay đổi thang bảng lương.">
                                 <i class="icon icon-edit"></i>Chỉnh sửa
@@ -82,14 +87,9 @@
                             </a>
                         </div>
                     </div>
-                    <div class="row mb-3">
-                        <div class="col-12 d-none">
-                            <b>MỨC LƯƠNG TỐI THIỂU VÙNG:</b> <b>@String.Format("{0:#,###,###}", Model.SalaryMucLuongVung.ToiThieuVungQuiDinh)</b> đồng/tháng
-                        </div>
-                        <div class="col-12">
-                            Mức lương tối thiểu mà doanh nghiệp đang áp dụng: <b>@String.Format("{0:#,###,###}", Model.SalaryMucLuongVung.ToiThieuVungDoanhNghiepApDung)</b> đồng/tháng
-                        </div>
-                    </div>
+
+
+
                     <form method="get" action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Factory/@Constants.LinkSalary.BangLuong" id="form-main">
                         <div class="card card-sm">
                             <div class="card-header bg-secondary d-flex justify-content-between align-items-center">
@@ -184,9 +184,7 @@
                                             <td>Tiền cơm (KD)</td>
                                             <td>Tiền cơm (SX)</td>
                                             <td>Hỗ trợ thêm</td>
-                                            <td>
-                                                Thực lãnh (Tròn Số)
-                                            </td>
+                                            <td>Thực lãnh (Tròn Số)</td>
                                         </tr>
                                     </thead>
                                     <tbody class="font-14">
@@ -226,13 +224,13 @@
                                                         @item.Bac
                                                     </td>
                                                     <td>
-                                                        @String.Format("{0:#,###,###}", Math.Round((double)item.LuongCanBan, 0))
+                                                        @item.LuongCanBan.ToString("N0", culture)
                                                     </td>
                                                     <td>
                                                         @item.NgayCongLamViec
                                                     </td>
                                                     <td>
-                                                        @String.Format("{0:#,###,###}", item.LuongDinhMuc)
+                                                        @item.LuongDinhMuc.ToString("N0", culture)
                                                     </td>
                                                     <td>
                                                         @item.NgayNghiPhepNam

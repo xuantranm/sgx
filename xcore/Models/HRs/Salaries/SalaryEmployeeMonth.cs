@@ -209,7 +209,7 @@ namespace Models
         [BsonRepresentation(BsonType.Decimal128)]
         public decimal ThiDua { get; set; } = 0;
 
-        // Ho tro them
+        // Phu cap khac
         [BsonRepresentation(BsonType.Decimal128)]
         public decimal HoTroNgoaiLuong { get; set; } = 0;
 

@@ -75,27 +75,7 @@ namespace erp.Controllers
             #endregion
 
             #region DDL
-            var monthYears = new List<MonthYear>();
-            var date = new DateTime(2018, 02, 01);
-            var endDate = DateTime.Now;
-            while (date.Year < endDate.Year || (date.Year == endDate.Year && date.Month <= endDate.Month))
-            {
-                monthYears.Add(new MonthYear
-                {
-                    Month = date.Month,
-                    Year = date.Year
-                });
-                date = date.AddMonths(1);
-            }
-            if (endDate.Day > 25)
-            {
-                monthYears.Add(new MonthYear
-                {
-                    Month = endDate.AddMonths(1).Month,
-                    Year = endDate.AddMonths(1).Year
-                });
-            }
-            var sortTimes = monthYears.OrderByDescending(x => x.Month).OrderByDescending(x => x.Year).ToList();
+            var sortTimes = Utility.DllMonths();
 
             var departments = await dbContext.Departments.Find(m => m.Enable.Equals(true)).SortBy(m=>m.Order).ToListAsync();
 
@@ -103,15 +83,10 @@ namespace erp.Controllers
             #endregion
 
             #region Times
-            var toDate = Utility.WorkingMonthToDate(thang);
+            var toDate = Utility.GetToDate(thang);
             var fromDate = toDate.AddMonths(-1).AddDays(1);
-            if (string.IsNullOrEmpty(thang))
-            {
-                toDate = DateTime.Now;
-                fromDate = toDate.Day > 25 ? new DateTime(toDate.Year, toDate.Month, 26) : new DateTime(toDate.AddMonths(-1).Year, toDate.AddMonths(-1).Month, 26);
-            }
-            var year = toDate.Day > 25 ? toDate.AddMonths(1).Year : toDate.Year;
-            var month = toDate.Day > 25 ? toDate.AddMonths(1).Month : toDate.Month;
+            var year = toDate.Year;
+            var month = toDate.Month;
             thang = string.IsNullOrEmpty(thang) ? month + "-" + year : thang;
 
             int yearSale = new DateTime(year, month, 01).AddMonths(-2).Year;
@@ -120,25 +95,10 @@ namespace erp.Controllers
             #endregion
 
             #region Setting
-            // Init
-            //dbContext.SalarySettings.InsertOne(new SalarySetting()
-            //{
-            //    Key = "mau-so-chuyen-can",
-            //    Value = "300000",
-            //    Title = "Muc thuong chuyen can"
-            //});
-
-            //dbContext.SalarySettings.InsertOne(new SalarySetting()
-            //{
-            //    Key = "mau-so-tien-com",
-            //    Value = "22000",
-            //    Title = "Đơn giá tiền cơm"
-            //});
-            // End init
             var thamsoEntity = dbContext.SalarySettings.Find(m => m.Enable.Equals(true)).ToList();
-            var mauSo = Convert.ToDecimal(thamsoEntity.Find(m => m.Key.Equals("mau-so-lam-viec")).Value);
-            var mauSoBaoVe = Convert.ToDecimal(thamsoEntity.Find(m => m.Key.Equals("mau-so-bao-ve")).Value);
-            var tyledongbh = Convert.ToDecimal(thamsoEntity.Find(m => m.Key.Equals("ty-le-dong-bh")).Value);
+            var mauSo = Convert.ToDouble(thamsoEntity.Find(m => m.Key.Equals("mau-so-lam-viec")).Value);
+            var mauSoBaoVe = Convert.ToDouble(thamsoEntity.Find(m => m.Key.Equals("mau-so-bao-ve")).Value);
+            var tyledongbh = Convert.ToDouble(thamsoEntity.Find(m => m.Key.Equals("ty-le-dong-bh")).Value);
             var mauSoChuyenCan = Convert.ToDecimal(thamsoEntity.Find(m => m.Key.Equals("mau-so-chuyen-can")).Value);
             var mauSoTienCom = Convert.ToDecimal(thamsoEntity.Find(m => m.Key.Equals("mau-so-tien-com")).Value);
             #endregion
@@ -185,24 +145,9 @@ namespace erp.Controllers
                 salaryEmployeeMonths.Add(salary);
             }
 
-            var mucluongvung = await dbContext.SalaryMucLuongVungs.Find(m => m.Enable.Equals(true) & m.Month.Equals(month) & m.Year.Equals(year)).FirstOrDefaultAsync();
-            if (mucluongvung == null)
-            {
-                var lastItemVung = await dbContext.SalaryMucLuongVungs.Find(m => m.Enable.Equals(true)).SortByDescending(m => m.Year).SortByDescending(m => m.Month).FirstOrDefaultAsync();
-                var lastMonthVung = lastItemVung.Month;
-                var lastYearVung = lastItemVung.Year;
-
-                lastItemVung.Id = null;
-                lastItemVung.Month = month;
-                lastItemVung.Year = year;
-                dbContext.SalaryMucLuongVungs.InsertOne(lastItemVung);
-                mucluongvung = await dbContext.SalaryMucLuongVungs.Find(m => m.Enable.Equals(true) & m.Month.Equals(month) & m.Year.Equals(year)).FirstOrDefaultAsync();
-            }
-
             var viewModel = new BangLuongViewModel
             {
                 SalaryEmployeeMonths = salaryEmployeeMonths,
-                SalaryMucLuongVung = mucluongvung,
                 MonthYears = sortTimes,
                 Thang = thang,
                 SaleTimes = saleTimes,
@@ -286,9 +231,9 @@ namespace erp.Controllers
 
             #region Setting
             var thamsoEntity = dbContext.SalarySettings.Find(m => m.Enable.Equals(true)).ToList();
-            var mauSo = Convert.ToDecimal(thamsoEntity.Find(m => m.Key.Equals("mau-so-lam-viec")).Value);
-            var mauSoBaoVe = Convert.ToDecimal(thamsoEntity.Find(m => m.Key.Equals("mau-so-bao-ve")).Value);
-            var tyledongbh = Convert.ToDecimal(thamsoEntity.Find(m => m.Key.Equals("ty-le-dong-bh")).Value);
+            var mauSo = Convert.ToDouble(thamsoEntity.Find(m => m.Key.Equals("mau-so-lam-viec")).Value);
+            var mauSoBaoVe = Convert.ToDouble(thamsoEntity.Find(m => m.Key.Equals("mau-so-bao-ve")).Value);
+            var tyledongbh = Convert.ToDouble(thamsoEntity.Find(m => m.Key.Equals("ty-le-dong-bh")).Value);
             var mauSoChuyenCan = Convert.ToDecimal(thamsoEntity.Find(m => m.Key.Equals("mau-so-chuyen-can")).Value);
             var mauSoTienCom = Convert.ToDecimal(thamsoEntity.Find(m => m.Key.Equals("mau-so-tien-com")).Value);
             #endregion
@@ -432,7 +377,7 @@ namespace erp.Controllers
             }
         }
 
-        public SalaryEmployeeMonth GetSalaryEmployeeMonth(int year, int month, string employeeId, DateTime thamnienlamviec, string ngachLuong, int bac, int mauSo, decimal mauSoChuyenCan, decimal mauSoTienCom, decimal bhxh, decimal tyledongbh, SalaryEmployeeMonth newSalary, bool save)
+        public SalaryEmployeeMonth GetSalaryEmployeeMonth(int year, int month, string employeeId, DateTime thamnienlamviec, string ngachLuong, int bac, double mauSo, decimal mauSoChuyenCan, decimal mauSoTienCom, decimal bhxh, double tyledongbh, SalaryEmployeeMonth newSalary, bool save)
         {
             var today = DateTime.Now.Date;
             int todayMonth = today.Day > 25 ? today.AddMonths(1).Month : today.Month;
@@ -469,120 +414,22 @@ namespace erp.Controllers
                 currentSalary.ThamNienMonth = (int)thangthamnien;
                 currentSalary.ThamNienYear = (int)namthamnien;
                 currentSalary.HeSoThamNien = hesothamnien;
-                //currentSalary.ThamNien = luongCB * Convert.ToDecimal(0.03 + (dateSpan.Years - 3) * 0.01);
                 currentSalary.ThamNien = luongCB * hesothamnien/100;
-                var phucapphuclois = dbContext.SalaryThangBangPhuCapPhucLois.Find(m => m.EmployeeId.Equals(employeeId) & m.Law.Equals(false)).SortByDescending(m => m.Year).SortByDescending(m => m.Month).ToList();
-                if (phucapphuclois.Find(m => m.Code.Equals("01-001")) != null)
-                {
-                    currentSalary.NangNhocDocHai = phucapphuclois.Find(m => m.Code.Equals("01-001")).Money;
-                }
-                if (phucapphuclois.Find(m => m.Code.Equals("01-002")) != null)
-                {
-                    currentSalary.TrachNhiem = phucapphuclois.Find(m => m.Code.Equals("01-002")).Money;
-                }
-                if (phucapphuclois.Find(m => m.Code.Equals("01-004")) != null)
-                {
-                    currentSalary.ThuHut = phucapphuclois.Find(m => m.Code.Equals("01-004")).Money;
-                }
-                if (phucapphuclois.Find(m => m.Code.Equals("02-001")) != null)
-                {
-                    currentSalary.Xang = phucapphuclois.Find(m => m.Code.Equals("02-001")).Money;
-                }
-                if (phucapphuclois.Find(m => m.Code.Equals("02-002")) != null)
-                {
-                    currentSalary.DienThoai = phucapphuclois.Find(m => m.Code.Equals("02-002")).Money;
-                }
-                if (phucapphuclois.Find(m => m.Code.Equals("02-003")) != null)
-                {
-                    currentSalary.Com = phucapphuclois.Find(m => m.Code.Equals("02-003")).Money;
-                }
-                if (phucapphuclois.Find(m => m.Code.Equals("02-004")) != null)
-                {
-                    currentSalary.KiemNhiem = phucapphuclois.Find(m => m.Code.Equals("02-004")).Money;
-                }
-                if (phucapphuclois.Find(m => m.Code.Equals("02-005")) != null)
-                {
-                    currentSalary.BhytDacBiet = phucapphuclois.Find(m => m.Code.Equals("02-005")).Money;
-                }
-                if (phucapphuclois.Find(m => m.Code.Equals("02-006")) != null)
-                {
-                    currentSalary.ViTriCanKnNhieuNam = phucapphuclois.Find(m => m.Code.Equals("02-006")).Money;
-                }
-                if (phucapphuclois.Find(m => m.Code.Equals("02-007")) != null)
-                {
-                    currentSalary.ViTriDacThu = phucapphuclois.Find(m => m.Code.Equals("02-007")).Money;
-                }
-                if (phucapphuclois.Find(m => m.Code.Equals("02-008")) != null)
-                {
-                    currentSalary.NhaO = phucapphuclois.Find(m => m.Code.Equals("02-008")).Money;
-                }
                 currentSalary.LuongThamGiaBHXH = lastestSalary != null ? lastestSalary.LuongThamGiaBHXH : bhxh;
             }
 
             if (newSalary != null)
             {
                 currentSalary.Bac = newSalary.Bac;
-                currentSalary.NangNhocDocHai = newSalary.NangNhocDocHai;
-                currentSalary.TrachNhiem = newSalary.TrachNhiem;
-                currentSalary.ThuHut = newSalary.ThuHut;
-                currentSalary.DienThoai = newSalary.DienThoai;
-                currentSalary.Xang = newSalary.Xang;
-                currentSalary.Com = newSalary.Com;
-                currentSalary.NhaO = newSalary.NhaO;
-                currentSalary.KiemNhiem = newSalary.KiemNhiem;
-                currentSalary.BhytDacBiet = newSalary.BhytDacBiet;
-                currentSalary.ViTriCanKnNhieuNam = newSalary.ViTriCanKnNhieuNam;
-                currentSalary.ViTriDacThu = newSalary.ViTriDacThu;
                 currentSalary.LuongKhac = newSalary.LuongKhac;
-                currentSalary.ThiDua = newSalary.ThiDua;
                 currentSalary.HoTroNgoaiLuong = newSalary.HoTroNgoaiLuong;
                 currentSalary.ThuongLeTet = newSalary.ThuongLeTet;
                 currentSalary.LuongThamGiaBHXH = newSalary.LuongThamGiaBHXH;
             }
 
-            decimal nangnhoc = currentSalary.NangNhocDocHai;
-            decimal trachnhiem = currentSalary.TrachNhiem;
-            decimal thamnien = currentSalary.ThamNien;
-            decimal thuhut = currentSalary.ThuHut;
-            decimal dienthoai = currentSalary.DienThoai;
-            decimal xang = currentSalary.Xang;
-            decimal com = currentSalary.Com;
-            decimal nhao = currentSalary.NhaO;
-            decimal kiemnhiem = currentSalary.KiemNhiem;
-            decimal bhytdacbiet = currentSalary.BhytDacBiet;
-            decimal vitricanknnhieunam = currentSalary.ViTriCanKnNhieuNam;
-            decimal vitridacthu = currentSalary.ViTriDacThu;
-            decimal luongKhac = currentSalary.LuongKhac;
-            decimal thiDua = currentSalary.ThiDua;
-            decimal hoTroNgoaiLuong = currentSalary.HoTroNgoaiLuong;
-            decimal luongthamgiabhxh = currentSalary.LuongThamGiaBHXH;
-            decimal thuongletet = currentSalary.ThuongLeTet;
-            decimal luongcbbaogomphucap = currentSalary.LuongCoBanBaoGomPhuCap;
-            luongcbbaogomphucap = luongCB + nangnhoc + trachnhiem + thamnien + thuhut + dienthoai + xang + com + nhao + kiemnhiem + bhytdacbiet + vitricanknnhieunam + vitridacthu;
-
-            double ngayConglamViec = mauSo;
+            double ngayLamViec = 0;
             double ngayNghiPhepNam = 0;
-            // thai san, dam cuoi, ...
-            double ngayNghiPhepHuongLuong = 0;
-            double ngayNghiLeTetHuongLuong = 0;
-            double congCNGio = 0;
-            double phutcongCN = 0;
-            double congTangCaNgayThuongGio = 0;
-            double phutcongTangCaNgayThuong = 0;
-            double congLeTet = 0;
-            double phutcongLeTet = 0;
-            decimal congTacXa = 0;
-            double tongBunBoc = 0;
-            decimal thanhTienBunBoc = 0;
-            decimal mucDatTrongThang = 0;
-            decimal luongTheoDoanhThuDoanhSo = 0;
-
-            decimal congTong = 0;
-            decimal comSX = 0;
-            decimal comKD = 0;
-
-            var chamCongs = dbContext.EmployeeWorkTimeMonthLogs.Find(m => m.EmployeeId.Equals(employeeId) & m.Year.Equals(year) & m.Month.Equals(month)).ToList();
-
+            double ngayNghiLeTet = 0;
             double nghikhongphep = 0;
             double nghiviecrieng = 0;
             double nghibenh = 0;
@@ -591,34 +438,26 @@ namespace erp.Controllers
             int trubenh = 0;
             int chuyencanchiso = 0;
 
+            double tangCaNgayThuong = 0;
+            double tangCaCN = 0;
+            double tangCaLeTet = 0;
+
+            var chamCongs = dbContext.EmployeeWorkTimeMonthLogs.Find(m => m.EmployeeId.Equals(employeeId) & m.Year.Equals(year) & m.Month.Equals(month)).ToList();
             if (chamCongs != null & chamCongs.Count > 0)
             {
-                ngayConglamViec = 0;
-                ngayNghiPhepNam = 0;
-                ngayNghiPhepHuongLuong = 0;
-                ngayNghiLeTetHuongLuong = 0;
-                // Because don't define cong CN, tang ca, le tet.
-                // Manage in Cong Tong
-                //congCNGio = 0;
-                //congTangCaNgayThuongGio = 0;
-                //congLeTet = 0;
                 foreach (var chamCong in chamCongs)
                 {
-                    ngayConglamViec += chamCong.Workday;
-                    ngayNghiPhepNam += chamCong.NghiPhepNam;
-                    nghikhongphep += chamCong.NghiKhongPhep + chamCong.KhongChamCong;
-                    ngayNghiPhepHuongLuong += chamCong.NghiHuongLuong;
-                    ngayNghiLeTetHuongLuong += chamCong.NghiLe;
-                }
-                if (ngayConglamViec == 0)
-                {
-                    ngayConglamViec = todayMonth == month ? Utility.BusinessDaysUntil(startDateMonth, today): Utility.BusinessDaysUntil(startDateMonth, endDateMonth);
+                    ngayLamViec += chamCong.NgayLamViecChinhTay;
+                    ngayNghiPhepNam += chamCong.PhepNamChinhTay;
+                    ngayNghiLeTet += chamCong.LeTetChinhTay;
+                    nghikhongphep += chamCong.NghiKhongPhep;
+                    nghiviecrieng += chamCong.NghiViecRieng;
+                    nghibenh += chamCong.NghiBenh;
                 }
                 if (nghikhongphep >= 1)
                 {
                     trukhongphep = 100;
                 }
-
                 if (nghiviecrieng >= 3)
                 {
                     truviecrieng = 100;
@@ -631,7 +470,6 @@ namespace erp.Controllers
                 {
                     truviecrieng = 50;
                 }
-
                 if (nghibenh >= 4)
                 {
                     trubenh = 100;
@@ -648,57 +486,34 @@ namespace erp.Controllers
                 {
                     trubenh = 25;
                 }
-                chuyencanchiso = (trukhongphep + truviecrieng + trubenh) >=100 ? 100 : (trukhongphep + truviecrieng + trubenh);
+                chuyencanchiso = (trukhongphep + truviecrieng + trubenh) >= 100 ? 100 : (trukhongphep + truviecrieng + trubenh);
             }
 
+            decimal luongDinhMuc = Convert.ToDecimal(ngayLamViec * (double)luongCB / mauSo);
 
-            //=L21/$N$1*M21
-            decimal luongDinhMuc = Convert.ToDecimal((double)luongCB / mauSo * ngayConglamViec);
-
+            decimal congTong = 0;
             // RESOLVE CONG TONG. UPDATE TO DB.
             // Query base employee, time.
-            // Manage in collection [Congs]
-            var dataSX = dbContext.EmployeeCongs.Find(m => m.Enable.Equals(true) && m.EmployeeId.Equals(employeeId) && m.Month.Equals(month) && m.Year.Equals(year)).FirstOrDefault();
-
-            if (dataSX != null)
+            // Manage in collection [SalaryNhaMayCongs]
+            var dataCong = dbContext.EmployeeCongs.Find(m => m.Enable.Equals(true) && m.EmployeeId.Equals(employeeId) && m.Month.Equals(month) && m.Year.Equals(year)).FirstOrDefault();
+            if (dataCong != null)
             {
-                ////congCNGio += dataSX.GioLamViecCN;
-                ////congTangCaNgayThuongGio += dataSX.GioTangCa;
-                ////congLeTet += dataSX.GioLamViecLeTet;
-                //congTong = dataSX.CongTong;
-                comSX = Convert.ToDecimal(dataSX.Com * (double)mauSoTienCom);
-                comKD = Convert.ToDecimal(dataSX.ComKD * (double)mauSoTienCom);
+                congTong = dataCong.CongTong;
             }
 
-            //=((L21/$N$1)*M21)
-            //+(O21*(L21/$N$1))
-            //+((P21/8)*1.5*(L21/$N$1))
-            //+((Q21/8)*2*L21/$N$1)
-            //+(S21*3*(L21/$N$1)
-            //+(L21/$N$1)*R21)
-            decimal thanhTienLuongCB = ((luongCB / mauSo) * (decimal)ngayConglamViec)
-                                    + ((decimal)ngayNghiPhepNam * (luongCB / mauSo))
-                                    + ((decimal)(congTangCaNgayThuongGio / 8) * (decimal)1.5 * (luongCB / mauSo))
-                                    + ((decimal)(congCNGio / 8) * 2 * (luongCB / mauSo))
-                                    + ((decimal)congLeTet * 3 * (luongCB / mauSo))
-                                    + (luongCB / mauSo) * (decimal)ngayNghiLeTetHuongLuong;
-
-            
             decimal luongVuotDinhMuc = congTong - luongDinhMuc;
             if (luongVuotDinhMuc < 0)
             {
                 luongVuotDinhMuc = 0;
             }
 
-            decimal phucapchuyencan = ((100 - chuyencanchiso)/100) * mauSoChuyenCan;
+            decimal thamnien = currentSalary.ThamNien;
+            decimal phucapchuyencan = Convert.ToDecimal(((100 - chuyencanchiso) / 100) * (double)mauSoChuyenCan);
 
-            decimal phucapkhac = 0;
-            decimal tongPhuCap = thamnien + phucapchuyencan + phucapkhac;
+            decimal phucapkhac = currentSalary.HoTroNgoaiLuong;
+            decimal tongphucap = thamnien + phucapchuyencan + phucapkhac;
 
-
-            decimal tongthunhap = thanhTienLuongCB + luongVuotDinhMuc + tongPhuCap;
-
-            decimal bhxhbhyt = luongthamgiabhxh * tyledongbh;
+            decimal tongthunhap = tongphucap + luongVuotDinhMuc + luongCB;
 
             decimal tamung = 0;
             var credits = dbContext.CreditEmployees.Find(m => m.EmployeeId.Equals(employeeId) && m.Month.Equals(month) && m.Year.Equals(year)).ToList();
@@ -709,50 +524,54 @@ namespace erp.Controllers
                     tamung += credit.Money;
                 }
             }
-            decimal thuclanh = tongthunhap - bhxhbhyt - tamung + thuongletet;
 
-            decimal thucLanhTronSo = (Math.Round(thuclanh / 1000) * 1000) + hoTroNgoaiLuong + comSX + comKD;
+            decimal luongthamgiabhxh = currentSalary.LuongThamGiaBHXH;
+            decimal dongbhxh = Convert.ToDecimal((double)luongthamgiabhxh * tyledongbh);
+
+            decimal thuongletet = currentSalary.ThuongLeTet;
+
+            decimal thuclanh = tongthunhap - tamung - dongbhxh;
+
+            decimal comSX = 0;
+            decimal comKD = 0;
+            var dataSX = dbContext.EmployeeCongs.Find(m => m.Enable.Equals(true) && m.EmployeeId.Equals(employeeId) && m.Month.Equals(month) && m.Year.Equals(year)).FirstOrDefault();
+            if (dataSX != null)
+            {
+                comSX = Convert.ToDecimal(dataSX.ComSX * (double)mauSoTienCom);
+                comKD = Convert.ToDecimal(dataSX.ComKD * (double)mauSoTienCom);
+            }
+
+            decimal hotrothem = 0;
+
+            decimal thuclanhlamtron = (Math.Round(thuclanh / 1000) * 1000) + comSX + comKD + hotrothem;
+
+           
 
             #region update field to currentSalary
             currentSalary.LuongCanBan = luongCB;
             currentSalary.ThamNien = thamnien;
-            currentSalary.LuongCoBanBaoGomPhuCap = luongcbbaogomphucap;
-            
-
-            currentSalary.NgayCongLamViec = ngayConglamViec;
+            currentSalary.NgayCongLamViec = ngayLamViec;
             currentSalary.NgayNghiPhepNam = ngayNghiPhepNam;
-            currentSalary.NgayNghiPhepHuongLuong = ngayNghiPhepHuongLuong;
-            currentSalary.NgayNghiLeTetHuongLuong = ngayNghiLeTetHuongLuong;
-            currentSalary.CongCNGio = congCNGio;
-            currentSalary.CongCNPhut = phutcongCN;
-            currentSalary.CongTangCaNgayThuongGio = congTangCaNgayThuongGio;
-            currentSalary.CongTangCaNgayThuongPhut = phutcongTangCaNgayThuong;
-            currentSalary.CongLeTet = congLeTet;
-            currentSalary.CongLeTetPhut = phutcongLeTet;
-
-            currentSalary.CongTacXa = congTacXa;
-            currentSalary.TongBunBoc = tongBunBoc;
-            currentSalary.ThanhTienBunBoc = thanhTienBunBoc;
-            currentSalary.MucDatTrongThang = mucDatTrongThang;
-            currentSalary.LuongTheoDoanhThuDoanhSo = luongTheoDoanhThuDoanhSo;
+            currentSalary.CongTangCaNgayThuongGio = tangCaNgayThuong;
+            currentSalary.CongCNGio = tangCaCN;
+            currentSalary.CongLeTet = tangCaLeTet;
 
             currentSalary.MauSo = mauSo;
             currentSalary.LuongDinhMuc = luongDinhMuc;
-            currentSalary.ThanhTienLuongCanBan = thanhTienLuongCB;
             currentSalary.LuongVuotDinhMuc = luongVuotDinhMuc;
             currentSalary.PhuCapChuyenCan = phucapchuyencan;
-            currentSalary.TongPhuCap = tongPhuCap;
+            currentSalary.TongPhuCap = tongphucap;
 
             currentSalary.TongThuNhap = tongthunhap;
 
-            currentSalary.BHXHBHYT = bhxhbhyt;
+            currentSalary.BHXHBHYT = bhxh;
 
             currentSalary.TamUng = tamung;
 
             currentSalary.ThucLanh = thuclanh;
             currentSalary.ComSX = comSX;
             currentSalary.ComKD = comKD;
-            currentSalary.ThucLanhTronSo = thucLanhTronSo;
+            currentSalary.ThucLanhTronSo = thuclanhlamtron;
             #endregion
 
             // Save common information
@@ -1020,6 +839,1075 @@ namespace erp.Controllers
         {
             var results = dbContext.EmployeeCongs.Find(m => m.Enable.Equals(true) && m.Month.Equals(month) && m.Year.Equals(year)).ToList();
             return results;
+        }
+        #endregion
+
+        #region TAMUNG | THUONG, BHXH, DIEU CHINH NGAY CONG
+        [Route(Constants.LinkSalary.SanXuatTamUngTemplate)]
+        public async Task<IActionResult> SanXuatTamUngTemplate(string thang)
+        {
+            #region Authorization
+            var login = User.Identity.Name;
+            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+            ViewData["LoginUserName"] = loginUserName;
+
+            var loginInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
+            if (loginInformation == null)
+            {
+                #region snippet1
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                #endregion
+                return RedirectToAction("login", "account");
+            }
+
+            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.BangChamCong, (int)ERights.View)))
+            {
+                return RedirectToAction("AccessDenied", "Account");
+            }
+            #endregion
+
+            #region Times
+            var toDate = Utility.GetToDate(thang);
+            var fromDate = toDate.AddMonths(-1).AddDays(1);
+            var year = toDate.Year;
+            var month = toDate.Month;
+            var thangFormat = month.ToString("00") + "-" + year.ToString("0000");
+            #endregion
+
+            string exportFolder = Path.Combine(_env.WebRootPath, "exports");
+            string sFileName = @"" + thangFormat + "-tam-ung";
+            sFileName += "-V" + DateTime.Now.ToString("ddMMyyyyHHmmss") + ".xlsx";
+
+            string URL = string.Format("{0}://{1}/{2}", Request.Scheme, Request.Host, sFileName);
+            FileInfo file = new FileInfo(Path.Combine(exportFolder, sFileName));
+            var memory = new MemoryStream();
+            using (var fs = new FileStream(Path.Combine(exportFolder, sFileName), FileMode.Create, FileAccess.Write))
+            {
+                IWorkbook workbook = new XSSFWorkbook();
+                #region Styling
+                var font = workbook.CreateFont();
+                font.FontHeightInPoints = 8;
+                font.FontName = "Arial";
+
+                var fontSmall = workbook.CreateFont();
+                fontSmall.FontHeightInPoints = 5;
+                fontSmall.FontName = "Arial";
+
+                var fontbold = workbook.CreateFont();
+                fontbold.FontHeightInPoints = 8;
+                fontbold.FontName = "Arial";
+                fontbold.Boldweight = (short)FontBoldWeight.Bold;
+
+                var fontbold8 = workbook.CreateFont();
+                fontbold8.FontHeightInPoints = 8;
+                fontbold8.FontName = "Arial";
+                fontbold8.Boldweight = (short)FontBoldWeight.Bold;
+
+                var fontbold10 = workbook.CreateFont();
+                fontbold10.FontHeightInPoints = 10;
+                fontbold10.FontName = "Arial";
+                fontbold10.Boldweight = (short)FontBoldWeight.Bold;
+
+                var fontbold11 = workbook.CreateFont();
+                fontbold11.FontHeightInPoints = 11;
+                fontbold11.FontName = "Arial";
+                fontbold11.Boldweight = (short)FontBoldWeight.Bold;
+
+                var fontbold12 = workbook.CreateFont();
+                fontbold12.FontHeightInPoints = 12;
+                fontbold12.FontName = "Arial";
+                fontbold12.Boldweight = (short)FontBoldWeight.Bold;
+
+                var styleBorder = workbook.CreateCellStyle();
+                styleBorder.BorderBottom = BorderStyle.Thin;
+                styleBorder.BorderLeft = BorderStyle.Thin;
+                styleBorder.BorderRight = BorderStyle.Thin;
+                styleBorder.BorderTop = BorderStyle.Thin;
+
+                var styleBorderDot = workbook.CreateCellStyle();
+                styleBorderDot.BorderBottom = BorderStyle.Dotted;
+                styleBorderDot.BorderLeft = BorderStyle.Thin;
+                styleBorderDot.BorderRight = BorderStyle.Thin;
+                styleBorderDot.BorderTop = BorderStyle.Thin;
+
+                var styleCenter = workbook.CreateCellStyle();
+                styleCenter.Alignment = HorizontalAlignment.Center;
+                styleCenter.VerticalAlignment = VerticalAlignment.Center;
+
+                var styleCenterBorder = workbook.CreateCellStyle();
+                styleCenterBorder.CloneStyleFrom(styleBorder);
+                styleCenterBorder.Alignment = HorizontalAlignment.Center;
+                styleCenterBorder.VerticalAlignment = VerticalAlignment.Center;
+
+                var cellStyleBorderAndColorLightGreen = workbook.CreateCellStyle();
+                //cellStyleBorderAndColorLightGreen.CloneStyleFrom(styleBorder);
+                cellStyleBorderAndColorLightGreen.CloneStyleFrom(styleCenter);
+                cellStyleBorderAndColorLightGreen.SetFont(fontbold11);
+                cellStyleBorderAndColorLightGreen.WrapText = true;
+                cellStyleBorderAndColorLightGreen.FillPattern = FillPattern.SolidForeground;
+                ((XSSFCellStyle)cellStyleBorderAndColorLightGreen).SetFillForegroundColor(new XSSFColor(new byte[] { 146, 208, 80 }));
+                cellStyleBorderAndColorLightGreen.BorderBottom = BorderStyle.Thin;
+                cellStyleBorderAndColorLightGreen.BottomBorderColor = IndexedColors.Black.Index;
+                cellStyleBorderAndColorLightGreen.BorderTop = BorderStyle.Thin;
+                cellStyleBorderAndColorLightGreen.TopBorderColor = IndexedColors.Black.Index;
+                cellStyleBorderAndColorLightGreen.BorderLeft = BorderStyle.Thin;
+                cellStyleBorderAndColorLightGreen.LeftBorderColor = IndexedColors.Black.Index;
+                cellStyleBorderAndColorLightGreen.BorderRight = BorderStyle.Thin;
+                cellStyleBorderAndColorLightGreen.RightBorderColor = IndexedColors.Black.Index;
+
+                var cellStyleBorderAndColorGreen = workbook.CreateCellStyle();
+                //cellStyleBorderAndColorGreen.CloneStyleFrom(styleBorder);
+                cellStyleBorderAndColorGreen.CloneStyleFrom(styleCenter);
+                cellStyleBorderAndColorGreen.SetFont(fontbold11);
+                cellStyleBorderAndColorGreen.WrapText = true;
+                cellStyleBorderAndColorGreen.FillPattern = FillPattern.SolidForeground;
+                ((XSSFCellStyle)cellStyleBorderAndColorGreen).SetFillForegroundColor(new XSSFColor(new byte[] { 0, 176, 80 }));
+                cellStyleBorderAndColorGreen.BorderBottom = BorderStyle.Thin;
+                cellStyleBorderAndColorGreen.BottomBorderColor = IndexedColors.Black.Index;
+                cellStyleBorderAndColorGreen.BorderTop = BorderStyle.Thin;
+                cellStyleBorderAndColorGreen.TopBorderColor = IndexedColors.Black.Index;
+                cellStyleBorderAndColorGreen.BorderLeft = BorderStyle.Thin;
+                cellStyleBorderAndColorGreen.LeftBorderColor = IndexedColors.Black.Index;
+                cellStyleBorderAndColorGreen.BorderRight = BorderStyle.Thin;
+                cellStyleBorderAndColorGreen.RightBorderColor = IndexedColors.Black.Index;
+
+                var cellStyleBorderAndColorBlue = workbook.CreateCellStyle();
+                cellStyleBorderAndColorBlue.CloneStyleFrom(styleBorder);
+                cellStyleBorderAndColorBlue.CloneStyleFrom(styleCenter);
+                cellStyleBorderAndColorBlue.SetFont(fontbold11);
+                cellStyleBorderAndColorBlue.WrapText = true;
+                cellStyleBorderAndColorBlue.FillPattern = FillPattern.SolidForeground;
+                ((XSSFCellStyle)cellStyleBorderAndColorBlue).SetFillForegroundColor(new XSSFColor(new byte[] { 0, 112, 192 }));
+                cellStyleBorderAndColorBlue.BorderBottom = BorderStyle.Thin;
+                cellStyleBorderAndColorBlue.BottomBorderColor = IndexedColors.Black.Index;
+                cellStyleBorderAndColorBlue.BorderTop = BorderStyle.Thin;
+                cellStyleBorderAndColorBlue.TopBorderColor = IndexedColors.Black.Index;
+                cellStyleBorderAndColorBlue.BorderLeft = BorderStyle.Thin;
+                cellStyleBorderAndColorBlue.LeftBorderColor = IndexedColors.Black.Index;
+                cellStyleBorderAndColorBlue.BorderRight = BorderStyle.Thin;
+                cellStyleBorderAndColorBlue.RightBorderColor = IndexedColors.Black.Index;
+
+                var cellStyleBorderAndColorDarkBlue = workbook.CreateCellStyle();
+                cellStyleBorderAndColorDarkBlue.CloneStyleFrom(styleBorder);
+                cellStyleBorderAndColorDarkBlue.CloneStyleFrom(styleCenter);
+                cellStyleBorderAndColorDarkBlue.FillPattern = FillPattern.SolidForeground;
+                ((XSSFCellStyle)cellStyleBorderAndColorDarkBlue).SetFillForegroundColor(new XSSFColor(new byte[] { 0, 32, 96 }));
+
+                var cellM3 = workbook.CreateCellStyle();
+                cellM3.CloneStyleFrom(styleBorder);
+                cellM3.CloneStyleFrom(styleCenter);
+                cellStyleBorderAndColorLightGreen.SetFont(fontbold11);
+                cellM3.FillPattern = FillPattern.SolidForeground;
+                ((XSSFCellStyle)cellM3).SetFillForegroundColor(new XSSFColor(new byte[] { 248, 203, 173 }));
+                cellM3.BorderBottom = BorderStyle.Thin;
+                cellM3.BottomBorderColor = IndexedColors.Black.Index;
+                cellM3.BorderTop = BorderStyle.Thin;
+                cellM3.TopBorderColor = IndexedColors.Black.Index;
+                cellM3.BorderLeft = BorderStyle.Thin;
+                cellM3.LeftBorderColor = IndexedColors.Black.Index;
+                cellM3.BorderRight = BorderStyle.Thin;
+                cellM3.RightBorderColor = IndexedColors.Black.Index;
+
+                var styleDedault = workbook.CreateCellStyle();
+                styleDedault.CloneStyleFrom(styleBorder);
+                styleDedault.SetFont(font);
+
+                var styleDot = workbook.CreateCellStyle();
+                styleDot.CloneStyleFrom(styleBorderDot);
+                styleDot.SetFont(font);
+
+                var styleTitle = workbook.CreateCellStyle();
+                styleTitle.CloneStyleFrom(styleCenter);
+                styleTitle.SetFont(fontbold12);
+
+                var styleSubTitle = workbook.CreateCellStyle();
+                styleSubTitle.CloneStyleFrom(styleCenter);
+                styleSubTitle.SetFont(fontbold8);
+
+                var styleHeader = workbook.CreateCellStyle();
+                styleHeader.CloneStyleFrom(styleCenterBorder);
+                styleHeader.SetFont(fontbold8);
+
+                var styleDedaultMerge = workbook.CreateCellStyle();
+                styleDedaultMerge.CloneStyleFrom(styleCenter);
+                styleDedaultMerge.SetFont(font);
+
+                var styleBold = workbook.CreateCellStyle();
+                styleBold.SetFont(fontbold8);
+
+                var styleSmall = workbook.CreateCellStyle();
+                styleSmall.CloneStyleFrom(styleBorder);
+                styleSmall.SetFont(fontSmall);
+
+                var cellStyleHeader = workbook.CreateCellStyle();
+                cellStyleHeader.FillForegroundColor = HSSFColor.Grey25Percent.Index;
+                cellStyleHeader.FillPattern = FillPattern.SolidForeground;
+
+                var fontbold18TimesNewRoman = workbook.CreateFont();
+                fontbold18TimesNewRoman.FontHeightInPoints = 18;
+                fontbold18TimesNewRoman.FontName = "Times New Roman";
+                fontbold18TimesNewRoman.Boldweight = (short)FontBoldWeight.Bold;
+
+                var fontbold11TimesNewRoman = workbook.CreateFont();
+                fontbold11TimesNewRoman.FontHeightInPoints = 11;
+                fontbold11TimesNewRoman.FontName = "Times New Roman";
+                fontbold11TimesNewRoman.Boldweight = (short)FontBoldWeight.Bold;
+
+                var fontbold10TimesNewRoman = workbook.CreateFont();
+                fontbold10TimesNewRoman.FontHeightInPoints = 10;
+                fontbold10TimesNewRoman.FontName = "Times New Roman";
+                fontbold10TimesNewRoman.Boldweight = (short)FontBoldWeight.Bold;
+
+                var fontbold9TimesNewRoman = workbook.CreateFont();
+                fontbold9TimesNewRoman.FontHeightInPoints = 9;
+                fontbold9TimesNewRoman.FontName = "Times New Roman";
+                fontbold9TimesNewRoman.Boldweight = (short)FontBoldWeight.Bold;
+
+                var styleRow0 = workbook.CreateCellStyle();
+                styleRow0.SetFont(fontbold18TimesNewRoman);
+                styleRow0.Alignment = HorizontalAlignment.Center;
+                styleRow0.VerticalAlignment = VerticalAlignment.Center;
+                styleRow0.BorderBottom = BorderStyle.Thin;
+                styleRow0.BorderTop = BorderStyle.Thin;
+                styleRow0.BorderLeft = BorderStyle.Thin;
+                styleRow0.BorderRight = BorderStyle.Thin;
+
+                var styleBorderBold11Background = workbook.CreateCellStyle();
+                styleBorderBold11Background.SetFont(fontbold11TimesNewRoman);
+                styleBorderBold11Background.Alignment = HorizontalAlignment.Center;
+                styleBorderBold11Background.VerticalAlignment = VerticalAlignment.Center;
+                styleBorderBold11Background.BorderBottom = BorderStyle.Thin;
+                styleBorderBold11Background.BorderTop = BorderStyle.Thin;
+                styleBorderBold11Background.BorderLeft = BorderStyle.Thin;
+                styleBorderBold11Background.BorderRight = BorderStyle.Thin;
+                styleBorderBold11Background.FillForegroundColor = HSSFColor.Grey50Percent.Index;
+                styleBorderBold11Background.FillPattern = FillPattern.SolidForeground;
+
+                var styleBorderBold10Background = workbook.CreateCellStyle();
+                styleBorderBold10Background.SetFont(fontbold10TimesNewRoman);
+                styleBorderBold10Background.BorderBottom = BorderStyle.Thin;
+                styleBorderBold10Background.BorderLeft = BorderStyle.Thin;
+                styleBorderBold10Background.BorderRight = BorderStyle.Thin;
+                styleBorderBold10Background.BorderTop = BorderStyle.Thin;
+                styleBorderBold10Background.Alignment = HorizontalAlignment.Center;
+                styleBorderBold10Background.VerticalAlignment = VerticalAlignment.Center;
+                styleBorderBold10Background.FillForegroundColor = HSSFColor.Grey50Percent.Index;
+                styleBorderBold10Background.FillPattern = FillPattern.SolidForeground;
+
+                var styleBorderBold9Background = workbook.CreateCellStyle();
+                styleBorderBold9Background.SetFont(fontbold9TimesNewRoman);
+                styleBorderBold9Background.BorderBottom = BorderStyle.Thin;
+                styleBorderBold9Background.BorderLeft = BorderStyle.Thin;
+                styleBorderBold9Background.BorderRight = BorderStyle.Thin;
+                styleBorderBold9Background.BorderTop = BorderStyle.Thin;
+                styleBorderBold9Background.FillForegroundColor = HSSFColor.Grey50Percent.Index;
+                styleBorderBold9Background.FillPattern = FillPattern.SolidForeground;
+                #endregion
+
+                ISheet sheet1 = workbook.CreateSheet(month.ToString("00") + year.ToString("0000") + "-TAM UNG");
+
+                #region Title
+                var rowIndex = 0;
+                var columnIndex = 0;
+                IRow row = sheet1.CreateRow(rowIndex);
+                var cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Công ty TNHH CNSH SÀI GÒN XANH");
+                cell.CellStyle = styleBold;
+                rowIndex++;
+
+                row = sheet1.CreateRow(rowIndex);
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Địa chỉ: 127 Nguyễn Trọng Tuyển - P.15 - Q.Phú Nhuận - Tp HCM");
+                cell.CellStyle = styleBold;
+                rowIndex++;
+
+                row = sheet1.CreateRow(rowIndex);
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Điện thoại: (08)-39971869 - 38442457 - Fax: 08-39971869");
+                cell.CellStyle = styleBold;
+                rowIndex++;
+
+                row = sheet1.CreateRow(rowIndex);
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("MST: 0302519810");
+                cell.CellStyle = styleBold;
+                rowIndex++;
+
+                row = sheet1.CreateRow(rowIndex);
+                rowIndex++;
+                #endregion
+
+                #region Thang
+                row = sheet1.CreateRow(rowIndex);
+                columnIndex = 0;
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Thời gian:");
+                cell.CellStyle = styleTitle;
+                columnIndex++;
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue(thangFormat);
+                cell.CellStyle = styleTitle;
+                rowIndex++;
+                #endregion
+
+                row = sheet1.CreateRow(rowIndex);
+                row.Height = 1000;
+                columnIndex = 0;
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Mã NV");
+                cell.CellStyle = cellStyleBorderAndColorLightGreen;
+                columnIndex++;
+
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Tên NV");
+                cell.CellStyle = cellStyleBorderAndColorLightGreen;
+                columnIndex++;
+
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Ứng lương");
+                cell.CellStyle = cellStyleBorderAndColorLightGreen;
+                columnIndex++;
+                workbook.Write(fs);
+            }
+            using (var stream = new FileStream(Path.Combine(exportFolder, sFileName), FileMode.Open))
+            {
+                await stream.CopyToAsync(memory);
+            }
+            memory.Position = 0;
+            return File(memory, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", sFileName);
+        }
+
+        [Route(Constants.LinkSalary.SanXuatTamUngPost)]
+        [HttpPost]
+        public ActionResult SanXuatTamUngPost()
+        {
+            IFormFile file = Request.Form.Files[0];
+            string folderName = Constants.Storage.Hr;
+            string webRootPath = _env.WebRootPath;
+            string newPath = Path.Combine(webRootPath, folderName);
+            if (!Directory.Exists(newPath))
+            {
+                Directory.CreateDirectory(newPath);
+            }
+            if (file.Length > 0)
+            {
+                string sFileExtension = Path.GetExtension(file.FileName).ToLower();
+                ISheet sheet;
+                string fullPath = Path.Combine(newPath, file.FileName);
+                using (var stream = new FileStream(fullPath, FileMode.Create))
+                {
+                    file.CopyTo(stream);
+                    stream.Position = 0;
+                    if (sFileExtension == ".xls")
+                    {
+                        HSSFWorkbook hssfwb = new HSSFWorkbook(stream); //This will read the Excel 97-2000 formats  
+                        sheet = hssfwb.GetSheetAt(0);
+                    }
+                    else
+                    {
+                        XSSFWorkbook hssfwb = new XSSFWorkbook(stream); //This will read 2007 Excel format  
+                        sheet = hssfwb.GetSheetAt(0); //get first sheet from workbook   
+                    }
+
+                    var timeRow = sheet.GetRow(5);
+                    var time = Utility.GetFormattedCellValue(timeRow.GetCell(1));
+                    var endMonthDate = Utility.GetToDate(time);
+                    var month = endMonthDate.Month;
+                    var year = endMonthDate.Year;
+                    var toDate = new DateTime(year, month, 25);
+                    var fromDate = toDate.AddMonths(-1).AddDays(1);
+                    var fromToNum = Convert.ToInt32((toDate - fromDate).TotalDays);
+
+
+                    for (int i = 7; i <= sheet.LastRowNum; i++)
+                    {
+                        IRow row = sheet.GetRow(i);
+                        if (row == null) continue;
+                        if (row.Cells.All(d => d.CellType == CellType.Blank)) continue;
+                        if (row.Cells.All(d => d.CellType == CellType.Error)) continue;
+                        if (row.Cells.All(d => d.CellType == CellType.Unknown)) continue;
+
+                        var ma = string.Empty;
+                        var ten = string.Empty;
+                        var chucvu = string.Empty;
+                        var ngayvaolam = string.Empty;
+                        decimal tamung = 0;
+
+                        int columnIndex = 0;
+                        ma = Utility.GetFormattedCellValue(row.GetCell(columnIndex));
+                        columnIndex++;
+                        ten = Utility.GetFormattedCellValue(row.GetCell(columnIndex));
+                        columnIndex++;
+                        tamung = (decimal)Utility.GetNumbericCellValue(row.GetCell(columnIndex));
+                        columnIndex++;
+
+                        if (string.IsNullOrEmpty(ten))
+                        {
+                            continue;
+                        }
+                        var alias = Utility.AliasConvert(ten);
+                        var existEmployee = dbContext.Employees.Find(m => m.FullName.Equals(ten)).FirstOrDefault();
+                        if (existEmployee != null)
+                        {
+                            TamUngSanXuat(month, year, tamung, existEmployee);
+                        }
+                        else
+                        {
+                            InsertNewEmployee(ten, ma, chucvu, ngayvaolam);
+                            var employee = dbContext.Employees.Find(m => m.FullName.Equals(ten)).FirstOrDefault();
+                            TamUngSanXuat(month, year, tamung, employee);
+                        }
+                    }
+                }
+            }
+            return Json(new { result = true });
+        }
+
+        [Route(Constants.LinkSalary.SanXuatNgayCongThuongBHXHTemplate)]
+        public async Task<IActionResult> SanXuatNgayCongThuongBHXHTemplate(string thang)
+        {
+            #region Authorization
+            var login = User.Identity.Name;
+            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+            ViewData["LoginUserName"] = loginUserName;
+
+            var loginInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
+            if (loginInformation == null)
+            {
+                #region snippet1
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                #endregion
+                return RedirectToAction("login", "account");
+            }
+
+            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.BangChamCong, (int)ERights.View)))
+            {
+                return RedirectToAction("AccessDenied", "Account");
+            }
+            #endregion
+
+            #region Times
+            var toDate = Utility.GetToDate(thang);
+            var fromDate = toDate.AddMonths(-1).AddDays(1);
+            var year = toDate.Year;
+            var month = toDate.Month;
+            var thangFormat = month.ToString("00") + "-" + year.ToString("0000");
+            #endregion
+
+            string exportFolder = Path.Combine(_env.WebRootPath, "exports");
+            string sFileName = @"" + thangFormat + "-ngay-cong-thuong-bhxh";
+            sFileName += "-V" + DateTime.Now.ToString("ddMMyyyyHHmmss") + ".xlsx";
+
+            string URL = string.Format("{0}://{1}/{2}", Request.Scheme, Request.Host, sFileName);
+            FileInfo file = new FileInfo(Path.Combine(exportFolder, sFileName));
+            var memory = new MemoryStream();
+            using (var fs = new FileStream(Path.Combine(exportFolder, sFileName), FileMode.Create, FileAccess.Write))
+            {
+                IWorkbook workbook = new XSSFWorkbook();
+                #region Styling
+                var font = workbook.CreateFont();
+                font.FontHeightInPoints = 8;
+                font.FontName = "Arial";
+
+                var fontSmall = workbook.CreateFont();
+                fontSmall.FontHeightInPoints = 5;
+                fontSmall.FontName = "Arial";
+
+                var fontbold = workbook.CreateFont();
+                fontbold.FontHeightInPoints = 8;
+                fontbold.FontName = "Arial";
+                fontbold.Boldweight = (short)FontBoldWeight.Bold;
+
+                var fontbold8 = workbook.CreateFont();
+                fontbold8.FontHeightInPoints = 8;
+                fontbold8.FontName = "Arial";
+                fontbold8.Boldweight = (short)FontBoldWeight.Bold;
+
+                var fontbold10 = workbook.CreateFont();
+                fontbold10.FontHeightInPoints = 10;
+                fontbold10.FontName = "Arial";
+                fontbold10.Boldweight = (short)FontBoldWeight.Bold;
+
+                var fontbold11 = workbook.CreateFont();
+                fontbold11.FontHeightInPoints = 11;
+                fontbold11.FontName = "Arial";
+                fontbold11.Boldweight = (short)FontBoldWeight.Bold;
+
+                var fontbold12 = workbook.CreateFont();
+                fontbold12.FontHeightInPoints = 12;
+                fontbold12.FontName = "Arial";
+                fontbold12.Boldweight = (short)FontBoldWeight.Bold;
+
+                var styleBorder = workbook.CreateCellStyle();
+                styleBorder.BorderBottom = BorderStyle.Thin;
+                styleBorder.BorderLeft = BorderStyle.Thin;
+                styleBorder.BorderRight = BorderStyle.Thin;
+                styleBorder.BorderTop = BorderStyle.Thin;
+
+                var styleBorderDot = workbook.CreateCellStyle();
+                styleBorderDot.BorderBottom = BorderStyle.Dotted;
+                styleBorderDot.BorderLeft = BorderStyle.Thin;
+                styleBorderDot.BorderRight = BorderStyle.Thin;
+                styleBorderDot.BorderTop = BorderStyle.Thin;
+
+                var styleCenter = workbook.CreateCellStyle();
+                styleCenter.Alignment = HorizontalAlignment.Center;
+                styleCenter.VerticalAlignment = VerticalAlignment.Center;
+
+                var styleCenterBorder = workbook.CreateCellStyle();
+                styleCenterBorder.CloneStyleFrom(styleBorder);
+                styleCenterBorder.Alignment = HorizontalAlignment.Center;
+                styleCenterBorder.VerticalAlignment = VerticalAlignment.Center;
+
+                var cellStyleBorderAndColorLightGreen = workbook.CreateCellStyle();
+                //cellStyleBorderAndColorLightGreen.CloneStyleFrom(styleBorder);
+                cellStyleBorderAndColorLightGreen.CloneStyleFrom(styleCenter);
+                cellStyleBorderAndColorLightGreen.SetFont(fontbold11);
+                cellStyleBorderAndColorLightGreen.WrapText = true;
+                cellStyleBorderAndColorLightGreen.FillPattern = FillPattern.SolidForeground;
+                ((XSSFCellStyle)cellStyleBorderAndColorLightGreen).SetFillForegroundColor(new XSSFColor(new byte[] { 146, 208, 80 }));
+                cellStyleBorderAndColorLightGreen.BorderBottom = BorderStyle.Thin;
+                cellStyleBorderAndColorLightGreen.BottomBorderColor = IndexedColors.Black.Index;
+                cellStyleBorderAndColorLightGreen.BorderTop = BorderStyle.Thin;
+                cellStyleBorderAndColorLightGreen.TopBorderColor = IndexedColors.Black.Index;
+                cellStyleBorderAndColorLightGreen.BorderLeft = BorderStyle.Thin;
+                cellStyleBorderAndColorLightGreen.LeftBorderColor = IndexedColors.Black.Index;
+                cellStyleBorderAndColorLightGreen.BorderRight = BorderStyle.Thin;
+                cellStyleBorderAndColorLightGreen.RightBorderColor = IndexedColors.Black.Index;
+
+                var cellStyleBorderAndColorGreen = workbook.CreateCellStyle();
+                //cellStyleBorderAndColorGreen.CloneStyleFrom(styleBorder);
+                cellStyleBorderAndColorGreen.CloneStyleFrom(styleCenter);
+                cellStyleBorderAndColorGreen.SetFont(fontbold11);
+                cellStyleBorderAndColorGreen.WrapText = true;
+                cellStyleBorderAndColorGreen.FillPattern = FillPattern.SolidForeground;
+                ((XSSFCellStyle)cellStyleBorderAndColorGreen).SetFillForegroundColor(new XSSFColor(new byte[] { 0, 176, 80 }));
+                cellStyleBorderAndColorGreen.BorderBottom = BorderStyle.Thin;
+                cellStyleBorderAndColorGreen.BottomBorderColor = IndexedColors.Black.Index;
+                cellStyleBorderAndColorGreen.BorderTop = BorderStyle.Thin;
+                cellStyleBorderAndColorGreen.TopBorderColor = IndexedColors.Black.Index;
+                cellStyleBorderAndColorGreen.BorderLeft = BorderStyle.Thin;
+                cellStyleBorderAndColorGreen.LeftBorderColor = IndexedColors.Black.Index;
+                cellStyleBorderAndColorGreen.BorderRight = BorderStyle.Thin;
+                cellStyleBorderAndColorGreen.RightBorderColor = IndexedColors.Black.Index;
+
+                var cellStyleBorderAndColorBlue = workbook.CreateCellStyle();
+                cellStyleBorderAndColorBlue.CloneStyleFrom(styleBorder);
+                cellStyleBorderAndColorBlue.CloneStyleFrom(styleCenter);
+                cellStyleBorderAndColorBlue.SetFont(fontbold11);
+                cellStyleBorderAndColorBlue.WrapText = true;
+                cellStyleBorderAndColorBlue.FillPattern = FillPattern.SolidForeground;
+                ((XSSFCellStyle)cellStyleBorderAndColorBlue).SetFillForegroundColor(new XSSFColor(new byte[] { 0, 112, 192 }));
+                cellStyleBorderAndColorBlue.BorderBottom = BorderStyle.Thin;
+                cellStyleBorderAndColorBlue.BottomBorderColor = IndexedColors.Black.Index;
+                cellStyleBorderAndColorBlue.BorderTop = BorderStyle.Thin;
+                cellStyleBorderAndColorBlue.TopBorderColor = IndexedColors.Black.Index;
+                cellStyleBorderAndColorBlue.BorderLeft = BorderStyle.Thin;
+                cellStyleBorderAndColorBlue.LeftBorderColor = IndexedColors.Black.Index;
+                cellStyleBorderAndColorBlue.BorderRight = BorderStyle.Thin;
+                cellStyleBorderAndColorBlue.RightBorderColor = IndexedColors.Black.Index;
+
+                var cellStyleBorderAndColorDarkBlue = workbook.CreateCellStyle();
+                cellStyleBorderAndColorDarkBlue.CloneStyleFrom(styleBorder);
+                cellStyleBorderAndColorDarkBlue.CloneStyleFrom(styleCenter);
+                cellStyleBorderAndColorDarkBlue.FillPattern = FillPattern.SolidForeground;
+                ((XSSFCellStyle)cellStyleBorderAndColorDarkBlue).SetFillForegroundColor(new XSSFColor(new byte[] { 0, 32, 96 }));
+
+                var cellM3 = workbook.CreateCellStyle();
+                cellM3.CloneStyleFrom(styleBorder);
+                cellM3.CloneStyleFrom(styleCenter);
+                cellStyleBorderAndColorLightGreen.SetFont(fontbold11);
+                cellM3.FillPattern = FillPattern.SolidForeground;
+                ((XSSFCellStyle)cellM3).SetFillForegroundColor(new XSSFColor(new byte[] { 248, 203, 173 }));
+                cellM3.BorderBottom = BorderStyle.Thin;
+                cellM3.BottomBorderColor = IndexedColors.Black.Index;
+                cellM3.BorderTop = BorderStyle.Thin;
+                cellM3.TopBorderColor = IndexedColors.Black.Index;
+                cellM3.BorderLeft = BorderStyle.Thin;
+                cellM3.LeftBorderColor = IndexedColors.Black.Index;
+                cellM3.BorderRight = BorderStyle.Thin;
+                cellM3.RightBorderColor = IndexedColors.Black.Index;
+
+                var styleDedault = workbook.CreateCellStyle();
+                styleDedault.CloneStyleFrom(styleBorder);
+                styleDedault.SetFont(font);
+
+                var styleDot = workbook.CreateCellStyle();
+                styleDot.CloneStyleFrom(styleBorderDot);
+                styleDot.SetFont(font);
+
+                var styleTitle = workbook.CreateCellStyle();
+                styleTitle.CloneStyleFrom(styleCenter);
+                styleTitle.SetFont(fontbold12);
+
+                var styleSubTitle = workbook.CreateCellStyle();
+                styleSubTitle.CloneStyleFrom(styleCenter);
+                styleSubTitle.SetFont(fontbold8);
+
+                var styleHeader = workbook.CreateCellStyle();
+                styleHeader.CloneStyleFrom(styleCenterBorder);
+                styleHeader.SetFont(fontbold8);
+
+                var styleDedaultMerge = workbook.CreateCellStyle();
+                styleDedaultMerge.CloneStyleFrom(styleCenter);
+                styleDedaultMerge.SetFont(font);
+
+                var styleBold = workbook.CreateCellStyle();
+                styleBold.SetFont(fontbold8);
+
+                var styleSmall = workbook.CreateCellStyle();
+                styleSmall.CloneStyleFrom(styleBorder);
+                styleSmall.SetFont(fontSmall);
+
+                var cellStyleHeader = workbook.CreateCellStyle();
+                cellStyleHeader.FillForegroundColor = HSSFColor.Grey25Percent.Index;
+                cellStyleHeader.FillPattern = FillPattern.SolidForeground;
+
+                var fontbold18TimesNewRoman = workbook.CreateFont();
+                fontbold18TimesNewRoman.FontHeightInPoints = 18;
+                fontbold18TimesNewRoman.FontName = "Times New Roman";
+                fontbold18TimesNewRoman.Boldweight = (short)FontBoldWeight.Bold;
+
+                var fontbold11TimesNewRoman = workbook.CreateFont();
+                fontbold11TimesNewRoman.FontHeightInPoints = 11;
+                fontbold11TimesNewRoman.FontName = "Times New Roman";
+                fontbold11TimesNewRoman.Boldweight = (short)FontBoldWeight.Bold;
+
+                var fontbold10TimesNewRoman = workbook.CreateFont();
+                fontbold10TimesNewRoman.FontHeightInPoints = 10;
+                fontbold10TimesNewRoman.FontName = "Times New Roman";
+                fontbold10TimesNewRoman.Boldweight = (short)FontBoldWeight.Bold;
+
+                var fontbold9TimesNewRoman = workbook.CreateFont();
+                fontbold9TimesNewRoman.FontHeightInPoints = 9;
+                fontbold9TimesNewRoman.FontName = "Times New Roman";
+                fontbold9TimesNewRoman.Boldweight = (short)FontBoldWeight.Bold;
+
+                var styleRow0 = workbook.CreateCellStyle();
+                styleRow0.SetFont(fontbold18TimesNewRoman);
+                styleRow0.Alignment = HorizontalAlignment.Center;
+                styleRow0.VerticalAlignment = VerticalAlignment.Center;
+                styleRow0.BorderBottom = BorderStyle.Thin;
+                styleRow0.BorderTop = BorderStyle.Thin;
+                styleRow0.BorderLeft = BorderStyle.Thin;
+                styleRow0.BorderRight = BorderStyle.Thin;
+
+                var styleBorderBold11Background = workbook.CreateCellStyle();
+                styleBorderBold11Background.SetFont(fontbold11TimesNewRoman);
+                styleBorderBold11Background.Alignment = HorizontalAlignment.Center;
+                styleBorderBold11Background.VerticalAlignment = VerticalAlignment.Center;
+                styleBorderBold11Background.BorderBottom = BorderStyle.Thin;
+                styleBorderBold11Background.BorderTop = BorderStyle.Thin;
+                styleBorderBold11Background.BorderLeft = BorderStyle.Thin;
+                styleBorderBold11Background.BorderRight = BorderStyle.Thin;
+                styleBorderBold11Background.FillForegroundColor = HSSFColor.Grey50Percent.Index;
+                styleBorderBold11Background.FillPattern = FillPattern.SolidForeground;
+
+                var styleBorderBold10Background = workbook.CreateCellStyle();
+                styleBorderBold10Background.SetFont(fontbold10TimesNewRoman);
+                styleBorderBold10Background.BorderBottom = BorderStyle.Thin;
+                styleBorderBold10Background.BorderLeft = BorderStyle.Thin;
+                styleBorderBold10Background.BorderRight = BorderStyle.Thin;
+                styleBorderBold10Background.BorderTop = BorderStyle.Thin;
+                styleBorderBold10Background.Alignment = HorizontalAlignment.Center;
+                styleBorderBold10Background.VerticalAlignment = VerticalAlignment.Center;
+                styleBorderBold10Background.FillForegroundColor = HSSFColor.Grey50Percent.Index;
+                styleBorderBold10Background.FillPattern = FillPattern.SolidForeground;
+
+                var styleBorderBold9Background = workbook.CreateCellStyle();
+                styleBorderBold9Background.SetFont(fontbold9TimesNewRoman);
+                styleBorderBold9Background.BorderBottom = BorderStyle.Thin;
+                styleBorderBold9Background.BorderLeft = BorderStyle.Thin;
+                styleBorderBold9Background.BorderRight = BorderStyle.Thin;
+                styleBorderBold9Background.BorderTop = BorderStyle.Thin;
+                styleBorderBold9Background.FillForegroundColor = HSSFColor.Grey50Percent.Index;
+                styleBorderBold9Background.FillPattern = FillPattern.SolidForeground;
+                #endregion
+
+                ISheet sheet1 = workbook.CreateSheet(month.ToString("00") + year.ToString("0000") + "-NGAYCONG-THUONG-BHXH ");
+
+                #region Title
+                var rowIndex = 0;
+                var columnIndex = 0;
+                IRow row = sheet1.CreateRow(rowIndex);
+                var cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Công ty TNHH CNSH SÀI GÒN XANH");
+                cell.CellStyle = styleBold;
+                rowIndex++;
+
+                row = sheet1.CreateRow(rowIndex);
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Địa chỉ: 127 Nguyễn Trọng Tuyển - P.15 - Q.Phú Nhuận - Tp HCM");
+                cell.CellStyle = styleBold;
+                rowIndex++;
+
+                row = sheet1.CreateRow(rowIndex);
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Điện thoại: (08)-39971869 - 38442457 - Fax: 08-39971869");
+                cell.CellStyle = styleBold;
+                rowIndex++;
+
+                row = sheet1.CreateRow(rowIndex);
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("MST: 0302519810");
+                cell.CellStyle = styleBold;
+                rowIndex++;
+
+                row = sheet1.CreateRow(rowIndex);
+                rowIndex++;
+                #endregion
+
+                #region Thang
+                row = sheet1.CreateRow(rowIndex);
+                columnIndex = 0;
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Thời gian:");
+                cell.CellStyle = styleTitle;
+                columnIndex++;
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue(thangFormat);
+                cell.CellStyle = styleTitle;
+                rowIndex++;
+                #endregion
+
+                row = sheet1.CreateRow(rowIndex);
+                row.Height = 1000;
+                columnIndex = 0;
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Mã NV");
+                cell.CellStyle = cellStyleBorderAndColorLightGreen;
+                columnIndex++;
+
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Tên NV");
+                cell.CellStyle = cellStyleBorderAndColorLightGreen;
+                columnIndex++;
+
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Chức vụ");
+                cell.CellStyle = cellStyleBorderAndColorLightGreen;
+                columnIndex++;
+
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Ngày vào làm");
+                cell.CellStyle = cellStyleBorderAndColorLightGreen;
+                columnIndex++;
+
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Ngày làm việc");
+                cell.CellStyle = cellStyleBorderAndColorLightGreen;
+                columnIndex++;
+
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Lễ tết");
+                cell.CellStyle = cellStyleBorderAndColorLightGreen;
+                columnIndex++;
+
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Phép năm");
+                cell.CellStyle = cellStyleBorderAndColorLightGreen;
+                columnIndex++;
+
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Thưởng lễ, tết");
+                cell.CellStyle = cellStyleBorderAndColorLightGreen;
+                columnIndex++;
+
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Lương đóng BHXH");
+                cell.CellStyle = cellStyleBorderAndColorLightGreen;
+                columnIndex++;
+                workbook.Write(fs);
+            }
+            using (var stream = new FileStream(Path.Combine(exportFolder, sFileName), FileMode.Open))
+            {
+                await stream.CopyToAsync(memory);
+            }
+            memory.Position = 0;
+            return File(memory, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", sFileName);
+        }
+
+        [Route(Constants.LinkSalary.SanXuatNgayCongThuongBHXHPost)]
+        [HttpPost]
+        public ActionResult SanXuatNgayCongThuongBHXHPost()
+        {
+            IFormFile file = Request.Form.Files[0];
+            string folderName = Constants.Storage.Hr;
+            string webRootPath = _env.WebRootPath;
+            string newPath = Path.Combine(webRootPath, folderName);
+            if (!Directory.Exists(newPath))
+            {
+                Directory.CreateDirectory(newPath);
+            }
+            if (file.Length > 0)
+            {
+                string sFileExtension = Path.GetExtension(file.FileName).ToLower();
+                ISheet sheet;
+                string fullPath = Path.Combine(newPath, file.FileName);
+                using (var stream = new FileStream(fullPath, FileMode.Create))
+                {
+                    file.CopyTo(stream);
+                    stream.Position = 0;
+                    if (sFileExtension == ".xls")
+                    {
+                        HSSFWorkbook hssfwb = new HSSFWorkbook(stream); //This will read the Excel 97-2000 formats  
+                        sheet = hssfwb.GetSheetAt(0);
+                    }
+                    else
+                    {
+                        XSSFWorkbook hssfwb = new XSSFWorkbook(stream); //This will read 2007 Excel format  
+                        sheet = hssfwb.GetSheetAt(0); //get first sheet from workbook   
+                    }
+
+                    var timeRow = sheet.GetRow(5);
+                    var time = Utility.GetFormattedCellValue(timeRow.GetCell(1));
+                    var endMonthDate = Utility.GetToDate(time);
+                    var month = endMonthDate.Month;
+                    var year = endMonthDate.Year;
+                    var toDate = new DateTime(year, month, 25);
+                    var fromDate = toDate.AddMonths(-1).AddDays(1);
+                    var fromToNum = Convert.ToInt32((toDate - fromDate).TotalDays);
+
+
+                    for (int i = 7; i <= sheet.LastRowNum; i++)
+                    {
+                        IRow row = sheet.GetRow(i);
+                        if (row == null) continue;
+                        if (row.Cells.All(d => d.CellType == CellType.Blank)) continue;
+                        if (row.Cells.All(d => d.CellType == CellType.Error)) continue;
+                        if (row.Cells.All(d => d.CellType == CellType.Unknown)) continue;
+
+                        var ma = string.Empty;
+                        var ten = string.Empty;
+                        var chucvu = string.Empty;
+                        var ngayvaolam = string.Empty;
+                        double ngaylamviec = 0;
+                        double phepnam = 0;
+                        double letet = 0;
+                        decimal thuongletet = 0;
+                        decimal bhxh = 0;
+
+                        int columnIndex = 0;
+                        ma = Utility.GetFormattedCellValue(row.GetCell(columnIndex));
+                        columnIndex++;
+                        ten = Utility.GetFormattedCellValue(row.GetCell(columnIndex));
+                        columnIndex++;
+                        chucvu = Utility.GetFormattedCellValue(row.GetCell(columnIndex));
+                        columnIndex++;
+                        ngayvaolam = Utility.GetFormattedCellValue(row.GetCell(columnIndex));
+                        columnIndex++;
+                        ngaylamviec = Utility.GetNumbericCellValue(row.GetCell(columnIndex));
+                        columnIndex++;
+                        phepnam = Utility.GetNumbericCellValue(row.GetCell(columnIndex));
+                        columnIndex++;
+                        letet = Utility.GetNumbericCellValue(row.GetCell(columnIndex));
+                        columnIndex++;
+                        thuongletet = (decimal)Utility.GetNumbericCellValue(row.GetCell(columnIndex));
+                        columnIndex++;
+                        bhxh = (decimal)Utility.GetNumbericCellValue(row.GetCell(columnIndex));
+                        columnIndex++;
+
+                        if (string.IsNullOrEmpty(ten))
+                        {
+                            continue;
+                        }
+                        var alias = Utility.AliasConvert(ten);
+                        var existEmployee = dbContext.Employees.Find(m => m.FullName.Equals(ten)).FirstOrDefault();
+                        if (existEmployee != null)
+                        {
+                            DataSanXuat(month, year, ngaylamviec, phepnam, letet, thuongletet, bhxh, existEmployee);
+                        }
+                        else
+                        {
+                            InsertNewEmployee(ten, ma, chucvu, ngayvaolam);
+                            var employee = dbContext.Employees.Find(m => m.FullName.Equals(ten)).FirstOrDefault();
+                            DataSanXuat(month, year, ngaylamviec, phepnam, letet, thuongletet, bhxh, employee);
+                        }
+                    }
+                }
+            }
+            return Json(new { result = true });
+        }
+
+        private void DataSanXuat(int month, int year, double ngaylamviec, double phepnam, double letet, decimal thuongletet, decimal bhxh, Employee existEmployee)
+        {
+            // Salary base month-year
+            var existSalary = dbContext.SalaryEmployeeMonths.Find(m => m.Enable.Equals(true) && m.EmployeeId.Equals(existEmployee.Id) && m.Month.Equals(month) && m.Year.Equals(year)).FirstOrDefault();
+            if (existSalary != null)
+            {
+                var builderSalary = Builders<SalaryEmployeeMonth>.Filter;
+                var filterSalary = builderSalary.Eq(m => m.Id, existSalary.Id);
+                var updateSalary = Builders<SalaryEmployeeMonth>.Update
+                    .Set(m => m.NgayCongLamViec, ngaylamviec)
+                    .Set(m => m.NgayNghiLeTetHuongLuong, letet)
+                    .Set(m => m.NgayNghiPhepNam, phepnam)
+                    .Set(m => m.LuongThamGiaBHXH, bhxh)
+                    .Set(m => m.ThuongLeTet, thuongletet)
+                    .Set(m => m.UpdatedOn, DateTime.Now);
+                dbContext.SalaryEmployeeMonths.UpdateOne(filterSalary, updateSalary);
+            }
+            else
+            {
+                dbContext.SalaryEmployeeMonths.InsertOne(new SalaryEmployeeMonth
+                {
+                    Month = month,
+                    Year = year,
+                    EmployeeId = existEmployee.Id,
+                    MaNhanVien = existEmployee.CodeOld,
+                    PhongBan = existEmployee.Department,
+                    ChucVu = existEmployee.Title,
+                    SalaryMaSoChucDanhCongViec = "B.05",
+                    NgayCongLamViec = ngaylamviec,
+                    NgayNghiPhepNam = phepnam,
+                    NgayNghiLeTetHuongLuong = letet,
+                    ThuongLeTet = thuongletet,
+                    LuongThamGiaBHXH = bhxh
+                });
+            }
+
+            // EmployeeWorkTimeMonthLog
+            var existTimes = dbContext.EmployeeWorkTimeMonthLogs.Find(m => m.EmployeeId.Equals(existEmployee.Id) && m.Month.Equals(month) && m.Year.Equals(year)).FirstOrDefault();
+            if (existTimes != null)
+            {
+                var filterTime = Builders<EmployeeWorkTimeMonthLog>.Filter.Eq(m => m.Id, existTimes.Id);
+                var updateTime = Builders<EmployeeWorkTimeMonthLog>.Update
+                    .Set(m => m.NgayLamViecChinhTay, ngaylamviec)
+                    .Set(m => m.PhepNamChinhTay, phepnam)
+                    .Set(m => m.LeTetChinhTay, letet);
+                dbContext.EmployeeWorkTimeMonthLogs.UpdateOne(filterTime, updateTime);
+            }
+            else
+            {
+                dbContext.EmployeeWorkTimeMonthLogs.InsertOne(new EmployeeWorkTimeMonthLog
+                {
+                    Year = year,
+                    Month = month,
+                    EmployeeId = existEmployee.Id,
+                    EmployeeName = existEmployee.FullName,
+                    Title = existEmployee.TitleId,
+                    Department = existEmployee.DepartmentId,
+                    Part = existEmployee.PartId,
+                    NgayLamViecChinhTay = ngaylamviec,
+                    LeTetChinhTay = letet,
+                    PhepNamChinhTay = phepnam
+                });
+            }
+        }
+
+        private void TamUngSanXuat(int month, int year, decimal tamung, Employee existEmployee)
+        {
+            // Salary base month-year
+            var existSalary = dbContext.SalaryEmployeeMonths.Find(m => m.Enable.Equals(true) && m.EmployeeId.Equals(existEmployee.Id) && m.Month.Equals(month) && m.Year.Equals(year)).FirstOrDefault();
+            if (existSalary != null)
+            {
+                var builderSalary = Builders<SalaryEmployeeMonth>.Filter;
+                var filterSalary = builderSalary.Eq(m => m.Id, existSalary.Id);
+                var updateSalary = Builders<SalaryEmployeeMonth>.Update
+                    .Set(m => m.TamUng, tamung)
+                    .Set(m => m.UpdatedOn, DateTime.Now);
+                dbContext.SalaryEmployeeMonths.UpdateOne(filterSalary, updateSalary);
+            }
+            else
+            {
+                dbContext.SalaryEmployeeMonths.InsertOne(new SalaryEmployeeMonth
+                {
+                    Month = month,
+                    Year = year,
+                    EmployeeId = existEmployee.Id,
+                    MaNhanVien = existEmployee.CodeOld,
+                    PhongBan = existEmployee.Department,
+                    ChucVu = existEmployee.Title,
+                    SalaryMaSoChucDanhCongViec = "B.05",
+                    TamUng = tamung
+                });
+            }
+
+            // CreditEmployee
+            if (tamung > 0)
+            {
+                var existCredit = dbContext.CreditEmployees.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)ECredit.UngLuong) && m.EmployeeId.Equals(existEmployee.Id) && m.Month.Equals(month) && m.Year.Equals(year)).FirstOrDefault();
+                if (existCredit != null)
+                {
+                    var filterCredit = Builders<CreditEmployee>.Filter.Eq(m => m.Id, existCredit.Id);
+                    var updateCredit = Builders<CreditEmployee>.Update
+                        .Set(m => m.Money, tamung);
+                    dbContext.CreditEmployees.UpdateOne(filterCredit, updateCredit);
+                }
+                else
+                {
+                    dbContext.CreditEmployees.InsertOne(new CreditEmployee
+                    {
+                        Year = year,
+                        Month = month,
+                        EmployeeId = existEmployee.Id,
+                        EmployeeCode = existEmployee.CodeOld,
+                        FullName = existEmployee.FullName,
+                        EmployeeTitle = existEmployee.TitleId,
+                        EmployeeDepartment = existEmployee.DepartmentId,
+                        EmployeePart = existEmployee.PartId,
+                        Type = (int)ECredit.UngLuong,
+                        Money = tamung,
+                        DateCredit = new DateTime(year, month, 1),
+                        DateFirstPay = new DateTime(year, month, 5).AddMonths(1)
+                    });
+                }
+            }
+        }
+
+        private void InsertNewEmployee(string fullname, string oldcode, string chucvu, string ngayvaolam)
+        {
+            chucvu = string.IsNullOrEmpty(chucvu) ? "CÔNG NHÂN" : chucvu.ToUpper();
+            DateTime joinday = string.IsNullOrEmpty(ngayvaolam) ? DateTime.Now : DateTime.FromOADate(Convert.ToDouble(ngayvaolam));
+
+            var entity = new Employee
+            {
+                FullName = fullname,
+                CodeOld = oldcode,
+                Department = "NHÀ MÁY",
+                Part = "SẢN XUÂT",
+                Title = chucvu,
+                SalaryType = (int)EKhoiLamViec.SX,
+                Joinday = joinday
+            };
+
+            #region System Generate
+            var pwdrandom = Guid.NewGuid().ToString("N").Substring(0, 6);
+            var settings = dbContext.Settings.Find(m => true).ToList();
+            // always have value
+            var employeeCodeFirst = settings.Where(m => m.Key.Equals("employeeCodeFirst")).First().Value;
+            var employeeCodeLength = settings.Where(m => m.Key.Equals("employeeCodeLength")).First().Value;
+            var lastEntity = dbContext.Employees.Find(m => m.Enable.Equals(true)).SortByDescending(m => m.Id).Limit(1).First();
+            var x = 1;
+            if (lastEntity != null && lastEntity.Code != null)
+            {
+                x = Convert.ToInt32(lastEntity.Code.Replace(employeeCodeFirst, string.Empty)) + 1;
+            }
+            var sysCode = employeeCodeFirst + x.ToString($"D{employeeCodeLength}");
+            #endregion
+
+            entity.Code = sysCode;
+            entity.Password = pwdrandom;
+            entity.AliasFullName = Utility.AliasConvert(entity.FullName);
+            dbContext.Employees.InsertOne(entity);
+
+            var newUserId = entity.Id;
+            var hisEntity = entity;
+            hisEntity.EmployeeId = newUserId;
+            dbContext.EmployeeHistories.InsertOne(hisEntity);
+        }
+
+        #endregion
+
+        #region SETTINGS
+        [Route(Constants.LinkSalary.Setting)]
+        public IActionResult Setting(string thang)
+        {
+            var viewModel = new BangLuongViewModel
+            {
+                Thang = thang
+            };
+
+            return View(viewModel);
         }
         #endregion
 

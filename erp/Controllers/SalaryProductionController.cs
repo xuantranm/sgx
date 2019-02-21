@@ -84,20 +84,11 @@ namespace erp.Controllers
             #endregion
 
             #region Times
-            var toDate = Utility.WorkingMonthToDate(thang);
+            var toDate = Utility.GetToDate(thang);
             var fromDate = toDate.AddMonths(-1).AddDays(1);
-            if (string.IsNullOrEmpty(thang))
-            {
-                toDate = DateTime.Now;
-                fromDate = toDate.Day > 25 ? new DateTime(toDate.Year, toDate.Month, 26) : new DateTime(toDate.AddMonths(-1).Year, toDate.AddMonths(-1).Month, 26);
-            }
-            var year = toDate.Day > 25 ? toDate.AddMonths(1).Year : toDate.Year;
-            var month = toDate.Day > 25 ? toDate.AddMonths(1).Month : toDate.Month;
+            var year = toDate.Year;
+            var month = toDate.Month;
             thang = string.IsNullOrEmpty(thang) ? month + "-" + year : thang;
-
-            int yearSale = new DateTime(year, month, 01).AddMonths(-2).Year;
-            int monthSale = new DateTime(year, month, 01).AddMonths(-2).Month;
-            var saleTimes = monthSale + "-" + yearSale;
             #endregion
 
             #region Setting
@@ -153,27 +144,11 @@ namespace erp.Controllers
                 salaryEmployeeMonths.Add(salary);
             }
 
-            var mucluongvung = await dbContext.SalaryMucLuongVungs.Find(m => m.Enable.Equals(true) & m.Month.Equals(month) & m.Year.Equals(year)).FirstOrDefaultAsync();
-            if (mucluongvung == null)
-            {
-                var lastItemVung = await dbContext.SalaryMucLuongVungs.Find(m => m.Enable.Equals(true)).SortByDescending(m => m.Year).SortByDescending(m => m.Month).FirstOrDefaultAsync();
-                var lastMonthVung = lastItemVung.Month;
-                var lastYearVung = lastItemVung.Year;
-
-                lastItemVung.Id = null;
-                lastItemVung.Month = month;
-                lastItemVung.Year = year;
-                dbContext.SalaryMucLuongVungs.InsertOne(lastItemVung);
-                mucluongvung = await dbContext.SalaryMucLuongVungs.Find(m => m.Enable.Equals(true) & m.Month.Equals(month) & m.Year.Equals(year)).FirstOrDefaultAsync();
-            }
-
             var viewModel = new BangLuongViewModel
             {
                 SalaryEmployeeMonths = salaryEmployeeMonths,
-                SalaryMucLuongVung = mucluongvung,
                 MonthYears = sortTimes,
                 Thang = thang,
-                SaleTimes = saleTimes,
                 Departments = departments,
                 EmployeesDdl = employeeDdl,
                 Id = id,
@@ -579,7 +554,6 @@ namespace erp.Controllers
             currentSalary.LuongCanBan = luongCB;
             currentSalary.ThamNien = thamnien;
             currentSalary.LuongCoBanBaoGomPhuCap = luongcbbaogomphucap;
-
 
             currentSalary.NgayCongLamViec = ngayLamViec;
             currentSalary.NgayNghiPhepNam = phepNam;
@@ -4182,6 +4156,21 @@ namespace erp.Controllers
 
             return View(viewModel);
         }
+        #endregion
+
+
+        #region SETTINGS
+        [Route(Constants.LinkSalary.Setting)]
+        public IActionResult Setting(string thang)
+        {
+            var viewModel = new BangLuongViewModel
+            {
+                Thang = thang
+            };
+
+            return View(viewModel);
+        }
+
         #endregion
 
         #region IMPORT DATA, WAIT ORDER
