@@ -216,12 +216,11 @@ namespace xtime
                                                 && date >= item.From.Date 
                                                 && date <= item.To.Date);
 
-
                         if (date.DayOfWeek == DayOfWeek.Sunday)
                         {
                             employeeWorkTimeLog.Mode = (int)ETimeWork.Sunday;
                             employeeWorkTimeLog.Reason = "Chủ nhật";
-                            //ChuNhat++;
+                            // ChuNhat++;
                         }
                         if (holiday != null)
                         {
@@ -234,31 +233,55 @@ namespace xtime
                         if (existLeave != null)
                         {
                             decimal numberLeave = existLeave.Number;
-                            foreach (var leaveType in leaveTypes)
+
+                            var leaveType = leaveTypes.Where(m => m.Id.Equals(existLeave.TypeId)).FirstOrDefault();
+                            if (leaveType != null)
                             {
-                                if (existLeave.TypeId == leaveType.Id)
+                                if (leaveType.Alias == "phep-nam")
                                 {
-                                    if (leaveType.Alias == "phep-nam")
+                                    //NghiPhepNam += (double)numberLeave;
+                                    employeeWorkTimeLog.Mode = (int)ETimeWork.LeavePhep;
+                                }
+                                else if (leaveType.Alias == "phep-khong-huong-luong")
+                                {
+                                    //NghiViecRieng += (double)numberLeave;
+                                    employeeWorkTimeLog.Mode = (int)ETimeWork.LeaveKhongHuongLuong;
+                                }
+                                else if (leaveType.Alias == "nghi-huong-luong")
+                                {
+                                    //NghiHuongLuong += (double)numberLeave;
+                                    employeeWorkTimeLog.Mode = (int)ETimeWork.LeaveHuongLuong;
+                                }
+                                else if (leaveType.Alias == "nghi-bu")
+                                {
+                                    // do later
+                                }
+                            }
+
+                            employeeWorkTimeLog.SoNgayNghi = 1;
+                            // Check off 0.5
+                            var leaveFrom = existLeave.From.Date.Add(existLeave.Start);
+                            var leaveTo = existLeave.To.Date.Add(existLeave.End);
+                            for(DateTime dateL = leaveFrom; dateL <= leaveTo; dateL = dateL.Date.AddDays(1))
+                            {
+                                if (date == dateL.Date)
+                                {
+                                    var leaveTimeSpan = endWorkingScheduleTime - dateL.Date.Add(startWorkingScheduleTime).TimeOfDay;
+                                    if (dateL == leaveFrom)
                                     {
-                                        //NghiPhepNam += (double)numberLeave;
-                                        employeeWorkTimeLog.Mode = (int)ETimeWork.LeavePhep;
+                                        leaveTimeSpan = endWorkingScheduleTime - dateL.TimeOfDay;
                                     }
-                                    else if (leaveType.Alias == "phep-khong-huong-luong")
+                                    if (dateL == leaveTo.Date)
                                     {
-                                        //NghiViecRieng += (double)numberLeave;
-                                        employeeWorkTimeLog.Mode = (int)ETimeWork.LeaveKhongHuongLuong;
+                                        leaveTimeSpan = leaveTo.TimeOfDay - startWorkingScheduleTime;
                                     }
-                                    else if (leaveType.Alias == "nghi-huong-luong")
+                                    if (leaveTimeSpan.TotalHours < 4)
                                     {
-                                        //NghiHuongLuong += (double)numberLeave;
-                                        employeeWorkTimeLog.Mode = (int)ETimeWork.LeaveHuongLuong;
-                                    }
-                                    else if (leaveType.Alias == "nghi-bu")
-                                    {
-                                        // do later
+                                        employeeWorkTimeLog.SoNgayNghi = 0.5;
                                     }
                                 }
                             }
+
                             employeeWorkTimeLog.Reason = existLeave.TypeName;
                             employeeWorkTimeLog.ReasonDetail = Constants.StatusLeave(existLeave.Status);
                         }
@@ -475,6 +498,7 @@ namespace xtime
                                     .Set(m => m.StatusEarly, employeeWorkTimeLog.StatusEarly)
                                     .Set(m => m.Logs, employeeWorkTimeLog.Logs)
                                     .Set(m => m.Mode, employeeWorkTimeLog.Mode)
+                                    .Set(m => m.SoNgayNghi, employeeWorkTimeLog.SoNgayNghi)
                                     .Set(m => m.StatusTangCa, employeeWorkTimeLog.StatusTangCa)
                                     .Set(m => m.TangCaThucTe, employeeWorkTimeLog.TangCaThucTe)
                                     .Set(m => m.Reason, employeeWorkTimeLog.Reason)

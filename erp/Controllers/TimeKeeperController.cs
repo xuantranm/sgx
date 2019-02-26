@@ -1162,7 +1162,7 @@ namespace erp.Controllers
             var times = await dbContext.EmployeeWorkTimeLogs.Find(filter).SortBy(m => m.Date).ToListAsync();
 
             string exportFolder = Path.Combine(_env.WebRootPath, "exports");
-            string sFileName = @"thong-ke-cham-cong";
+            string sFileName = @"cham-cong";
 
             var duration = Tu.ToString("ddMMyyyy") + "-" + Den.ToString("ddMMyyyy");
             sFileName += "-" + duration;
@@ -1178,7 +1178,7 @@ namespace erp.Controllers
             {
                 sFileName += "-" + id;
             }
-            sFileName += "-V" + DateTime.Now.ToString("ddMMyyyyHHmmss") + ".xlsx";
+            sFileName += "-V" + DateTime.Now.ToString("ddMMyyHHmmss") + ".xlsx";
 
             string URL = string.Format("{0}://{1}/{2}", Request.Scheme, Request.Host, sFileName);
             FileInfo file = new FileInfo(Path.Combine(exportFolder, sFileName));
@@ -1270,6 +1270,10 @@ namespace erp.Controllers
                 var styleDedaultMerge = workbook.CreateCellStyle();
                 styleDedaultMerge.CloneStyleFrom(styleCenter);
                 styleDedaultMerge.SetFont(font);
+
+                var styleFullText = workbook.CreateCellStyle();
+                styleDedaultMerge.SetFont(font);
+                styleFullText.WrapText = true;
 
                 var styleBold = workbook.CreateCellStyle();
                 styleBold.SetFont(fontbold8);
@@ -1387,17 +1391,17 @@ namespace erp.Controllers
                 columnIndex = columnIndex + 1;
                 columnIndex++;
 
-                cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex, columnIndex, columnIndex + 1);
-                sheet1.AddMergedRegion(cellRangeAddress);
-                cell = row.CreateCell(columnIndex, CellType.String);
-                cell.SetCellValue("Giờ công");
-                cell.CellStyle = styleHeader;
-                RegionUtil.SetBorderTop((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
-                RegionUtil.SetBorderLeft((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
-                RegionUtil.SetBorderRight((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
-                RegionUtil.SetBorderBottom((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
-                columnIndex = columnIndex + 1;
-                columnIndex++;
+                //cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex, columnIndex, columnIndex + 1);
+                //sheet1.AddMergedRegion(cellRangeAddress);
+                //cell = row.CreateCell(columnIndex, CellType.String);
+                //cell.SetCellValue("Giờ công");
+                //cell.CellStyle = styleHeader;
+                //RegionUtil.SetBorderTop((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                //RegionUtil.SetBorderLeft((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                //RegionUtil.SetBorderRight((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                //RegionUtil.SetBorderBottom((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                //columnIndex = columnIndex + 1;
+                //columnIndex++;
 
                 cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex, columnIndex, columnIndex + 1);
                 sheet1.AddMergedRegion(cellRangeAddress);
@@ -1435,12 +1439,13 @@ namespace erp.Controllers
                 columnIndex = columnIndex + 2;
                 columnIndex++;
 
-                cell = row.CreateCell(columnIndex, CellType.String);
-                cell.SetCellValue("Vắng");
-                cell.CellStyle = styleHeader;
-                columnIndex++;
+                //cell = row.CreateCell(columnIndex, CellType.String);
+                //cell.SetCellValue("Vắng");
+                //cell.CellStyle = styleHeader;
+                //columnIndex++;
 
-                cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex, columnIndex, columnIndex + 2);
+                //cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex, columnIndex, columnIndex + 3);
+                cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex, columnIndex, columnIndex + 1);
                 sheet1.AddMergedRegion(cellRangeAddress);
                 cell = row.CreateCell(columnIndex, CellType.String);
                 cell.SetCellValue("Ngày nghỉ");
@@ -1461,6 +1466,7 @@ namespace erp.Controllers
                     cell.CellStyle = styleHeader;
                     columnIndex++;
                 }
+
                 cell = row.CreateCell(columnIndex);
                 cell.SetCellValue("NT");
                 cell.CellStyle = styleHeader;
@@ -1469,14 +1475,14 @@ namespace erp.Controllers
                 cell.SetCellValue("CT");
                 cell.CellStyle = styleHeader;
                 columnIndex++;
-                cell = row.CreateCell(columnIndex);
-                cell.SetCellValue("NT");
-                cell.CellStyle = styleHeader;
-                columnIndex++;
-                cell = row.CreateCell(columnIndex);
-                cell.SetCellValue("CT");
-                cell.CellStyle = styleHeader;
-                columnIndex++;
+                //cell = row.CreateCell(columnIndex);
+                //cell.SetCellValue("NT");
+                //cell.CellStyle = styleHeader;
+                //columnIndex++;
+                //cell = row.CreateCell(columnIndex);
+                //cell.SetCellValue("CT");
+                //cell.CellStyle = styleHeader;
+                //columnIndex++;
                 cell = row.CreateCell(columnIndex);
                 cell.SetCellValue("Lần");
                 cell.CellStyle = styleHeader;
@@ -1513,18 +1519,23 @@ namespace erp.Controllers
                 columnIndex++;
 
                 cell = row.CreateCell(columnIndex);
-                cell.SetCellValue("OM");
+                cell.SetCellValue("P");
                 cell.CellStyle = styleHeader;
                 columnIndex++;
 
-                cell = row.CreateCell(columnIndex);
-                cell.SetCellValue("TS");
-                cell.CellStyle = styleHeader;
-                columnIndex++;
+                //cell = row.CreateCell(columnIndex);
+                //cell.SetCellValue("OM");
+                //cell.CellStyle = styleHeader;
+                //columnIndex++;
 
-                cell = row.CreateCell(columnIndex);
-                cell.SetCellValue("R");
-                cell.CellStyle = styleHeader;
+                //cell = row.CreateCell(columnIndex);
+                //cell.SetCellValue("TS");
+                //cell.CellStyle = styleHeader;
+                //columnIndex++;
+
+                //cell = row.CreateCell(columnIndex);
+                //cell.SetCellValue("R");
+                //cell.CellStyle = styleHeader;
                 rowIndex++;
 
                 var groups = (from s in times
@@ -1555,9 +1566,13 @@ namespace erp.Controllers
                     double TC2 = 0;
                     double TC3 = 0;
                     double vangKP = 0;
+                    double ngayNghiP = 0;
                     double ngayNghiOM = 0;
                     double ngayNghiTS = 0;
                     double ngayNghiR = 0;
+
+                    var rowEF = rowIndex;
+                    var rowET = rowIndex + 4;
 
                     var employeeInfo = dbContext.Employees.Find(m => m.Id.Equals(group.EmployeeId)).FirstOrDefault();
                     row = sheet1.CreateRow(rowIndex);
@@ -1574,28 +1589,28 @@ namespace erp.Controllers
                     sheet1.AddMergedRegion(cellRangeAddress);
                     cell = row.CreateCell(columnIndex, CellType.String);
                     cell.SetCellValue(employeeInfo.Code + " (" + employeeInfo.CodeOld + ")");
-                    cell.CellStyle = styleDedaultMerge;
+                    cell.CellStyle = styleFullText;
                     columnIndex++;
 
                     cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
                     sheet1.AddMergedRegion(cellRangeAddress);
                     cell = row.CreateCell(columnIndex, CellType.String);
                     cell.SetCellValue(employeeInfo.FullName);
-                    cell.CellStyle = styleDedaultMerge;
+                    cell.CellStyle = styleFullText;
                     columnIndex++;
 
                     cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
                     sheet1.AddMergedRegion(cellRangeAddress);
                     cell = row.CreateCell(columnIndex, CellType.String);
                     cell.SetCellValue(employeeInfo.Title);
-                    cell.CellStyle = styleDedaultMerge;
+                    cell.CellStyle = styleFullText;
                     columnIndex++;
 
                     cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
                     sheet1.AddMergedRegion(cellRangeAddress);
-                    cell = row.CreateCell(columnIndex, CellType.String);
+                    cell = row.CreateCell(columnIndex, CellType.Numeric);
                     cell.SetCellValue(Convert.ToInt32(group.timekeepers[0].EnrollNumber).ToString("000"));
-                    cell.CellStyle = styleDedaultMerge;
+                    cell.CellStyle = styleFullText;
                     columnIndex++;
 
                     cell = row.CreateCell(columnIndex, CellType.String);
@@ -1675,55 +1690,81 @@ namespace erp.Controllers
                                     raSomLan++;
                                     raSomPhut += item.Early.TotalMinutes;
                                 }
-
-                            }
-
-                            var displayIn1 = string.Empty;
-                            var displayIn2 = string.Empty;
-                            var displayOut1 = string.Empty;
-                            var displayOut2 = string.Empty;
-                            if (item.In.HasValue)
-                            {
-                                displayIn1 = item.In.ToString();
-                            }
-                            if (item.Out.HasValue)
-                            {
-                                displayOut1 = item.Out.ToString();
-                            }
-                            // displayInOut
-                            if (item.Logs != null && item.Logs.Count > 0)
-                            {
-                                foreach (var log in item.Logs)
+                                // First, không tính 15p
+                                var timeoutin = item.Out - item.In;
+                                if (timeoutin.HasValue && timeoutin.Value.TotalHours > 6)
                                 {
-                                    //< p style = "margin-bottom: 0;" >< small > @log.Date.ToString("dd/MM/yyyy HH:mm:ss") </ small ></ p >
+                                    ngayCongNT++;
+                                }
+                                else
+                                {
+                                    ngayCongNT += item.WorkDay;
                                 }
                             }
 
-                            cell = row.CreateCell(columnIndex, CellType.String);
-                            cell.SetCellValue(displayIn1);
-                            cell.CellStyle = styleDot;
-
-                            cell = rowout1.CreateCell(columnIndex, CellType.String);
-                            cell.SetCellValue(displayOut1);
-                            cell.CellStyle = styleDedault;
-
-                            cell = rowin2.CreateCell(columnIndex, CellType.String);
-                            cell.SetCellValue(displayIn2);
-                            if (!string.IsNullOrEmpty(displayIn2))
+                            if (item.Mode == (int)ETimeWork.LeavePhep)
                             {
+                                ngayNghiP += item.SoNgayNghi;
+                            }
+
+                            if (item.Mode > (int)ETimeWork.Normal && item.Logs == null)
+                            {
+                                cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
+                                sheet1.AddMergedRegion(cellRangeAddress);
+                                cell = row.CreateCell(columnIndex, CellType.String);
+                                cell.SetCellValue(item.Reason);
+                                cell.CellStyle = styleDedaultMerge;
+                                var rowCellRangeAddress = new CellRangeAddress(rowEF, rowET, columnIndex, columnIndex);
+                                sheet1.AddMergedRegion(rowCellRangeAddress);
+                                RegionUtil.SetBorderTop((int)BorderStyle.Thin, rowCellRangeAddress, sheet1, workbook);
+                                RegionUtil.SetBorderLeft((int)BorderStyle.Thin, rowCellRangeAddress, sheet1, workbook);
+                                RegionUtil.SetBorderRight((int)BorderStyle.Thin, rowCellRangeAddress, sheet1, workbook);
+                                RegionUtil.SetBorderBottom((int)BorderStyle.Thin, rowCellRangeAddress, sheet1, workbook);
+
+                            }
+                            else
+                            {
+                                var displayIn1 = string.Empty;
+                                var displayIn2 = string.Empty;
+                                var displayOut1 = string.Empty;
+                                var displayOut2 = string.Empty;
+                                if (item.In.HasValue)
+                                {
+                                    displayIn1 = item.In.ToString();
+                                }
+                                if (item.Out.HasValue)
+                                {
+                                    displayOut1 = item.Out.ToString();
+                                }
+
+                                cell = row.CreateCell(columnIndex, CellType.String);
+                                cell.SetCellValue(displayIn1);
                                 cell.CellStyle = styleDot;
-                            }
 
-                            cell = rowout2.CreateCell(columnIndex, CellType.String);
-                            cell.SetCellValue(displayOut2);
-                            if (!string.IsNullOrEmpty(displayOut2))
-                            {
+                                cell = rowout1.CreateCell(columnIndex, CellType.String);
+                                cell.SetCellValue(displayOut1);
                                 cell.CellStyle = styleDedault;
-                            }
 
-                            cell = rowreason.CreateCell(columnIndex, CellType.String);
-                            cell.SetCellValue(item.Reason);
-                            cell.CellStyle = styleSmall;
+                                cell = rowin2.CreateCell(columnIndex, CellType.String);
+                                cell.SetCellValue(displayIn2);
+                                if (!string.IsNullOrEmpty(displayIn2))
+                                {
+                                    cell.CellStyle = styleDot;
+                                }
+                                else
+                                {
+                                    cell.CellStyle = styleDedault;
+                                }
+
+                                cell = rowout2.CreateCell(columnIndex, CellType.String);
+                                cell.SetCellValue(displayOut2);
+                                cell.CellStyle = styleDedault;
+                                
+                                cell = rowreason.CreateCell(columnIndex, CellType.String);
+                                cell.SetCellValue(item.Reason);
+                                cell.CellStyle = styleSmall;
+                            }
+                            
                             columnIndex++;
                         }
                         else
@@ -1733,10 +1774,17 @@ namespace erp.Controllers
                             cell = row.CreateCell(columnIndex, CellType.String);
                             cell.SetCellValue(Constants.NA);
                             cell.CellStyle = styleDedaultMerge;
+                            var rowCellRangeAddress = new CellRangeAddress(rowEF, rowET, columnIndex, columnIndex);
+                            sheet1.AddMergedRegion(rowCellRangeAddress);
+                            RegionUtil.SetBorderTop((int)BorderStyle.Thin, rowCellRangeAddress, sheet1, workbook);
+                            RegionUtil.SetBorderLeft((int)BorderStyle.Thin, rowCellRangeAddress, sheet1, workbook);
+                            RegionUtil.SetBorderRight((int)BorderStyle.Thin, rowCellRangeAddress, sheet1, workbook);
+                            RegionUtil.SetBorderBottom((int)BorderStyle.Thin, rowCellRangeAddress, sheet1, workbook);
                             columnIndex++;
                         }
                     }
 
+                    var columnIndexF = columnIndex;
                     cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
                     sheet1.AddMergedRegion(cellRangeAddress);
                     cell = row.CreateCell(columnIndex, CellType.Numeric);
@@ -1751,19 +1799,19 @@ namespace erp.Controllers
                     cell.CellStyle = styleDedaultMerge;
                     columnIndex++;
 
-                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
-                    sheet1.AddMergedRegion(cellRangeAddress);
-                    cell = row.CreateCell(columnIndex, CellType.Numeric);
-                    cell.SetCellValue(Math.Round(gioCongNT, 2));
-                    cell.CellStyle = styleDedaultMerge;
-                    columnIndex++;
+                    //cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
+                    //sheet1.AddMergedRegion(cellRangeAddress);
+                    //cell = row.CreateCell(columnIndex, CellType.Numeric);
+                    //cell.SetCellValue(Math.Round(gioCongNT, 2));
+                    //cell.CellStyle = styleDedaultMerge;
+                    //columnIndex++;
 
-                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
-                    sheet1.AddMergedRegion(cellRangeAddress);
-                    cell = row.CreateCell(columnIndex, CellType.Numeric);
-                    cell.SetCellValue(Math.Round(gioCongCT, 2));
-                    cell.CellStyle = styleDedaultMerge;
-                    columnIndex++;
+                    //cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
+                    //sheet1.AddMergedRegion(cellRangeAddress);
+                    //cell = row.CreateCell(columnIndex, CellType.Numeric);
+                    //cell.SetCellValue(Math.Round(gioCongCT, 2));
+                    //cell.CellStyle = styleDedaultMerge;
+                    //columnIndex++;
 
                     cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
                     sheet1.AddMergedRegion(cellRangeAddress);
@@ -1824,32 +1872,61 @@ namespace erp.Controllers
                     cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
                     sheet1.AddMergedRegion(cellRangeAddress);
                     cell = row.CreateCell(columnIndex, CellType.Numeric);
-                    cell.SetCellValue(ngayNghiOM);
+                    cell.SetCellValue(ngayNghiP);
                     cell.CellStyle = styleDedaultMerge;
-                    columnIndex++;
+                    //columnIndex++;
 
-                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
-                    sheet1.AddMergedRegion(cellRangeAddress);
-                    cell = row.CreateCell(columnIndex, CellType.Numeric);
-                    cell.SetCellValue(ngayNghiTS);
-                    cell.CellStyle = styleDedaultMerge;
-                    columnIndex++;
+                    //cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
+                    //sheet1.AddMergedRegion(cellRangeAddress);
+                    //cell = row.CreateCell(columnIndex, CellType.Numeric);
+                    //cell.SetCellValue(ngayNghiOM);
+                    //cell.CellStyle = styleDedaultMerge;
+                    //columnIndex++;
 
-                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
-                    sheet1.AddMergedRegion(cellRangeAddress);
-                    cell = row.CreateCell(columnIndex, CellType.Numeric);
-                    cell.SetCellValue(ngayNghiR);
-                    cell.CellStyle = styleDedaultMerge;
+                    //cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
+                    //sheet1.AddMergedRegion(cellRangeAddress);
+                    //cell = row.CreateCell(columnIndex, CellType.Numeric);
+                    //cell.SetCellValue(ngayNghiTS);
+                    //cell.CellStyle = styleDedaultMerge;
+                    //columnIndex++;
+
+                    //cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
+                    //sheet1.AddMergedRegion(cellRangeAddress);
+                    //cell = row.CreateCell(columnIndex, CellType.Numeric);
+                    //cell.SetCellValue(ngayNghiR);
+                    //cell.CellStyle = styleDedaultMerge;
+
+                    var columnIndexT = columnIndex;
                     columnIndex++;
 
                     rowIndex = rowIndex + 4;
                     rowIndex++;
                     order++;
+                    #region fix border
+                    for (var i = 0; i < 5; i++)
+                    {
+                        var rowCellRangeAddress = new CellRangeAddress(rowEF, rowET, i, i);
+                        sheet1.AddMergedRegion(rowCellRangeAddress);
+                        RegionUtil.SetBorderTop((int)BorderStyle.Thin, rowCellRangeAddress, sheet1, workbook);
+                        RegionUtil.SetBorderLeft((int)BorderStyle.Thin, rowCellRangeAddress, sheet1, workbook);
+                        RegionUtil.SetBorderRight((int)BorderStyle.Thin, rowCellRangeAddress, sheet1, workbook);
+                        RegionUtil.SetBorderBottom((int)BorderStyle.Thin, rowCellRangeAddress, sheet1, workbook);
+                    }
+                    for (var y = columnIndexF; y <= columnIndexT; y++)
+                    {
+                        var rowCellRangeAddress = new CellRangeAddress(rowEF, rowET, y, y);
+                        sheet1.AddMergedRegion(rowCellRangeAddress);
+                        RegionUtil.SetBorderTop((int)BorderStyle.Thin, rowCellRangeAddress, sheet1, workbook);
+                        RegionUtil.SetBorderLeft((int)BorderStyle.Thin, rowCellRangeAddress, sheet1, workbook);
+                        RegionUtil.SetBorderRight((int)BorderStyle.Thin, rowCellRangeAddress, sheet1, workbook);
+                        RegionUtil.SetBorderBottom((int)BorderStyle.Thin, rowCellRangeAddress, sheet1, workbook);
+                    }
+                    #endregion
                 }
 
                 #region fix border
-                var rowF = 6;
-                var rowT = 7;
+                var rowF = 7;
+                var rowT = 8;
                 for (var i = 0; i < 6; i++)
                 {
                     var rowCellRangeAddress = new CellRangeAddress(rowF, rowT, i, i);

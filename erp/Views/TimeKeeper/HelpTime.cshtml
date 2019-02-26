@@ -239,12 +239,13 @@
                         // Cho phép xác nhận tháng tính lương và hiện tại
                         var today = DateTime.Now.Date;
                         var currentMonth = today.Day > 25 ? today.AddMonths(1).Month : today.Month;
+                        var endDateRequest = new DateTime(today.Year, today.Month, 28);
                         var i = 1;
                         foreach (var log in Model.EmployeeWorkTimeLogs)
                         {
                             bool isCalHour = false;
                             bool isToday = false;
-                            if (log.Mode == (int)ETimeWork.Holiday || log.Mode == (int)ETimeWork.Sunday)
+                            if (log.Mode >= (int)ETimeWork.Sunday)
                             {
                                 isCalHour = true;
                             }
@@ -266,39 +267,47 @@
                                             {
                                                 if (log.Status == (int)EStatusWork.XacNhanCong)
                                                 {
+
                                                     if (log.Month == currentMonth)
                                                     {
                                                         <input type="button" class="btn btn-sm btn-danger" value="Xác nhận công" data-toggle="modal" data-target="#requestTimeKeeperModal" data-id="@log.Id" />
                                                     }
                                                     else
                                                     {
-                                                        var displayStatus = string.Empty;
-                                                        if (Math.Round(log.Late.TotalMinutes, 0) > 0)
+                                                        if (today < endDateRequest)
                                                         {
-                                                            displayStatus += string.IsNullOrEmpty(displayStatus) ? "" : " - ";
-                                                            displayStatus += "Trễ";
+                                                            <input type="button" class="btn btn-sm btn-danger" value="Xác nhận công" data-toggle="modal" data-target="#requestTimeKeeperModal" data-id="@log.Id" />
                                                         }
-                                                        if (Math.Round(log.Early.TotalMinutes, 0) > 0)
+                                                        else
                                                         {
-                                                            displayStatus += string.IsNullOrEmpty(displayStatus) ? "" : " - ";
-                                                            displayStatus += "Sớm";
+                                                            var displayStatus = string.Empty;
+                                                            if (Math.Round(log.Late.TotalMinutes, 0) > 0)
+                                                            {
+                                                                displayStatus += string.IsNullOrEmpty(displayStatus) ? "" : " - ";
+                                                                displayStatus += "Trễ";
+                                                            }
+                                                            if (Math.Round(log.Early.TotalMinutes, 0) > 0)
+                                                            {
+                                                                displayStatus += string.IsNullOrEmpty(displayStatus) ? "" : " - ";
+                                                                displayStatus += "Sớm";
+                                                            }
+                                                            if (!log.In.HasValue && !log.Out.HasValue)
+                                                            {
+                                                                displayStatus += string.IsNullOrEmpty(displayStatus) ? "" : " - ";
+                                                                displayStatus += "Thiếu";
+                                                            }
+                                                            else if (!log.In.HasValue)
+                                                            {
+                                                                displayStatus += string.IsNullOrEmpty(displayStatus) ? "" : " - ";
+                                                                displayStatus += "Thiếu vào";
+                                                            }
+                                                            else if (!log.Out.HasValue)
+                                                            {
+                                                                displayStatus += string.IsNullOrEmpty(displayStatus) ? "" : " - ";
+                                                                displayStatus += "Thiếu ra";
+                                                            }
+                                                            <small class="badge badge-secondary">@displayStatus</small>
                                                         }
-                                                        if (!log.In.HasValue && !log.Out.HasValue)
-                                                        {
-                                                            displayStatus += string.IsNullOrEmpty(displayStatus) ? "" : " - ";
-                                                            displayStatus += "Thiếu";
-                                                        }
-                                                        else if (!log.In.HasValue)
-                                                        {
-                                                            displayStatus += string.IsNullOrEmpty(displayStatus) ? "" : " - ";
-                                                            displayStatus += "Thiếu vào";
-                                                        }
-                                                        else if (!log.Out.HasValue)
-                                                        {
-                                                            displayStatus += string.IsNullOrEmpty(displayStatus) ? "" : " - ";
-                                                            displayStatus += "Thiếu ra";
-                                                        }
-                                                        <small class="badge badge-secondary">@displayStatus</small>
                                                     }
                                                 }
                                                 else
@@ -320,20 +329,15 @@
                                             {
                                                 var loaitangca = string.Empty;
                                                 var statusTangCa = log.StatusTangCa;
-                                                if (statusTangCa == (int)ETangCa.CanXacNhan)
-                                                {
-                                                    <input type="button" class="btn btn-sm btn-danger" value="Xác nhận tăng ca @loaitangca" data-toggle="modal" data-target="#requestTimeKeeperModal" data-id="@log.Id" />
-                                                }
-                                                else if (statusTangCa > (int)ETangCa.CanXacNhan)
-                                                {
-                                                    var statusBag = statusTangCa == (int)ETangCa.TuChoi ? "badge-pill" : "badge-info";
-                                                    <span class="badge @statusBag">@Constants.StringTangCa(log.StatusTangCa)</span>
-                                                }
+                                                var statusBag = statusTangCa == (int)ETangCa.TuChoi ? "badge-pill" : "badge-info";
+                                                <span class="badge @statusBag">@Constants.StringTangCa(statusTangCa)</span>
                                             }
+
+
+
                                         }
                                     }
                                 </td>
-
                                 <td>@i</td>
                                 <td scope="row">
                                     <span class="text-muted">@log.Date.ToString("dd/MM/yyyy")</span>

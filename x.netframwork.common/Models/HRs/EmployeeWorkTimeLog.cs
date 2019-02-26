@@ -89,6 +89,10 @@ namespace Models
         
         public int Mode { get; set; } = (int)ETimeWork.Normal;
 
+        #region Leave
+        public double SoNgayNghi { get; set; } = 0;
+        #endregion
+
         // use define salary loction
         // base luong [SalaryType] : VP, NM, SX
         public int Workcode { get; set; }

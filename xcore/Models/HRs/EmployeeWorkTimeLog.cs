@@ -63,6 +63,8 @@ namespace Models
         [Display(Name = "Ngày công")]
         public TimeSpan WorkTime { get; set; }
 
+        public double WorkDay { get; set; } = 0;
+
         // Giờ tăng ca thực tế
         public TimeSpan TangCaThucTe { get; set; }
 
@@ -104,6 +106,10 @@ namespace Models
 
         public int Mode { get; set; } = (int)ETimeWork.Normal;
 
+        #region Leave
+        public double SoNgayNghi { get; set; } = 0;
+        #endregion
+
         // use define salary loction
         // base luong [SalaryType] : VP, NM, SX
         public int Workcode { get; set; }
@@ -129,11 +135,11 @@ namespace Models
         #endregion
 
         #region No Use
-        public double WorkDay { get; set; } = 0;
         public TimeSpan Late { get; set; }
         public TimeSpan Early { get; set; }
         public int StatusLate { get; set; } = (int)EStatusWork.DuCong;
         public int StatusEarly { get; set; } = (int)EStatusWork.DuCong;
         #endregion
+
     }
 }

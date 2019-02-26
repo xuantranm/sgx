@@ -309,11 +309,18 @@ namespace erp.Controllers
             {
                 if (!string.IsNullOrEmpty(employee.Department))
                 {
-                    var match = departmentsFilter.FirstOrDefault(m => m.Name.Contains(employee.Department));
-                    if (match == null)
+                    try
                     {
-                        var department = departments.Find(m => m.Name.Equals(employee.Department));
-                        departmentsFilter.Add(department);
+                        var match = departmentsFilter.FirstOrDefault(m => m.Name.Contains(employee.Department));
+                        if (match == null)
+                        {
+                            var department = departments.Find(m => m.Name.Equals(employee.Department));
+                            departmentsFilter.Add(department);
+                        }
+                    }
+                    catch(Exception ex)
+                    {
+
                     }
                 }
             }

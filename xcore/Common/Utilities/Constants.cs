@@ -5,6 +5,11 @@ namespace Common.Utilities
 {
     public static class Constants
     {
+        public static string Truncate(this string value, int maxChars)
+        {
+            return value.Length <= maxChars ? value : value.Substring(0, maxChars) + "...";
+        }
+
         public static class ActionLink
         {
             public const string Init = "init";
