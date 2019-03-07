@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Common.Utilities;
 using Data;
@@ -32,14 +33,12 @@ namespace tribatvn.Controllers
             _logger = logger;
         }
 
-        #region Init Data
         // Call an initialization - api/system/init
         [HttpGet("{setting}")]
         public string Get(string setting)
         {
             if (setting == "init")
             {
-                InitUpdateText();
                 //_logger.LogInformation(LoggingEvents.GenerateItems, "Generate first data");
 
                 //InitLanguages();
@@ -51,6 +50,12 @@ namespace tribatvn.Controllers
                 //InitCategories();
 
                 //InitProducts();
+
+                InitPhanBon();
+
+                InitOthers();
+
+                //UpdateContents();
 
                 //InitContents();
 
@@ -66,129 +71,6 @@ namespace tribatvn.Controllers
             }
 
             return Constants.String_Y;
-        }
-
-        public void InitUpdateText()
-        {
-            #region 501
-            dbContext.Texts.InsertOne(new Text()
-            {
-                Code = 501,
-                Content = "Product",
-                ContentPlainText = "Product",
-                ToolTip = "Product",
-                Seo = "Product",
-                Type = "home",
-                Language = Constants.Languages.English
-            });
-            #endregion
-
-            #region 506
-            dbContext.Texts.InsertOne(new Text()
-            {
-                Code = 506,
-                Content = "Processing - Recycling",
-                ContentPlainText = "Processing - Recycling",
-                ToolTip = "Processing - Recycling",
-                Seo = "Processing - Recycling",
-                Type = "home",
-                Language = Constants.Languages.English
-            });
-            #endregion
-
-            #region 510
-            dbContext.Texts.InsertOne(new Text()
-            {
-                Code = 510,
-                Content = "Services",
-                ContentPlainText = "Services",
-                ToolTip = "Services",
-                Seo = "Services",
-                Type = "home",
-                Language = Constants.Languages.English
-            });
-            #endregion
-
-            #region 514
-            dbContext.Texts.InsertOne(new Text()
-            {
-                Code = 514,
-                Content = "UI",
-                ContentPlainText = "UI",
-                ToolTip = "UI",
-                Seo = "UI",
-                Type = "home",
-                Language = Constants.Languages.English
-            });
-            #endregion
-
-            #region 578
-            dbContext.Texts.InsertOne(new Text()
-            {
-                Code = 578,
-                Content = "Xem thêm",
-                ContentPlainText = "Xem thêm",
-                ToolTip = "Xem thêm",
-                Seo = "Xem thêm",
-                Type = "home",
-                Language = Constants.Languages.Vietnamese
-            });
-            dbContext.Texts.InsertOne(new Text()
-            {
-                Code = 578,
-                Content = "View more features",
-                ContentPlainText = "View more features",
-                ToolTip = "View more features",
-                Seo = "View more features",
-                Type = "home",
-                Language = Constants.Languages.English
-            });
-            #endregion
-            #region 579
-            dbContext.Texts.InsertOne(new Text()
-            {
-                Code = 579,
-                Content = "Mô tả ngắn...",
-                ContentPlainText = "Mô tả ngắn...",
-                ToolTip = "Mô tả ngắn...",
-                Seo = "Mô tả ngắn...",
-                Type = "home",
-                Language = Constants.Languages.Vietnamese
-            });
-            dbContext.Texts.InsertOne(new Text()
-            {
-                Code = 579,
-                Content = "Short description...",
-                ContentPlainText = "Short description...",
-                ToolTip = "Short description...",
-                Seo = "Short description...",
-                Type = "home",
-                Language = Constants.Languages.English
-            });
-            #endregion
-
-            #region 580
-            dbContext.Texts.InsertOne(new Text()
-            {
-                Code = 580,
-                Content = "Chi tiết ngắn...",
-                ContentPlainText = "Chi tiết ngắn...",
-                ToolTip = "Chi tiết ngắn...",
-                Seo = "Chi tiết ngắn...",
-                Type = "home",
-                Language = Constants.Languages.Vietnamese
-            });
-            dbContext.Texts.InsertOne(new Text()
-            {
-                Code = 580,
-                Content = "Short detail...",
-                ContentPlainText = "Short detail...",
-                ToolTip = "Short detail...",
-                Seo = "Short detail...",
-                Type = "home",
-                Language = Constants.Languages.English
-            });
-            #endregion
         }
 
         public void InitLanguages()
@@ -528,179 +410,360 @@ namespace tribatvn.Controllers
 
         public void InitProducts()
         {
-            dbContext.ProductSales.DeleteMany(new BsonDocument());
+            dbContext.ProductSales.DeleteMany(m=>true);
 
-            #region Product VI
-            dbContext.ProductSales.InsertOne(new ProductSale()
-            {
-                Code = 1,
-                CategoryCode = 1,
-                Name = "Đất Việt 50, 20 dm3",
-                Alias = "dat-viet-50-20dm3",
-                Price = 0,
-                Description = "a/ Đặc tính sản phẩm",
-                Content = "a/ Đặc tính sản phẩm",
-                KeyWords = "đất sạch, đất dinh dưỡng, cây xanh, cây ăn trái, rau sạch, tribat, saigon xanh",
-                OgTitle = "Công ty TNHH CNSH SÀI GÒN XANH",
-                OgDescription = "Đất sạch, xử lý - tái chế bùn thải",
-                Language = Constants.Languages.Vietnamese
-            });
-            dbContext.ProductSales.InsertOne(new ProductSale()
-            {
-                Code = 2,
-                CategoryCode = 1,
-                Name = "Đất trồng thuốc lá",
-                Alias = "dat-trong-thuoc-la",
-                Price = 0,
-                Description = "Đất trồng thuốc lá",
-                Content = "Đất trồng thuốc lá",
-                KeyWords = "đất trồng thuốc lá, đất dinh dưỡng, cây xanh, cây ăn trái, rau sạch, tribat, saigon xanh",
-                OgTitle = "Công ty TNHH CNSH SÀI GÒN XANH",
-                OgDescription = "Đất sạch, xử lý - tái chế bùn thải",
-                Language = Constants.Languages.Vietnamese
-            });
-            dbContext.ProductSales.InsertOne(new ProductSale()
-            {
-                Code = 3,
-                CategoryCode = 1,
-                Name = "Đất trồng cây: 40dm3",
-                Alias = "dat-trong-cay-40dm3",
-                Price = 0,
-                Description = "Đất trồng cây: 40dm3",
-                Content = "Đất trồng cây: 40dm3",
-                KeyWords = "đất trồng cây: 40dm3, đất dinh dưỡng, cây xanh, cây ăn trái, rau sạch, tribat, saigon xanh",
-                OgTitle = "Công ty TNHH CNSH SÀI GÒN XANH",
-                OgDescription = "Đất sạch, xử lý - tái chế bùn thải",
-                Images = new List<Image>()
-                {
-                    new Image{
-                        Path = "images/p/3/",
-                        FileName = "1449045882dattrongcay.jpg",
-                        Order = 1,
-                        Main = true
-                    }
-                },
-                Language = Constants.Languages.Vietnamese
-            });
-            dbContext.ProductSales.InsertOne(new ProductSale()
-            {
-                Code = 4,
-                CategoryCode = 1,
-                Name = "Đất trồng mai: 20dm3",
-                Alias = "dat-trong-mai-20dm3",
-                Price = 0,
-                Description = "Đất trồng mai: 20dm3",
-                Content = "Đất trồng mai: 20dm3",
-                KeyWords = "đất trồng mai: 20dm3, đất dinh dưỡng, cây xanh, cây ăn trái, rau sạch, tribat, saigon xanh",
-                OgTitle = "Công ty TNHH CNSH SÀI GÒN XANH",
-                OgDescription = "Đất sạch, xử lý - tái chế bùn thải",
-                Images = new List<Image>()
-                {
-                    new Image{
-                        Path = "images/p/4/",
-                        FileName = "1449045939dattrongmai.jpg",
-                        Order = 1,
-                        Main = true
-                    }
-                },
-                Language = Constants.Languages.Vietnamese
-            });
-            dbContext.ProductSales.InsertOne(new ProductSale()
-            {
-                Code = 5,
-                CategoryCode = 1,
-                Name = "Đất trồng rau: 20dm3; 10dm3; 5dm3",
-                Alias = "dat-trong-rau-20dm3-10dm3-5dm3",
-                Price = 0,
-                Description = "Đất trồng rau: 20dm3; 10dm3; 5dm3",
-                Content = "Đất trồng rau: 20dm3; 10dm3; 5dm3",
-                KeyWords = "đất trồng rau: 20dm3; 10dm3; 5dm3, đất dinh dưỡng, cây xanh, cây ăn trái, rau sạch, tribat, saigon xanh",
-                OgTitle = "Công ty TNHH CNSH SÀI GÒN XANH",
-                OgDescription = "Đất sạch, xử lý - tái chế bùn thải",
-                Images = new List<Image>()
-                {
-                    new Image{
-                        Path = "images/p/5/",
-                        FileName = "1449045982dattrongrau.jpg",
-                        Order = 1,
-                        Main = true
-                    }
-                },
-                Language = Constants.Languages.Vietnamese
-            });
-            #endregion
+            int code = 1;
+            int categoryCode = 1;
+            string name = string.Empty;
+            string description = string.Empty;
+            string nameEn = string.Empty;
+            string descriptionEn = string.Empty;
 
-            #region Product EN
+            #region ĐẤT SẠCH DINH DƯỠNG ĐA NĂNG
+            name = "ĐẤT SẠCH DINH DƯỠNG ĐA NĂNG";
+            nameEn = "MULTI-FUNCTIONAL NUTRITION CLEAN";
+            description = "Giàu dinh dưỡng, sạch mầm bệnh, đất sạch Tribat được sử dụng thay thế các loại đất thông thường để trồng rau, hoa, cây cảnh và ươm cây hiệu quả.";
+            descriptionEn = "Rich in nutrients, clean germs, clean soil Tribat is used to replace common soils to grow vegetables, flowers, ornamental plants and seedlings effectively.";
             dbContext.ProductSales.InsertOne(new ProductSale()
             {
-                Code = 1,
-                CategoryCode = 1,
-                Name = "Vietnamese land 50, 20 dm3",
-                Alias = "vietnamese-land-50-20dm3",
-                Language = Constants.Languages.English
+                Code = code,
+                CategoryCode = categoryCode,
+                Name = name,
+                Description = description,
+                Language = Constants.Languages.Vietnamese
             });
             dbContext.ProductSales.InsertOne(new ProductSale()
             {
-                Code = 2,
-                CategoryCode = 1,
-                Name = "Cultivation of tobacco",
-                Alias = "cultivation-of-tobacco",
-                Language = Constants.Languages.English
-            });
-            dbContext.ProductSales.InsertOne(new ProductSale()
-            {
-                Code = 3,
-                CategoryCode = 1,
-                Name = "Woodland: 40dm3",
-                Alias = "woodland-40dm3",
-                Images = new List<Image>()
-                {
-                    new Image{
-                        Path = "images/p/3/",
-                        FileName = "1449045882dattrongcay.jpg",
-                        Order = 1,
-                        Main = true
-                    }
-                },
-                Language = Constants.Languages.English
-            });
-            dbContext.ProductSales.InsertOne(new ProductSale()
-            {
-                Code = 4,
-                CategoryCode = 1,
-                Name = "Land for planting apricots: 20dm3",
-                Alias = "land-for-planting-apricots-20dm3",
-                Images = new List<Image>()
-                {
-                    new Image{
-                        Path = "images/p/4/",
-                        FileName = "1449045939dattrongmai.jpg",
-                        Order = 1,
-                        Main = true
-                    }
-                },
-                Language = Constants.Languages.English
-            });
-            dbContext.ProductSales.InsertOne(new ProductSale()
-            {
-                Code = 5,
-                CategoryCode = 1,
-                Name = "Land for growing vegetables: 20dm3; 10dm3; 5dm3",
-                Alias = "land-for-growing-vegetables-20dm3-10dm3-5dm3",
-                Images = new List<Image>()
-                {
-                    new Image{
-                        Path = "images/p/5/",
-                        FileName = "1449045982dattrongrau.jpg",
-                        Order = 1,
-                        Main = true
-                    }
-                },
+                Code = code,
+                CategoryCode = categoryCode,
+                Name = nameEn,
+                Description = descriptionEn,
                 Language = Constants.Languages.English
             });
             #endregion
+            code++;
+
+            #region ĐẤT TRỒNG RAU
+            name = "ĐẤT TRỒNG RAU";
+            nameEn = "VEGETABLE GROUND";
+            description = "Sản phẩm tơi xốp có khả năng giữ ẩm cao, không chứa các mầm mống gây bệnh như nấm, tuyến trùng.";
+            descriptionEn = "Spongy products have high moisturizing ability, do not contain pathogens like fungi and nematodes.";
+            dbContext.ProductSales.InsertOne(new ProductSale()
+            {
+                Code = code,
+                CategoryCode = categoryCode,
+                Name = name,
+                Description = description,
+                Language = Constants.Languages.Vietnamese
+            });
+            dbContext.ProductSales.InsertOne(new ProductSale()
+            {
+                Code = code,
+                CategoryCode = categoryCode,
+                Name = nameEn,
+                Description = descriptionEn,
+                Language = Constants.Languages.English
+            });
+            #endregion
+            code++;
+
+            #region PROMIX
+            name = "ĐẤT PROMIX";
+            nameEn = "PROMIX LAND";
+            description = "Promix là loại đất trồng cây cao cấp đáp ứng nhu cầu trồng hoa, cây cảnh tại sân vườn, công viên. Sản phẩm bao gồm bùn hữu cơ đã qua xử lý, mụn dừa, tro trấu. Không chứa mầm mống gây bệnh. Dùng ngay không cần bón phân.";
+            descriptionEn = "Promix is a kind of land for high-class plants to meet the needs of growing flowers and ornamental plants at gardens and parks. Products include treated organic sludge, coco peat, rice husk ash. Does not contain pathogens. Use immediately without fertilizer.";
+            dbContext.ProductSales.InsertOne(new ProductSale()
+            {
+                Code = code,
+                CategoryCode = categoryCode,
+                Name = name,
+                Description = description,
+                Language = Constants.Languages.Vietnamese
+            });
+            dbContext.ProductSales.InsertOne(new ProductSale()
+            {
+                Code = code,
+                CategoryCode = categoryCode,
+                Name = nameEn,
+                Description = descriptionEn,
+                Language = Constants.Languages.English
+            });
+            #endregion
+            code++;
+
+            #region ĐẤT VIỆT
+            name = "ĐẤT VIỆT";
+            nameEn = "VIET LAND";
+            description = "Giàu dinh dưỡng, cung cấp dưỡng chất bền lâu cho cây trồng. Có khả năng giữ và thoát nước tốt";
+            descriptionEn = "Rich in nutrients, providing long-lasting nutrients for plants. Good ability to hold and drain water";
+            dbContext.ProductSales.InsertOne(new ProductSale()
+            {
+                Code = code,
+                CategoryCode = categoryCode,
+                Name = name,
+                Description = description,
+                Language = Constants.Languages.Vietnamese
+            });
+            dbContext.ProductSales.InsertOne(new ProductSale()
+            {
+                Code = code,
+                CategoryCode = categoryCode,
+                Name = nameEn,
+                Description = descriptionEn,
+                Language = Constants.Languages.English
+            });
+            #endregion
+            code++;
+
+            #region ĐÂT TRỒNG MAI
+            name = "ĐẤT TRỒNG MAI";
+            nameEn = "apricop land".ToUpper();
+            description = "Đất chuyên dụng cho trồng tất cả các giống mai, đặc biệt trồng chậu, bồn.";
+            descriptionEn = "Dedicated land for planting all types of apricot, especially planting pots and tubs.";
+            dbContext.ProductSales.InsertOne(new ProductSale()
+            {
+                Code = code,
+                CategoryCode = categoryCode,
+                Name = name,
+                Description = description,
+                Language = Constants.Languages.Vietnamese
+            });
+            dbContext.ProductSales.InsertOne(new ProductSale()
+            {
+                Code = code,
+                CategoryCode = categoryCode,
+                Name = nameEn,
+                Description = descriptionEn,
+                Language = Constants.Languages.English
+            });
+            #endregion
+
+            // Update alias, picture...
+            var products = dbContext.ProductSales.Find(m => true).ToList();
+            foreach (var product in products)
+            {
+                var image = new List<Image>()
+                {
+                    new Image{
+                        Path = "images/p/" + product.CategoryCode +"/"+ product.Code,
+                        FileName = product.Code +".jpg",
+                        Order = 1,
+                        Main = true
+                    }
+                };
+                var filter = Builders<ProductSale>.Filter.Eq(m => m.Id, product.Id);
+                var update = Builders<ProductSale>.Update
+                    .Set(m => m.Alias, Utility.AliasConvert(product.Name))
+                    .Set(m => m.Images, image);
+                dbContext.ProductSales.UpdateOne(filter, update);
+            }
         }
 
+        public void InitPhanBon()
+        {
+            //dbContext.ProductSales.DeleteMany(m => true);
+
+            int code = 1;
+            int categoryCode = 3; // Phan Bon
+            string name = string.Empty;
+            string description = string.Empty;
+            string nameEn = string.Empty;
+            string descriptionEn = string.Empty;
+
+            #region PHÂN BÒ TRIBAT ĐÃ QUA XỬ LÝ
+            name = "PHÂN BÒ TRIBAT ĐÃ QUA XỬ LÝ";
+            nameEn = "TRIBAT DISTRIBUTION HAS BEEN TREATED";
+            description = "100% Phân bò tự nhiên đã xay sàng mịn, được ủ loại bỏ cỏ dại, kén nhộng của côn trùng và tuyến trùng gây bệnh. Sản phẩm dạng mùn dinh dưỡng ở dạng cây trồng dễ hấp thu.";
+            descriptionEn = "100% finely ground natural cow dung, annealed to remove weeds, cocoon of pathogenic insects and nematodes. Products of nutritional humus in the form of easily absorbed plants.";
+            dbContext.ProductSales.InsertOne(new ProductSale()
+            {
+                Code = code,
+                CategoryCode = categoryCode,
+                Name = name,
+                Description = description,
+                Language = Constants.Languages.Vietnamese
+            });
+            dbContext.ProductSales.InsertOne(new ProductSale()
+            {
+                Code = code,
+                CategoryCode = categoryCode,
+                Name = nameEn,
+                Description = descriptionEn,
+                Language = Constants.Languages.English
+            });
+            #endregion
+
+            // Update alias, picture...
+            var products = dbContext.ProductSales.Find(m => true).ToList();
+            foreach (var product in products)
+            {
+                var image = new List<Image>()
+                {
+                    new Image{
+                        Path = "images/p/" + product.CategoryCode + "/"+ product.Code,
+                        FileName = product.Code +".jpg",
+                        Order = 1,
+                        Main = true
+                    }
+                };
+                var filter = Builders<ProductSale>.Filter.Eq(m => m.Id, product.Id);
+                var update = Builders<ProductSale>.Update
+                    .Set(m => m.Alias, Utility.AliasConvert(product.Name))
+                    .Set(m => m.Images, image);
+                dbContext.ProductSales.UpdateOne(filter, update);
+            }
+        }
+
+        public void InitOthers()
+        {
+            //dbContext.ProductSales.DeleteMany(m => true);
+
+            int code = 1;
+            int categoryCode = 4; // San pham khac
+            string name = string.Empty;
+            string description = string.Empty;
+            string nameEn = string.Empty;
+            string descriptionEn = string.Empty;
+
+            #region ĐÁ SCORIA (ĐÁ NHAM THẠCH)
+            name = "ĐÁ SCORIA (ĐÁ NHAM THẠCH)";
+            nameEn = "SCORIA STONE";
+            description = "Lót dưới đáy chậu giúp thoát nước tốt";
+            descriptionEn = "The lining of the perineum helps to drain well";
+            dbContext.ProductSales.InsertOne(new ProductSale()
+            {
+                Code = code,
+                CategoryCode = categoryCode,
+                Name = name,
+                Description = description,
+                Language = Constants.Languages.Vietnamese
+            });
+            dbContext.ProductSales.InsertOne(new ProductSale()
+            {
+                Code = code,
+                CategoryCode = categoryCode,
+                Name = nameEn,
+                Description = descriptionEn,
+                Language = Constants.Languages.English
+            });
+            #endregion
+            code++;
+
+            #region GIÁ THỂ TRỒNG LAN
+            name = "GIÁ THỂ TRỒNG LAN";
+            nameEn = "LAN PLANTING";
+            description = "Đang cập nhật...";
+            descriptionEn = "We are updating...";
+            dbContext.ProductSales.InsertOne(new ProductSale()
+            {
+                Code = code,
+                CategoryCode = categoryCode,
+                Name = name,
+                Description = description,
+                Language = Constants.Languages.Vietnamese
+            });
+            dbContext.ProductSales.InsertOne(new ProductSale()
+            {
+                Code = code,
+                CategoryCode = categoryCode,
+                Name = nameEn,
+                Description = descriptionEn,
+                Language = Constants.Languages.English
+            });
+            #endregion
+            code++;
+
+            #region THẢM XƠ DỪA
+            name = "THẢM XƠ DỪA";
+            nameEn = "COCONUT CARPET";
+            description = "xơ dừa đã qua chế biến đã loại trừ Tanin và bổ sung các vi sinh vật có lợi cho cây trồng";
+            descriptionEn = "A processed coconut product that has eliminated tannin and added beneficial microorganisms to plants";
+            dbContext.ProductSales.InsertOne(new ProductSale()
+            {
+                Code = code,
+                CategoryCode = categoryCode,
+                Name = name,
+                Description = description,
+                Language = Constants.Languages.Vietnamese
+            });
+            dbContext.ProductSales.InsertOne(new ProductSale()
+            {
+                Code = code,
+                CategoryCode = categoryCode,
+                Name = nameEn,
+                Description = descriptionEn,
+                Language = Constants.Languages.English
+            });
+            #endregion
+            code++;
+
+            #region DỤNG CỤ LÀM VƯỜN
+            name = "DỤNG CỤ LÀM VƯỜN";
+            nameEn = "EQUIMENT TO DOING GARDEN";
+            description = "Khay trồng rau ăn lá, chậu treo tường";
+            descriptionEn = "Tray of growing leafy vegetables and hanging pots";
+            dbContext.ProductSales.InsertOne(new ProductSale()
+            {
+                Code = code,
+                CategoryCode = categoryCode,
+                Name = name,
+                Description = description,
+                Language = Constants.Languages.Vietnamese
+            });
+            dbContext.ProductSales.InsertOne(new ProductSale()
+            {
+                Code = code,
+                CategoryCode = categoryCode,
+                Name = nameEn,
+                Description = descriptionEn,
+                Language = Constants.Languages.English
+            });
+            #endregion
+            code++;
+
+            #region HÀNG RÀO CẢNH QUAN
+            name = "HÀNG RÀO CẢNH QUAN";
+            nameEn = "EQUIMENT TO DOING GARDEN";
+            description = "Hàng rào HR2, Hàng rào HR4";
+            descriptionEn = "HR2 Fence, HR4 Fence";
+            dbContext.ProductSales.InsertOne(new ProductSale()
+            {
+                Code = code,
+                CategoryCode = categoryCode,
+                Name = name,
+                Description = description,
+                Language = Constants.Languages.Vietnamese
+            });
+            dbContext.ProductSales.InsertOne(new ProductSale()
+            {
+                Code = code,
+                CategoryCode = categoryCode,
+                Name = nameEn,
+                Description = descriptionEn,
+                Language = Constants.Languages.English
+            });
+            #endregion
+            
+            // Update alias, picture...
+            var products = dbContext.ProductSales.Find(m => true).ToList();
+            foreach (var product in products)
+            {
+                var image = new List<Image>()
+                {
+                    new Image{
+                        Path = "images/p/" + product.CategoryCode + "/"+ product.Code,
+                        FileName = product.Code +".jpg",
+                        Order = 1,
+                        Main = true
+                    }
+                };
+                var filter = Builders<ProductSale>.Filter.Eq(m => m.Id, product.Id);
+                var update = Builders<ProductSale>.Update
+                    .Set(m => m.Alias, Utility.AliasConvert(product.Name))
+                    .Set(m => m.Images, image);
+                dbContext.ProductSales.UpdateOne(filter, update);
+            }
+        }
         public void InitSeos()
         {
             dbContext.SEOs.DeleteMany(new BsonDocument());
@@ -780,9 +843,65 @@ namespace tribatvn.Controllers
             });
         }
 
+        public void UpdateContents()
+        {
+            dbContext.Contents.InsertOne(new Content()
+            {
+                Code = "khachhang",
+                Title = "Khách hàng",
+                Alias = "khach-hang",
+                Language = Constants.Languages.Vietnamese
+            });
+            dbContext.Contents.InsertOne(new Content()
+            {
+                Code = "khachhang",
+                Title = "Customer",
+                Alias = "customer",
+                Language = Constants.Languages.English
+            });
+
+            
+            var contents = dbContext.Contents.Find(m => true).ToList();
+            foreach (var content in contents)
+            {
+                var filter = Builders<Content>.Filter.Eq(m => m.Id, content.Id);
+                var update = Builders<Content>.Update
+                    .Set(m => m.Name, content.Title);
+                dbContext.Contents.UpdateOne(filter, update);
+            }
+        }
+
         public void InitContents()
         {
             dbContext.Contents.DeleteMany(new BsonDocument());
+            dbContext.Contents.InsertOne(new Content()
+            {
+                Code = "khachhangvitridialy",
+                Title = "Vị trí địa lý",
+                Alias = "vi-tri-dia-ly",
+                Language = Constants.Languages.Vietnamese
+            });
+            dbContext.Contents.InsertOne(new Content()
+            {
+                Code = "khachhangvitridialy",
+                Title = "Geographical location",
+                Alias = "geographical-location",
+                Language = Constants.Languages.English
+            });
+            dbContext.Contents.InsertOne(new Content()
+            {
+                Code = "khachhangxulychatthai",
+                Title = "Danh sách khách hàng xử lý chất thải",
+                Alias = "danh-sach-khach-hang-xu-ly-chat-thai",
+                Language = Constants.Languages.Vietnamese
+            });
+            dbContext.Contents.InsertOne(new Content()
+            {
+                Code = "khachhangxulychatthai",
+                Title = "List of waste disposal customers",
+                Alias = "list-of-waste-disposal-customers",
+                Language = Constants.Languages.English
+            });
             dbContext.Contents.InsertOne(new Content()
             {
                 Code = "about",
@@ -867,20 +986,280 @@ namespace tribatvn.Controllers
                 Alias = "customer",
                 Language = Constants.Languages.English
             });
+            dbContext.Contents.InsertOne(new Content()
+            {
+                Code = "cocautochuc",
+                Title = "Cơ cấu tổ chức",
+                Alias = "co-cau-to-chuc",
+                Language = Constants.Languages.Vietnamese
+            });
+            dbContext.Contents.InsertOne(new Content()
+            {
+                Code = "cocautochuc",
+                Title = "Company structure",
+                Alias = "company-structure",
+                Language = Constants.Languages.English
+            });
+            dbContext.Contents.InsertOne(new Content()
+            {
+                Code = "doitac",
+                Title = "Đối tác",
+                Alias = "doi-tac",
+                Language = Constants.Languages.Vietnamese
+            });
+            dbContext.Contents.InsertOne(new Content()
+            {
+                Code = "doitac",
+                Title = "Partner",
+                Alias = "partner",
+                Language = Constants.Languages.English
+            });
+            dbContext.Contents.InsertOne(new Content()
+            {
+                Code = "doitac",
+                Title = "Đối tác",
+                Alias = "doi-tac",
+                Language = Constants.Languages.Vietnamese
+            });
+            dbContext.Contents.InsertOne(new Content()
+            {
+                Code = "doitac",
+                Title = "Partner",
+                Alias = "partner",
+                Language = Constants.Languages.English
+            });
+            dbContext.Contents.InsertOne(new Content()
+            {
+                Code = "tamnhinsumang",
+                Title = "Tầm nhìn, sứ mạng",
+                Alias = "tam-nhin-su-mang",
+                Language = Constants.Languages.Vietnamese
+            });
+            dbContext.Contents.InsertOne(new Content()
+            {
+                Code = "tamnhinsumang",
+                Title = "Vision, mission",
+                Alias = "vision-mission",
+                Language = Constants.Languages.English
+            });
+            dbContext.Contents.InsertOne(new Content()
+            {
+                Code = "vanbanthamkhao",
+                Title = "Văn bản tham khảo",
+                Alias = "van-ban-tham-khao",
+                Language = Constants.Languages.Vietnamese
+            });
+            dbContext.Contents.InsertOne(new Content()
+            {
+                Code = "vanbanthamkhao",
+                Title = "Reference text",
+                Alias = "reference-text",
+                Language = Constants.Languages.English
+            });
+            //Cơ sở pháp lý
+            dbContext.Contents.InsertOne(new Content()
+            {
+                Code = "cosophaply",
+                Title = "Cơ sở pháp lý",
+                Alias = "co-so-phap-ly",
+                Language = Constants.Languages.Vietnamese
+            });
+            dbContext.Contents.InsertOne(new Content()
+            {
+                Code = "cosophaply",
+                Title = "Legal basis",
+                Alias = "legal-basis",
+                Language = Constants.Languages.English
+            });
+            // Lịch sử hình thành - 
+            dbContext.Contents.InsertOne(new Content()
+            {
+                Code = "lichsuhinhthanh",
+                Title = "Lịch sử hình thành",
+                Alias = "lich-su-hinh-thanh",
+                Language = Constants.Languages.Vietnamese
+            });
+            dbContext.Contents.InsertOne(new Content()
+            {
+                Code = "lichsuhinhthanh",
+                Title = "History company",
+                Alias = "history-company",
+                Language = Constants.Languages.English
+            });
+            // Công nghệ xử lý 
+            dbContext.Contents.InsertOne(new Content()
+            {
+                Code = "congnghexuly",
+                Title = "Công nghệ xử lý",
+                Alias = "cong-nghe-xu-ly",
+                Language = Constants.Languages.Vietnamese
+            });
+            dbContext.Contents.InsertOne(new Content()
+            {
+                Code = "congnghexuly",
+                Title = "Processing technology",
+                Alias = "processing-technology",
+                Language = Constants.Languages.English
+            });
+            // Công suất xử lý
+            dbContext.Contents.InsertOne(new Content()
+            {
+                Code = "congsuatxuly",
+                Title = "Công suất xử lý",
+                Alias = "cong-suat-xu-ly",
+                Language = Constants.Languages.Vietnamese
+            });
+            dbContext.Contents.InsertOne(new Content()
+            {
+                Code = "congsuatxuly",
+                Title = "Processing capacity",
+                Alias = "processing-capacity",
+                Language = Constants.Languages.English
+            });
+
+            var contents = dbContext.Contents.Find(m => true).ToList();
+            foreach(var content in contents)
+            {
+                var filter = Builders<Content>.Filter.Eq(m => m.Id, content.Id);
+                var update = Builders<Content>.Update
+                    .Set(m => m.Name, content.Title);
+                dbContext.Contents.UpdateOne(filter, update);
+            }
         }
 
+        /// <summary>
+        /// current: 585
+        /// System Id from 0 -> 500
+        /// Web client Id from > 500 -> 10000
+        /// ERP Id from > 10000
+        /// </summary>
         public void InitTexts()
         {
-            // System Id from 0 -> 500
-            // Web client Id from > 500 -> 10000
-            // ERP Id from > 10000
-            //var filter = new BsonDocument();
-            //var filter = Builders<User>.Filter.Eq(x => x.A, "1");
-            //filter = filter & (Builders<User>.Filter.Eq(x => x.B, "4") | Builders<User>.Filter.Eq(x => x.B, "5"));
-
+            int code = 0;
+            string en = string.Empty;
+            string vi = string.Empty;
             var filter = Builders<Text>.Filter.Gt(x => x.Code, 500);
             filter = filter & (Builders<Text>.Filter.Lt(x => x.Code, 1000));
             dbContext.Texts.DeleteMany(filter);
+
+            #region 589
+            code = 589;
+            vi = "Các loại bùn tiếp nhận";
+            en = "Types of mud received";
+            dbContext.Texts.InsertOne(new Text()
+            {
+                Code = code,
+                Content = vi,
+                Type = "home",
+                Language = Constants.Languages.Vietnamese
+            });
+            dbContext.Texts.InsertOne(new Text()
+            {
+                Code = code,
+                Content = en,
+                Type = "home",
+                Language = Constants.Languages.English
+            });
+            #endregion
+
+            #region 588
+            code = 588;
+            vi = "Nạo vét, xử lý chất thải không nguy hại, vận chuyển chất thải...";
+            en = "Dredging, handling non-hazardous waste, transporting waste ...";
+            dbContext.Texts.InsertOne(new Text()
+            {
+                Code = code,
+                Content = vi,
+                Type = "home",
+                Language = Constants.Languages.Vietnamese
+            });
+            dbContext.Texts.InsertOne(new Text()
+            {
+                Code = code,
+                Content = en,
+                Type = "home",
+                Language = Constants.Languages.English
+            });
+            #endregion
+
+            #region 587
+            code = 587;
+            vi = "Cung cấp các loại đất sạch trồng rau, giá thể trồng rau mầm, phân bón sạch chất lượng cao, uy tín và an toàn cho người sử dụng...";
+            en = "Providing clean soil for growing vegetables and growing vegetables with high quality, reputable and safe vegetables and fertilizers...";
+            dbContext.Texts.InsertOne(new Text()
+            {
+                Code = code,
+                Content = vi,
+                Type = "home",
+                Language = Constants.Languages.Vietnamese
+            });
+            dbContext.Texts.InsertOne(new Text()
+            {
+                Code = code,
+                Content = en,
+                Type = "home",
+                Language = Constants.Languages.English
+            });
+            #endregion
+
+            #region 586
+            code = 586;
+            vi = "Tiếp cận công nghệ sạch xử lý, tái chế bùn thải sinh học thành nguyên liệu tạo ra chế phẩm vi sinh vật hữu ích phục vụ nông lâm nghiệp...";
+            en = "Access to clean technology to treat and recycle biological sludge into raw materials to create useful microorganism preparations for agriculture and forestry...";
+            dbContext.Texts.InsertOne(new Text()
+            {
+                Code = code,
+                Content = vi,
+                Type = "home",
+                Language = Constants.Languages.Vietnamese
+            });
+            dbContext.Texts.InsertOne(new Text()
+            {
+                Code = code,
+                Content = en,
+                Type = "home",
+                Language = Constants.Languages.English
+            });
+            #endregion
+
+            #region 585
+            code = 585;
+            en = "Business";
+            vi = "Mảng công việc";
+            dbContext.Texts.InsertOne(new Text()
+            {
+                Code = code,
+                Content = vi,
+                Type = "home",
+                Language = Constants.Languages.Vietnamese
+            });
+            dbContext.Texts.InsertOne(new Text()
+            {
+                Code = code,
+                Content = en,
+                Type = "home",
+                Language = Constants.Languages.English
+            });
+            #endregion
+
+            // Template
+            //code = int;
+            //vi = "";
+            //en = "";
+            //dbContext.Texts.InsertOne(new Text()
+            //{
+            //    Code = code,
+            //    Content = vi,
+            //    Type = "home",
+            //    Language = Constants.Languages.Vietnamese
+            //});
+            //dbContext.Texts.InsertOne(new Text()
+            //{
+            //    Code = code,
+            //    Content = en,
+            //    Type = "home",
+            //    Language = Constants.Languages.English
+            //});
 
             #region 501
             dbContext.Texts.InsertOne(new Text()
@@ -1029,6 +1408,16 @@ namespace tribatvn.Controllers
                 Seo = "Dịch vụ",
                 Type = "home",
                 Language = Constants.Languages.Vietnamese
+            });
+            dbContext.Texts.InsertOne(new Text()
+            {
+                Code = 510,
+                Content = "Service",
+                ContentPlainText = "Service",
+                ToolTip = "Service",
+                Seo = "Service",
+                Type = "home",
+                Language = Constants.Languages.English
             });
             #endregion
 
@@ -1255,9 +1644,9 @@ namespace tribatvn.Controllers
             #endregion
 
             #region 525
-            int code = 525;
-            var vi = "Trang chủ";
-            var en = "Home";
+            code = 525;
+            vi = "Trang chủ";
+            en = "Home";
             dbContext.Texts.InsertOne(new Text()
             {
                 Code = code,
@@ -2315,26 +2704,145 @@ namespace tribatvn.Controllers
             });
             #endregion
 
-            //#region int
-            //code = int;
-            //vi = "";
-            //en = "";
-            //dbContext.Texts.InsertOne(new Text()
-            //{
-            //    Code = code,
-            //    Content = vi,
-            //    Type = "home",
-            //    Language = Constants.Languages.Vietnamese
-            //});
-            //dbContext.Texts.InsertOne(new Text()
-            //{
-            //    Code = code,
-            //    Content = en,
-            //    Type = "home",
-            //    Language = Constants.Languages.English
-            //});
-            //#endregion
+            #region 578
+            code = 578;
+            en = "View more";
+            vi = "Xem thêm";
+            dbContext.Texts.InsertOne(new Text()
+            {
+                Code = code,
+                Content = vi,
+                Type = "home",
+                Language = Constants.Languages.Vietnamese
+            });
+            dbContext.Texts.InsertOne(new Text()
+            {
+                Code = code,
+                Content = en,
+                Type = "home",
+                Language = Constants.Languages.English
+            });
+            #endregion
 
+            #region 579
+            code = 579;
+            en = "Short description...";
+            vi = "Mô tả ngắn...";
+            dbContext.Texts.InsertOne(new Text()
+            {
+                Code = code,
+                Content = vi,
+                Type = "home",
+                Language = Constants.Languages.Vietnamese
+            });
+            dbContext.Texts.InsertOne(new Text()
+            {
+                Code = code,
+                Content = en,
+                Type = "home",
+                Language = Constants.Languages.English
+            });
+            #endregion
+
+            #region 580
+            code = 580;
+            en = "Short detail...";
+            vi = "Chi tiết ngắn...";
+            dbContext.Texts.InsertOne(new Text()
+            {
+                Code = code,
+                Content = vi,
+                Type = "home",
+                Language = Constants.Languages.Vietnamese
+            });
+            dbContext.Texts.InsertOne(new Text()
+            {
+                Code = code,
+                Content = en,
+                Type = "home",
+                Language = Constants.Languages.English
+            });
+            #endregion
+
+            #region 581
+            code = 581;
+            en = "Product";
+            vi = "Sản phẩm";
+            dbContext.Texts.InsertOne(new Text()
+            {
+                Code = code,
+                Content = vi,
+                Type = "home",
+                Language = Constants.Languages.Vietnamese
+            });
+            dbContext.Texts.InsertOne(new Text()
+            {
+                Code = code,
+                Content = en,
+                Type = "home",
+                Language = Constants.Languages.English
+            });
+            #endregion
+
+            #region 582
+            code = 582;
+            en = "Find Your Dream Job";
+            vi = "Tìm kiếm việc làm";
+            dbContext.Texts.InsertOne(new Text()
+            {
+                Code = code,
+                Content = vi,
+                Type = "home",
+                Language = Constants.Languages.Vietnamese
+            });
+            dbContext.Texts.InsertOne(new Text()
+            {
+                Code = code,
+                Content = en,
+                Type = "home",
+                Language = Constants.Languages.English
+            });
+            #endregion
+
+            #region 583
+            code = 583;
+            en = "Move Up Today!";
+            vi = "Ứng tuyển!";
+            dbContext.Texts.InsertOne(new Text()
+            {
+                Code = code,
+                Content = vi,
+                Type = "home",
+                Language = Constants.Languages.Vietnamese
+            });
+            dbContext.Texts.InsertOne(new Text()
+            {
+                Code = code,
+                Content = en,
+                Type = "home",
+                Language = Constants.Languages.English
+            });
+            #endregion
+
+            #region 584
+            code = 584;
+            en = "News";
+            vi = "Tin tức";
+            dbContext.Texts.InsertOne(new Text()
+            {
+                Code = code,
+                Content = vi,
+                Type = "home",
+                Language = Constants.Languages.Vietnamese
+            });
+            dbContext.Texts.InsertOne(new Text()
+            {
+                Code = code,
+                Content = en,
+                Type = "home",
+                Language = Constants.Languages.English
+            });
+            #endregion
         }
 
         public void InitJobcategory()
@@ -2570,7 +3078,6 @@ namespace tribatvn.Controllers
                 dbContext.News.UpdateOne(filter, update);
             }
         }
-        #endregion
 
         #region Cookies
         // Use

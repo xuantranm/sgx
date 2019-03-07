@@ -12,6 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Configuration;
 using Microsoft.Office.Interop.Excel;
+using Constants = Common.Utilities.Constants;
 
 namespace xdatafix
 {
@@ -36,13 +37,17 @@ namespace xdatafix
             //UpdateLocationTimer(connection, database);
             //UpdateUpperCaseTimer(connection, database);
 
+            #region Tribatvn
+
+            #endregion
+
             #region Factories: Init data
 
-            InitFactoryProductDinhMucTangCa(connection, database);
-            InitFactoryProductDinhMucTiLe(connection, database);
+            //InitFactoryProductDinhMucTangCa(connection, database);
+            //InitFactoryProductDinhMucTiLe(connection, database);
             InitFactoryProductDonGiaM3(connection, database);
-            InitFactoryProductDinhMuc(connection, database);
-            InitFactoryCongViec(connection, database);
+            //InitFactoryProductDinhMuc(connection, database);
+            //InitFactoryCongViec(connection, database);
 
             ResetDataFactorySalary(connection, database);
             //InitDataLuong(connection, database, "07-2019");
@@ -56,6 +61,190 @@ namespace xdatafix
             Console.Write("Done..... Press any key to exist!");
             Console.ReadLine();
         }
+
+        #region Tribatvn
+        public void InitProductSales(string connection, string database)
+        {
+            #region Connection, Setting & Filter
+            MongoDBContext.ConnectionString = connection;
+            MongoDBContext.DatabaseName = database;
+            MongoDBContext.IsSSL = true;
+            MongoDBContext dbContext = new MongoDBContext();
+            #endregion
+
+            dbContext.ProductSales.DeleteMany(m=>true);
+
+            #region Product VI
+            dbContext.ProductSales.InsertOne(new ProductSale()
+            {
+                Code = 1,
+                CategoryCode = 1,
+                Name = "Đất Việt 50, 20 dm3",
+                Alias = "dat-viet-50-20dm3",
+                Price = 0,
+                Description = "a/ Đặc tính sản phẩm",
+                Content = "a/ Đặc tính sản phẩm",
+                KeyWords = "đất sạch, đất dinh dưỡng, cây xanh, cây ăn trái, rau sạch, tribat, saigon xanh",
+                OgTitle = "Công ty TNHH CNSH SÀI GÒN XANH",
+                OgDescription = "Đất sạch, xử lý - tái chế bùn thải",
+                Language = Constants.Languages.Vietnamese
+            });
+            dbContext.ProductSales.InsertOne(new ProductSale()
+            {
+                Code = 2,
+                CategoryCode = 1,
+                Name = "Đất trồng thuốc lá",
+                Alias = "dat-trong-thuoc-la",
+                Price = 0,
+                Description = "Đất trồng thuốc lá",
+                Content = "Đất trồng thuốc lá",
+                KeyWords = "đất trồng thuốc lá, đất dinh dưỡng, cây xanh, cây ăn trái, rau sạch, tribat, saigon xanh",
+                OgTitle = "Công ty TNHH CNSH SÀI GÒN XANH",
+                OgDescription = "Đất sạch, xử lý - tái chế bùn thải",
+                Language = Common.Utilities.Constants.Languages.Vietnamese
+            });
+            dbContext.ProductSales.InsertOne(new ProductSale()
+            {
+                Code = 3,
+                CategoryCode = 1,
+                Name = "Đất trồng cây: 40dm3",
+                Alias = "dat-trong-cay-40dm3",
+                Price = 0,
+                Description = "Đất trồng cây: 40dm3",
+                Content = "Đất trồng cây: 40dm3",
+                KeyWords = "đất trồng cây: 40dm3, đất dinh dưỡng, cây xanh, cây ăn trái, rau sạch, tribat, saigon xanh",
+                OgTitle = "Công ty TNHH CNSH SÀI GÒN XANH",
+                OgDescription = "Đất sạch, xử lý - tái chế bùn thải",
+                Images = new List<Image>()
+                {
+                    new Image{
+                        Path = "images/p/3/",
+                        FileName = "1449045882dattrongcay.jpg",
+                        Order = 1,
+                        Main = true
+                    }
+                },
+                Language = Constants.Languages.Vietnamese
+            });
+            dbContext.ProductSales.InsertOne(new ProductSale()
+            {
+                Code = 4,
+                CategoryCode = 1,
+                Name = "Đất trồng mai: 20dm3",
+                Alias = "dat-trong-mai-20dm3",
+                Price = 0,
+                Description = "Đất trồng mai: 20dm3",
+                Content = "Đất trồng mai: 20dm3",
+                KeyWords = "đất trồng mai: 20dm3, đất dinh dưỡng, cây xanh, cây ăn trái, rau sạch, tribat, saigon xanh",
+                OgTitle = "Công ty TNHH CNSH SÀI GÒN XANH",
+                OgDescription = "Đất sạch, xử lý - tái chế bùn thải",
+                Images = new List<Image>()
+                {
+                    new Image{
+                        Path = "images/p/4/",
+                        FileName = "1449045939dattrongmai.jpg",
+                        Order = 1,
+                        Main = true
+                    }
+                },
+                Language = Constants.Languages.Vietnamese
+            });
+            dbContext.ProductSales.InsertOne(new ProductSale()
+            {
+                Code = 5,
+                CategoryCode = 1,
+                Name = "Đất trồng rau: 20dm3; 10dm3; 5dm3",
+                Alias = "dat-trong-rau-20dm3-10dm3-5dm3",
+                Price = 0,
+                Description = "Đất trồng rau: 20dm3; 10dm3; 5dm3",
+                Content = "Đất trồng rau: 20dm3; 10dm3; 5dm3",
+                KeyWords = "đất trồng rau: 20dm3; 10dm3; 5dm3, đất dinh dưỡng, cây xanh, cây ăn trái, rau sạch, tribat, saigon xanh",
+                OgTitle = "Công ty TNHH CNSH SÀI GÒN XANH",
+                OgDescription = "Đất sạch, xử lý - tái chế bùn thải",
+                Images = new List<Image>()
+                {
+                    new Image{
+                        Path = "images/p/5/",
+                        FileName = "1449045982dattrongrau.jpg",
+                        Order = 1,
+                        Main = true
+                    }
+                },
+                Language = Constants.Languages.Vietnamese
+            });
+            #endregion
+
+            #region Product EN
+            dbContext.ProductSales.InsertOne(new ProductSale()
+            {
+                Code = 1,
+                CategoryCode = 1,
+                Name = "Vietnamese land 50, 20 dm3",
+                Alias = "vietnamese-land-50-20dm3",
+                Language = Constants.Languages.English
+            });
+            dbContext.ProductSales.InsertOne(new ProductSale()
+            {
+                Code = 2,
+                CategoryCode = 1,
+                Name = "Cultivation of tobacco",
+                Alias = "cultivation-of-tobacco",
+                Language = Constants.Languages.English
+            });
+            dbContext.ProductSales.InsertOne(new ProductSale()
+            {
+                Code = 3,
+                CategoryCode = 1,
+                Name = "Woodland: 40dm3",
+                Alias = "woodland-40dm3",
+                Images = new List<Image>()
+                {
+                    new Image{
+                        Path = "images/p/3/",
+                        FileName = "1449045882dattrongcay.jpg",
+                        Order = 1,
+                        Main = true
+                    }
+                },
+                Language = Constants.Languages.English
+            });
+            dbContext.ProductSales.InsertOne(new ProductSale()
+            {
+                Code = 4,
+                CategoryCode = 1,
+                Name = "Land for planting apricots: 20dm3",
+                Alias = "land-for-planting-apricots-20dm3",
+                Images = new List<Image>()
+                {
+                    new Image{
+                        Path = "images/p/4/",
+                        FileName = "1449045939dattrongmai.jpg",
+                        Order = 1,
+                        Main = true
+                    }
+                },
+                Language = Constants.Languages.English
+            });
+            dbContext.ProductSales.InsertOne(new ProductSale()
+            {
+                Code = 5,
+                CategoryCode = 1,
+                Name = "Land for growing vegetables: 20dm3; 10dm3; 5dm3",
+                Alias = "land-for-growing-vegetables-20dm3-10dm3-5dm3",
+                Images = new List<Image>()
+                {
+                    new Image{
+                        Path = "images/p/5/",
+                        FileName = "1449045982dattrongrau.jpg",
+                        Order = 1,
+                        Main = true
+                    }
+                },
+                Language = Constants.Languages.English
+            });
+            #endregion
+        }
+        #endregion
 
         #region Factories: Init data
         static void ResetDataFactorySalary(string connection, string database)

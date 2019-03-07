@@ -7,7 +7,11 @@ namespace Common.Utilities
     {
         public static string Truncate(this string value, int maxChars)
         {
-            return value.Length <= maxChars ? value : value.Substring(0, maxChars) + "...";
+            if (!string.IsNullOrEmpty(value))
+            {
+                return value.Length <= maxChars ? value : value.Substring(0, maxChars) + "...";
+            }
+            return string.Empty;
         }
 
         public static class ActionLink

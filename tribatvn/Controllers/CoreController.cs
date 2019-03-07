@@ -93,6 +93,137 @@ namespace tribatvn.Controllers
 
         #endregion
 
+        [Route("/core/category/")]
+        public IActionResult Category()
+        {
+            #region Language
+            var cultureInfo = new CultureInfo("vi-VN");
+            ViewData["Language"] = cultureInfo.Name;
+            ViewData["LanguageHtmlTag"] = cultureInfo.TwoLetterISOLanguageName;
+            #endregion
+
+            #region Dropdownlist
+            var categories = dbContext.ProductCategorySales.Find(m => m.Language.Equals(cultureInfo.Name)).ToList();
+            #endregion
+
+            var viewModel = new ProductDataViewModel()
+            {
+                Categories = categories
+            };
+            return View(viewModel);
+        }
+
+        [Route("/core/category/edit/{code}")]
+        public IActionResult CategoryEdit(int code)
+        {
+            #region Language
+            var cultureInfo = new CultureInfo("vi-VN");
+            ViewData["Language"] = cultureInfo.Name;
+            ViewData["LanguageHtmlTag"] = cultureInfo.TwoLetterISOLanguageName;
+            #endregion
+
+            #region Dropdownlist
+            var languages = dbContext.Languages.Find(m => m.Enable.Equals(true) && !m.Code.Equals(cultureInfo.TwoLetterISOLanguageName));
+            ViewData["Languages"] = languages.ToList();
+            #endregion
+
+            var categories = dbContext.ProductCategorySales.Find(m => m.Enable.Equals(true) && m.Code.Equals(code)).ToList();
+            var viewModel = new ProductDataViewModel()
+            {
+                Categories = categories,
+                Code = code
+            };
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        [Route("/core/category/edit/{code}")]
+        public IActionResult CategoryEdit(ProductDataViewModel viewModel, int code)
+        {
+            #region Language
+            var cultureInfo = new CultureInfo("en-US");
+            ViewData["Language"] = cultureInfo.Name;
+            ViewData["LanguageHtmlTag"] = cultureInfo.TwoLetterISOLanguageName;
+            #endregion
+
+            #region Images, each product 1 folder. (return images)
+            var images = dbContext.ProductCategorySales.Find(m => m.Code.Equals(code)).First().Images;
+            if (images == null)
+            {
+                images = new List<Image>();
+            }
+            var mapFolder = "images\\" + Constants.Link.Product + "\\" + code;
+            var uploads = Path.Combine(_hostingEnvironment.WebRootPath, mapFolder);
+            if (!Directory.Exists(uploads))
+            {
+                Directory.CreateDirectory(uploads);
+            }
+
+            var files = HttpContext.Request.Form.Files;
+            foreach (var Image in files)
+            {
+                if (Image != null && Image.Length > 0 && Image.Name == "files-entity")
+                {
+                    var file = Image;
+                    //There is an error here
+                    if (file.Length > 0)
+                    {
+                        var fileName = Guid.NewGuid().ToString().Replace("-", "") + Path.GetExtension(file.FileName);
+                        using (var fileStream = new FileStream(Path.Combine(uploads, fileName), FileMode.Create))
+                        {
+                            file.CopyToAsync(fileStream);
+                            //emp.BookPic = fileName;
+                            images.Add(new Image
+                            {
+                                Path = mapFolder + "\\",
+                                FileName = fileName,
+                                OrginalName = file.FileName
+                            });
+                        }
+                    }
+                }
+            }
+
+            if (images.Count == 0)
+            {
+                images = null;
+            }
+            #endregion
+
+            foreach (var entity in viewModel.Categories)
+            {
+                entity.Images = images;
+
+                if (!string.IsNullOrEmpty(entity.Name))
+                {
+                    entity.Alias = Utility.AliasConvert(entity.Name);
+                }
+                // if existing => update
+                // else more language, create new
+                //bool exists = dbContext.ProductSales.Find(m => m.Id.Equals(entity.Id)).Any();
+                // For faster. No call data. check data
+                if (!string.IsNullOrEmpty(entity.Id))
+                {
+                    var filter = Builders<ProductCategorySale>.Filter.Eq(m => m.Id, entity.Id);
+                    var update = Builders<ProductCategorySale>.Update
+                        .Set(m => m.Name, entity.Name)
+                        .Set(m => m.Alias, entity.Alias)
+                        .Set(m => m.Description, entity.Description)
+                        .Set(m => m.Content, entity.Content)
+                        .Set(m => m.Images, entity.Images);
+                    var resultKho = dbContext.ProductCategorySales.UpdateOne(filter, update);
+                }
+                else
+                {
+                    entity.Code = code;
+                    entity.Images = images;
+                    dbContext.ProductCategorySales.InsertOne(entity);
+                }
+            }
+
+            return RedirectToAction("CategoryEdit", code);
+        }
+
         [Route("/core/product/")]
         public IActionResult Product()
         {
@@ -209,31 +340,11 @@ namespace tribatvn.Controllers
                 dbContext.ProductSales.InsertOne(entity);
             }
 
-            #region Update Language Entity if null [Vietnamese always have data]
-            var viEntity = dbContext.ProductSales.Find(m => m.Code.Equals(newCode) && m.Language.Equals(Constants.Languages.Vietnamese)).First();
-            foreach (var languageEntity in dbContext.ProductSales.Find(m => m.Code.Equals(newCode) && !m.Language.Equals(Constants.Languages.Vietnamese)).ToList())
-            {
-                if (string.IsNullOrEmpty(languageEntity.Name))
-                {
-                    var translateName = Utility.TranslateText(viEntity.Name, languageEntity.Language);
-                    var translateDescription = Utility.TranslateText(viEntity.Description, languageEntity.Language);
-
-                    var filter = Builders<ProductSale>.Filter.Eq(m => m.Id, languageEntity.Id);
-                    var update = Builders<ProductSale>.Update
-                        .Set(m => m.Name, translateName)
-                        .Set(m => m.Description, translateDescription)
-                        .Set(m => m.Alias, Utility.AliasConvert(translateName));
-
-                    dbContext.ProductSales.UpdateOne(filter, update);
-                }
-            }
-            #endregion
-
             return RedirectToAction("ProductCreate");
         }
 
-        [Route("/core/product/edit/{code}")]
-        public IActionResult ProductEdit(int code)
+        [Route("/core/product/edit/{category}/{code}")]
+        public IActionResult ProductEdit(int category, int code)
         {
             #region Language
             var cultureInfo = new CultureInfo("vi-VN");
@@ -249,7 +360,7 @@ namespace tribatvn.Controllers
             ViewData["Categories"] = categories.ToList();
             #endregion
 
-            var entities = dbContext.ProductSales.Find(m => m.Enable.Equals(true) && m.Code.Equals(code)).ToList();
+            var entities = dbContext.ProductSales.Find(m => m.Enable.Equals(true) && m.CategoryCode.Equals(category) && m.Code.Equals(code)).ToList();
             var viewModel = new ProductDataViewModel()
             {
                 Entities = entities,
@@ -259,8 +370,8 @@ namespace tribatvn.Controllers
         }
 
         [HttpPost]
-        [Route("/core/product/edit/{code}")]
-        public IActionResult ProductEdit(ProductDataViewModel viewModel, int code)
+        [Route("/core/product/edit/{category}/{code}")]
+        public IActionResult ProductEdit(ProductDataViewModel viewModel, int category, int code)
         {
             #region Language
             var cultureInfo = new CultureInfo("en-US");
@@ -269,7 +380,7 @@ namespace tribatvn.Controllers
             #endregion
 
             #region Images, each product 1 folder. (return images)
-            var images = dbContext.ProductSales.Find(m => m.Code.Equals(code)).First().Images;
+            var images = dbContext.ProductSales.Find(m => m.CategoryCode.Equals(category) && m.Code.Equals(code)).First().Images;
             if (images == null)
             {
                 images = new List<Image>();
@@ -342,30 +453,11 @@ namespace tribatvn.Controllers
                 else
                 {
                     entity.Code = code;
+                    entity.CategoryCode = category;
                     entity.Images = images;
                     dbContext.ProductSales.InsertOne(entity);
                 }
             }
-
-            #region Update Language Entity if null [Vietnamese always have data]
-            var viEntity = dbContext.ProductSales.Find(m => m.Code.Equals(code) && m.Language.Equals(Constants.Languages.Vietnamese)).First();
-            foreach (var languageEntity in dbContext.ProductSales.Find(m => m.Code.Equals(code) && !m.Language.Equals(Constants.Languages.Vietnamese)).ToList())
-            {
-                if (string.IsNullOrEmpty(languageEntity.Name))
-                {
-                    var translateName = Utility.TranslateText(viEntity.Name, languageEntity.Language);
-                    var translateDescription = Utility.TranslateText(viEntity.Description, languageEntity.Language);
-
-                    var filter = Builders<ProductSale>.Filter.Eq(m => m.Id, languageEntity.Id);
-                    var update = Builders<ProductSale>.Update
-                        .Set(m => m.Name, translateName)
-                        .Set(m => m.Description, translateDescription)
-                        .Set(m => m.Alias, Utility.AliasConvert(translateName));
-
-                    dbContext.ProductSales.UpdateOne(filter, update);
-                }
-            }
-            #endregion
 
             return RedirectToAction("ProductEdit", code);
         }
@@ -404,23 +496,15 @@ namespace tribatvn.Controllers
             return RedirectToAction("Product");
         }
 
-
         [Route("/core/news/")]
         public IActionResult News()
         {
-            #region Language
-            var cultureInfo = new CultureInfo("vi-VN");
-            ViewData["Language"] = cultureInfo.Name;
-            ViewData["LanguageHtmlTag"] = cultureInfo.TwoLetterISOLanguageName;
-            #endregion
-
-            #region Dropdownlist
-            var categories = dbContext.NewsCategories.Find(m => m.Language.Equals(cultureInfo.Name));
-            ViewData["Categories"] = categories.ToList();
-            #endregion
-
-            var list = dbContext.News.Find(m => true).ToList();
-            return View(list);
+            var news = dbContext.News.Find(m => m.Enable.Equals(true)).ToList();
+            var viewModel = new NewsDataViewModel()
+            {
+                Entities = news
+            };
+            return View(viewModel);
         }
 
         [Route("/core/news/create")]
@@ -433,42 +517,35 @@ namespace tribatvn.Controllers
             #endregion
 
             #region Dropdownlist
-            var categories = dbContext.NewsCategories.Find(m => m.Language.Equals(cultureInfo.Name));
-            ViewData["Categories"] = categories.ToList();
+            var languages = dbContext.Languages.Find(m => m.Enable.Equals(true)).ToList();
+            var categories = dbContext.NewsCategories.Find(m => m.Language.Equals(cultureInfo.Name)).ToList();
             #endregion
-            return View();
+
+            var viewModel = new NewsDataViewModel()
+            {
+                Languages = languages,
+                Categories = categories
+            };
+            return View(viewModel);
         }
 
         [HttpPost]
-        [Route("/core/news/create/")]
-        public IActionResult NewsCreate(News entity)
+        [Route("/core/news/create")]
+        public IActionResult NewsCreate(NewsDataViewModel viewModel)
         {
-            #region Language
-            var cultureInfo = new CultureInfo("en-US");
-            ViewData["Language"] = cultureInfo.Name;
-            ViewData["LanguageHtmlTag"] = cultureInfo.TwoLetterISOLanguageName;
-            #endregion
+            var entity = viewModel.Entity;
 
             #region System autofill
-            var newCode = 1;
-            var sort = Builders<News>.Sort.Descending("Code");
-            var filter1 = Builders<News>.Filter.Empty;
-            var lastRecords = dbContext.News.Find(filter1).Sort(sort).Limit(1);
-            if (lastRecords != null)
-            {
-                newCode = lastRecords.First().Code + 1;
-            }
-
-            entity.Code = newCode;
+            var lastestNews = dbContext.News.Find(m => m.Enable.Equals(true)).SortByDescending(m => m.Code).Limit(1).FirstOrDefault();
+            int code = lastestNews != null ? lastestNews.Code + 1 : 1;
+            entity.Code = code;
             entity.Alias = Utility.AliasConvert(entity.Name);
-            entity.Language = Constants.Languages.Vietnamese;
             var category = dbContext.ProductCategorySales.Find(m => m.Code.Equals(entity.CategoryCode) && m.Language.Equals(entity.Language)).First();
-
             #endregion
 
             #region Images, each product 1 folder.
             var images = new List<Image>();
-            var mapFolder = "images\\" + Constants.Link.News + "\\" + newCode;
+            var mapFolder = "images\\" + Constants.Link.News + "\\" + code;
             var uploads = Path.Combine(_hostingEnvironment.WebRootPath, mapFolder);
             if (!Directory.Exists(uploads))
             {
@@ -488,7 +565,7 @@ namespace tribatvn.Controllers
                         var fileName = Guid.NewGuid().ToString().Replace("-", "") + Path.GetExtension(file.FileName);
                         using (var fileStream = new FileStream(Path.Combine(uploads, fileName), FileMode.Create))
                         {
-                            file.CopyToAsync(fileStream);
+                            file.CopyTo(fileStream);
                             //emp.BookPic = fileName;
                             images.Add(new Image
                             {
@@ -504,50 +581,42 @@ namespace tribatvn.Controllers
             #endregion
 
             dbContext.News.InsertOne(entity);
-            return RedirectToAction("NewsCreate");
+            return Redirect("/core/news/");
         }
 
         [Route("/core/news/edit/{id}")]
         public IActionResult NewsEdit(string id)
         {
-            #region Language
-            var cultureInfo = new CultureInfo("vi-VN");
-            ViewData["Language"] = cultureInfo.Name;
-            ViewData["LanguageHtmlTag"] = cultureInfo.TwoLetterISOLanguageName;
-            #endregion
+            var entity = dbContext.News.Find(m => m.Id.Equals(id)).FirstOrDefault();
+
+            var language = entity != null ? entity.Language  : "vi-VN";
 
             #region Dropdownlist
-            var categories = dbContext.NewsCategories.Find(m => m.Language.Equals(cultureInfo.Name));
-            ViewData["Categories"] = categories.ToList();
+            var languages = dbContext.Languages.Find(m => m.Enable.Equals(true) && !m.Code.Equals(language)).ToList();
+            var categories = dbContext.NewsCategories.Find(m => m.Language.Equals(language)).ToList();
             #endregion
 
-            var entity = dbContext.News.Find(m => m.Id.Equals(id)).First();
-
-            return View(entity);
+            var viewModel = new NewsDataViewModel()
+            {
+                Entity = entity,
+                Languages = languages,
+                Categories = categories
+            };
+            return View(viewModel);
         }
 
         [HttpPost]
         [Route("/core/news/edit/{id}")]
-        public IActionResult NewsEdit(News entity, string id)
+        public IActionResult NewsEdit(string id, NewsDataViewModel viewModel)
         {
-            #region Language
-            var cultureInfo = new CultureInfo("en-US");
-            ViewData["Language"] = cultureInfo.Name;
-            ViewData["LanguageHtmlTag"] = cultureInfo.TwoLetterISOLanguageName;
-            #endregion
-
-            #region System autofill
-            entity.Alias = Utility.AliasConvert(entity.Name);
-            entity.Language = Constants.Languages.Vietnamese;
-            var category = dbContext.NewsCategories.Find(m => m.Code.Equals(entity.CategoryCode)).First();
-
-            #endregion
+            var entity = viewModel.Entity;
 
             #region Images, each product 1 folder.
-            var images = dbContext.News.Find(m => m.Id.Equals(id)).First().Images;
-            if (images == null)
+            var images = new List<Image>();
+            var imageEntity = dbContext.News.Find(m => m.Id.Equals(id)).FirstOrDefault();
+            if (imageEntity != null && imageEntity.Images != null && imageEntity.Images.Count > 0)
             {
-                images = new List<Image>();
+                images = imageEntity.Images.ToList();
             }
             //var images = new List<ProductImg>();
             var mapFolder = "images\\" + Constants.Link.News + "\\" + entity.Code;
@@ -570,7 +639,7 @@ namespace tribatvn.Controllers
                         var fileName = Guid.NewGuid().ToString().Replace("-", "") + Path.GetExtension(file.FileName);
                         using (var fileStream = new FileStream(Path.Combine(uploads, fileName), FileMode.Create))
                         {
-                            file.CopyToAsync(fileStream);
+                            file.CopyTo(fileStream);
                             //emp.BookPic = fileName;
                             images.Add(new Image
                             {
@@ -586,21 +655,32 @@ namespace tribatvn.Controllers
             {
                 images = null;
             }
-            entity.Images = images;
             #endregion
 
-            //dbContext.ProductSales.UpdateOne(entity);
             var filter = Builders<News>.Filter.Eq(m => m.Id, id);
             var update = Builders<News>.Update
+                .Set(m => m.Language, entity.Language)
                 .Set(m => m.CategoryCode, entity.CategoryCode)
+                .Set(m => m.HomePage, entity.HomePage)
                 .Set(m => m.Name, entity.Name)
-                .Set(m => m.Alias, entity.Alias)
+                .Set(m => m.Alias, Utility.AliasConvert(entity.Name))
                 .Set(m => m.Description, entity.Description)
                 .Set(m => m.Content, entity.Content)
-                .Set(m => m.Images, entity.Images);
+                .Set(m => m.Images, images);
             var resultKho = dbContext.News.UpdateOne(filter, update);
 
-            return RedirectToPage("/core/news/edit/{0}", entity.Id);
+            return Redirect("/core/news/edit/"+ id);
+        }
+
+        [HttpPost]
+        public IActionResult NewsDelete(NewsDataViewModel viewModel)
+        {
+            var filter = Builders<News>.Filter.Eq(m => m.Id, viewModel.Entity.Id);
+            var update = Builders<News>.Update
+                .Set(m => m.Enable, false);
+            var resultKho = dbContext.News.UpdateOne(filter, update);
+
+            return Redirect("/core/news/");
         }
 
         [Route("/core/job/")]
@@ -943,27 +1023,7 @@ namespace tribatvn.Controllers
                 }
             }
 
-            #region Update Language Entity if null [Vietnamese always have data]
-            var viEntity = dbContext.Contents.Find(m => m.Code.Equals(code) && m.Language.Equals(Constants.Languages.Vietnamese)).First();
-            foreach (var languageEntity in dbContext.Contents.Find(m => m.Code.Equals(code) && !m.Language.Equals(Constants.Languages.Vietnamese)).ToList())
-            {
-                if (string.IsNullOrEmpty(languageEntity.Name))
-                {
-                    var translateName = Utility.TranslateText(viEntity.Title, languageEntity.Language);
-                    var translateDescription = Utility.TranslateText(viEntity.Description, languageEntity.Language);
-
-                    var filter = Builders<Content>.Filter.Eq(m => m.Id, languageEntity.Id);
-                    var update = Builders<Content>.Update
-                        .Set(m => m.Title, translateName)
-                        .Set(m => m.Description, translateDescription)
-                        .Set(m => m.Alias, Utility.AliasConvert(translateName));
-
-                    dbContext.Contents.UpdateOne(filter, update);
-                }
-            }
-            #endregion
-
-            return RedirectToAction("ContentEdit", code);
+            return Redirect("/core/content/edit/" + code);
         }
 
         [Route("/core/content/delete/{code}")]

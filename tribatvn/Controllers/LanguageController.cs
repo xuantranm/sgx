@@ -46,7 +46,8 @@ namespace tribatvn.Controllers
                 var culture = new CultureInfo(language);
                 CultureInfo.DefaultThreadCurrentCulture = culture;
                 CultureInfo.DefaultThreadCurrentUICulture = culture;
-                // Set cookie
+                // Set cookie: not working
+                //Remove("language");
                 //Set("language", language, 10);
             }
             else

@@ -86,7 +86,7 @@ namespace erp.Controllers
         {
             var result = dbContext.Employees.Find(m => m.Enable.Equals(true)
                                                     && m.IsOnline.Equals(true)
-                                                    && m.UserName.Equals(model.UserName.Trim())
+                                                    && (m.UserName.Equals(model.UserName.Trim()) || m.Email.Equals(model.UserName.Trim()))
                                                     && m.Password.Equals(Helper.HashedPassword(model.Password.Trim())))
                                                     .FirstOrDefault();
             // Write log, perfomance...

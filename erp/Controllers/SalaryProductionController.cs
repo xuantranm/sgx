@@ -2352,6 +2352,17 @@ namespace erp.Controllers
             var congviecs = await dbContext.FactoryCongViecs.Find(m => m.Enable.Equals(true) && m.Main.Equals(false)).SortBy(m => m.Sort).ToListAsync();
             var dongiaDMs = await dbContext.FactoryProductDinhMucs.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)EProductType.TP) && m.Year.Equals(year) && m.Month.Equals(month)).SortBy(m => m.Sort).ToListAsync();
             var dongiaM3 = dbContext.FactoryProductDonGiaM3s.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)EDinhMuc.BocVac) && m.Year.Equals(year) && m.Month.Equals(month)).FirstOrDefault();
+            if (dongiaM3 == null)
+            {
+                dongiaM3 = new FactoryProductDonGiaM3
+                {
+                    Month = month,
+                    Year = year,
+                    Type = (int)EDinhMuc.BocVac,
+                    Price = 11300
+                };
+                dbContext.FactoryProductDonGiaM3s.InsertOne(dongiaM3);
+            }
             var congs = await dbContext.EmployeeCongs.Find(m => m.Enable.Equals(true) && m.Year.Equals(year) && m.Month.Equals(month)).ToListAsync();
 
             var viewModel = new BangLuongViewModel
@@ -2437,7 +2448,17 @@ namespace erp.Controllers
             var congviecs = await dbContext.FactoryCongViecs.Find(m => m.Enable.Equals(true) && m.Main.Equals(false)).SortBy(m => m.Sort).ToListAsync();
             var dongiaDMs = await dbContext.FactoryProductDinhMucs.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)EProductType.TP) && m.Year.Equals(year) && m.Month.Equals(month)).SortBy(m => m.Sort).ToListAsync();
             var dongiaM3 = dbContext.FactoryProductDonGiaM3s.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)EDinhMuc.BocVac) && m.Year.Equals(year) && m.Month.Equals(month)).FirstOrDefault();
-
+            if (dongiaM3 == null)
+            {
+                dongiaM3 = new FactoryProductDonGiaM3
+                {
+                    Month = month,
+                    Year = year,
+                    Type = (int)EDinhMuc.BocVac,
+                    Price = 11300
+                };
+                dbContext.FactoryProductDonGiaM3s.InsertOne(dongiaM3);
+            }
             var viewModel = new BangLuongViewModel
             {
                 MCongs = congMs,

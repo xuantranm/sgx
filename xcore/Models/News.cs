@@ -11,6 +11,8 @@ namespace Models
     /// Thông báo của công ty
     /// Tin tức
     /// ...
+    /// each language 1 record. group by code
+    /// Create/Edit 1 language 1 time
     /// </summary>
     public class News: Extension
     {
@@ -19,6 +21,8 @@ namespace Models
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
 
+        // 1 code for languages
+        // 1-> to auto
         [Required]
         public int Code { get; set; }
 
@@ -43,6 +47,10 @@ namespace Models
         public string Language { get; set; } = Constants.Languages.Vietnamese;
 
         public bool Enable { get; set; } = true;
+
+        // Base Modified date
+        public bool HomePage { get; set; } = false;
+
         public DateTime CreatedDate { get; set; } = DateTime.Now;
         public string CreatedUserId { get; set; }
         public DateTime ModifiedDate { get; set; } = DateTime.Now;

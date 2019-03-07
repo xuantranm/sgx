@@ -1,8 +1,14 @@
-﻿@using Helpers;
+﻿@using Common.Utilities;
+@using Helpers;
+@using ViewModels;
+@model ContentViewModel;
+
 @{
     Layout = "~/Views/Shared/_Wingman.cshtml";
     var language = ViewData["Language"].ToString();
 }
+
+@await Html.PartialAsync("MenuPartial", Model.Menu)
 
 <div class="main-container">
     <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
@@ -11,10 +17,10 @@
                 <div class="col">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item">
-                            <a href="/">Trang chủ</a>
+                            <a href="/">@Html.Raw(TextHelper.GetText(525, language))</a>
                         </li>
                         <li class="breadcrumb-item active" aria-current="page">
-                            Giới thiệu
+                            @Model.Entity.Name
                         </li>
                     </ol>
                 </div>
@@ -22,167 +28,41 @@
         </div>
     </nav>
 
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-2 col-md-4 col-sm-6 d-none d-sm-block">
-                <p></p>
-                <div class="list-group">
-                    <button type="button" class="list-group-item list-group-item-action active">
-                        Cras justo odio
-                    </button>
-                    <button type="button" class="list-group-item list-group-item-action">Dapibus ac facilisis in</button>
-                    <button type="button" class="list-group-item list-group-item-action">Morbi leo risus</button>
-                    <button type="button" class="list-group-item list-group-item-action">Porta ac consectetur ac</button>
-                    <button type="button" class="list-group-item list-group-item-action" disabled>Vestibulum at eros</button>
-                </div>
-            </div>
-            <div class="col-lg-10 col-md-8 col-sm-6 col-xs-12">
-                <img alt="Image" src="~/assets/images/tempo/background/banner.jpg" class="img-fluid" />
-                <section>
-                    <article class="container">
-                        <div class="row justify-content-center">
-                            <div class="col-12 col-md-8 col-lg-6">
-                                <p>
-                                    Thực hiện chủ trương xã hội hóa trong việc xử lý bùn thải từ các nhà máy xử lý nước thải,
-                                    nhà máy cấp nước cũng như bùn thải (không nguy hại) từ công tác duy tu, nạo vét hệ thống cống rãnh,
-                                    kênh rạch trên địa bàn thành phố… công ty Sài Gòn Xanh được thành phố chỉ đạo làm đơn vị đầu tiên
-                                    (và duy nhất được chọn đến hiện tại) thực hiện dự án xây dựng Nhà máy Xử lý bùn thải Sài Gòn Xanh tại
-                                    Khu liên hợp xử lý chất thải rắn và nghĩa trang Đa Phước, thuộc Ấp 1, xã Đa Phước, huyện Bình Chánh.
-                                </p>
-                                @*<blockquote class="blockquote">
-                                        <p class="h4">
-                                            “When consistency is built-in, there’s no arguing about insignificant details.”
-                                        </p>
-                                        <footer class="blockquote-footer title-decorative">
-                                            Rob Tobin, CEO
-                                        </footer>
-                                    </blockquote>*@
-                                @*<p>
-                                        Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda
-                                        est, omnis dolor repellendus.
-                                    </p>
-                                    <p>
-                                        Rerum facilis est et expedita distinctio. Nam
-                                        <abbr title="Hyper Text Markup Language">HTML</abbr>tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus. Temporibus autem quibusdam et aut officiis
-                                        debitis aut rerum necessitatibus saepe eveniet ut.
-                                    </p>
-                                    <h5>Changing up the status quo</h5>
-                                    <p>
-                                        At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident.
-                                    </p>
-                                    <p>
-                                        Natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit,
-                                        sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt
-                                        ut labore et dolore magnam aliquam quaerat voluptatem.
-                                    </p>*@
-                            </div>
-                            <!--end of col-->
-                            <figure class="figure text-center col-12 col-md-10 col-lg-8">
-                                <img alt="Image" class="img-fluid figure-img rounded" src="assets/wingman/img/photo-woman-laptop.jpg" />
-                                <figcaption class="figure-caption">Photo credit: Death To The Stock Photo</figcaption>
-                            </figure>
-                            <div class="col-12 col-md-8 col-lg-6">
-                                <p>
-                                    Omnis voluptas assumenda est, omnis dolor repellendus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Itaque earum rerum hic tenetur a sapiente.
-                                </p>
-                                <p>
-                                    Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus. Temporibus
-                                    autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Itaque earum rerum hic tenetur a sapiente delectus, ut aut reiciendis voluptatibus
-                                    maiores alias consequatur aut perferendis doloribus asperiores repellat.
-                                </p>
-                                <h4>Couldn't have wanted more</h4>
-                                <p>
-                                    Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus.
-                                </p>
-                            </div>
-                            <!--end of col-->
-                        </div>
-                        <!--end of row-->
-                    </article>
-                    <!--end of container-->
-                </section>
-                <!--end of section-->
-                <section>
-                    <div class="container">
-                        <div class="row mb-5 justify-content-center">
-                            <div class="col-auto">
-                                <h4>Another success story</h4>
-                            </div>
-                            <!--end of col-->
-                        </div>
-                        <!--end of row-->
-                        <div class="row">
-
-                            <div class="col-12">
-                                <a href="#" class="case-study">
-                                    <div class="card card-lg bg-dark text-white">
-                                        <img alt="Image" src="assets/wingman/img/photo-man-book.jpg" class="bg-image opacity-40" />
-                                        <div class="card-body">
-                                            <div>
-                                                <img alt="Image" src="assets/wingman/img/logo-bench.svg" />
-                                            </div>
-                                            <span class="h2">“Having tried multiple template solutions in the past - we were skeptical...”</span>
-                                            <span>Bench built their business-facing invoicing system with Wingman.</span>
-                                        </div>
-                                    </div>
-                                </a>
-                                <div class="text-center mt-4">
-                                    <a href="#">View all Case Studies &rsaquo;</a>
-                                </div>
-                            </div>
-                            <!--end of col-->
-
-                        </div>
-                        <!--end of row-->
-                    </div>
-                    <!--end of container-->
-                </section>
-                <!--end of section-->
-            </div>
-        </div>
-    </div>
-
-    <section class="bg-dark">
+    <section>
         <div class="container">
-            <div class="row section-intro">
-                <div class="col-12 text-center">
-                    <h3 class="h1">Don’t even wait, sign up now for a 30 day trial.</h3>
+            <div class="row">
+                <div class="col-12 col-md-2 mb-5">
+                    <nav class="nav flex-md-column mb-2 x-sub-nav-about">
+                        <a href="@Model.linkGioiThieu" class="nav-link">@Model.textGioiThieu</a>
+                        <hr class="short">
+                        <a href="@Model.linkDoiTac" class="nav-link">@Model.textDoiTac</a>
+                        <hr class="short">
+                        <a href="@Model.linkCoCauToChuc" class="nav-link">@Model.textCoCauToChuc</a>
+                        <hr class="short">
+                        <a href="@Model.linkTamNhinSuMang" class="nav-link">@Model.textTamNhinSuMang</a>
+                        <hr class="short">
+                        <a href="@Model.linkVanBanThamKhao" class="nav-link">@Model.textVanBanThamKhao</a>
+                        <hr class="short">
+                        <a href="@Model.linkCoSoPhapLy" class="nav-link">@Model.textCoSoPhapLy</a>
+                        <hr class="short">
+                        <a href="@Model.linkLichSuHinhThanh" class="nav-link">@Model.textLichSuHinhThanh</a>
+                        <hr class="short">
+                        <a href="@Model.linkCongNgheXuLy" class="nav-link">@Model.textCongNgheXuLy</a>
+                        <hr class="short">
+                        <a href="@Model.linkCongSuatXuLy" class="nav-link">@Model.textCongSuatXuLy</a>
+                    </nav>
                 </div>
-                <!--end of col-->
+                <div class="col-12 col-md-10">
+                    @Html.Raw(Model.Entity.Body)
+
+                    @if (string.IsNullOrEmpty(Model.Entity.Body))
+                    {
+                        @await Html.PartialAsync("UpdatePartial")
+                    }
+                </div>
             </div>
-            <!--end of row-->
-            <form>
-                <div class="row">
-                    <div class="col-12 col-sm-6 col-lg-3">
-                        <div class="form-group">
-                            <label for="username">Username</label>
-                            <input id="username" type="text" class="form-control form-control-lg" placeholder="Pick a username">
-                        </div>
-                    </div>
-                    <div class="col-12 col-sm-6 col-lg-3">
-                        <div class="form-group">
-                            <label for="email">Email Address</label>
-                            <input id="email" type="email" class="form-control form-control-lg" placeholder="you@domain.com">
-                        </div>
-                    </div>
-                    <div class="col-12 col-sm-6 col-lg-3">
-                        <div class="form-group">
-                            <label for="password">Password</label>
-                            <input id="password" type="password" class="form-control form-control-lg" placeholder="Choose a password">
-                            <small class="form-text">At least seven letters with one numeral</small>
-                        </div>
-                    </div>
-                    <div class="col-12 col-sm-6 col-lg-3">
-                        <div class="form-group">
-                            <label for="button">&nbsp;</label>
-                            <button id="button" type="submit" class="btn btn-lg btn-block btn-success">Sign up for Wingman</button>
-                        </div>
-                    </div>
-                </div>
-                <!--end of row-->
-            </form>
         </div>
-        <!--end of container-->
     </section>
 </div>
 
+@await Html.PartialAsync("FooterPartial", Model.Menu)

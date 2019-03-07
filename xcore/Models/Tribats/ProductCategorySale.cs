@@ -2,15 +2,14 @@
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Models
 {
-    // 10 first code use notice system.
     public class ProductCategorySale : Extension
     {
         [BsonId]
-        // Mvc don't know how to create ObjectId from string
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
 
@@ -30,12 +29,15 @@ namespace Models
         [Required]
         public string Name { get; set; }
 
-        // Use link base alias
         public string Alias { get; set; }
 
         public string Description { get; set; }
 
+        public string Content { get; set; }
+
         public int Order { get; set; } = 1;
+
+        public IList<Image> Images { get; set; }
 
         [Required]
         public string Language { get; set; } = Constants.Languages.Vietnamese;

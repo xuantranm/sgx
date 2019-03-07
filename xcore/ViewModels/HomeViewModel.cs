@@ -10,5 +10,13 @@ namespace ViewModels
         #endregion
 
         public IList<News> News { get; set; }
+
+        public IList<ExProductSale> Products { get; set; }
+
+        public string LinkBun { get; set; }
+
+        public string LinkDatSach { get; set; }
+
+        public string LinkDichVu { get; set; }
     }
 }

@@ -108,24 +108,24 @@
                                             <span class="badge badge-success">@Html.DisplayFor(modelItem => item.Status)</span>
                                         </td>*@
                                     <td>
-                                        @Html.ActionLink("Edit", "ProductEdit", new { code = item.Code }) |
-                                        @Html.ActionLink("Delete", "ProductDelete", new { code = item.Code })
-                                            @*|
-        @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
+                                        @Html.ActionLink("Edit", "ProductEdit", new { category = item.CategoryCode, code = item.Code }) |
+                                        @Html.ActionLink("Delete", "ProductDelete", new { category = item.CategoryCode, code = item.Code })
+                                        @*|
+                                            @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
                                         *@
 
                                         @*<div class="dropdown">
-            <button class="btn btn-sm btn-outline-primary dropdown-toggle dropdown-toggle-no-arrow" type="button" id="dropdownMenuButton-1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <i class="icon-dots-three-horizontal"></i>
-            </button>
-            <div class="dropdown-menu dropdown-menu-sm" aria-labelledby="dropdownMenuButton">
-                <a class="dropdown-item" href="#">Download</a>
-                <a class="dropdown-item" href="#">Share</a>
-                <a class="dropdown-item" href="#">Comment</a>
-                <div class="dropdown-divider"></div>
-                <a class="dropdown-item" href="#">Delete</a>
-            </div>
-        </div>*@
+                                                <button class="btn btn-sm btn-outline-primary dropdown-toggle dropdown-toggle-no-arrow" type="button" id="dropdownMenuButton-1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                    <i class="icon-dots-three-horizontal"></i>
+                                                </button>
+                                                <div class="dropdown-menu dropdown-menu-sm" aria-labelledby="dropdownMenuButton">
+                                                    <a class="dropdown-item" href="#">Download</a>
+                                                    <a class="dropdown-item" href="#">Share</a>
+                                                    <a class="dropdown-item" href="#">Comment</a>
+                                                    <div class="dropdown-divider"></div>
+                                                    <a class="dropdown-item" href="#">Delete</a>
+                                                </div>
+                                            </div>*@
                                     </td>
                                 </tr>
                                 <tr class="table-divider"></tr>

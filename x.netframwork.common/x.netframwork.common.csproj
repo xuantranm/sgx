@@ -115,6 +115,7 @@
     <Compile Include="Models\TimeKeeper\TimeKeeper.cs" />
     <Compile Include="Models\TimeKeeper\UserIDInfo.cs" />
     <Compile Include="Models\TimeKeeper\UserInfo.cs" />
+    <Compile Include="Models\Tribatvn\ProductSale.cs" />
     <Compile Include="Models\UserAgent\ClientBrowser.cs" />
     <Compile Include="Models\UserAgent\ClientOS.cs" />
     <Compile Include="Models\UserAgent\MatchExpression.cs" />

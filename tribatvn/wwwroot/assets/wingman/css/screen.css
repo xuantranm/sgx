@@ -2,22 +2,28 @@
     .height-70 {
         min-height: 0;
     }
+    .li-language {
+        margin-top: 10px;
+    }
     .navbar-nav{
         margin-top:15px;
     }
+        .navbar-nav .nav-item {
+            margin-top: 10px;
+        }
+            .navbar-nav .nav-item .nav-link {
+                border-bottom: 1px solid #e7e7e7;
+            }
 }
 
 @media (max-width: 767.98px) {
-    .li-language {
-        margin-top: -3px;
-    }
-
     .height-70 {
         min-height: 0;
     }
 }
 
 @media (max-width: 991.98px) {
+    
 }
 
 @media (max-width: 1199.98px) {

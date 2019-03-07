@@ -227,6 +227,16 @@ db.SalarySanXuatCongs.drop()
 db.SalaryNhaMayCongs.drop()
 db.SalaryCredits.drop()
 
+// Tribatvn
+db.ProductSales.update({},
+{$set : {"HomePage": true}},
+{upsert:false,
+multi:true})
+
+db.News.update({},
+{$set : {"HomePage": true}},
+{upsert:false,
+multi:true})
 
 
 

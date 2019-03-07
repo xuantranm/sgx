@@ -581,7 +581,19 @@ namespace xtime
                                     BodyContent = messageBody
                                 };
 
-                                new AuthMessageSender().SendEmail(emailMessage);
+                                // For faster update.
+                                var scheduleEmail = new ScheduleEmail
+                                {
+                                    Status = (int)EEmailStatus.Schedule,
+                                    To = emailMessage.ToAddresses,
+                                    CC = emailMessage.CCAddresses,
+                                    BCC = emailMessage.BCCAddresses,
+                                    Type = emailMessage.Type,
+                                    Title = emailMessage.Subject,
+                                    Content = emailMessage.BodyContent
+                                };
+                                dbContext.ScheduleEmails.InsertOne(scheduleEmail);
+                                //new AuthMessageSender().SendEmail(emailMessage);
                             }
                         }
                         #endregion

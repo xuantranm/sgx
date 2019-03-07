@@ -448,6 +448,7 @@ namespace Common.Utilities
             return text.Replace(" ", "-");
         }
 
+        // CURRENT NOT WORKING
         public static string TranslateText(string input, string languagePair)
         {
             try
@@ -468,7 +469,9 @@ namespace Common.Utilities
                 result = result.Substring(result.IndexOf("<span title=\"") + "<span title=\"".Length);
                 result = result.Substring(result.IndexOf(">") + 1);
                 result = result.Substring(0, result.IndexOf("</span>"));
-                return result.Trim();
+
+                return string.Empty;
+                //return result.Trim();
             }
             catch (Exception ex)
             {

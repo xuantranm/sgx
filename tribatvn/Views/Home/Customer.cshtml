@@ -1,0 +1,53 @@
+﻿@using Common.Utilities;
+@using Helpers;
+@using ViewModels;
+@model ContentViewModel;
+
+@{
+    Layout = "~/Views/Shared/_Wingman.cshtml";
+    var language = ViewData["Language"].ToString();
+}
+
+@await Html.PartialAsync("MenuPartial", Model.Menu)
+
+<div class="main-container">
+    <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="/">@Html.Raw(TextHelper.GetText(525, language))</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">
+                            @Model.Entity.Name
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section>
+        <div class="container">
+            <div class="row">
+                <div class="col-12 col-md-2 mb-5">
+                    <nav class="nav flex-md-column mb-2 x-sub-nav-about">
+                        <a href="@Model.linkKhachHangViTriDiaLy" class="nav-link">@Model.textKhachHangViTriDiaLy</a>
+                        <hr class="short">
+                        <a href="@Model.linkKhachHangXuLyChatThai" class="nav-link">@Model.textKhachHangXuLyChatThai</a>
+                    </nav>
+                </div>
+                <div class="col-12 col-md-10">
+                    @Html.Raw(Model.Entity.Body)
+                    @if (string.IsNullOrEmpty(Model.Entity.Body))
+                    {
+                        @await Html.PartialAsync("UpdatePartial")
+                    }
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+@await Html.PartialAsync("FooterPartial", Model.Menu)

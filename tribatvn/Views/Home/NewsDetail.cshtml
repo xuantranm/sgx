@@ -36,66 +36,29 @@
                             <li class="breadcrumb-item active" aria-current="page">@Model.Entity.Name</li>
                         </ol>
                     </div>
-                    <!--end of col-->
                 </div>
-                <!--end of row-->
             </div>
-            <!--end of container-->
         </nav>
         <section class="bg-white">
             <div class="container">
-                <div class="row justify-content-center">
-                    <div class="col-12 col-md-10 col-lg-7">
-                        <h1 class="display-4">@Model.Entity.Name</h1>
+                <div class="row">
+                    <div class="col-12">
+                        <h1>@Model.Entity.Name</h1>
                         <span class="lead">@Model.Entity.Description</span>
-                        <div class="media blog-post-author">
-                            @if (Model.Entity.Images != null && Model.Entity.Images.Count > 0)
-                            {
-                                <img class="avatar avatar-sm mr-3" src="~/@Model.Entity.Images[0].Path/@Model.Entity.Images[0].FileName" alt="@Model.Entity.Name" />
-                            }
-                            else
-                            {
-                                <img class="avatar avatar-sm mr-3" src="~/images/1449046872no-img.jpg" alt="@Model.Entity.Name" />
-                            }
-                            @*<img alt="Image" src="assets/img/avatar-male-1.jpg" class="avatar avatar-sm mr-3" />*@
-                            <div class="media-body">
-                                <span class="h6">Cameron Vasquez</span>
-                                <span class="text-small">28th February 2018 &bull; 5 min read</span>
-                            </div>
-                        </div>
                     </div>
-                    <!--end of col-->
                 </div>
-                <!--end of row-->
+                <div class="row">
+                    <div class="col-12">
+                        @Html.Raw(Model.Entity.Content)
+                    </div>
+                </div>
             </div>
-            <!--end of container-->
         </section>
-        <!--end of section-->
-        @if (Model.Entity.Images != null && Model.Entity.Images.Count > 0)
-        {
-            <img class="img-fluid" src="~/@Model.Entity.Images[0].Path/@Model.Entity.Images[0].FileName" alt="@Model.Entity.Name" />
-        }
-        else
-        {
-            <img class="img-fluid" src="~/images/1449046872no-img.jpg" alt="@Model.Entity.Name" />
-        }
 
-        @*<img alt="Image" src="assets/img/photo-team-desk-blog.jpg" class="img-fluid" />*@
-        <section>
-            <article class="container">
-                <div class="row justify-content-center">
-                    @Html.Raw(Model.Entity.Content)
-                </div>
-                <!--end of row-->
-            </article>
-            <!--end of container-->
-        </section>
-        <!--end of section-->
         <section>
             <div class="container">
-                <div class="row justify-content-center mb-5">
+                <div class="row justify-content-center mb-3">
                     <div class="col-auto text-center">
-                        <span class="title-decorative">Share Article</span>
                         <ul class="list-inline">
                             <li class="list-inline-item">
                                 <a href="https://www.facebook.com/sharer/sharer.php?u=@enc" target="_blank" rel="noopener noreferrer nofollow">
@@ -112,29 +75,19 @@
                                     <img alt="Image" src="~/images/social/social-share-google.svg" />
                                 </a>
                             </li>
-                            @*<li class="list-inline-item">
-                                    <a href="#" rel="noopener noreferrer nofollow">
-                                        <img alt="Image" src="~/images/social/social-share-pocket.svg" />
-                                    </a>
-                                </li>*@
                         </ul>
                     </div>
-                    <!--end of col-->
                 </div>
-                <!--end of row-->
             </div>
-            <!--end of container-->
         </section>
-        <!--end of section-->
+
         <section>
             <div class="container">
                 <div class="row justify-content-center mb-5">
                     <div class="col-auto">
                         <h3>@Html.Raw(TextHelper.GetText(577, language))</h3>
                     </div>
-                    <!--end of col-->
                 </div>
-                <!--end of row-->
                 <ul class="feature-list feature-list-sm row">
                     @{
                         foreach (var relation in Model.Relations)
@@ -158,26 +111,14 @@
                                         </a>
                                         <p class="card-text">@relation.Description</p>
                                     </div>
-                                    <div class="card-footer card-footer-borderless">
-                                        <div class="media blog-post-author">
-                                            <img alt="Image" src="~/assets/wingman/img/avatar-female-1.jpg" class="avatar avatar-xs" />
-                                            <div class="media-body">
-                                                <small>Rebecca Canning</small>
-                                                <small>29th February 2018 &bull; 3 min read</small>
-                                            </div>
-                                        </div>
-                                    </div>
                                 </div>
                             </li>
 
                         }
                     }
                 </ul>
-                <!--end of row-->
             </div>
-            <!--end of container-->
         </section>
-        <!--end of section-->
     </div>
 
     <div class="link-languages display-none">
@@ -195,6 +136,7 @@ else
 }
 
 @await Html.PartialAsync("FooterPartial", Model.Menu)
+
 
 
 

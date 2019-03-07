@@ -11,7 +11,6 @@ namespace Models
     public class ProductSale : Extension
     {
         [BsonId]
-        // Mvc don't know how to create ObjectId from string
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
 
@@ -40,6 +39,10 @@ namespace Models
         public string Status { get; set; } = "Active";
 
         public bool Enable { get; set; } = true;
+
+        // Base Modified date
+        public bool HomePage { get; set; } = false;
+
         public DateTime CreatedDate { get; set; } = DateTime.Now;
         public string CreatedUserId { get; set; }
         public DateTime ModifiedDate { get; set; } = DateTime.Now;

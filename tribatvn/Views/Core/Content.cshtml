@@ -83,8 +83,8 @@
                                         @Html.DisplayFor(modelItem => item.Title)
                                     </td>
                                     <td>
-                                        @Html.ActionLink("Edit", "ContentEdit", new { id = item.Code }) |
-                                        @Html.ActionLink("Delete", "ContentDelete", new { id = item.Code })
+                                        <a href="/core/content/edit/@item.Code" alt="Edit">Edit</a> |
+                                        <a href="/core/content/delete/@item.Code" alt="Edit">Delete</a>
                                     </td>
                                 </tr>
                                 <tr class="table-divider"></tr>

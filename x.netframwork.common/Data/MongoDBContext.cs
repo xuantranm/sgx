@@ -30,6 +30,17 @@ namespace Data
             }
         }
 
+        #region Tribatvn
+        public IMongoCollection<ProductSale> ProductSales
+        {
+            get
+            {
+                return _database.GetCollection<ProductSale>("ProductSales");
+            }
+        }
+
+        #endregion
+
         #region TimeKeeper
         public IMongoCollection<AttLog> X628CNMAttLogs
         {

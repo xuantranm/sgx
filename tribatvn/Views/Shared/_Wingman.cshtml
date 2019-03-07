@@ -35,7 +35,8 @@
     <link href="~/assets/wingman/css/custom.css" rel="stylesheet" type="text/css" media="all" />
     <link href="~/assets/wingman/css/screen.css" rel="stylesheet" type="text/css" media="all" />
 
-    <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    @*<script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>*@
+    <script type="text/javascript" src="~/lib/jquery3.2.1/dist/jquery-3.2.1.min.js"></script>
 </head>
 
 <body>
@@ -58,8 +59,9 @@
         </div>
     }
 
-    @RenderBody()
+    <div class="nav-container menu-main"></div>
 
+    @RenderBody()
 
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.13.0/umd/popper.min.js"></script>
     <script type="text/javascript" src="~/assets/wingman/js/jquery.smartWizard.min.js"></script>
@@ -71,37 +73,8 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="~/assets/wingman/js/theme.js"></script>
     <script src="~/lib/autosize/jquery.textarea_autosize.js"></script>
-    <script src="~/lib/jquery.cookie.js"></script>
-    <script src="~/js/site.js"></script>
-
-    <!--Multilanguage-->
-    <script type="text/javascript">
-
-        $('.btn-language').on('click', function () {
-            var language = $(this).attr("data-value");
-            var url = $('.' + language, $('.link-languages')).data('value');
-            //console.log(url);
-            $.cookie("language", language, { expires: 10 });
-            $.ajax({
-                url: '/language/change/',
-                data: { language: language },
-                type: 'post',
-                dataType: 'json',
-                success: function (data) {
-                    if (data == true) {
-                        //window.location.reload();
-                        console.log(url);
-                        if (typeof url !== "undefined") {
-                            window.location.replace(url);
-                        }
-                        else {
-                            window.location.reload();
-                        }
-                    }
-                }
-            });
-        });
-    </script>
+    <script src="~/lib/carhartl-jquery-cookie-92b7715/jquery.cookie.js"></script>
+    <script src="~/js/site.js?v-@DateTime.Now.Ticks"></script>
 
     <!--Start of Tawk.to Script-->
     <script type="text/javascript">

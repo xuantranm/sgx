@@ -2,7 +2,6 @@
 @using Common.Utilities;
 @using ViewModels;
 @model HomeViewModel;
-
 @{
     Layout = "~/Views/Shared/_Wingman.cshtml";
     var language = ViewData["Language"].ToString();
@@ -11,151 +10,65 @@
     var contact = Model.Menu.MenusContent.Where(m => m.Code.Equals("contact")).First();
 }
 
+<script src="~/lib/ResponsiveSlides.js/responsiveslides.min.js"></script>
+<script src="~/js/index.js"></script>
+
 @await Html.PartialAsync("MenuPartial", Model.Menu)
 
 <div class="main-container">
-    <section class="bg-dark text-white height-70">
-        @*<img alt="Image" src="assets/wingman/img/photo-man-whiteboard.jpg" class="bg-image opacity-70" />*@
-        <img alt="Image" src="~/assets/images/tempo/background/banner.jpg" class="bg-image opacity-70" @*data-action="zoom"*@ />
+    <ul class="rslides">
+        <li><img src="~/assets/images/tempo/background/banner-1.jpg" alt=""></li>
+        <li><img src="~/assets/images/tempo/background/banner-2.jpg" alt=""></li>
+    </ul>
 
-        <div class="container">
-            <div class="row">
-                <div class="col-12 col-md-9 col-lg-5">
-                    <h1 class="display-3">@Html.Raw(TextHelper.GetText(530, language))</h1>
-                    <span class="lead"> @Html.Raw(TextHelper.GetText(532, language))</span>
-                    <a href="/a/@about.Url" class="btn btn-success btn-lg">@about.Title</a>
-                </div>
-                <!--end of col-->
-            </div>
-            <!--end of row-->
-        </div>
-        <!--end of container-->
-    </section>
-    <!--end of section-->
+    <!--MANG CONG VIEC-->
     <section>
         <div class="container">
-            <div class="row justify-content-between mb-5">
-                <div class="col-auto">
-                    <h3>@Html.Raw(TextHelper.GetText(533, language))</h3>
-                </div>
-                <!--end of col-->
-                <div class="col-auto">
-                    <a href="#" class="btn btn-outline-primary">@Html.Raw(TextHelper.GetText(534, language))</a>
-                </div>
-                <!--end of col-->
-            </div>
-            <!--end of row-->
+            <h1 class="mb-3">@Html.Raw(TextHelper.GetText(585, language))</h1>
             <ul class="row feature-list feature-list-sm">
-
                 <li class="col-12 col-md-6 col-lg-4">
                     <div class="card">
-                        <a href="/p/bun">
-                            <img class="card-img-top" src="~/images/xu-ly-bun-2-1506648101633.jpg" alt="Xử lý - tái chế" height="152px">
+                        <a href="@Model.LinkBun">
+                            <img class="card-img-top" src="~/images/xu-ly-bun-2-1506648101633.jpg" alt="Xử lý - tái chế" height="152">
                         </a>
                         <div class="card-body">
-                            <a href="/p/bun">
+                            <a href="@Model.LinkBun">
                                 <h4 class="card-title">@Html.Raw(TextHelper.GetText(506, language))</h4>
-                                <p class="card-text text-body">@Html.Raw(TextHelper.GetText(535, language))</p>
+                                <p class="card-text text-body">@Html.Raw(TextHelper.GetText(586, language))</p>
                             </a>
-                        </div>
-                        <div class="card-footer card-footer-borderless d-flex justify-content-between">
-                            <div class="text-small">
-                                <ul class="list-inline">
-                                    <li class="list-inline-item"><i class="icon-heart"></i> 221</li>
-                                    <li class="list-inline-item"><i class="icon-message"></i> 14</li>
-                                </ul>
-                            </div>
-                            @*<div class="dropup">
-                                    <button class="btn btn-sm btn-outline-primary dropdown-toggle dropdown-toggle-no-arrow" type="button" id="SidekickButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                        <i class="icon-dots-three-horizontal"></i>
-                                    </button>
-                                    <div class="dropdown-menu dropdown-menu-sm" aria-labelledby="SidekickButton">
-                                        <a class="dropdown-item" href="#">Save</a>
-                                        <a class="dropdown-item" href="#">Share</a>
-                                        <a class="dropdown-item" href="#">Comment</a>
-                                        <div class="dropdown-divider"></div>
-                                        <a class="dropdown-item" href="#">Report</a>
-                                    </div>
-                                </div>*@
                         </div>
                     </div>
                 </li>
-                <!--end of col-->
                 <li class="col-12 col-md-6 col-lg-4">
                     <div class="card">
-                        <a href="/p/dat-sach">
-                            <img class="card-img-top" src="~/images/dat-trong-tribat-rau-mam.jpg" alt="Card image cap" height="152px">
+                        <a href="@Model.LinkDatSach">
+                            <img class="card-img-top" src="~/images/dat-trong-tribat-rau-mam.jpg" alt="Card image cap" height="152">
                         </a>
                         <div class="card-body">
-                            <a href="/p/dat-sach">
+                            <a href="@Model.LinkDatSach">
                                 <h4 class="card-title">@Html.Raw(TextHelper.GetText(536, language))</h4>
-                                <p class="card-text text-body">@Html.Raw(TextHelper.GetText(535, language))</p>
+                                <p class="card-text text-body">@Html.Raw(TextHelper.GetText(587, language))</p>
                             </a>
-                        </div>
-                        <div class="card-footer card-footer-borderless d-flex justify-content-between">
-                            <div class="text-small">
-                                <ul class="list-inline">
-                                    <li class="list-inline-item"><i class="icon-heart"></i> 90</li>
-                                    <li class="list-inline-item"><i class="icon-message"></i> 34</li>
-                                </ul>
-                            </div>
-                            <div class="dropup">
-                                <button class="btn btn-sm btn-outline-primary dropdown-toggle dropdown-toggle-no-arrow" type="button" id="PitstopButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    <i class="icon-dots-three-horizontal"></i>
-                                </button>
-                                <div class="dropdown-menu dropdown-menu-sm" aria-labelledby="PitstopButton">
-                                    <a class="dropdown-item" href="#">Save</a>
-                                    <a class="dropdown-item" href="#">Share</a>
-                                    <a class="dropdown-item" href="#">Comment</a>
-                                    <div class="dropdown-divider"></div>
-                                    <a class="dropdown-item" href="#">Report</a>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </li>
-                <!--end of col-->
-
                 <li class="col-12 col-md-6 col-lg-4">
                     <div class="card">
-                        <a href="/p/van-chuyen-chat-thai">
-                            <img class="card-img-top" src="/images/logistic.jpg" alt="Card image cap" height="152px">
+                        <a href="@Model.LinkDichVu">
+                            <img class="card-img-top" src="/images/logistic.jpg" alt="Card image cap" height="152">
                         </a>
                         <div class="card-body">
-                            <a href="/p/van-chuyen-chat-thai">
+                            <a href="@Model.LinkDichVu">
                                 <h4 class="card-title">@Html.Raw(TextHelper.GetText(510, language))</h4>
-                                <p class="card-text text-body">@Html.Raw(TextHelper.GetText(535, language))</p>
+                                <p class="card-text text-body">@Html.Raw(TextHelper.GetText(588, language))</p>
                             </a>
-                        </div>
-                        <div class="card-footer card-footer-borderless d-flex justify-content-between">
-                            <div class="text-small">
-                                <ul class="list-inline">
-                                    <li class="list-inline-item"><i class="icon-heart"></i> 84</li>
-                                    <li class="list-inline-item"><i class="icon-message"></i> 25</li>
-                                </ul>
-                            </div>
-                            <div class="dropup">
-                                <button class="btn btn-sm btn-outline-primary dropdown-toggle dropdown-toggle-no-arrow" type="button" id="pipeline.jsButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    <i class="icon-dots-three-horizontal"></i>
-                                </button>
-                                <div class="dropdown-menu dropdown-menu-sm" aria-labelledby="pipeline.jsButton">
-                                    <a class="dropdown-item" href="#">Save</a>
-                                    <a class="dropdown-item" href="#">Share</a>
-                                    <a class="dropdown-item" href="#">Comment</a>
-                                    <div class="dropdown-divider"></div>
-                                    <a class="dropdown-item" href="#">Report</a>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </li>
-                <!--end of col-->
             </ul>
-            <!--end of row-->
         </div>
-        <!--end of container-->
     </section>
-    <!--end of section-->
+
     <section>
         <div class="container">
             <div class="row justify-content-center text-center section-intro">
@@ -165,198 +78,110 @@
                     <span class="lead">@Html.Raw(TextHelper.GetText(548, language))</span>
 
                 </div>
-                <!--end of col-->
             </div>
-            <!--end of row-->
             <div class="row justify-content-center">
                 <div class="col-md-8 col-sm-10">
-                    @*<div class="video-cover rounded">
-            <img alt="Image" src="~/assets/images/tempo/background/banner2.jpg" class="bg-image" />
-            <div class="video-play-icon">
-                <i class="icon-controller-play"></i>
-            </div>
-
-
-
-            <div class="embed-responsive embed-responsive-16by9">
-                <iframe width="854" height="480" src="https://www.youtube.com/embed/9dOX7V4MxuA" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-            </div>
-        </div>*@
                     <div class="embed-responsive embed-responsive-16by9">
                         <iframe width="560" height="315" src="https://www.youtube.com/embed/2i6oFCa33Ng" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                     </div>
-                    <!--end of video cover-->
                 </div>
-                <!--end of col-->
             </div>
-            <!--end of row-->
-            <div class="row justify-content-center text-center section-outro">
-                <div class="col-lg-4 col-md-5">
-                    <h6>@Html.Raw(TextHelper.GetText(579, language))</h6>
-                    <p>@Html.Raw(TextHelper.GetText(580, language))</p>
-                    <a href="#">@Html.Raw(TextHelper.GetText(578, language)) &rsaquo;</a>
-                </div>
-                <!--end of col-->
-            </div>
-            <!--end of row-->
         </div>
-        <!--end of container-->
     </section>
-    <!--end of section-->
-    <section>
-        <div class="container">
-            <div class="row justify-content-center text-center section-intro">
-                <div class="col-12 col-md-9 col-lg-8">
-                    <span class="title-decorative">Built for Performance</span>
-                    <h2 class="display-4">Heavy on swish looks</h2>
-                    <span class="lead">An opportunity to introduce the major benefits of your product and set the scene for what's to come</span>
 
-                </div>
-                <!--end of col-->
-            </div>
-            <!--end of row-->
-            <ul class="row feature-list feature-list-lg">
-                <li class="col-12 col-md-6">
-                    <div class="media align-items-center">
-                        <a href="#">
-                            <img alt="Image" class="avatar avatar-lg mr-4" src="assets/wingman/img/graphic-developer-bootstrap.png" />
-                        </a>
-                        <div class="media-body">
-                            <a href="#">Title 1</a>
-                            <p class="mt-3">
-                                A short description of the aforementioned facet to easily digest, no need for too much detail.
-                            </p>
-                        </div>
-                    </div>
-                </li>
-                <!--end of col-->
-                <li class="col-12 col-md-6">
-                    <div class="media align-items-center">
-                        <a href="#">
-                            <img alt="Image" class="avatar avatar-lg mr-4" src="assets/wingman/img/graphic-developer-gulp.png" />
-                        </a>
-                        <div class="media-body">
-                            <a href="#">Title 2</a>
-                            <p class="mt-3">
-                                A short description of the aforementioned facet to easily digest, no need for too much detail.
-                            </p>
-                        </div>
-                    </div>
-                </li>
-                <!--end of col-->
-                <li class="col-12 col-md-6">
-                    <div class="media align-items-center">
-                        <a href="#">
-                            <img alt="Image" class="avatar avatar-lg mr-4" src="assets/wingman/img/graphic-developer-sass.png" />
-                        </a>
-                        <div class="media-body">
-                            <a href="#">Title 3</a>
-                            <p class="mt-3">
-                                A short description of the aforementioned facet to easily digest, no need for too much detail.
-                            </p>
-                        </div>
-                    </div>
-                </li>
-                <!--end of col-->
-                <li class="col-12 col-md-6">
-                    <div class="media align-items-center">
-                        <a href="#">
-                            <img alt="Image" class="avatar avatar-lg mr-4" src="assets/wingman/img/graphic-developer-html5.png" />
-                        </a>
-                        <div class="media-body">
-                            <a href="#">Title 4</a>
-                            <p class="mt-3">
-                                A short description of the aforementioned facet to easily digest, no need for too much detail.
-                            </p>
-                        </div>
-                    </div>
-                </li>
-                <!--end of col-->
-            </ul>
-            <!--end of row-->
-            <div class="row justify-content-center text-center section-outro">
-                <div class="col-lg-4 col-md-5">
-                    <h6>Introducing a new way</h6>
-                    <p>An opportunity to introduce the major benefits of your product and set the scene for what's to come</p>
-                    <a href="#">@Html.Raw(TextHelper.GetText(578, language)) &rsaquo;</a>
-                </div>
-                <!--end of col-->
-            </div>
-            <!--end of row-->
-        </div>
-        <!--end of container-->
-    </section>
-    <!--end of section-->
+    <!--DAT SACH-->
     <section>
         <div class="container">
-            <div class="row justify-content-between mb-5">
-                <div class="col-auto">
-                    <h3>Tin tức</h3>
-                </div>
-                <!--end of col-->
-                <div class="col-auto">
-                    <a href="/n/tin-tuc" class="btn btn-outline-primary">Tất cả</a>
-                </div>
-                <!--end of col-->
-            </div>
-            <!--end of row-->
-            <ul class="feature-list feature-list-sm row">
-                @{
-                    foreach (var relation in Model.News)
-                    {
-                        var link = "/" + Constants.Link.News + "/" + ViewData["CategoryNews"] + "/" + @relation.Alias;
-                        <li class="col-12 col-md-6 col-lg-4">
-                            <div class="card card-lg">
+            <h1 class="mb-3">@Html.Raw(TextHelper.GetText(581, language))</h1>
+            <ul class="row mb-3 feature-list feature-list-sm">
+                @foreach (var entity in Model.Products)
+                {
+                    var link = "/" + Constants.Link.Product + "/" + entity.CategoryAlias + "/" + entity.Product.Alias;
+                    <li class="col-12 col-md-6 col-lg-4">
+                        <div class="card card-lg">
+                            <a href="@link">
+                                @if (entity.Product.Images != null && entity.Product.Images.Count > 0)
+                                {
+                                    <img class="card-img-top" src="~/@entity.Product.Images[0].Path/@entity.Product.Images[0].FileName" alt="@entity.Product.Name">
+                                }
+                                else
+                                {
+                                    <img class="card-img-top" src="~/images/1449046872no-img.jpg" alt="@entity.Product.Name">
+                                }
+                            </a>
+                            <div class="card-body">
                                 <a href="@link">
-                                    @if (relation.Images != null && relation.Images.Count > 0)
-                                    {
-                                        <img src="~/@relation.Images[0].Path/@relation.Images[0].FileName" class="card-img-top" alt="@relation.Name" />
-                                    }
-                                    else
-                                    {
-                                        <img src="~/images/1449046872no-img.jpg" class="card-img-top" alt="@relation.Name" />
-                                    }
+                                    <h4 class="card-title mb-3">@entity.Product.Name</h4>
                                 </a>
-                                <div class="card-body">
-                                    <a href="@link">
-                                        <h4 class="card-title mb-3">@relation.Name</h4>
-                                    </a>
-                                    <p class="card-text">@relation.Description</p>
-                                </div>
-                                <div class="card-footer card-footer-borderless">
-                                    <div class="media blog-post-author">
-                                        <img alt="Image" src="~/assets/wingman/img/avatar-female-1.jpg" class="avatar avatar-xs" />
-                                        <div class="media-body">
-                                            <small>Rebecca Canning</small>
-                                            <small>29th February 2018 &bull; 3 min read</small>
-                                        </div>
-                                    </div>
-                                </div>
+                                <p class="card-text">@Constants.Truncate(entity.Product.Description, 135)</p>
                             </div>
-                        </li>
-
-                    }
+                        </div>
+                    </li>
                 }
             </ul>
-            <!--end of row-->
         </div>
-        <!--end of container-->
     </section>
-    <!--end of section-->
-    <section class="space-xlg bg-gradient text-white">
+
+    <!--TIN TUC-->
+    @if (Model.News != null && Model.News.Count > 0)
+    {
+        <section>
+            <div class="container">
+                <div class="row justify-content-between mb-5">
+                    <div class="col-auto">
+                        <h3>@Html.Raw(TextHelper.GetText(584, language))</h3>
+                    </div>
+                    <div class="col-auto">
+                        @{
+                            var linkNewAll = "/" + Constants.Link.News + "/" + ViewData["CategoryNews"];
+                        }
+                        <a href="@linkNewAll" class="btn btn-outline-primary">@Html.Raw(TextHelper.GetText(534, language))</a>
+                    </div>
+                </div>
+                <ul class="feature-list feature-list-sm row">
+                    @{
+                        foreach (var relation in Model.News)
+                        {
+                            var link = "/" + Constants.Link.News + "/" + ViewData["CategoryNews"] + "/" + @relation.Alias;
+                            <li class="col-12 col-md-6 col-lg-4">
+                                <div class="card card-lg">
+                                    <a href="@link">
+                                        @if (relation.Images != null && relation.Images.Count > 0)
+                                        {
+                                            <img src="~/@relation.Images[0].Path/@relation.Images[0].FileName" class="card-img-top" style="height:180px" alt="@relation.Name" />
+                                        }
+                                        else
+                                        {
+                                            <img src="~/images/1449046872no-img.jpg" class="card-img-top" style="height:180px" alt="@relation.Name" />
+                                        }
+                                    </a>
+                                    <div class="card-body">
+                                        <a href="@link">
+                                            <h4 class="card-title mb-3">@relation.Name</h4>
+                                        </a>
+                                        <p class="card-text">@Constants.Truncate(relation.Description, 200)</p>
+                                    </div>
+                                </div>
+                            </li>
+
+                        }
+                    }
+                </ul>
+            </div>
+        </section>
+    }
+
+    <!--VIEC LAM-->
+    <section class="space-xlg bg-gradient text-white" id="tim-kiem-viec-lam">
         <div class="container">
             <div class="row text-center">
                 <div class="col">
-                    <h3 class="h1">Tìm kiếm việc làm</h3>
-                    <a href="/j/tuyen-dung" class="btn btn-lg btn-success">Ứng tuyển</a>
+                    <h3 class="h1">@Html.Raw(TextHelper.GetText(582, language))</h3>
+                    <a href="/j/tuyen-dung" class="btn btn-lg btn-success">@Html.Raw(TextHelper.GetText(583, language))</a>
                 </div>
-                <!--end of col-->
             </div>
-            <!--end of row-->
         </div>
-        <!--end of container-->
     </section>
-    <!--end of section-->
 </div>
 
 @await Html.PartialAsync("FooterPartial", Model.Menu)

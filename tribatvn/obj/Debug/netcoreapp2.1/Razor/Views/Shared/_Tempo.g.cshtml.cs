@@ -57,7 +57,7 @@ using Models;
             WriteLiteral("<!DOCTYPE html>\r\n<!--[if IE 8]> <html lang=\"en\" class=\"ie8\"> <![endif]-->\r\n<!--[if IE 9]> <html lang=\"en\" class=\"ie9\"> <![endif]-->\r\n<!--[if !IE]><!-->\r\n<html lang=\"vi\">\r\n<!--<![endif]-->\r\n");
             EndContext();
             BeginContext(189, 1782, false);
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("head", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "238163f540c243f889994e9388728fbb", async() => {
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("head", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "a2cf188c5eda4052991dabf4d3d36d50", async() => {
                 BeginContext(195, 13, true);
                 WriteLiteral("\r\n    <title>");
                 EndContext();
@@ -111,7 +111,7 @@ WriteAttributeValue("", 513, ViewBag.MetaAuthor, 513, 19, false);
                 WriteLiteral(" ");
                 EndContext();
                 BeginContext(1558, 101, false);
-                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("link", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagOnly, "ddbb00f3624842c38d7f0f7b7f8475d3", async() => {
+                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("link", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagOnly, "a8885874a2074c07bdc65797dde1903c", async() => {
                 }
                 );
                 __Microsoft_AspNetCore_Mvc_Razor_TagHelpers_UrlResolutionTagHelper = CreateTagHelper<global::Microsoft.AspNetCore.Mvc.Razor.TagHelpers.UrlResolutionTagHelper>();
@@ -152,7 +152,7 @@ WriteAttributeValue("", 513, ViewBag.MetaAuthor, 513, 19, false);
             WriteLiteral("\r\n");
             EndContext();
             BeginContext(1973, 19470, false);
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("body", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "74dcd01e5ca8400fa23089359e1a1fa0", async() => {
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("body", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "346b25f8224b438dadfa60f40d18b1a8", async() => {
                 BeginContext(2001, 1678, true);
                 WriteLiteral(@"
     <!-- * Facebook Like button script starts -->
@@ -309,7 +309,7 @@ WriteAttributeValue("", 513, ViewBag.MetaAuthor, 513, 19, false);
                         ");
                 EndContext();
                 BeginContext(11445, 1399, false);
-                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("form", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "f152bea2e7cc4113bd5a7b54377cabe9", async() => {
+                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("form", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "1e2def967d6f4f029374acb1855b8f61", async() => {
                     BeginContext(11470, 1367, true);
                     WriteLiteral(@"
                             <div class=""form-group email"">
@@ -382,7 +382,7 @@ WriteAttributeValue("", 513, ViewBag.MetaAuthor, 513, 19, false);
                         ");
                 EndContext();
                 BeginContext(14801, 1020, false);
-                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("form", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "b08d1fc78f9d4846bc69d6084f8b634c", async() => {
+                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("form", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "634871961c2b4825aa2475e469e5ef6b", async() => {
                     BeginContext(14826, 988, true);
                     WriteLiteral(@"
                             <div class=""form-group email"">
@@ -435,7 +435,7 @@ WriteAttributeValue("", 513, ViewBag.MetaAuthor, 513, 19, false);
                 WriteLiteral("resetpass-form-container\">\r\n                        <p class=\"intro\">Please enter your email address below and we\'ll email you a link to a page where you can easily create a new password.</p>\r\n                        ");
                 EndContext();
                 BeginContext(17062, 525, false);
-                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("form", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "80458c64ab6a413686b2d10fc280b927", async() => {
+                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("form", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "43d081b2f72d48d0b081d412b3da7b3c", async() => {
                     BeginContext(17091, 489, true);
                     WriteLiteral(@"
                             <div class=""form-group email"">

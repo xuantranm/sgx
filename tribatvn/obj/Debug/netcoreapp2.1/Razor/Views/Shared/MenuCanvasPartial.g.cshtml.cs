@@ -813,7 +813,7 @@ using ViewModels;
                         ");
             EndContext();
             BeginContext(56806, 198, false);
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("form", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "e813620b71c5458f9ff9fa0fb7dbc9f9", async() => {
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("form", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "6928db08af5e47929f89d36152042c39", async() => {
                 BeginContext(56846, 151, true);
                 WriteLiteral("\r\n                            <input type=\"text\" name=\"q\" class=\"form-control\" value=\"\" placeholder=\"Type &amp; Hit Enter..\">\r\n                        ");
                 EndContext();
