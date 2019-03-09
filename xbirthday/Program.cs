@@ -109,7 +109,8 @@ namespace xbirthday
                             CCAddresses = ccs,
                             Subject = subject,
                             BodyContent = messageBody,
-                            Type = "birthday"
+                            Type = "birthday",
+                            EmployeeId = item.EmployeeId
                         };
 
                         new AuthMessageSender().SendEmail(emailMessage);

@@ -398,6 +398,46 @@ namespace Data
             }
         }
 
+        public IMongoCollection<CongTyChiNhanh> CongTyChiNhanhs
+        {
+            get
+            {
+                return _database.GetCollection<CongTyChiNhanh>("CongTyChiNhanhs");
+            }
+        }
+
+        public IMongoCollection<KhoiChucNang> KhoiChucNangs
+        {
+            get
+            {
+                return _database.GetCollection<KhoiChucNang>("KhoiChucNangs");
+            }
+        }
+
+        public IMongoCollection<PhongBan> PhongBans
+        {
+            get
+            {
+                return _database.GetCollection<PhongBan>("PhongBans");
+            }
+        }
+
+        public IMongoCollection<BoPhan> BoPhans
+        {
+            get
+            {
+                return _database.GetCollection<BoPhan>("BoPhans");
+            }
+        }
+
+        public IMongoCollection<ChucVu> ChucVus
+        {
+            get
+            {
+                return _database.GetCollection<ChucVu>("ChucVus");
+            }
+        }
+
         public IMongoCollection<EmailGroup> EmailGroups
         {
             get

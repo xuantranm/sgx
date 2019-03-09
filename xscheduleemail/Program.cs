@@ -26,7 +26,13 @@ namespace xscheduleemail
             var database = "tribat";
             #endregion
 
+            Console.WriteLine("Start send mail...");
             SendMail(mode, isMail, connection, database);
+
+            // Debug
+            //Console.Write("\r\n");
+            //Console.Write("Done..... Press any key to exist!");
+            //Console.ReadLine();
         }
 
         static void SendMail(int mode, bool isMail, string connection, string database)
@@ -44,6 +50,7 @@ namespace xscheduleemail
             {
                 foreach (var item in listEmail)
                 {
+                    Console.WriteLine("Process: " + item.EmployeeId + " | type: " + item.Type);
                     if (item != null && item.To != null)
                     {
                         var emailMessage = new EmailMessage()
@@ -54,7 +61,8 @@ namespace xscheduleemail
                             BCCAddresses = item.BCC,
                             Subject = item.Title,
                             BodyContent = item.Content,
-                            Type = item.Type
+                            Type = item.Type,
+                            EmployeeId = item.EmployeeId
                         };
 
                         if (isMail)

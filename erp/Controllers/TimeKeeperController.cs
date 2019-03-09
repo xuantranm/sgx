@@ -699,7 +699,8 @@ namespace erp.Controllers
                 //CCAddresses = ccs,
                 Subject = subject,
                 BodyContent = messageBody,
-                Type = "ho-tro-xac-nhan-cong"
+                Type = "ho-tro-xac-nhan-cong",
+                EmployeeId = employee.Id
             };
 
             // For faster. Add to schedule.
@@ -713,12 +714,10 @@ namespace erp.Controllers
                 BCC = emailMessage.BCCAddresses,
                 Type = emailMessage.Type,
                 Title = emailMessage.Subject,
-                Content = emailMessage.BodyContent
+                Content = emailMessage.BodyContent,
+                EmployeeId = emailMessage.EmployeeId
             };
             dbContext.ScheduleEmails.InsertOne(scheduleEmail);
-
-            //_emailSender.SendEmail(emailMessage);
-
             #endregion
 
             return Json(new { result = true, message = "Yêu cầu được gửi các bộ phận liên quan." });
@@ -946,7 +945,8 @@ namespace erp.Controllers
                 CCAddresses = ccs,
                 Subject = subject,
                 BodyContent = messageBody,
-                Type = "xac-nhan-cong"
+                Type = "xac-nhan-cong",
+                EmployeeId = entity.EmployeeId
             };
 
             // For faster. Add to schedule.
@@ -960,10 +960,10 @@ namespace erp.Controllers
                 BCC = emailMessage.BCCAddresses,
                 Type = emailMessage.Type,
                 Title = emailMessage.Subject,
-                Content = emailMessage.BodyContent
+                Content = emailMessage.BodyContent,
+                EmployeeId = emailMessage.EmployeeId
             };
             dbContext.ScheduleEmails.InsertOne(scheduleEmail);
-            //_emailSender.SendEmail(emailMessage);
             #endregion
 
             return Json(new { result = true, message = "Cám ơn đã xác nhận, kết quả đang gửi cho người liên quan." });

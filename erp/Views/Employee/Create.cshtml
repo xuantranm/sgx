@@ -175,6 +175,73 @@
                                 </select>
                             </div>
                         </div>
+
+
+                        <div class="col-12">
+                            <div class="form-group">
+                                <label class="control-label">Nơi quản lý</label>
+                                <select asp-for="Employee.CongTyChiNhanh" class="form-control form-control-lg">
+                                    <option value="">Chọn</option>
+                                    @foreach (var item in Model.CongTyChiNhanhs)
+                                    {
+                                        <option value="@item.Code">@item.Name</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6 col-12">
+                            <div class="form-group">
+                                <label class="control-label">Khối chức năng</label>
+                                <select asp-for="Employee.KhoiChucNang" class="form-control form-control-lg">
+                                    <option value="">Chọn</option>
+                                    @foreach (var item in Model.KhoiChucNangs)
+                                    {
+                                        <option value="@item.Code">@item.Name</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6 col-12">
+                            <div class="form-group">
+                                <label class="control-label">Phòng/Ban</label>
+                                <select asp-for="Employee.PhongBan" class="form-control form-control-lg">
+                                    <option value="">Chọn</option>
+                                    @foreach (var item in Model.PhongBans)
+                                    {
+                                        <option value="@item.Code">@item.Name</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6 col-12">
+                            <div class="form-group">
+                                <label class="control-label">Bộ phận</label>
+                                <select asp-for="Employee.BoPhan" class="form-control form-control-lg">
+                                    <option value="">Chọn</option>
+                                    @foreach (var item in Model.BoPhans)
+                                    {
+                                        <option value="@item.Code">@item.Name</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6 col-12">
+                            <div class="form-group">
+                                <label class="control-label">Bộ phận nhỏ (nếu có - thuộc bộ phận)</label>
+                                <select asp-for="Employee.BoPhanCon" class="form-control form-control-lg">
+                                    <option value="">Chọn</option>
+                                    @foreach (var item in Model.BoPhanCons)
+                                    {
+                                        <option value="@item.Code">@item.Name</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
                         <div class="col-sm-6 col-12">
                             <div class="form-group">
                                 <i class="icon icon-select-arrows"></i>
@@ -241,6 +308,8 @@
                                 </div>
                             </div>
                         </div>
+
+
                         <div class="col-12">
                             <div class="form-group">
                                 <i class="icon icon-select-arrows"></i>
@@ -264,11 +333,10 @@
                                     }
                                 </select>
                                 <input type="hidden" value="@Model.Employee.ManagerId" id="hidManagerId" />
-                                @*<script id="tmplManagePeople" type="text/x-jsrender">
-                                        <option value="{{:id}}" data-userName="{{:userName}}" data-email="{{:email}}" data-fullname="{{:fullName}}">{{:fullName}} [{{:title}}]</option>
-                                    </script>*@
                             </div>
                         </div>
+
+
                         <div class="col-6">
                             <div class="form-group">
                                 <i class="icon icon-time-slot"></i>

@@ -51,31 +51,26 @@ namespace erp.Controllers
 
         #region UI
         [Route(Constants.LinkSystem.Mail)]
-        public ActionResult Email(int? status, string id, string toemail, int? page, int? size)
+        public ActionResult Email(string Status, string Id, string MaNv, string ToEmail, int Page, int Size)
         {
-            if (!status.HasValue)
-            {
-                status = 2;
-            }
-            if (!page.HasValue)
-            {
-                page = 1;
-            }
-            if (!size.HasValue)
-            {
-                size = 100;
-            }
-
             #region Filter
             var builder = Builders<ScheduleEmail>.Filter;
-            var filter = builder.Eq(m => m.Status, status);
-            if (!string.IsNullOrEmpty(id))
+            var filter = builder.Eq(m => m.Enable, true);
+            if (!string.IsNullOrEmpty(Status))
             {
-                filter = filter & builder.Eq(m => m.Id, id);
+                filter = filter & builder.Eq(m => m.Status, Convert.ToInt32(Status));
             }
-            if (!string.IsNullOrEmpty(toemail))
+            if (!string.IsNullOrEmpty(MaNv))
             {
-                filter = filter & builder.ElemMatch(x => x.To, x => x.Address == toemail);
+                filter = filter & builder.Eq(m => m.EmployeeId, MaNv);
+            }
+            if (!string.IsNullOrEmpty(Id))
+            {
+                filter = filter & builder.Eq(m => m.Id, Id);
+            }
+            if (!string.IsNullOrEmpty(ToEmail))
+            {
+                filter = filter & builder.ElemMatch(x => x.To, x => x.Address == ToEmail);
             }
             #endregion
 
@@ -83,34 +78,42 @@ namespace erp.Controllers
             var sortBuilder = Builders<ScheduleEmail>.Sort.Descending(m => m.UpdatedOn);
             #endregion
 
+            var pages = 1;
             var records = dbContext.ScheduleEmails.CountDocuments(filter);
-            var pages = (int)Math.Ceiling(records / (double)size);
-            if (page > pages)
+            if (records > 0 && records > Size)
             {
-                page = 1;
+                pages = (int)Math.Ceiling((double)records / (double)Size);
+                if (Page > pages)
+                {
+                    Page = 1;
+                }
             }
-            var list = dbContext.ScheduleEmails.Find(filter).Skip((page - 1) * size).Limit(size).Sort(sortBuilder).ToList();
+           
+            var list = dbContext.ScheduleEmails.Find(filter).Sort(sortBuilder).Skip((Page - 1) * Size).Limit(Size).ToList();
             var viewModel = new MailViewModel
             {
                 ScheduleEmails = list,
-                status = status,
-                id = id,
-                toemail = toemail,
                 Records = (int)records,
-                Pages = pages
+                Pages = pages,
+                Status = Status,
+                Id = Id,
+                ToEmail = ToEmail,
+                MaNv = MaNv,
+                Page = Page,
+                Size = Size
             };
             return View(viewModel);
         }
 
         [HttpPost]
         [Route(Constants.LinkSystem.Mail + "/" + Constants.LinkSystem.Item)]
-        public ActionResult EmailItem(string id)
+        public ActionResult EmailItem(string Id)
         {
-            var item = dbContext.ScheduleEmails.Find(m => m.Id.Equals(id)).FirstOrDefault();
+            var item = dbContext.ScheduleEmails.Find(m => m.Id.Equals(Id)).FirstOrDefault();
             var viewModel = new MailViewModel
             {
                 ScheduleEmail = item,
-                id = id
+                Id = Id
             };
 
             return PartialView("_ContentEmailPartial", viewModel);
@@ -120,22 +123,22 @@ namespace erp.Controllers
         public ActionResult Resend(MailViewModel viewModel)
         {
             var userId = User.Identity.Name;
-            var item = dbContext.ScheduleEmails.Find(m => m.Id.Equals(viewModel.id)).FirstOrDefault();
+            var item = dbContext.ScheduleEmails.Find(m => m.Id.Equals(viewModel.Id)).FirstOrDefault();
             
             if (item != null)
             {
                 var tos = new List<EmailAddress>();
-                if (!string.IsNullOrEmpty(viewModel.toEmail))
+                if (!string.IsNullOrEmpty(viewModel.ToEmail))
                 {
-                    foreach (var email in viewModel.toEmail.Split(";"))
+                    foreach (var email in viewModel.ToEmail.Split(";"))
                     {
                         tos.Add(new EmailAddress { Address = email });
                     }
                 }
                 var ccs = new List<EmailAddress>();
-                if (!string.IsNullOrEmpty(viewModel.ccEmail))
+                if (!string.IsNullOrEmpty(viewModel.CcEmail))
                 {
-                    foreach (var email in viewModel.ccEmail.Split(";"))
+                    foreach (var email in viewModel.CcEmail.Split(";"))
                     {
                         ccs.Add(new EmailAddress { Address = email });
                     }
@@ -151,100 +154,15 @@ namespace erp.Controllers
                 _emailSender.SendEmail(emailMessage);
 
                 // Update status send
-                var filter = Builders<ScheduleEmail>.Filter.Eq(m => m.Id, viewModel.id);
+                var filter = Builders<ScheduleEmail>.Filter.Eq(m => m.Id, viewModel.Id);
                 var update = Builders<ScheduleEmail>.Update.Set(m => m.Status, 3)
-                                                           .Set(m => m.UpdatedOn, DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss.fff"));
+                                                           .Set(m => m.UpdatedOn, DateTime.Now);
                 dbContext.ScheduleEmails.UpdateOne(filter, update);
             }
 
             return Json(new { result = true, message = "Add new successfull." });
         }
 
-        private void SendMailSupport(string id)
-        {
-            var emailFrom = Constants.System.emailHr;
-            var emailFromName = Constants.System.emailHrName;
-            var emailFromPwd = Constants.System.emailHrPwd;
-            var url = Constants.System.domain;
-            var froms = new List<EmailAddress>
-                        {
-                            new EmailAddress { Name = emailFromName, Address = emailFrom }
-                        };
-
-            var errorItem = dbContext.ScheduleEmails.Find(m => m.Id.Equals(id)).FirstOrDefault();
-            var subject = "Gửi email lỗi " + errorItem.Title;
-            var tos = new List<EmailAddress>
-                            {
-                                //new EmailAddress { Name = item.FullName, Address = item.Email }
-                                new EmailAddress { Name = "Trần Minh Xuân", Address = "xuan.tm@tribat.vn" }
-                            };
-            var pathToFile = _env.WebRootPath
-                    + Path.DirectorySeparatorChar.ToString()
-                    + "Templates"
-                    + Path.DirectorySeparatorChar.ToString()
-                    + "EmailTemplate"
-                    + Path.DirectorySeparatorChar.ToString()
-                    + "Error.html";
-            var bodyBuilder = new BodyBuilder();
-            using (StreamReader SourceReader = System.IO.File.OpenText(pathToFile))
-            {
-                bodyBuilder.HtmlBody = SourceReader.ReadToEnd();
-            }
-            string messageBody = string.Format(bodyBuilder.HtmlBody,
-                subject,
-                errorItem.Id,
-                errorItem.UpdatedOn,
-                errorItem.Error,
-                errorItem.To.ToString(),
-                errorItem.Type,
-                errorItem.Content,
-                url
-                );
-            var emailMessage = new EmailMessage()
-            {
-                ToAddresses = tos,
-                Subject = subject,
-                BodyContent = messageBody
-            };
-
-            var message = new MimeMessage();
-            message.To.AddRange(emailMessage.ToAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
-            if (emailMessage.FromAddresses == null || emailMessage.FromAddresses.Count == 0)
-            {
-                emailMessage.FromAddresses = new List<EmailAddress>
-                                    {
-                                        new EmailAddress { Name = emailFromName, Address = emailFrom }
-                                    };
-            }
-            message.From.AddRange(emailMessage.FromAddresses.Select(x => new MailboxAddress(x.Name, x.Address)));
-            message.Subject = emailMessage.Subject;
-            message.Body = new TextPart(TextFormat.Html)
-            {
-                Text = emailMessage.BodyContent
-            };
-
-            try
-            {
-                using (var emailClient = new MailKit.Net.Smtp.SmtpClient())
-                {
-                    //The last parameter here is to use SSL (Which you should!)
-                    emailClient.Connect(emailFrom, 465, true);
-
-                    //Remove any OAuth functionality as we won't be using it. 
-                    emailClient.AuthenticationMechanisms.Remove("XOAUTH2");
-
-                    emailClient.Authenticate(emailFrom, emailFromPwd);
-
-                    emailClient.Send(message);
-
-                    emailClient.Disconnect(true);
-                }
-            }
-            catch (Exception ex)
-            {
-                
-            }
-        }
         #endregion
 
         #region Init Data

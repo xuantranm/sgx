@@ -242,7 +242,8 @@ namespace erp.Controllers
                 CCAddresses = ccs,
                 Subject = subject,
                 BodyContent = messageBody,
-                Type = "leave-confirm"
+                Type = "leave-confirm",
+                EmployeeId = leave.EmployeeId
             };
 
             // For faster. Add to schedule.
@@ -256,7 +257,8 @@ namespace erp.Controllers
                 BCC = emailMessage.BCCAddresses,
                 Type = emailMessage.Type,
                 Title = emailMessage.Subject,
-                Content = emailMessage.BodyContent
+                Content = emailMessage.BodyContent,
+                EmployeeId = emailMessage.EmployeeId
             };
             dbContext.ScheduleEmails.InsertOne(scheduleEmail);
             //_emailSender.SendEmail(emailMessage);
@@ -502,7 +504,8 @@ namespace erp.Controllers
                 CCAddresses = ccs,
                 Subject = subject,
                 BodyContent = messageBody,
-                Type = "xac-nhan-cong"
+                Type = "xac-nhan-cong",
+                EmployeeId = entity.EmployeeId
             };
 
             // For faster. Add to schedule.
@@ -516,7 +519,8 @@ namespace erp.Controllers
                 BCC = emailMessage.BCCAddresses,
                 Type = emailMessage.Type,
                 Title = emailMessage.Subject,
-                Content = emailMessage.BodyContent
+                Content = emailMessage.BodyContent,
+                EmployeeId = emailMessage.EmployeeId
             };
             dbContext.ScheduleEmails.InsertOne(scheduleEmail);
 

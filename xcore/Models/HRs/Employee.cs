@@ -12,11 +12,9 @@ namespace Models
     public class Employee : Common
     {
         [BsonId]
-        // Mvc don't know how to create ObjectId from string
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
 
-        // Use store history
         public string EmployeeId { get; set; }
 
         [Display(Name = "Tên đăng nhập")]
@@ -117,14 +115,28 @@ namespace Models
         [Display(Name = "Nước")]
         public string CountryTemporary { get; set; }
 
-        [Display(Name = "Phòng/ban")]
+        #region New 08.03.2019. Store Id. Search alias convert to id | Query convert to viewModel, future thay the Deparment, part,...
+        public string CongTyChiNhanh { get; set; }
+
+        public string KhoiChucNang { get; set; }
+
+        public string PhongBan { get; set; }
+
+        public string BoPhan { get; set; }
+
+        public string BoPhanCon { get; set; }
+
+        public string ChucVu { get; set; }
+
+        public string GhiChu { get; set; }
+        #endregion
+
         public string Department { get; set; }
 
         public string DepartmentId { get; set; }
 
         public string DepartmentAlias { get; set; }
 
-        [Display(Name = "Bộ phận")]
         public string Part { get; set; }
 
         public string PartId { get; set; }
@@ -150,13 +162,11 @@ namespace Models
 
         public bool ConfirmEmail { get; set; } = true;
 
-        // Fast get data
-        // data on LeaveEmployees
         [Display(Name = "Ngày phép sẵn có")]
         [BsonRepresentation(BsonType.Decimal128)]
         public decimal LeaveDayAvailable { get; set; } = 0;
 
-        // Text
+        // Text Chuc Vu
         [Display(Name = "Công việc")]
         public string Title { get; set; }
 
@@ -322,6 +332,10 @@ namespace Models
         public EmployeeBank EmployeeBank { get; set; }
         // For fast data access, divide other collection
         //public IList<Notification> Notifications { get; set; }
+
+        public bool IsWelcomeEmail { get; set; } = true;
+
+        public bool IsLeaveEmail { get; set; } = true;
 
         #region SALARIES
         /// <summary>

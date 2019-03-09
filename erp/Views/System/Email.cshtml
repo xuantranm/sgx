@@ -11,9 +11,9 @@
 
 <form method="get" action="/@Constants.LinkSystem.Main/@Constants.LinkSystem.Mail" id="form-main">
     <div class="form-row mb-3">
-        <div class="col-md-4 col-xs-12">
+        <div class="col-md-4 col-sm-6 col-xs-12">
             <label class="control-label">Tình trạng</label>
-            <select asp-for="status" class="form-control form-control-lg">
+            <select asp-for="Status" class="form-control form-control-lg">
                 <option value="">Tất cả</option>
                 <option value="1">Thành công</option>
                 <option value="2">Không gửi được</option>
@@ -22,28 +22,30 @@
                 <option value="5">Chờ gửi (gấp)</option>
             </select>
         </div>
-        <div class="col-md-4 col-xs-12">
-            <label class="control-label">Mã</label>
-            <input asp-for="id" class="form-control form-control-lg" />
+        <div class="col-md-4 col-sm-6 col-xs-12">
+            <label class="control-label">Mail Id</label>
+            <input asp-for="Id" class="form-control form-control-lg" />
         </div>
-        <div class="col-md-4 col-xs-12">
+        <div class="col-md-4 col-sm-6 col-xs-12">
+            <label class="control-label">User Id</label>
+            <input asp-for="MaNv" class="form-control form-control-lg" />
+        </div>
+        <div class="col-md-4 col-sm-6 col-xs-12">
             <label class="control-label">Email</label>
-            <input asp-for="toemail" class="form-control form-control-lg" />
+            <input asp-for="ToEmail" class="form-control form-control-lg" />
         </div>
-    </div>
-    <div class="form-row mb-3">
-        <div class="col-md-2">
+        <div class="col-md-2 col-sm-6 col-xs-12">
             <label class="control-label">Dòng</label>
-            <select asp-for="size" class="form-control form-control-lg">
+            <select asp-for="Size" class="form-control form-control-lg">
                 <option value="100">100</option>
                 <option value="200">200</option>
                 <option value="500">500</option>
                 <option value="1000">1000</option>
             </select>
         </div>
-        <div class="col-md-2">
+        <div class="col-md-2 col-sm-6 col-xs-12">
             <label class="control-label">Trang</label>
-            <select asp-for="page" class="form-control form-control-lg">
+            <select asp-for="Page" class="form-control form-control-lg">
                 @{
                     var pages = Model.Pages;
                     for (var i = 1; i <= pages; i++)
@@ -53,7 +55,7 @@
                 }
             </select>
         </div>
-        <div class="col-md-8">
+        <div class="col-md-4 col-sm-6 col-xs-12">
             <label class="control-label"><small>Bấm nút hoặc Enter</small></label>
             <button class="btn btn-primary btn-block btn-lg" type="submit"><i class="icon-magnifying-glass"></i> Tìm kiếm</button>
         </div>

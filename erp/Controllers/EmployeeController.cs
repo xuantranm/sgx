@@ -512,7 +512,7 @@ namespace erp.Controllers
             }
             using (var stream = new FileStream(Path.Combine(exportFolder, sFileName), FileMode.Open))
             {
-                await stream.CopyToAsync(memory);
+                stream.CopyTo(memory);
             }
             memory.Position = 0;
             return File(memory, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", sFileName);
@@ -955,7 +955,7 @@ namespace erp.Controllers
                                 var fileName = Guid.NewGuid().ToString().Replace("-", "") + Path.GetExtension(file.FileName);
                                 using (var fileStream = new FileStream(Path.Combine(uploads, fileName), FileMode.Create))
                                 {
-                                    await file.CopyToAsync(fileStream);
+                                    file.CopyTo(fileStream);
                                     var currentImage = new Image
                                     {
                                         Path = "\\" + mapFolder + "\\",
@@ -977,7 +977,7 @@ namespace erp.Controllers
                                 var fileName = Guid.NewGuid().ToString().Replace("-", "") + Path.GetExtension(file.FileName);
                                 using (var fileStream = new FileStream(Path.Combine(uploads, fileName), FileMode.Create))
                                 {
-                                    await file.CopyToAsync(fileStream);
+                                    file.CopyTo(fileStream);
                                     //emp.BookPic = fileName;
                                     var currentImage = new Image
                                     {
@@ -1372,7 +1372,7 @@ namespace erp.Controllers
                                 var fileName = Guid.NewGuid().ToString().Replace("-", "") + Path.GetExtension(file.FileName);
                                 using (var fileStream = new FileStream(Path.Combine(uploads, fileName), FileMode.Create))
                                 {
-                                    await file.CopyToAsync(fileStream);
+                                    file.CopyTo(fileStream);
                                     //emp.BookPic = fileName;
                                     var currentImage = new Image
                                     {
@@ -1396,7 +1396,7 @@ namespace erp.Controllers
                                 var fileName = Guid.NewGuid().ToString().Replace("-", "") + Path.GetExtension(file.FileName);
                                 using (var fileStream = new FileStream(Path.Combine(uploads, fileName), FileMode.Create))
                                 {
-                                    await file.CopyToAsync(fileStream);
+                                    file.CopyTo(fileStream);
                                     //emp.BookPic = fileName;
                                     var currentImage = new Image
                                     {
@@ -2081,7 +2081,7 @@ namespace erp.Controllers
             }
             using (var stream = new FileStream(Path.Combine(exportFolder, sFileName), FileMode.Open))
             {
-                await stream.CopyToAsync(memory);
+                stream.CopyTo(memory);
             }
             memory.Position = 0;
             return File(memory, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", sFileName);

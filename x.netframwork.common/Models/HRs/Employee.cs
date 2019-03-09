@@ -96,6 +96,22 @@ namespace Models
 
         public string CountryTemporary { get; set; }
 
+        #region New 08.03.2019. Store Id. Search alias convert to id | Query convert to viewModel, future thay the Deparment, part,...
+        public string CongTyChiNhanh { get; set; }
+
+        public string KhoiChucNang { get; set; }
+
+        public string PhongBan { get; set; }
+
+        public string BoPhan { get; set; }
+
+        public string BoPhanCon { get; set; }
+
+        public string ChucVu { get; set; }
+
+        public string GhiChu { get; set; }
+        #endregion
+
         public string Part { get; set; }
 
         public string PartId { get; set; }
@@ -241,6 +257,10 @@ namespace Models
         public string Intro { get; set; }
 
         public EmployeeBank EmployeeBank { get; set; }
+
+        public bool IsWelcomeEmail { get; set; } = true;
+
+        public bool IsLeaveEmail { get; set; } = true;
 
         #region SALARIES
         /// <summary>

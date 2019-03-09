@@ -29,6 +29,10 @@ namespace xdatafix
             var database = "tribat";
             #endregion
 
+            //FixEmailLeave(connection, database);
+
+            UpdateEmployeeStructure(connection, database);
+
             //UpdateEmployeeDepartmentAlias(connection, database);
             //UpdateTimerDepartmentAlias(connection, database);
             //UpdateTimekeepingCode(connection, database);
@@ -45,11 +49,11 @@ namespace xdatafix
 
             //InitFactoryProductDinhMucTangCa(connection, database);
             //InitFactoryProductDinhMucTiLe(connection, database);
-            InitFactoryProductDonGiaM3(connection, database);
+            //InitFactoryProductDonGiaM3(connection, database);
             //InitFactoryProductDinhMuc(connection, database);
             //InitFactoryCongViec(connection, database);
 
-            ResetDataFactorySalary(connection, database);
+            //ResetDataFactorySalary(connection, database);
             //InitDataLuong(connection, database, "07-2019");
             #endregion
 
@@ -61,6 +65,630 @@ namespace xdatafix
             Console.Write("Done..... Press any key to exist!");
             Console.ReadLine();
         }
+
+        #region ERP
+        static void UpdateEmployeeStructure(string connection, string database)
+        {
+            #region Connection, Setting & Filter
+            MongoDBContext.ConnectionString = connection;
+            MongoDBContext.DatabaseName = database;
+            MongoDBContext.IsSSL = true;
+            MongoDBContext dbContext = new MongoDBContext();
+            #endregion
+
+            string name = string.Empty;
+            int i = 1;
+
+            #region CongTyChiNhanh
+            dbContext.CongTyChiNhanhs.DeleteMany(m => true);
+            name = "Công ty TNHH CNSH SÀI GÒN XANH";
+            i = 1;
+            dbContext.CongTyChiNhanhs.InsertOne(new CongTyChiNhanh()
+            {
+                Code = "CT" + i,
+                Name = name,
+                Alias = Utility.AliasConvert(name),
+                Address = "127 Nguyễn Trọng Tuyển - P.15 - Q.Phú Nhuận - Tp HCM",
+                Order = i
+            });
+            i++;
+            name = "Nhà máy Xử lý bùn thải Sài Gòn Xanh";
+            dbContext.CongTyChiNhanhs.InsertOne(new CongTyChiNhanh()
+            {
+                Code = "CT"+ i,
+                Name = name,
+                Alias = Utility.AliasConvert(name),
+                Address = "Ấp 1, xã Đa Phước, huyện Bình Chánh",
+                Order = i
+            });
+            #endregion
+
+            #region KhoiChucNang
+            var CongTyChiNhanhVP = dbContext.CongTyChiNhanhs.Find(m => m.Code.Equals("CT1")).FirstOrDefault().Id;
+            var CongTyChiNhanhNM = dbContext.CongTyChiNhanhs.Find(m => m.Code.Equals("CT2")).FirstOrDefault().Id;
+            dbContext.KhoiChucNangs.DeleteMany(m => true);
+            i = 1;
+            name = "KHỐI QUẢN TRỊ TỔNG HỢP";
+            dbContext.KhoiChucNangs.InsertOne(new KhoiChucNang()
+            {
+                CongTyChiNhanhId = CongTyChiNhanhNM,
+                Code = "KHOI"+ i,
+                Name = name,
+                Alias = Utility.AliasConvert(name),
+                Order = i
+            });
+            i++;
+            name = "KHỐI SẢN XUẤT";
+            dbContext.KhoiChucNangs.InsertOne(new KhoiChucNang()
+            {
+                CongTyChiNhanhId = CongTyChiNhanhNM,
+                Code = "KHOI" + i,
+                Name = name,
+                Alias = Utility.AliasConvert(name),
+                Order = i
+            });
+            i++;
+            name = "KHỐI VĂN PHÒNG";
+            dbContext.KhoiChucNangs.InsertOne(new KhoiChucNang()
+            {
+                CongTyChiNhanhId = CongTyChiNhanhVP,
+                Code = "KHOI" + i,
+                Name = name,
+                Alias = Utility.AliasConvert(name),
+                Order = i
+            });
+            i++;
+            #endregion
+
+            #region PhongBan
+            var KhoiQuanTriTongHop = dbContext.KhoiChucNangs.Find(m => m.Name.Equals("KHỐI QUẢN TRỊ TỔNG HỢP")).FirstOrDefault().Id;
+            var KhoiSanXuat = dbContext.KhoiChucNangs.Find(m => m.Name.Equals("KHỐI SẢN XUẤT")).FirstOrDefault().Id;
+            dbContext.PhongBans.DeleteMany(m => true);
+            i = 1;
+            name = "PHÒNG QUẢN TRỊ SẢN XUẤT";
+            dbContext.PhongBans.InsertOne(new PhongBan()
+            {
+                KhoiChucNangId = KhoiQuanTriTongHop,
+                Code = "PHONGBAN" + i,
+                Name = name,
+                Alias = Utility.AliasConvert(name),
+                Order = i
+            });
+            i++;
+            name = "AN NINH";
+            dbContext.PhongBans.InsertOne(new PhongBan()
+            {
+                KhoiChucNangId = KhoiQuanTriTongHop,
+                Code = "PHONGBAN" + i,
+                Name = name,
+                Alias = Utility.AliasConvert(name),
+                Order = i
+            });
+            i++;
+            name = "DỰ ÁN";
+            dbContext.PhongBans.InsertOne(new PhongBan()
+            {
+                KhoiChucNangId = KhoiQuanTriTongHop,
+                Code = "PHONGBAN" + i,
+                Name = name,
+                Alias = Utility.AliasConvert(name),
+                Order = i
+            });
+            i++;
+            name = "KỸ THUẬT";
+            dbContext.PhongBans.InsertOne(new PhongBan()
+            {
+                KhoiChucNangId = KhoiSanXuat,
+                Code = "PHONGBAN" + i,
+                Name = name,
+                Alias = Utility.AliasConvert(name),
+                Order = i
+            });
+            i++;
+            name = "MÔI TRƯỜNG";
+            dbContext.PhongBans.InsertOne(new PhongBan()
+            {
+                KhoiChucNangId = KhoiSanXuat,
+                Code = "PHONGBAN" + i,
+                Name = name,
+                Alias = Utility.AliasConvert(name),
+                Order = i
+            });
+            i++;
+            name = "SẢN XUẤT";
+            dbContext.PhongBans.InsertOne(new PhongBan()
+            {
+                KhoiChucNangId = KhoiSanXuat,
+                Code = "PHONGBAN" + i,
+                Name = name,
+                Alias = Utility.AliasConvert(name),
+                Order = i
+            });
+            i++;
+            #endregion
+
+            #region BoPhan
+            dbContext.BoPhans.DeleteMany(m => true);
+            #endregion
+
+            #region ChucVu
+            dbContext.ChucVus.DeleteMany(m => true);
+            #endregion
+
+            // Put file in ""
+            //Create COM Objects.
+            Application excelApp = new Application();
+            if (excelApp == null)
+            {
+                Console.WriteLine("Excel is not installed!!");
+                return;
+            }
+            //C:\Projects\Files
+            Workbook excelBook = excelApp.Workbooks.Open(@"C:\Projects\Files\nha-may-structure.xlsx");
+            _Worksheet excelSheet = excelBook.Sheets[1];
+            Range excelRange = excelSheet.UsedRange;
+
+            int rows = excelRange.Rows.Count;
+            int cols = excelRange.Columns.Count;
+
+            var congTyChiNhanhId = dbContext.CongTyChiNhanhs.Find(m => m.Code.Equals("CT2")).FirstOrDefault().Id;
+            for (i = 3; i <= rows; i++)
+            {
+                Console.Write("\r\n");
+                var khoichucnang = string.Empty;
+                var phongban = string.Empty;
+                var bophan = string.Empty;
+                var stt = string.Empty;
+                var fullName = string.Empty;
+                var bophancon = string.Empty;
+                var chucvu = string.Empty;
+                var ghichu = string.Empty;
+                var y = 1;
+                if (excelRange.Cells[i, y] != null && excelRange.Cells[i, y].Value2 != null)
+                {
+                    khoichucnang = excelRange.Cells[i, y].Value2.ToString();
+                }
+                y++;
+                if (excelRange.Cells[i, y] != null && excelRange.Cells[i, y].Value2 != null)
+                {
+                    phongban = excelRange.Cells[i, y].Value2.ToString();
+                }
+                y++;
+                if (excelRange.Cells[i, y] != null && excelRange.Cells[i, y].Value2 != null)
+                {
+                    bophan = excelRange.Cells[i, y].Value2.ToString();
+                }
+                y++;
+                if (excelRange.Cells[i, y] != null && excelRange.Cells[i, y].Value2 != null)
+                {
+                    stt = excelRange.Cells[i, y].Value2.ToString();
+                }
+                y++;
+                if (excelRange.Cells[i, y] != null && excelRange.Cells[i, y].Value2 != null)
+                {
+                    fullName = excelRange.Cells[i, y].Value2.ToString();
+                }
+                y++;
+                if (excelRange.Cells[i, y] != null && excelRange.Cells[i, y].Value2 != null)
+                {
+                    bophancon = excelRange.Cells[i, y].Value2.ToString();
+                }
+                y++;
+                if (excelRange.Cells[i, y] != null && excelRange.Cells[i, y].Value2 != null)
+                {
+                    chucvu = excelRange.Cells[i, y].Value2.ToString();
+                }
+                y++;
+                if (excelRange.Cells[i, y] != null && excelRange.Cells[i, y].Value2 != null)
+                {
+                    ghichu = excelRange.Cells[i, y].Value2.ToString();
+                }
+                var khoiChucNangId = dbContext.KhoiChucNangs.Find(m => m.Name.Equals(khoichucnang)).FirstOrDefault().Id;
+                var phongBanId = dbContext.PhongBans.Find(m => m.Name.Equals(phongban)).FirstOrDefault().Id;
+
+                var boPhanId = string.Empty;
+                var boPhanConId = string.Empty;
+                var chucVuId = string.Empty;
+                if (!string.IsNullOrEmpty(bophan))
+                {
+                    var boPhanEntity = dbContext.BoPhans.Find(m => m.Name.Equals(bophan) && string.IsNullOrEmpty(m.Parent) && m.Enable.Equals(true)).FirstOrDefault();
+                    if (boPhanEntity == null)
+                    {
+                        var lastestBoPhan = dbContext.BoPhans.Find(m => m.Enable.Equals(true)).SortByDescending(m => m.Order).Limit(1).FirstOrDefault();
+                        var lastestCode = lastestBoPhan != null ? lastestBoPhan.Order + 1 : 1;
+                        boPhanEntity = new BoPhan()
+                        {
+                            PhongBanId = phongBanId,
+                            Code = "BP" + lastestCode,
+                            Name = bophan,
+                            Alias = Utility.AliasConvert(bophan),
+                            Order = lastestCode
+                        };
+                        dbContext.BoPhans.InsertOne(boPhanEntity);
+                    }
+                    boPhanId = boPhanEntity.Id;
+
+                    if (!string.IsNullOrEmpty(bophancon))
+                    {
+                        var boPhanConEntity = dbContext.BoPhans.Find(m => m.Name.Equals(bophancon) && m.Parent.Equals(boPhanId) && m.Enable.Equals(true)).FirstOrDefault();
+                        if (boPhanConEntity == null)
+                        {
+                            var lastestBoPhan = dbContext.BoPhans.Find(m => m.Enable.Equals(true)).SortByDescending(m => m.Order).Limit(1).FirstOrDefault();
+                            var lastestCode = lastestBoPhan != null ? lastestBoPhan.Order + 1 : 1;
+                            boPhanConEntity = new BoPhan()
+                            {
+                                Code = "BPC" + lastestCode,
+                                Name = bophancon,
+                                Alias = Utility.AliasConvert(bophancon),
+                                Order = lastestCode,
+                                Parent = boPhanId
+                            };
+                            dbContext.BoPhans.InsertOne(boPhanConEntity);
+                        }
+                        boPhanConId = boPhanConEntity.Id;
+                    }
+                }
+                
+                if (!string.IsNullOrEmpty(chucvu))
+                {
+                    var chucVuEntity = dbContext.ChucVus.Find(m => m.Name.Equals(chucvu) && m.Enable.Equals(true)).FirstOrDefault();
+                    if (chucVuEntity == null)
+                    {
+                        var lastestChucVu = dbContext.ChucVus.Find(m => m.Enable.Equals(true)).SortByDescending(m => m.Order).Limit(1).FirstOrDefault();
+                        var lastestCode = lastestChucVu != null ? lastestChucVu.Order + 1 : 1;
+                        chucVuEntity = new ChucVu()
+                        {
+                            CongTyChiNhanhId = congTyChiNhanhId,
+                            KhoiChucNangId = khoiChucNangId,
+                            PhongBanId = phongBanId,
+                            BoPhanId = boPhanConId,
+                            Code = "CV" + lastestCode,
+                            Name = chucvu,
+                            Alias = Utility.AliasConvert(chucvu),
+                            Order = lastestCode
+                        };
+                        dbContext.ChucVus.InsertOne(chucVuEntity);
+                    }
+                    chucVuId = chucVuEntity.Id;
+                }
+
+                // update Employee
+                if (!string.IsNullOrEmpty(fullName))
+                {
+                    // check exist
+                    var employee = dbContext.Employees.Find(m => m.FullName.Equals(fullName)).FirstOrDefault();
+                    if (employee != null)
+                    {
+                        var filter = Builders<Employee>.Filter.Eq(m => m.Id, employee.Id);
+                        var update = Builders<Employee>.Update
+                            .Set(m => m.CongTyChiNhanh, congTyChiNhanhId)
+                            .Set(m => m.KhoiChucNang, khoiChucNangId)
+                            .Set(m => m.PhongBan, phongBanId)
+                            .Set(m => m.BoPhan, boPhanId)
+                            .Set(m => m.BoPhanCon, boPhanConId)
+                            .Set(m => m.ChucVu, chucVuId);
+                        dbContext.Employees.UpdateMany(filter, update);
+
+                        var filterHis = Builders<Employee>.Filter.Eq(m => m.EmployeeId, employee.Id);
+                        var updateHis = Builders<Employee>.Update
+                            .Set(m => m.CongTyChiNhanh, congTyChiNhanhId)
+                            .Set(m => m.KhoiChucNang, khoiChucNangId)
+                            .Set(m => m.PhongBan, phongBanId)
+                            .Set(m => m.BoPhan, boPhanId)
+                            .Set(m => m.BoPhanCon, boPhanConId)
+                            .Set(m => m.ChucVu, chucVuId);
+                        dbContext.EmployeeHistories.UpdateMany(filterHis, updateHis);
+                    }
+                    else
+                    {
+                        var entity = new Employee
+                        {
+                            FullName = fullName,
+                            CongTyChiNhanh = congTyChiNhanhId,
+                            KhoiChucNang = khoiChucNangId,
+                            PhongBan = phongBanId,
+                            BoPhan = boPhanId,
+                            BoPhanCon = boPhanConId,
+                            ChucVu = chucvu,
+                            Joinday = DateTime.Now
+                        };
+                        #region System Generate
+                        var pwdrandom = Guid.NewGuid().ToString("N").Substring(0, 6);
+                        var settings = dbContext.Settings.Find(m => true).ToList();
+                        var employeeCodeFirst = settings.Where(m => m.Key.Equals("employeeCodeFirst")).First().Value;
+                        var employeeCodeLength = settings.Where(m => m.Key.Equals("employeeCodeLength")).First().Value;
+                        var lastEntity = dbContext.Employees.Find(m => m.Enable.Equals(true)).SortByDescending(m => m.Id).Limit(1).First();
+                        var x = 1;
+                        if (lastEntity != null && lastEntity.Code != null)
+                        {
+                            x = Convert.ToInt32(lastEntity.Code.Replace(employeeCodeFirst, string.Empty)) + 1;
+                        }
+                        var sysCode = employeeCodeFirst + x.ToString($"D{employeeCodeLength}");
+                        #endregion
+
+                        entity.Code = sysCode;
+                        entity.Password = pwdrandom;
+                        entity.AliasFullName = Utility.AliasConvert(entity.FullName);
+                        dbContext.Employees.InsertOne(entity);
+
+                        var newUserId = entity.Id;
+                        var hisEntity = entity;
+                        hisEntity.EmployeeId = newUserId;
+                        dbContext.EmployeeHistories.InsertOne(hisEntity);
+                    }
+                }
+
+                Console.Write(fullName + "\t");
+            }
+
+            //after reading, relaase the excel project
+            excelApp.Quit();
+            System.Runtime.InteropServices.Marshal.ReleaseComObject(excelApp);
+
+            // Update VP
+            var congTyChiNhanhVP = dbContext.CongTyChiNhanhs.Find(m => m.Code.Equals("CT1")).FirstOrDefault().Id;
+            var khoiChucNangVP = dbContext.KhoiChucNangs.Find(m => m.Code.Equals("KHOI3")).FirstOrDefault().Id;
+            var employeesVp = dbContext.Employees.Find(m => m.Enable.Equals(true) && string.IsNullOrEmpty(m.KhoiChucNang)).ToList();
+            //Departments
+            foreach(var employee in employeesVp)
+            {
+                var phongBanId = string.Empty;
+                var boPhanId = string.Empty;
+                var boPhanConId = string.Empty;
+                var chucVuId = string.Empty;
+                // Phong Ban  <=> Departments
+                if (!string.IsNullOrEmpty(employee.Department))
+                {
+                    var phongBanEntity = dbContext.PhongBans.Find(m => m.Name.Equals(employee.Department.ToUpper()) && m.Enable.Equals(true)).FirstOrDefault();
+                    if (phongBanEntity == null)
+                    {
+                        var lastestPhongBan = dbContext.PhongBans.Find(m => m.Enable.Equals(true)).SortByDescending(m => m.Order).Limit(1).FirstOrDefault();
+                        var lastestCode = lastestPhongBan != null ? lastestPhongBan.Order + 1 : 1;
+                        phongBanEntity = new PhongBan()
+                        {
+                            KhoiChucNangId = khoiChucNangVP,
+                            Code = "PHONGBAN" + lastestCode,
+                            Name = employee.Department,
+                            Alias = Utility.AliasConvert(employee.Department),
+                            Order = lastestCode
+                        };
+                        dbContext.PhongBans.InsertOne(phongBanEntity);
+                    }
+                    phongBanId = phongBanEntity.Id;
+                }
+                // Bo Phan
+
+                // Chuc vu
+
+
+            }
+        }
+
+        static void UpdateLocationTimer(string connection, string database)
+        {
+            #region Connection, Setting & Filter
+            MongoDBContext.ConnectionString = connection;
+            MongoDBContext.DatabaseName = database;
+            MongoDBContext.IsSSL = true;
+            MongoDBContext dbContext = new MongoDBContext();
+            #endregion
+
+            var employees = dbContext.Employees.Find(m => m.Enable.Equals(true)).ToList();
+            foreach (var employee in employees)
+            {
+                if (employee.Workplaces == null || employee.Workplaces.Count == 0)
+                {
+                    continue;
+                }
+
+                foreach (var workplace in employee.Workplaces)
+                {
+                    if (!string.IsNullOrEmpty(workplace.Fingerprint))
+                    {
+                        int workcode = employee.SalaryType;
+
+                        var builder = Builders<EmployeeWorkTimeLog>.Filter;
+                        var filter = builder.Eq(m => m.EnrollNumber, workplace.Fingerprint) & builder.Eq(m => m.WorkplaceCode, workplace.Code);
+
+                        var update = Builders<EmployeeWorkTimeLog>.Update
+                            .Set(m => m.Workcode, workcode);
+                        dbContext.EmployeeWorkTimeLogs.UpdateMany(filter, update);
+                    }
+                }
+            }
+        }
+
+        static void UpdateUpperCaseTimer(string connection, string database)
+        {
+            #region Connection, Setting & Filter
+            MongoDBContext.ConnectionString = connection;
+            MongoDBContext.DatabaseName = database;
+            MongoDBContext.IsSSL = true;
+            MongoDBContext dbContext = new MongoDBContext();
+            #endregion
+
+            var datas = dbContext.Employees.Find(m => m.Enable.Equals(true)).ToList();
+            foreach (var data in datas)
+            {
+                var builder = Builders<EmployeeWorkTimeLog>.Filter;
+                var filter = builder.Eq(m => m.EmployeeId, data.Id);
+
+                var update = Builders<EmployeeWorkTimeLog>.Update
+                    .Set(m => m.EmployeeTitle, data.Title.ToUpper())
+                    .Set(m => m.Part, data.Part.ToUpper())
+                    .Set(m => m.Department, data.Department.ToUpper());
+                dbContext.EmployeeWorkTimeLogs.UpdateMany(filter, update);
+            }
+        }
+
+        static void UpdateTetTay(string connection, string database)
+        {
+            #region Connection, Setting & Filter
+            MongoDBContext.ConnectionString = connection;
+            MongoDBContext.DatabaseName = database;
+            MongoDBContext.IsSSL = true;
+            MongoDBContext dbContext = new MongoDBContext();
+            #endregion
+
+            var datas = dbContext.Employees.Find(m => m.Enable.Equals(true)).ToList();
+            foreach (var data in datas)
+            {
+                var builder = Builders<EmployeeWorkTimeLog>.Filter;
+                var filter = builder.Eq(m => m.EmployeeId, data.Id);
+
+                var update = Builders<EmployeeWorkTimeLog>.Update
+                    .Set(m => m.EmployeeTitle, data.Title.ToUpper())
+                    .Set(m => m.Part, data.Part.ToUpper())
+                    .Set(m => m.Department, data.Department.ToUpper());
+                dbContext.EmployeeWorkTimeLogs.UpdateMany(filter, update);
+            }
+        }
+
+        static void AddHoliday(string connection, string database)
+        {
+            #region Connection, Setting & Filter
+            MongoDBContext.ConnectionString = connection;
+            MongoDBContext.DatabaseName = database;
+            MongoDBContext.IsSSL = true;
+            MongoDBContext dbContext = new MongoDBContext();
+            #endregion
+
+            dbContext.Holidays.InsertOne(new Holiday
+            {
+                Date = new DateTime(2019, 2, 3),
+                Name = "Tết năm Kỷ Hợi",
+                Detail = "29 tháng Chạp năm Mậu Tuất"
+            });
+
+            dbContext.Holidays.InsertOne(new Holiday
+            {
+                Date = new DateTime(2019, 2, 4),
+                Name = "Tết năm Kỷ Hợi",
+                Detail = "30 tháng Chạp năm Mậu Tuất"
+            });
+
+            dbContext.Holidays.InsertOne(new Holiday
+            {
+                Date = new DateTime(2019, 2, 5),
+                Name = "Tết năm Kỷ Hợi",
+                Detail = "01 Tết năm Kỷ Hợi"
+            });
+
+            dbContext.Holidays.InsertOne(new Holiday
+            {
+                Date = new DateTime(2019, 2, 6),
+                Name = "Tết năm Kỷ Hợi",
+                Detail = "02 Tết năm Kỷ Hợi"
+            });
+
+            dbContext.Holidays.InsertOne(new Holiday
+            {
+                Date = new DateTime(2019, 2, 7),
+                Name = "Tết năm Kỷ Hợi",
+                Detail = "03 Tết năm Kỷ Hợi"
+            });
+
+            dbContext.Holidays.InsertOne(new Holiday
+            {
+                Date = new DateTime(2019, 2, 8),
+                Name = "Tết năm Kỷ Hợi",
+                Detail = "04 Tết năm Kỷ Hợi"
+            });
+
+            dbContext.Holidays.InsertOne(new Holiday
+            {
+                Date = new DateTime(2019, 2, 9),
+                Name = "Tết năm Kỷ Hợi",
+                Detail = "05 Tết năm Kỷ Hợi"
+            });
+
+            dbContext.Holidays.InsertOne(new Holiday
+            {
+                Date = new DateTime(2019, 2, 10),
+                Name = "Tết năm Kỷ Hợi",
+                Detail = "06 Tết năm Kỷ Hợi"
+            });
+        }
+
+        static void UpdateTimekeepingCode(string connection, string database)
+        {
+            #region Connection, Setting & Filter
+            MongoDBContext.ConnectionString = connection;
+            MongoDBContext.DatabaseName = database;
+            MongoDBContext.IsSSL = true;
+            MongoDBContext dbContext = new MongoDBContext();
+            #endregion
+
+            var times = dbContext.EmployeeWorkTimeLogs.Find(m => true).ToList();
+            foreach (var time in times)
+            {
+                Console.WriteLine("Date: " + time.Date + ", fingerCode: " + time.EnrollNumber);
+                var builder = Builders<EmployeeWorkTimeLog>.Filter;
+                var filter = builder.Eq(m => m.Id, time.Id);
+
+                var update = Builders<EmployeeWorkTimeLog>.Update
+                    .Set(m => m.EnrollNumber, Convert.ToInt32(time.EnrollNumber).ToString("000"));
+                dbContext.EmployeeWorkTimeLogs.UpdateMany(filter, update);
+            }
+        }
+
+        static void UpdateEmployeeDepartmentAlias(string connection, string database)
+        {
+            #region Connection, Setting & Filter
+            MongoDBContext.ConnectionString = connection;
+            MongoDBContext.DatabaseName = database;
+            MongoDBContext.IsSSL = true;
+            MongoDBContext dbContext = new MongoDBContext();
+            #endregion
+
+
+            var departments = dbContext.Departments.Find(m => m.Enable.Equals(true)).ToList();
+
+            var employees = dbContext.Employees.Find(m => m.Enable.Equals(true)).ToList();
+            foreach (var employee in employees)
+            {
+                var department = !string.IsNullOrEmpty(employee.Department) ? employee.Department.ToUpper() : string.Empty;
+                var departmentId = string.Empty;
+                var departmentAlias = string.Empty;
+
+                if (!string.IsNullOrEmpty(employee.Department))
+                {
+                    var departmentItem = departments.Where(m => m.Name.Equals(department)).FirstOrDefault();
+                    if (departmentItem != null)
+                    {
+                        departmentId = departmentItem.Id;
+                        departmentAlias = departmentItem.Alias;
+                    }
+                }
+
+                var filter = Builders<Employee>.Filter.Eq(m => m.Id, employee.Id);
+                var update = Builders<Employee>.Update
+                    .Set(m => m.DepartmentId, departmentId)
+                    .Set(m => m.DepartmentAlias, departmentAlias);
+                dbContext.Employees.UpdateOne(filter, update);
+            }
+        }
+
+        static void UpdateTimerDepartmentAlias(string connection, string database)
+        {
+            #region Connection, Setting & Filter
+            MongoDBContext.ConnectionString = connection;
+            MongoDBContext.DatabaseName = database;
+            MongoDBContext.IsSSL = true;
+            MongoDBContext dbContext = new MongoDBContext();
+            #endregion
+
+            var employees = dbContext.Employees.Find(m => m.Enable.Equals(true)).ToList();
+            foreach (var employee in employees)
+            {
+                var filter = Builders<EmployeeWorkTimeLog>.Filter.Eq(m => m.EmployeeId, employee.Id);
+                var update = Builders<EmployeeWorkTimeLog>.Update
+                    .Set(m => m.DepartmentId, employee.DepartmentId)
+                    .Set(m => m.DepartmentAlias, employee.DepartmentAlias);
+                dbContext.EmployeeWorkTimeLogs.UpdateMany(filter, update);
+            }
+        }
+        #endregion
 
         #region Tribatvn
         public void InitProductSales(string connection, string database)
@@ -957,7 +1585,8 @@ namespace xdatafix
         }
         #endregion
 
-        static void UpdateLocationTimer(string connection, string database)
+        #region Fix issue
+        static void FixEmailLeave(string connection, string database)
         {
             #region Connection, Setting & Filter
             MongoDBContext.ConnectionString = connection;
@@ -966,220 +1595,91 @@ namespace xdatafix
             MongoDBContext dbContext = new MongoDBContext();
             #endregion
 
-            var employees = dbContext.Employees.Find(m => m.Enable.Equals(true)).ToList();
-            foreach (var employee in employees)
+            #region Send Mail
+            var listLeave = new List<string>
             {
-                if (employee.Workplaces == null || employee.Workplaces.Count == 0)
+                "5c82305aa62c3900ec434665",
+                "5c822b18a62c3900ec434663"
+            };
+
+            var leaves = dbContext.Leaves.Find(m => listLeave.Contains(m.Id)).ToList();
+
+            foreach(var entity in leaves)
+            {
+                var employee = dbContext.Employees.Find(m => m.Id.Equals(entity.EmployeeId)).FirstOrDefault();
+
+                var tos = new List<EmailAddress>();
+                var approver = string.Empty;
+                if (!string.IsNullOrEmpty(entity.ApproverId))
                 {
-                    continue;
+                    var approve1 = dbContext.Employees.Find(m => m.Id.Equals(entity.ApproverId)).FirstOrDefault();
+                    approver = approve1.FullName;
+                    tos.Add(new EmailAddress { Name = approve1.FullName, Address = approve1.Email });
                 }
-
-                foreach (var workplace in employee.Workplaces)
+                else
                 {
-                    if (!string.IsNullOrEmpty(workplace.Fingerprint))
-                    {
-                        int workcode = employee.SalaryType;
-
-                        var builder = Builders<EmployeeWorkTimeLog>.Filter;
-                        var filter = builder.Eq(m => m.EnrollNumber, workplace.Fingerprint) & builder.Eq(m => m.WorkplaceCode, workplace.Code);
-
-                        var update = Builders<EmployeeWorkTimeLog>.Update
-                            .Set(m => m.Workcode, workcode);
-                        dbContext.EmployeeWorkTimeLogs.UpdateMany(filter, update);
-                    }
+                    tos.Add(new EmailAddress { Name = "Tran Minh Xuan", Address = "xuan.tm@tribat.vn" });
                 }
-            }
-        }
-
-        static void UpdateUpperCaseTimer(string connection, string database)
-        {
-            #region Connection, Setting & Filter
-            MongoDBContext.ConnectionString = connection;
-            MongoDBContext.DatabaseName = database;
-            MongoDBContext.IsSSL = true;
-            MongoDBContext dbContext = new MongoDBContext();
-            #endregion
-
-            var datas = dbContext.Employees.Find(m => m.Enable.Equals(true)).ToList();
-            foreach (var data in datas)
-            {
-                var builder = Builders<EmployeeWorkTimeLog>.Filter;
-                var filter = builder.Eq(m => m.EmployeeId, data.Id);
-
-                var update = Builders<EmployeeWorkTimeLog>.Update
-                    .Set(m => m.EmployeeTitle, data.Title.ToUpper())
-                    .Set(m => m.Part, data.Part.ToUpper())
-                    .Set(m => m.Department, data.Department.ToUpper());
-                dbContext.EmployeeWorkTimeLogs.UpdateMany(filter, update);
-            }
-        }
-
-        static void UpdateTetTay(string connection, string database)
-        {
-            #region Connection, Setting & Filter
-            MongoDBContext.ConnectionString = connection;
-            MongoDBContext.DatabaseName = database;
-            MongoDBContext.IsSSL = true;
-            MongoDBContext dbContext = new MongoDBContext();
-            #endregion
-
-            var datas = dbContext.Employees.Find(m => m.Enable.Equals(true)).ToList();
-            foreach (var data in datas)
-            {
-                var builder = Builders<EmployeeWorkTimeLog>.Filter;
-                var filter = builder.Eq(m => m.EmployeeId, data.Id);
-
-                var update = Builders<EmployeeWorkTimeLog>.Update
-                    .Set(m => m.EmployeeTitle, data.Title.ToUpper())
-                    .Set(m => m.Part, data.Part.ToUpper())
-                    .Set(m => m.Department, data.Department.ToUpper());
-                dbContext.EmployeeWorkTimeLogs.UpdateMany(filter, update);
-            }
-        }
-
-        static void AddHoliday(string connection, string database)
-        {
-            #region Connection, Setting & Filter
-            MongoDBContext.ConnectionString = connection;
-            MongoDBContext.DatabaseName = database;
-            MongoDBContext.IsSSL = true;
-            MongoDBContext dbContext = new MongoDBContext();
-            #endregion
-
-            dbContext.Holidays.InsertOne(new Holiday
-            {
-                Date = new DateTime(2019, 2, 3),
-                Name = "Tết năm Kỷ Hợi",
-                Detail = "29 tháng Chạp năm Mậu Tuất"
-            });
-
-            dbContext.Holidays.InsertOne(new Holiday
-            {
-                Date = new DateTime(2019, 2, 4),
-                Name = "Tết năm Kỷ Hợi",
-                Detail = "30 tháng Chạp năm Mậu Tuất"
-            });
-
-            dbContext.Holidays.InsertOne(new Holiday
-            {
-                Date = new DateTime(2019, 2, 5),
-                Name = "Tết năm Kỷ Hợi",
-                Detail = "01 Tết năm Kỷ Hợi"
-            });
-
-            dbContext.Holidays.InsertOne(new Holiday
-            {
-                Date = new DateTime(2019, 2, 6),
-                Name = "Tết năm Kỷ Hợi",
-                Detail = "02 Tết năm Kỷ Hợi"
-            });
-
-            dbContext.Holidays.InsertOne(new Holiday
-            {
-                Date = new DateTime(2019, 2, 7),
-                Name = "Tết năm Kỷ Hợi",
-                Detail = "03 Tết năm Kỷ Hợi"
-            });
-
-            dbContext.Holidays.InsertOne(new Holiday
-            {
-                Date = new DateTime(2019, 2, 8),
-                Name = "Tết năm Kỷ Hợi",
-                Detail = "04 Tết năm Kỷ Hợi"
-            });
-
-            dbContext.Holidays.InsertOne(new Holiday
-            {
-                Date = new DateTime(2019, 2, 9),
-                Name = "Tết năm Kỷ Hợi",
-                Detail = "05 Tết năm Kỷ Hợi"
-            });
-
-            dbContext.Holidays.InsertOne(new Holiday
-            {
-                Date = new DateTime(2019, 2, 10),
-                Name = "Tết năm Kỷ Hợi",
-                Detail = "06 Tết năm Kỷ Hợi"
-            });
-        }
-
-        static void UpdateTimekeepingCode(string connection, string database)
-        {
-            #region Connection, Setting & Filter
-            MongoDBContext.ConnectionString = connection;
-            MongoDBContext.DatabaseName = database;
-            MongoDBContext.IsSSL = true;
-            MongoDBContext dbContext = new MongoDBContext();
-            #endregion
-
-            var times = dbContext.EmployeeWorkTimeLogs.Find(m => true).ToList();
-            foreach (var time in times)
-            {
-                Console.WriteLine("Date: " + time.Date + ", fingerCode: " + time.EnrollNumber);
-                var builder = Builders<EmployeeWorkTimeLog>.Filter;
-                var filter = builder.Eq(m => m.Id, time.Id);
-
-                var update = Builders<EmployeeWorkTimeLog>.Update
-                    .Set(m => m.EnrollNumber, Convert.ToInt32(time.EnrollNumber).ToString("000"));
-                dbContext.EmployeeWorkTimeLogs.UpdateMany(filter, update);
-            }
-        }
-
-        static void UpdateEmployeeDepartmentAlias(string connection, string database)
-        {
-            #region Connection, Setting & Filter
-            MongoDBContext.ConnectionString = connection;
-            MongoDBContext.DatabaseName = database;
-            MongoDBContext.IsSSL = true;
-            MongoDBContext dbContext = new MongoDBContext();
-            #endregion
-
-
-            var departments = dbContext.Departments.Find(m => m.Enable.Equals(true)).ToList();
-
-            var employees = dbContext.Employees.Find(m => m.Enable.Equals(true)).ToList();
-            foreach (var employee in employees)
-            {
-                var department = !string.IsNullOrEmpty(employee.Department) ? employee.Department.ToUpper() : string.Empty;
-                var departmentId = string.Empty;
-                var departmentAlias = string.Empty;
-
-                if (!string.IsNullOrEmpty(employee.Department))
+                var webRoot = Environment.CurrentDirectory;
+                var pathToFile = @"C:\Projects\App.Schedule\Templates\LeaveRequest.html";
+                
+                var subject = "Xác nhận nghỉ phép.";
+                var requester = employee.FullName;
+                var var3 = employee.FullName;
+                var dateRequest = entity.From.ToString("dd/MM/yyyy HH:mm") + " - " + entity.To.ToString("dd/MM/yyyy HH:mm") + " (" + entity.Number + " ngày)";
+                // Api update, generate code.
+                var linkapprove = Constants.System.domain + "/xacnhan/phep";
+                var linkAccept = linkapprove + "?id=" + entity.Id + "&approve=1&secure=" + entity.SecureCode;
+                var linkCancel = linkapprove + "?id=" + entity.Id + "&approve=2&secure=" + entity.SecureCode;
+                var linkDetail = Constants.System.domain;
+                var bodyBuilder = new BodyBuilder();
+                using (StreamReader SourceReader = System.IO.File.OpenText(pathToFile))
                 {
-                    var departmentItem = departments.Where(m => m.Name.Equals(department)).FirstOrDefault();
-                    if (departmentItem != null)
-                    {
-                        departmentId = departmentItem.Id;
-                        departmentAlias = departmentItem.Alias;
-                    }
+                    bodyBuilder.HtmlBody = SourceReader.ReadToEnd();
                 }
+                string messageBody = string.Format(bodyBuilder.HtmlBody,
+                    subject,
+                    approver,
+                    requester,
+                    var3,
+                    employee.Email,
+                    employee.Title,
+                    dateRequest,
+                    entity.Reason,
+                    entity.TypeName,
+                    entity.Phone,
+                    linkAccept,
+                    linkCancel,
+                    linkDetail,
+                    Constants.System.domain
+                    );
 
-                var filter = Builders<Employee>.Filter.Eq(m => m.Id, employee.Id);
-                var update = Builders<Employee>.Update
-                    .Set(m => m.DepartmentId, departmentId)
-                    .Set(m => m.DepartmentAlias, departmentAlias);
-                dbContext.Employees.UpdateOne(filter, update);
+                var emailMessage = new EmailMessage()
+                {
+                    ToAddresses = tos,
+                    Subject = subject,
+                    BodyContent = messageBody,
+                    Type = "yeu-cau-nghi-phep",
+                    EmployeeId = entity.EmployeeId
+                };
+
+                // For faster. Add to schedule.
+                // Send later
+                var scheduleEmail = new ScheduleEmail
+                {
+                    Status = (int)EEmailStatus.Schedule,
+                    To = emailMessage.ToAddresses,
+                    CC = emailMessage.CCAddresses,
+                    BCC = emailMessage.BCCAddresses,
+                    Type = emailMessage.Type,
+                    Title = emailMessage.Subject,
+                    Content = emailMessage.BodyContent,
+                    EmployeeId = emailMessage.EmployeeId
+                };
+                dbContext.ScheduleEmails.InsertOne(scheduleEmail);
             }
-        }
-
-        static void UpdateTimerDepartmentAlias(string connection, string database)
-        {
-            #region Connection, Setting & Filter
-            MongoDBContext.ConnectionString = connection;
-            MongoDBContext.DatabaseName = database;
-            MongoDBContext.IsSSL = true;
-            MongoDBContext dbContext = new MongoDBContext();
             #endregion
-
-            var employees = dbContext.Employees.Find(m => m.Enable.Equals(true)).ToList();
-            foreach (var employee in employees)
-            {
-                var filter = Builders<EmployeeWorkTimeLog>.Filter.Eq(m => m.EmployeeId, employee.Id);
-                var update = Builders<EmployeeWorkTimeLog>.Update
-                    .Set(m => m.DepartmentId, employee.DepartmentId)
-                    .Set(m => m.DepartmentAlias, employee.DepartmentAlias);
-                dbContext.EmployeeWorkTimeLogs.UpdateMany(filter, update);
-            }
         }
+        #endregion
     }
 }

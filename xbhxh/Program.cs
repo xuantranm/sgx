@@ -61,18 +61,8 @@ namespace xbhxh
                     }
                 }
             }
-
-            // UAT
-            //tos = new List<EmailAddress>
-            //            {
-            //                new EmailAddress {
-            //                    Name = "Trần Minh Xuân" ,
-            //                    Address = "xuan.tm1988@gmail.com"
-            //                }
-            //            };
             #endregion
 
-            //var aa = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.UserName.Equals("xuan.tm")).ToList();
             // Notice bhxh base joinday to 6 months.
             var bhxhs = dbContext.Employees.Find(m => m.Enable.Equals(true)).ToEnumerable()
                .Where(m => m.RemainingBhxh == 0).ToList();
@@ -125,7 +115,6 @@ namespace xbhxh
                         if (!string.IsNullOrEmpty(item.Email) && Utility.IsValidEmail(item.Email))
                         {
                             ccs.Add(new EmailAddress { Name = item.FullName, Address = item.Email });
-                            //ccs.Add(new EmailAddress { Name = item.FullName, Address = "xuan.tm@tribat.vn" });
                         }
                         
                         var pathToFile = @"C:\Projects\App.Schedule\Templates\AlertBhxh.html";
@@ -150,10 +139,10 @@ namespace xbhxh
                         {
                             FromAddresses = froms,
                             ToAddresses = tos,
-                            //CCAddresses = ccs,
                             Subject = subject,
                             BodyContent = messageBody,
-                            Type = "alert-bhxh"
+                            Type = "alert-bhxh",
+                            EmployeeId = item.Id
                         };
 
                         new AuthMessageSender().SendEmail(emailMessage);

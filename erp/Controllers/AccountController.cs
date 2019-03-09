@@ -376,7 +376,8 @@ namespace erp.Controllers
             {
                 ToAddresses = tos,
                 Subject = subject,
-                BodyContent = messageBody
+                BodyContent = messageBody,
+                EmployeeId = entity.Id
             };
 
             _emailSender.SendEmail(emailMessage);

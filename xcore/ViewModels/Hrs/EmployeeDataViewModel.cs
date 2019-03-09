@@ -12,7 +12,7 @@ namespace ViewModels
         public Employee EmployeeChance { get; set; }
 
         public bool StatusChange { get; set; }
-        // data display
+
         public IList<Employee> Employees { get; set; }
 
         public IList<Employee> EmployeesDisable { get; set; }
@@ -39,5 +39,17 @@ namespace ViewModels
         public IList<EmailGroup> EmailGroups { get; set; }
 
         #endregion
+
+        public IList<CongTyChiNhanh> CongTyChiNhanhs { get; set; }
+
+        public IList<KhoiChucNang> KhoiChucNangs { get; set; }
+
+        public IList<PhongBan> PhongBans { get; set; }
+
+        public IList<BoPhan> BoPhans { get; set; }
+
+        public IList<BoPhan> BoPhanCons { get; set; }
+
+        public IList<ChucVu> ChucVus { get; set; }
     }
 }

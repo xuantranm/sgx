@@ -759,10 +759,6 @@ namespace erp.Controllers
             var subject = "Xác nhận nghỉ phép.";
             var requester = employee.FullName;
             var var3 = employee.FullName;
-            //if (!string.IsNullOrEmpty(employee.Title))
-            //{
-            //    requester += " - " + employee.Title;
-            //}
             if (entity.EmployeeId != login)
             {
                 requester += " (người tạo phép: " + userInformation.FullName + " , chức vụ " + userInformation.Title + ")";
@@ -800,7 +796,8 @@ namespace erp.Controllers
                 ToAddresses = tos,
                 Subject = subject,
                 BodyContent = messageBody,
-                Type = "yeu-cau-nghi-phep"
+                Type = "yeu-cau-nghi-phep",
+                EmployeeId = employee.Id
             };
 
             // For faster. Add to schedule.
@@ -808,17 +805,15 @@ namespace erp.Controllers
             var scheduleEmail = new ScheduleEmail
             {
                 Status = (int)EEmailStatus.Schedule,
-                //From = emailMessage.FromAddresses,
                 To = emailMessage.ToAddresses,
                 CC = emailMessage.CCAddresses,
                 BCC = emailMessage.BCCAddresses,
                 Type = emailMessage.Type,
                 Title = emailMessage.Subject,
-                Content = emailMessage.BodyContent
+                Content = emailMessage.BodyContent,
+                EmployeeId = emailMessage.EmployeeId
             };
             dbContext.ScheduleEmails.InsertOne(scheduleEmail);
-            //_emailSender.SendEmail(emailMessage);
-
             #endregion
 
             return Json(new { result = true, message = "Yêu cầu được gửi các bộ phận liên quan." });
@@ -937,22 +932,6 @@ namespace erp.Controllers
             // cc người duyệt
             ccs.Add(new EmailAddress { Name = approvement.FullName, Address = approvement.Email });
 
-            #region UAT
-            //var uat = dbContext.Settings.Find(m => m.Key.Equals("UAT")).FirstOrDefault();
-            //if (uat != null && uat.Value == "true")
-            //{
-            //    tos = new List<EmailAddress>
-            //            {
-            //                new EmailAddress { Name = "Xuan", Address = "xuan.tm1988@gmail.com" }
-            //            };
-
-            //    ccs = new List<EmailAddress>
-            //            {
-            //                new EmailAddress { Name = "Xuan CC", Address = "xuantranm@gmail.com" }
-            //            };
-            //}
-            #endregion
-
             var webRoot = Environment.CurrentDirectory;
             var pathToFile = _env.WebRootPath
                     + Path.DirectorySeparatorChar.ToString()
@@ -1010,7 +989,8 @@ namespace erp.Controllers
                 CCAddresses = ccs,
                 Subject = subject,
                 BodyContent = messageBody,
-                Type = "leave-confirm"
+                Type = "leave-confirm",
+                EmployeeId = leave.EmployeeId
             };
 
             // For faster. Add to schedule.
@@ -1024,10 +1004,10 @@ namespace erp.Controllers
                 BCC = emailMessage.BCCAddresses,
                 Type = emailMessage.Type,
                 Title = emailMessage.Subject,
-                Content = emailMessage.BodyContent
+                Content = emailMessage.BodyContent,
+                EmployeeId = emailMessage.EmployeeId
             };
             dbContext.ScheduleEmails.InsertOne(scheduleEmail);
-            //_emailSender.SendEmail(emailMessage);
 
             #endregion
 

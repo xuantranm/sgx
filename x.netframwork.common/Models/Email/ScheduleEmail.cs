@@ -37,8 +37,14 @@ namespace Models
         // Số lần gửi lỗi
         public int ErrorCount { get; set; } = 0;
 
-        public string CreatedOn { get; set; } = DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss.fff");
+        public string EmployeeId { get; set; }
 
-        public string UpdatedOn { get; set; } = DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss.fff");
+        public bool Enable { get; set; } = true;
+
+        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
+        public DateTime CreatedOn { get; set; } = DateTime.Now;
+
+        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
+        public DateTime UpdatedOn { get; set; } = DateTime.Now;
     }
 }

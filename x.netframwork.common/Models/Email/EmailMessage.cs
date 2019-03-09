@@ -22,5 +22,6 @@ namespace Models
         public string Subject { get; set; }
         public string BodyContent { get; set; }
         public string Type { get; set; }
+        public string EmployeeId { get; set; }
     }
 }

@@ -578,7 +578,8 @@ namespace xtime
                                 {
                                     ToAddresses = tos,
                                     Subject = subject,
-                                    BodyContent = messageBody
+                                    BodyContent = messageBody,
+                                    EmployeeId = employeeWorkTimeLog.EmployeeId
                                 };
 
                                 // For faster update.
@@ -590,7 +591,8 @@ namespace xtime
                                     BCC = emailMessage.BCCAddresses,
                                     Type = emailMessage.Type,
                                     Title = emailMessage.Subject,
-                                    Content = emailMessage.BodyContent
+                                    Content = emailMessage.BodyContent,
+                                    EmployeeId = emailMessage.EmployeeId
                                 };
                                 dbContext.ScheduleEmails.InsertOne(scheduleEmail);
                                 //new AuthMessageSender().SendEmail(emailMessage);

@@ -11,25 +11,25 @@ namespace ViewModels
 
         public ScheduleEmail ScheduleEmail { get; set; }
 
-        public int? status { get; set; }
+        public string Status { get; set; }
 
-        public string id { get; set; }
+        public string Id { get; set; }
 
-        public string toemail { get; set; }
+        public string MaNv { get; set; }
 
-        public int page { get; set; }
+        public string ToEmail { get; set; }
 
-        public int size { get; set; }
+        public int Page { get; set; }
+
+        public int Size { get; set; }
 
         public int Records { get; set; }
 
         public int Pages { get; set; }
 
         // For resend
-        public string fromEmail { get; set; }
+        public string FromEmail { get; set; }
 
-        public string toEmail { get; set; }
-
-        public string ccEmail { get; set; }
+        public string CcEmail { get; set; }
     }
 }
