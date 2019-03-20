@@ -238,6 +238,22 @@ db.News.update({},
 {upsert:false,
 multi:true})
 
+// 11.03.2019
+
+// 14.03.2019
+db.Contents.drop()
+db.JobCategories.drop()
+db.Jobs.drop()
+db.News.drop()
+db.NewsCategories.drop()
+db.Texts.drop()
+db.SEOs.drop()
+db.ProductCategorySales.drop()
+db.ProductSales.drop()
+
+
+
+
 
 
 

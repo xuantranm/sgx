@@ -1,7 +1,7 @@
 ﻿@using Common.Utilities;
 @using Common.Enums;
 @using System.Globalization;
-@model ViewModels.EmployeeDataViewModel
+@model ViewModels.EmployeeViewModel
 
 @{
     Layout = "~/Views/Shared/_LayoutSocialFb.cshtml";
@@ -33,14 +33,13 @@
                         <li class="breadcrumb-item">
                             <a href="/hr/nhan-su">Nhân sự</a>
                         </li>
-                        <li class="breadcrumb-item active" aria-current="page">Thông tin @Model.Employee.FullName</li>
+                        <li class="breadcrumb-item active" aria-current="page">Thông tin @Model.EmployeeDetail.Employee.FullName</li>
                     </ol>
                 </div>
                 <!--end of col-->
             </div>
             <!--end of row-->
         </div>
-        <!--end of container-->
     </nav>
 
     <section class="bg-white space-sm pb-4">
@@ -50,20 +49,18 @@
                     <h1 class="h2">Thông tin</h1>
                 </div>
                 <div class="col-auto text-right">
-                    <a href="/hr/nhan-su/cap-nhat/@Model.Employee.Id" class="btn btn-success" data-toggle="tooltip" title="Bấm thay đổi thông tin tài khoản."><i class="icon icon-edit"></i>Chỉnh sửa</a>
+                    <a href="/hr/nhan-su/cap-nhat/@Model.EmployeeDetail.Employee.Id" class="btn btn-success" data-toggle="tooltip" title="Bấm thay đổi thông tin tài khoản."><i class="icon icon-edit"></i>Chỉnh sửa</a>
                 </div>
             </div>
         </div>
     </section>
-    <input asp-for="Employee.Id" type="hidden" />
-    <input asp-for="Employee.Code" type="hidden" />
     <div class="container">
         <div class="row">
             @{
                 var avatarDisplay = Constants.System.domain + "/images/placeholder/120x120.png";
                 var coverDisplay = string.Empty;
-                var avatar = Model.Employee.Avatar;
-                var cover = Model.Employee.Cover;
+                var avatar = Model.EmployeeDetail.Employee.Avatar;
+                var cover = Model.EmployeeDetail.Employee.Cover;
 
                 if (Model.StatusChange)
                 {
@@ -107,7 +104,7 @@
             }
             <div class="col-12" id="cover" style="@coverDisplay">
                 <div class="media flex-wrap mb-0 align-items-center" id="avatar-upload">
-                    <img id="avatarShow" alt="@Model.Employee.FullName" src="@avatarDisplay" class="avatar avatar-lg mb-3 mb-md-0" />
+                    <img id="avatarShow" alt="@Model.EmployeeDetail.Employee.FullName" src="@avatarDisplay" class="avatar avatar-lg mb-3 mb-md-0" />
                     <div class="media-body d-none">
                         <label class="custom-file mb-2" for="file2">
                             <input type="file" id="avatar-input" name="avatar" class="custom-file-input height-0">
@@ -116,7 +113,6 @@
                         <div>
                             <small>
                                 Để có kết quả tốt nhất, hãy sử dụng hình ảnh có kích thước tối thiểu 256px x 256px ở định dạng .jpg hoặc .png
-                                @*For best results, use an image at least 256px by 256px in either .jpg or .png format*@
                             </small>
                         </div>
                     </div>
@@ -134,7 +130,6 @@
                 <div class="alert alert-info text-small" role="alert">
                     <i class="icon-shield"></i>
                     <span>
-                        @*Your information is always kept encrypted and can never be accessed by third parties.*@
                         Thông tin của bạn luôn được mã hóa và không bao giờ cho các bên thứ ba truy cập.
                     </span>
                     <a href="/pp/chinh-sach-bao-mat">@*See our privacy policy*@Xem chính sách bảo mật của chúng tôi</a>
@@ -146,26 +141,26 @@
                     <div class="col-12">
                         <div class="form-group">
                             <i class="icon icon-text"></i>
-                            <label asp-for="Employee.FullName" class="control-label"></label><span class="text-red">*</span>
-                            <input asp-for="Employee.FullName" type="text" readonly class="form-control-plaintext" />
+                            <label class="control-label">Tên</label>
+                            <p>@Model.EmployeeDetail.Employee.FullName</p>
                             <small>Thông tin này hiển thị trên hồ sơ công khai của bạn</small>
                         </div>
                     </div>
                     <div class="col-12">
                         <div class="form-group">
                             <i class="icon icon-login"></i>
-                            <label asp-for="Employee.UserName" class="control-label"></label><span class="text-red">*</span>
-                            <input asp-for="Employee.UserName" type="text" readonly class="form-control-plaintext" />
+                            <label class="control-label">Tên đăng nhập</label>
+                            <p>@Model.EmployeeDetail.Employee.UserName  | @Model.EmployeeDetail.Employee.Email</p>
                             <small>Thông tin này hiển thị trên hồ sơ công khai của bạn</small>
                         </div>
                     </div>
                     <div class="col-12">
                         <div class="form-group">
                             <i class="far fa-envelope"></i>
-                            <label asp-for="Employee.Email" class="control-label"></label>
-                            @if (!string.IsNullOrEmpty(Model.Employee.Email))
+                            <label class="control-label">Email</label>
+                            @if (!string.IsNullOrEmpty(Model.EmployeeDetail.Employee.Email))
                             {
-                                <p><a href="mailto:@Model.Employee.Email" target="_top">@Model.Employee.Email</a></p>
+                                <p><a href="mailto:@Model.EmployeeDetail.Employee.Email" target="_top">@Model.EmployeeDetail.Employee.Email</a></p>
                             }
                             else
                             {
@@ -176,15 +171,15 @@
                     <div class="col-6">
                         <div class="form-group">
                             <i class="icon icon-phone"></i> <label class="control-label">Điện thoại bàn</label>
-                            @if (!string.IsNullOrEmpty(Model.Employee.Tel))
+                            @if (!string.IsNullOrEmpty(Model.EmployeeDetail.Employee.Tel))
                             {
-                                <p><a href="tel:@Model.Employee.Tel">@Model.Employee.Tel</a></p>
+                                <p><a href="tel:@Model.EmployeeDetail.Employee.Tel">@Model.EmployeeDetail.Employee.Tel</a></p>
                             }
                             else
                             {
                                 <small>@Constants.MissTitle</small>
                             }
-                            @if (Model.StatusChange && Model.Employee.Tel != Model.EmployeeChance.Tel)
+                            @if (Model.StatusChange && Model.EmployeeDetail.Employee.Tel != Model.EmployeeChance.Tel)
                             {
                                 <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> <a href="tel:@Model.EmployeeChance.Tel">@Model.EmployeeChance.Tel</a></p>
                             }
@@ -192,11 +187,11 @@
                     </div>
 
                     @{
-                        if (Model.Employee.Mobiles != null && Model.Employee.Mobiles.Count > 0)
+                        if (Model.EmployeeDetail.Employee.Mobiles != null && Model.EmployeeDetail.Employee.Mobiles.Count > 0)
                         {
                             int iChangeMobile = 0;
                             var iMobile = 1;
-                            foreach (var mobile in Model.Employee.Mobiles)
+                            foreach (var mobile in Model.EmployeeDetail.Employee.Mobiles)
                             {
                                 <div class="col-6 nodeMobile node">
                                     <div class="form-group">
@@ -224,100 +219,91 @@
                     <div class="col-6">
                         <div class="form-group">
                             <i class="icon icon-cake"></i>
-                            <label asp-for="Employee.Birthday" class="control-label"></label>
+                            <label class="control-label">Ngày sinh</label>
                             @{
-                                var birthday = Model.Employee.Birthday.Year > 1900 ? Model.Employee.Birthday.ToString("dd/MM/yyyy") : string.Empty;
+                                var birthday = Model.EmployeeDetail.Employee.Birthday.Year > 1900 ? Model.EmployeeDetail.Employee.Birthday.ToString("dd/MM/yyyy") : string.Empty;
                             }
-                            <input value="@birthday" type="text" readonly class="form-control-plaintext" />
+                            <p>@birthday</p>
                         </div>
                     </div>
                     <div class="col-6">
                         <div class="form-group">
                             <i class="icon icon-select-arrows"></i>
-                            <label asp-for="Employee.Gender" class="control-label"></label>
-                            <input asp-for="Employee.Gender" type="text" readonly class="form-control-plaintext" />
+                            <label class="control-label">Giới tính</label>
+                            <p>@Model.EmployeeDetail.Employee.Gender</p>
                         </div>
                     </div>
                     <div class="col-6">
                         <div class="form-group">
                             <i class="icon icon-select-arrows"></i>
-                            <label asp-for="Employee.Department" class="control-label"></label>
-                            @if (!string.IsNullOrEmpty(Model.Employee.Department))
-                            {
-                                <p>
-                                    @Model.Employee.Department
-                                </p>
-                            }
-                            else
-                            {
-                                <p>
-                                    <small>@Constants.MissTitle</small>
-                                </p>
-                            }
+                            <label class="control-label">Nơi quản lý</label>
+                            <p>
+                                @Model.EmployeeDetail.CongTyChiNhanh
+                            </p>
                         </div>
                     </div>
                     <div class="col-6">
                         <div class="form-group">
                             <i class="icon icon-select-arrows"></i>
-                            <label asp-for="Employee.Part" class="control-label"></label>
-                            @if (!string.IsNullOrEmpty(Model.Employee.Part))
-                            {
-                                <p>
-                                    @Model.Employee.Part
-                                </p>
-                            }
-                            else
-                            {
-                                <p>
-                                    <small>@Constants.MissTitle</small>
-                                </p>
-                            }
+                            <label class="control-label">Khối chức năng</label>
+                            <p>
+                                @Model.EmployeeDetail.KhoiChucNang
+                            </p>
                         </div>
                     </div>
                     <div class="col-6">
                         <div class="form-group">
                             <i class="icon icon-select-arrows"></i>
-                            <label asp-for="Employee.Title" class="control-label"></label>
-                            @if (!string.IsNullOrEmpty(Model.Employee.Title))
-                            {
-                                <p>
-                                    @Model.Employee.Title
-                                </p>
-                            }
-                            else
-                            {
-                                <p>
-                                    <small>@Constants.MissTitle</small>
-                                </p>
-                            }
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="form-group">
-                            <i class="icon icon-select-arrows"></i>
-                            <label class="control-label">Quản lý trực tiếp</label>
-                            @if (Model.Manager != null && !string.IsNullOrEmpty(Model.Manager.FullName))
-                            {
-                                <p>
-                                    @Model.Manager.FullName - [@Model.Manager.Title]
-                                </p>
-                            }
-                            else
-                            {
-                                <p>
-                                    <small>@Constants.MissTitle</small>
-                                </p>
-                            }
+                            <label class="control-label">Phòng/ban</label>
+                            <p>
+                                @Model.EmployeeDetail.PhongBan
+                            </p>
                         </div>
                     </div>
 
+                    <div class="col-6">
+                        <div class="form-group">
+                            <i class="icon icon-select-arrows"></i>
+                            <label class="control-label">Bộ phận</label>
+                            <p>
+                                @Model.EmployeeDetail.BoPhan
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-group">
+                            <i class="icon icon-select-arrows"></i>
+                            <label class="control-label">Bộ phận (thuộc bộ phận trên)</label>
+                            <p>
+                                @Model.EmployeeDetail.BoPhanCon
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-group">
+                            <i class="icon icon-select-arrows"></i>
+                            <label class="control-label">Chức vụ</label>
+                            <p>
+                                @Model.EmployeeDetail.ChucVu
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-group">
+                            <i class="icon icon-select-arrows"></i>
+                            <label class="control-label">Người quản lý</label>
+                            <p>
+                                @Model.EmployeeDetail.NguoiQuanLy
+                            </p>
+                        </div>
+                    </div>
 
                     <div class="col-6">
                         <div class="form-group">
                             <i class="icon icon-time-slot"></i>
-                            <label asp-for="Employee.Joinday" class="control-label"></label>
+                            <label class="control-label">Ngày vào làm</label>
                             @{
-                                var joinday = Model.Employee.Joinday.Year > 1900 ? Model.Employee.Joinday.ToString("dd/MM/yyyy") : string.Empty;
+                                var joinday = Model.EmployeeDetail.Employee.Joinday.Year > 1900 ? Model.EmployeeDetail.Employee.Joinday.ToString("dd/MM/yyyy") : string.Empty;
                             }
                             <p>@joinday</p>
                         </div>
@@ -325,8 +311,8 @@
                     <div class="col-6">
                         <div class="form-group">
                             <i class="icon icon-archive"></i>
-                            <label asp-for="Employee.LeaveLevelYear" class="control-label"></label>
-                            <p>@Model.Employee.LeaveLevelYear ngày</p>
+                            <label class="control-label">Mức phép năm</label>
+                            <p>@Model.EmployeeDetail.Employee.LeaveLevelYear ngày</p>
                         </div>
                     </div>
 
@@ -337,17 +323,17 @@
                         </div>
                     </div>
                     <div class="col-6">
-                        @if (Model.Employee.IsTimeKeeper)
+                        @if (Model.EmployeeDetail.Employee.IsTimeKeeper)
                         {
                             <p>Không tính thời gian làm việc</p>
                         }
                     </div>
 
-                    @if (!Model.Employee.IsTimeKeeper)
+                    @if (!Model.EmployeeDetail.Employee.IsTimeKeeper)
                     {
-                        if (Model.Employee.Workplaces != null && Model.Employee.Workplaces.Count > 0)
+                        if (Model.EmployeeDetail.Employee.Workplaces != null && Model.EmployeeDetail.Employee.Workplaces.Count > 0)
                         {
-                            foreach (var workplace in Model.Employee.Workplaces)
+                            foreach (var workplace in Model.EmployeeDetail.Employee.Workplaces)
                             {
                                 <div class="col-6 nodeWorkplace node">
                                     <div class="form-group">
@@ -402,7 +388,7 @@
                     @{
                         var enableStatus = string.Empty;
                         var displayLeave = "d-none";
-                        if (!Model.Employee.Enable)
+                        if (!Model.EmployeeDetail.Employee.Enable)
                         {
                             enableStatus = "checked";
                             displayLeave = "";
@@ -420,32 +406,32 @@
                     </div>
                     <div class="col-6 leave-extend @displayLeave">
                         <div class="form-group">
-                            <label asp-for="Employee.Leaveday" class="control-label"></label>
+                            <label class="control-label">Ngày nghỉ việc</label>
                             @{
-                                var leaveDay = Model.Employee.Leaveday.HasValue ? Model.Employee.Leaveday.Value.ToString("dd/MM/yyyy") : string.Empty;
+                                var leaveDay = Model.EmployeeDetail.Employee.Leaveday.HasValue ? Model.EmployeeDetail.Employee.Leaveday.Value.ToString("dd/MM/yyyy") : string.Empty;
                             }
-                            <input name="Employee.Leaveday" value="@leaveDay" type="text" readonly class="form-control-plaintext" />
+                            <p>@leaveDay</p>
                         </div>
                     </div>
                     <div class="col-12 leave-extend @displayLeave">
                         <div class="form-group">
-                            <label asp-for="Employee.LeaveReason" class="control-label"></label>
-                            <textarea asp-for="Employee.LeaveReason" type="text" readonly class="form-control-plaintext"></textarea>
+                            <label class="control-label">Lý do</label>
+                            <p>@Model.EmployeeDetail.Employee.LeaveReason</p>
                         </div>
                     </div>
 
                     <div class="col-12">
                         <div class="form-group">
-                            <label asp-for="Employee.Bornplace" class="control-label"></label>
-                            @if (!string.IsNullOrEmpty(Model.Employee.Bornplace))
+                            <label class="control-label">Nguyên quán</label>
+                            @if (!string.IsNullOrEmpty(Model.EmployeeDetail.Employee.Bornplace))
                             {
-                                <p>@Model.Employee.Bornplace</p>
+                                <p>@Model.EmployeeDetail.Employee.Bornplace</p>
                             }
                             else
                             {
                                 <small>@Constants.MissTitle</small>
                             }
-                            @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.Bornplace) && Model.Employee.Bornplace != Model.EmployeeChance.Bornplace)
+                            @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.Bornplace) && Model.EmployeeDetail.Employee.Bornplace != Model.EmployeeChance.Bornplace)
                             {
                                 <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @Model.EmployeeChance.Bornplace</p>
                             }
@@ -453,16 +439,16 @@
                     </div>
                     <div class="col-12">
                         <div class="form-group">
-                            <label asp-for="Employee.AddressResident" class="control-label"></label>
-                            @if (!string.IsNullOrEmpty(Model.Employee.AddressResident))
+                            <label class="control-label">Thường trú</label>
+                            @if (!string.IsNullOrEmpty(Model.EmployeeDetail.Employee.AddressResident))
                             {
-                                <p><a target="_blank" href="https://www.google.com/maps/search/?api=1&query=@Model.Employee.AddressResident" data-toggle="tooltip" title="Bấm để đi đến bản đồ">@Model.Employee.AddressResident</a></p>
+                                <p><a target="_blank" href="https://www.google.com/maps/search/?api=1&query=@Model.EmployeeDetail.Employee.AddressResident" data-toggle="tooltip" title="Bấm để đi đến bản đồ">@Model.EmployeeDetail.Employee.AddressResident</a></p>
                             }
                             else
                             {
                                 <small>@Constants.MissTitle</small>
                             }
-                            @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.AddressResident) && Model.Employee.AddressResident != Model.EmployeeChance.AddressResident)
+                            @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.AddressResident) && Model.EmployeeDetail.Employee.AddressResident != Model.EmployeeChance.AddressResident)
                             {
                                 <p class="change-data">
                                     <small class="badge badge-info">Chờ xác nhận</small>
@@ -473,16 +459,16 @@
                     </div>
                     <div class="col-12">
                         <div class="form-group">
-                            <label asp-for="Employee.AddressTemporary" class="control-label"></label>
-                            @if (!string.IsNullOrEmpty(Model.Employee.AddressTemporary))
+                            <label class="control-label">Tạm trú</label>
+                            @if (!string.IsNullOrEmpty(Model.EmployeeDetail.Employee.AddressTemporary))
                             {
-                                <p><a target="_blank" href="https://www.google.com/maps/search/?api=1&query=@Model.Employee.AddressTemporary" data-toggle="tooltip" title="Bấm để đi đến bản đồ">@Model.Employee.AddressTemporary</a></p>
+                                <p><a target="_blank" href="https://www.google.com/maps/search/?api=1&query=@Model.EmployeeDetail.Employee.AddressTemporary" data-toggle="tooltip" title="Bấm để đi đến bản đồ">@Model.EmployeeDetail.Employee.AddressTemporary</a></p>
                             }
                             else
                             {
                                 <small>@Constants.MissTitle</small>
                             }
-                            @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.AddressTemporary) && Model.Employee.AddressTemporary != Model.EmployeeChance.AddressTemporary)
+                            @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.AddressTemporary) && Model.EmployeeDetail.Employee.AddressTemporary != Model.EmployeeChance.AddressTemporary)
                             {
                                 <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @Model.EmployeeChance.AddressTemporary</p>
                             }
@@ -491,16 +477,16 @@
                     <div class="col-12">
                         <div class="form-group">
                             <i class="icon icon-email"></i>
-                            <label asp-for="Employee.EmailPersonal" class="control-label"></label>
-                            @if (!string.IsNullOrEmpty(Model.Employee.EmailPersonal))
+                            <label class="control-label">Email cá nhân</label>
+                            @if (!string.IsNullOrEmpty(Model.EmployeeDetail.Employee.EmailPersonal))
                             {
-                                <p><a href="mailto:@Model.Employee.EmailPersonal" target="_top">@Model.Employee.EmailPersonal</a></p>
+                                <p><a href="mailto:@Model.EmployeeDetail.Employee.EmailPersonal" target="_top">@Model.EmployeeDetail.Employee.EmailPersonal</a></p>
                             }
                             else
                             {
                                 <small>@Constants.MissTitle</small>
                             }
-                            @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.EmailPersonal) && Model.Employee.EmailPersonal != Model.EmployeeChance.EmailPersonal)
+                            @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.EmailPersonal) && Model.EmployeeDetail.Employee.EmailPersonal != Model.EmployeeChance.EmailPersonal)
                             {
                                 <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> <a href="mailto:@Model.EmployeeChance.EmailPersonal" target="_top">@Model.EmployeeChance.EmailPersonal</a></p>
                             }
@@ -508,16 +494,16 @@
                     </div>
                     <div class="col-sm-6 col-xs-12">
                         <div class="form-group">
-                            <label asp-for="Employee.StatusMarital" class="control-label"></label>
-                            @if (!string.IsNullOrEmpty(Model.Employee.StatusMarital))
+                            <label class="control-label">Tình trạng hôn nhân</label>
+                            @if (!string.IsNullOrEmpty(Model.EmployeeDetail.Employee.StatusMarital))
                             {
-                                <p>@Constants.Married(Model.Employee.StatusMarital)</p>
+                                <p>@Constants.Married(Model.EmployeeDetail.Employee.StatusMarital)</p>
                             }
                             else
                             {
                                 <small>@Constants.MissTitle</small>
                             }
-                            @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.StatusMarital) && Model.Employee.StatusMarital != Model.EmployeeChance.StatusMarital)
+                            @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.StatusMarital) && Model.EmployeeDetail.Employee.StatusMarital != Model.EmployeeChance.StatusMarital)
                             {
                                 <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @Constants.Married(Model.EmployeeChance.StatusMarital)</p>
                             }
@@ -525,16 +511,16 @@
                     </div>
                     <div class="col-sm-6 col-xs-12">
                         <div class="form-group">
-                            <label asp-for="Employee.Nation" class="control-label"></label>
-                            @if (!string.IsNullOrEmpty(Model.Employee.Nation))
+                            <label class="control-label">Quốc tịch</label>
+                            @if (!string.IsNullOrEmpty(Model.EmployeeDetail.Employee.Nation))
                             {
-                                <p>@Model.Employee.Nation</p>
+                                <p>@Model.EmployeeDetail.Employee.Nation</p>
                             }
                             else
                             {
                                 <small>@Constants.MissTitle</small>
                             }
-                            @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.Nation) && Model.Employee.Nation != Model.EmployeeChance.Nation)
+                            @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.Nation) && Model.EmployeeDetail.Employee.Nation != Model.EmployeeChance.Nation)
                             {
                                 <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @Model.EmployeeChance.Nation</p>
                             }
@@ -542,16 +528,16 @@
                     </div>
                     <div class="col-sm-6 col-xs-12">
                         <div class="form-group">
-                            <label asp-for="Employee.Religion" class="control-label"></label>
-                            @if (!string.IsNullOrEmpty(Model.Employee.Religion))
+                            <label class="control-label">Tôn giáo</label>
+                            @if (!string.IsNullOrEmpty(Model.EmployeeDetail.Employee.Religion))
                             {
-                                <p>@Model.Employee.Religion</p>
+                                <p>@Model.EmployeeDetail.Employee.Religion</p>
                             }
                             else
                             {
                                 <small>@Constants.MissTitle</small>
                             }
-                            @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.Religion) && Model.Employee.Religion != Model.EmployeeChance.Religion)
+                            @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.Religion) && Model.EmployeeDetail.Employee.Religion != Model.EmployeeChance.Religion)
                             {
                                 <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @Model.EmployeeChance.Religion</p>
                             }
@@ -559,16 +545,16 @@
                     </div>
                     <div class="col-12">
                         <div class="form-group">
-                            <label asp-for="Employee.Intro" class="control-label"></label>
-                            @if (!string.IsNullOrEmpty(Model.Employee.Intro))
+                            <label class="control-label">Giới thiệu</label>
+                            @if (!string.IsNullOrEmpty(Model.EmployeeDetail.Employee.Intro))
                             {
-                                <p>@Model.Employee.Intro</p>
+                                <p>@Model.EmployeeDetail.Employee.Intro</p>
                             }
                             else
                             {
                                 <small>@Constants.MissTitle</small>
                             }
-                            @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.Intro) && Model.Employee.Intro != Model.EmployeeChance.Intro)
+                            @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.Intro) && Model.EmployeeDetail.Employee.Intro != Model.EmployeeChance.Intro)
                             {
                                 <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @Model.EmployeeChance.Intro</p>
                             }
@@ -598,20 +584,20 @@
                     <div class="col-12 col-md-8 order-md-1">
                         <div class="row">
                             <!-- CMND -->
-                            @if (!string.IsNullOrEmpty(Model.Employee.IdentityCard))
+                            @if (!string.IsNullOrEmpty(Model.EmployeeDetail.Employee.IdentityCard))
                             {
                                 <div class="col-12">
                                     <div class="form-group">
-                                        <label asp-for="Employee.IdentityCard" class="control-label"></label>
-                                        @if (!string.IsNullOrEmpty(Model.Employee.IdentityCard))
+                                        <label class="control-label">CMND</label>
+                                        @if (!string.IsNullOrEmpty(Model.EmployeeDetail.Employee.IdentityCard))
                                         {
-                                            <p>@Model.Employee.IdentityCard</p>
+                                            <p>@Model.EmployeeDetail.Employee.IdentityCard</p>
                                         }
                                         else
                                         {
                                             <small>@Constants.MissTitle</small>
                                         }
-                                        @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.IdentityCard) && Model.Employee.IdentityCard != Model.EmployeeChance.IdentityCard)
+                                        @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.IdentityCard) && Model.EmployeeDetail.Employee.IdentityCard != Model.EmployeeChance.IdentityCard)
                                         {
                                             <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @Model.EmployeeChance.IdentityCard</p>
                                         }
@@ -619,9 +605,9 @@
                                 </div>
                                 <div class="col-6">
                                     <div class="form-group">
-                                        <label asp-for="Employee.IdentityCardDate" class="control-label"></label>
+                                        <label class="control-label">Ngày cấp</label>
                                         @{
-                                            var identityCardDate = Model.Employee.IdentityCardDate.HasValue && Model.Employee.IdentityCardDate.Value.Year > 1900 ? Model.Employee.IdentityCardDate.Value.ToString("dd/MM/yyyy") : string.Empty;
+                                            var identityCardDate = Model.EmployeeDetail.Employee.IdentityCardDate.HasValue && Model.EmployeeDetail.Employee.IdentityCardDate.Value.Year > 1900 ? Model.EmployeeDetail.Employee.IdentityCardDate.Value.ToString("dd/MM/yyyy") : string.Empty;
                                             var identityCardDateChange = string.Empty;
                                             if (Model.StatusChange && Model.EmployeeChance != null)
                                             {
@@ -636,7 +622,7 @@
                                         {
                                             <small>@Constants.MissTitle</small>
                                         }
-                                        @if (Model.StatusChange && !string.IsNullOrEmpty(identityCardDateChange) && Model.Employee.IdentityCardDate != Model.EmployeeChance.IdentityCardDate)
+                                        @if (Model.StatusChange && !string.IsNullOrEmpty(identityCardDateChange) && Model.EmployeeDetail.Employee.IdentityCardDate != Model.EmployeeChance.IdentityCardDate)
                                         {
                                             <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @identityCardDateChange</p>
                                         }
@@ -645,16 +631,16 @@
 
                                 <div class="col-6">
                                     <div class="form-group">
-                                        <label asp-for="Employee.IdentityCardPlace" class="control-label"></label>
-                                        @if (!string.IsNullOrEmpty(Model.Employee.IdentityCardPlace))
+                                        <label class="control-label">Nơi cấp</label>
+                                        @if (!string.IsNullOrEmpty(Model.EmployeeDetail.Employee.IdentityCardPlace))
                                         {
-                                            <p>@Model.Employee.IdentityCardPlace</p>
+                                            <p>@Model.EmployeeDetail.Employee.IdentityCardPlace</p>
                                         }
                                         else
                                         {
                                             <small>@Constants.MissTitle</small>
                                         }
-                                        @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.IdentityCardPlace) && Model.Employee.IdentityCardPlace != Model.EmployeeChance.IdentityCardPlace)
+                                        @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.IdentityCardPlace) && Model.EmployeeDetail.Employee.IdentityCardPlace != Model.EmployeeChance.IdentityCardPlace)
                                         {
                                             <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @Model.EmployeeChance.IdentityCardPlace</p>
                                         }
@@ -665,16 +651,16 @@
                             }
                             <div class="col-12">
                                 <div class="form-group">
-                                    <label asp-for="Employee.HouseHold" class="control-label"></label>
-                                    @if (!string.IsNullOrEmpty(Model.Employee.HouseHold))
+                                    <label class="control-label">Hộ khẩu</label>
+                                    @if (!string.IsNullOrEmpty(Model.EmployeeDetail.Employee.HouseHold))
                                     {
-                                        <p>@Model.Employee.HouseHold</p>
+                                        <p>@Model.EmployeeDetail.Employee.HouseHold</p>
                                     }
                                     else
                                     {
                                         <small>@Constants.MissTitle</small>
                                     }
-                                    @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.HouseHold) && Model.Employee.HouseHold != Model.EmployeeChance.HouseHold)
+                                    @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.HouseHold) && Model.EmployeeDetail.Employee.HouseHold != Model.EmployeeChance.HouseHold)
                                     {
                                         <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @Model.EmployeeChance.HouseHold</p>
                                     }
@@ -682,38 +668,38 @@
                             </div>
                             <div class="col-12">
                                 <div class="form-group">
-                                    <label asp-for="Employee.HouseHoldOwner" class="control-label"></label>
-                                    @if (!string.IsNullOrEmpty(Model.Employee.HouseHoldOwner))
+                                    <label class="control-label">Chủ hộ</label>
+                                    @if (!string.IsNullOrEmpty(Model.EmployeeDetail.Employee.HouseHoldOwner))
                                     {
-                                        <p>@Model.Employee.HouseHoldOwner</p>
+                                        <p>@Model.EmployeeDetail.Employee.HouseHoldOwner</p>
                                     }
                                     else
                                     {
                                         <small>@Constants.MissTitle</small>
                                     }
-                                    @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.HouseHoldOwner) && Model.Employee.HouseHoldOwner != Model.EmployeeChance.HouseHoldOwner)
+                                    @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.HouseHoldOwner) && Model.EmployeeDetail.Employee.HouseHoldOwner != Model.EmployeeChance.HouseHoldOwner)
                                     {
                                         <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @Model.EmployeeChance.HouseHoldOwner</p>
                                     }
                                 </div>
                             </div>
 
-                            @if (!string.IsNullOrEmpty(Model.Employee.Passport))
+                            @if (!string.IsNullOrEmpty(Model.EmployeeDetail.Employee.Passport))
                             {
                                 <!-- PASSPORT -->
                                 <hr />
                                 <div class="col-12">
                                     <div class="form-group">
-                                        <label asp-for="Employee.Passport" class="control-label"></label>
-                                        @if (!string.IsNullOrEmpty(Model.Employee.Passport))
+                                        <label class="control-label">Hộ chiếu</label>
+                                        @if (!string.IsNullOrEmpty(Model.EmployeeDetail.Employee.Passport))
                                         {
-                                            <p>@Model.Employee.Passport</p>
+                                            <p>@Model.EmployeeDetail.Employee.Passport</p>
                                         }
                                         else
                                         {
                                             <small>@Constants.MissTitle</small>
                                         }
-                                        @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.Passport) && Model.Employee.Passport != Model.EmployeeChance.Passport)
+                                        @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.Passport) && Model.EmployeeDetail.Employee.Passport != Model.EmployeeChance.Passport)
                                         {
                                             <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @Model.EmployeeChance.Passport</p>
                                         }
@@ -721,16 +707,16 @@
                                 </div>
                                 <div class="col-6">
                                     <div class="form-group">
-                                        <label asp-for="Employee.PassportType" class="control-label"></label>
-                                        @if (!string.IsNullOrEmpty(Model.Employee.PassportType))
+                                        <label class="control-label">Loại</label>
+                                        @if (!string.IsNullOrEmpty(Model.EmployeeDetail.Employee.PassportType))
                                         {
-                                            <p>@Model.Employee.PassportType</p>
+                                            <p>@Model.EmployeeDetail.Employee.PassportType</p>
                                         }
                                         else
                                         {
                                             <small>@Constants.MissTitle</small>
                                         }
-                                        @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.PassportType) && Model.Employee.PassportType != Model.EmployeeChance.PassportType)
+                                        @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.PassportType) && Model.EmployeeDetail.Employee.PassportType != Model.EmployeeChance.PassportType)
                                         {
                                             <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @Model.EmployeeChance.PassportType</p>
                                         }
@@ -738,16 +724,16 @@
                                 </div>
                                 <div class="col-6">
                                     <div class="form-group">
-                                        <label asp-for="Employee.PassportCode" class="control-label"></label>
-                                        @if (!string.IsNullOrEmpty(Model.Employee.PassportCode))
+                                        <label class="control-label">Mã số</label>
+                                        @if (!string.IsNullOrEmpty(Model.EmployeeDetail.Employee.PassportCode))
                                         {
-                                            <p>@Model.Employee.PassportCode</p>
+                                            <p>@Model.EmployeeDetail.Employee.PassportCode</p>
                                         }
                                         else
                                         {
                                             <small>@Constants.MissTitle</small>
                                         }
-                                        @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.PassportCode) && Model.Employee.PassportCode != Model.EmployeeChance.PassportCode)
+                                        @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.PassportCode) && Model.EmployeeDetail.Employee.PassportCode != Model.EmployeeChance.PassportCode)
                                         {
                                             <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @Model.EmployeeChance.PassportCode</p>
                                         }
@@ -755,9 +741,9 @@
                                 </div>
                                 <div class="col-6">
                                     <div class="form-group">
-                                        <label asp-for="Employee.PassportDate" class="control-label"></label>
+                                        <label class="control-label">Ngày cấp</label>
                                         @{
-                                            var passportDate = Model.Employee.PassportDate.HasValue && Model.Employee.PassportDate.Value.Year > 1900 ? Model.Employee.PassportDate.Value.ToString("dd/MM/yyyy") : string.Empty;
+                                            var passportDate = Model.EmployeeDetail.Employee.PassportDate.HasValue && Model.EmployeeDetail.Employee.PassportDate.Value.Year > 1900 ? Model.EmployeeDetail.Employee.PassportDate.Value.ToString("dd/MM/yyyy") : string.Empty;
                                             var passportDateChange = string.Empty;
                                             if (Model.StatusChange && Model.EmployeeChance != null)
                                             {
@@ -772,7 +758,7 @@
                                         {
                                             <small>@Constants.MissTitle</small>
                                         }
-                                        @if (Model.StatusChange && !string.IsNullOrEmpty(passportDateChange) && Model.Employee.PassportDate != Model.EmployeeChance.PassportDate)
+                                        @if (Model.StatusChange && !string.IsNullOrEmpty(passportDateChange) && Model.EmployeeDetail.Employee.PassportDate != Model.EmployeeChance.PassportDate)
                                         {
                                             <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @passportDateChange</p>
                                         }
@@ -780,9 +766,9 @@
                                 </div>
                                 <div class="col-6">
                                     <div class="form-group">
-                                        <label asp-for="Employee.PassportExpireDate" class="control-label"></label>
+                                        <label class="control-label">Ngày hết hạn</label>
                                         @{
-                                            var passportExpireDate = Model.Employee.PassportExpireDate.HasValue && Model.Employee.PassportExpireDate.Value.Year > 1900 ? Model.Employee.PassportExpireDate.Value.ToString("dd/MM/yyyy") : string.Empty;
+                                            var passportExpireDate = Model.EmployeeDetail.Employee.PassportExpireDate.HasValue && Model.EmployeeDetail.Employee.PassportExpireDate.Value.Year > 1900 ? Model.EmployeeDetail.Employee.PassportExpireDate.Value.ToString("dd/MM/yyyy") : string.Empty;
                                             var passportExpireDateChange = string.Empty;
                                             if (Model.StatusChange && Model.EmployeeChance != null)
                                             {
@@ -797,7 +783,7 @@
                                         {
                                             <small>@Constants.MissTitle</small>
                                         }
-                                        @if (Model.StatusChange && !string.IsNullOrEmpty(passportDateChange) && Model.Employee.PassportExpireDate != Model.EmployeeChance.PassportExpireDate)
+                                        @if (Model.StatusChange && !string.IsNullOrEmpty(passportDateChange) && Model.EmployeeDetail.Employee.PassportExpireDate != Model.EmployeeChance.PassportExpireDate)
                                         {
                                             <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @passportDateChange</p>
                                         }
@@ -805,23 +791,22 @@
                                 </div>
                                 <div class="col-12">
                                     <div class="form-group">
-                                        <label asp-for="Employee.PassportPlace" class="control-label"></label>
-                                        @if (!string.IsNullOrEmpty(Model.Employee.PassportPlace))
+                                        <label class="control-label">Nơi cấp</label>
+                                        @if (!string.IsNullOrEmpty(Model.EmployeeDetail.Employee.PassportPlace))
                                         {
-                                            <p>@Model.Employee.PassportPlace</p>
+                                            <p>@Model.EmployeeDetail.Employee.PassportPlace</p>
                                         }
                                         else
                                         {
                                             <small>@Constants.MissTitle</small>
                                         }
-                                        @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.PassportPlace) && Model.Employee.PassportPlace != Model.EmployeeChance.PassportPlace)
+                                        @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.PassportPlace) && Model.EmployeeDetail.Employee.PassportPlace != Model.EmployeeChance.PassportPlace)
                                         {
                                             <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @Model.EmployeeChance.PassportPlace</p>
                                         }
                                     </div>
                                 </div>
                             }
-
                         </div>
                     </div>
                 </div>
@@ -832,8 +817,8 @@
                     <div class="col-12">
                         <div class="form-group">
                             @{
-                                var check = Model.Employee.BhxhEnable ? "checked" : "";
-                                var dnone = Model.Employee.BhxhEnable ? "" : "d-none";
+                                var check = Model.EmployeeDetail.Employee.BhxhEnable ? "checked" : "";
+                                var dnone = Model.EmployeeDetail.Employee.BhxhEnable ? "" : "d-none";
                             }
                             <div class="custom-control custom-checkbox custom-checkbox-switch">
                                 <input type="checkbox" class="custom-control-input" id="public" @check disabled />
@@ -845,10 +830,10 @@
                         <div class="row">
                             <div class="col-12">
                                 <div class="form-group">
-                                    <label asp-for="Employee.BhxhBookNo" class="control-label"></label>
-                                    @if (!string.IsNullOrEmpty(Model.Employee.BhxhBookNo))
+                                    <label class="control-label">Số xổ BHXH</label>
+                                    @if (!string.IsNullOrEmpty(Model.EmployeeDetail.Employee.BhxhBookNo))
                                     {
-                                        <p>@Model.Employee.BhxhBookNo</p>
+                                        <p>@Model.EmployeeDetail.Employee.BhxhBookNo</p>
                                     }
                                     else
                                     {
@@ -858,10 +843,10 @@
                             </div>
                             <div class="col-12">
                                 <div class="form-group">
-                                    <label asp-for="Employee.BhxhCode" class="control-label"></label>
-                                    @if (!string.IsNullOrEmpty(Model.Employee.BhxhCode))
+                                    <label class="control-label">Số BHXH</label>
+                                    @if (!string.IsNullOrEmpty(Model.EmployeeDetail.Employee.BhxhCode))
                                     {
-                                        <p>@Model.Employee.BhxhCode</p>
+                                        <p>@Model.EmployeeDetail.Employee.BhxhCode</p>
                                     }
                                     else
                                     {
@@ -871,9 +856,9 @@
                             </div>
                             <div class="col-6">
                                 <div class="form-group">
-                                    <label asp-for="Employee.BhxhStart" class="control-label"></label>
+                                    <label class="control-label">Ngày bắt đầu</label>
                                     @{
-                                        var bhxhStart = Model.Employee.BhxhStart.HasValue ? Model.Employee.BhxhStart.Value.ToString("dd/MM/yyyy") : string.Empty;
+                                        var bhxhStart = Model.EmployeeDetail.Employee.BhxhStart.HasValue ? Model.EmployeeDetail.Employee.BhxhStart.Value.ToString("dd/MM/yyyy") : string.Empty;
                                     }
                                     @if (!string.IsNullOrEmpty(bhxhStart))
                                     {
@@ -887,9 +872,9 @@
                             </div>
                             <div class="col-6">
                                 <div class="form-group">
-                                    <label asp-for="Employee.BhxhEnd" class="control-label"></label>
+                                    <label class="control-label">Ngày kết thúc</label>
                                     @{
-                                        var bhxhEnd = Model.Employee.BhxhEnd.HasValue ? Model.Employee.BhxhEnd.Value.ToString("dd/MM/yyyy") : string.Empty;
+                                        var bhxhEnd = Model.EmployeeDetail.Employee.BhxhEnd.HasValue ? Model.EmployeeDetail.Employee.BhxhEnd.Value.ToString("dd/MM/yyyy") : string.Empty;
                                     }
                                     @if (!string.IsNullOrEmpty(bhxhEnd))
                                     {
@@ -903,10 +888,10 @@
                             </div>
                             <div class="col-12">
                                 <div class="form-group">
-                                    <label asp-for="Employee.BhxhStatus" class="control-label"></label>
-                                    @if (!string.IsNullOrEmpty(Model.Employee.BhxhStatus))
+                                    <label class="control-label">Tình trạng</label>
+                                    @if (!string.IsNullOrEmpty(Model.EmployeeDetail.Employee.BhxhStatus))
                                     {
-                                        <p>@Model.Employee.BhxhStatus</p>
+                                        <p>@Model.EmployeeDetail.Employee.BhxhStatus</p>
                                     }
                                     else
                                     {
@@ -916,16 +901,16 @@
                             </div>
                             <div class="col-12">
                                 <div class="form-group">
-                                    <label asp-for="Employee.BhxhHospital" class="control-label"></label>
-                                    @if (!string.IsNullOrEmpty(Model.Employee.BhxhHospital))
+                                    <label class="control-label">KCB ban đầu</label>
+                                    @if (!string.IsNullOrEmpty(Model.EmployeeDetail.Employee.BhxhHospital))
                                     {
-                                        <p>@Model.Employee.BhxhHospital</p>
+                                        <p>@Model.EmployeeDetail.Employee.BhxhHospital</p>
                                     }
                                     else
                                     {
                                         <small>@Constants.MissTitle</small>
                                     }
-                                    @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.BhxhHospital) && Model.Employee.BhxhHospital != Model.EmployeeChance.BhxhHospital)
+                                    @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.BhxhHospital) && Model.EmployeeDetail.Employee.BhxhHospital != Model.EmployeeChance.BhxhHospital)
                                     {
                                         <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @Model.EmployeeChance.BhxhHospital</p>
                                     }
@@ -933,10 +918,10 @@
                             </div>
                             <div class="col-12">
                                 <div class="form-group">
-                                    <label asp-for="Employee.BhytCode" class="control-label"></label>
-                                    @if (!string.IsNullOrEmpty(Model.Employee.BhytCode))
+                                    <label class="control-label">Số BHYT</label>
+                                    @if (!string.IsNullOrEmpty(Model.EmployeeDetail.Employee.BhytCode))
                                     {
-                                        <p>@Model.Employee.BhytCode</p>
+                                        <p>@Model.EmployeeDetail.Employee.BhytCode</p>
                                     }
                                     else
                                     {
@@ -946,9 +931,9 @@
                             </div>
                             <div class="col-6">
                                 <div class="form-group">
-                                    <label asp-for="Employee.BhytStart" class="control-label"></label>
+                                    <label class="control-label">Ngày hiệu lực</label>
                                     @{
-                                        var bhytStart = Model.Employee.BhytStart.HasValue && Model.Employee.BhytStart.Value.Year > 1900 ? Model.Employee.BhytStart.Value.ToString("dd/MM/yyyy") : string.Empty;
+                                        var bhytStart = Model.EmployeeDetail.Employee.BhytStart.HasValue && Model.EmployeeDetail.Employee.BhytStart.Value.Year > 1900 ? Model.EmployeeDetail.Employee.BhytStart.Value.ToString("dd/MM/yyyy") : string.Empty;
                                     }
                                     @if (!string.IsNullOrEmpty(bhytStart))
                                     {
@@ -962,9 +947,9 @@
                             </div>
                             <div class="col-6">
                                 <div class="form-group">
-                                    <label asp-for="Employee.BhytEnd" class="control-label"></label>
+                                    <label class="control-label">Ngày kết thúc</label>
                                     @{
-                                        var bhytEnd = Model.Employee.BhytEnd.HasValue && Model.Employee.BhytEnd.Value.Year > 1900 ? Model.Employee.BhytEnd.Value.ToString("dd/MM/yyyy") : string.Empty;
+                                        var bhytEnd = Model.EmployeeDetail.Employee.BhytEnd.HasValue && Model.EmployeeDetail.Employee.BhytEnd.Value.Year > 1900 ? Model.EmployeeDetail.Employee.BhytEnd.Value.ToString("dd/MM/yyyy") : string.Empty;
                                     }
                                     @if (!string.IsNullOrEmpty(bhytEnd))
                                     {
@@ -978,10 +963,10 @@
                             </div>
                             <div class="col-12">
                                 <div class="form-group">
-                                    <label asp-for="Employee.BhxhLocation" class="control-label"></label>
-                                    @if (!string.IsNullOrEmpty(Model.Employee.BhxhLocation))
+                                    <label class="control-label">Nơi BHXH</label>
+                                    @if (!string.IsNullOrEmpty(Model.EmployeeDetail.Employee.BhxhLocation))
                                     {
-                                        <p>@Model.Employee.BhxhLocation</p>
+                                        <p>@Model.EmployeeDetail.Employee.BhxhLocation</p>
                                     }
                                     else
                                     {
@@ -992,9 +977,9 @@
 
                             <span class="badge badge-info">Tác vụ BHXH</span>
                             @{
-                                if (Model.Employee.BhxhHistories != null && Model.Employee.BhxhHistories.Count > 0)
+                                if (Model.EmployeeDetail.Employee.BhxhHistories != null && Model.EmployeeDetail.Employee.BhxhHistories.Count > 0)
                                 {
-                                    foreach (var item in Model.Employee.BhxhHistories)
+                                    foreach (var item in Model.EmployeeDetail.Employee.BhxhHistories)
                                     {
                                         <div class="col-12 nodeBHXH node">
                                             <hr />
@@ -1052,7 +1037,7 @@
                 </div>
                 <div class="row">
                     @{
-                        var cer1 = Model.Employee.Certificates;
+                        var cer1 = Model.EmployeeDetail.Employee.Certificates;
                         var cer2 = Model.EmployeeChance != null ? Model.EmployeeChance.Certificates : null;
                         if (cer1 != null && cer1.Count > 0)
                         {
@@ -1178,7 +1163,7 @@
                 </div>
                 <div class="row">
                     @{
-                        var fa1 = Model.Employee.EmployeeFamilys;
+                        var fa1 = Model.EmployeeDetail.Employee.EmployeeFamilys;
                         var fa2 = Model.EmployeeChance != null ? Model.EmployeeChance.EmployeeFamilys : null;
                         if (fa1 != null && fa1.Count > 0)
                         {
@@ -1326,9 +1311,9 @@
                 </div>
                 <div class="row">
                     @{
-                        if (Model.Employee.Contracts != null && Model.Employee.Contracts.Count > 0)
+                        if (Model.EmployeeDetail.Employee.Contracts != null && Model.EmployeeDetail.Employee.Contracts.Count > 0)
                         {
-                            foreach (var contract in Model.Employee.Contracts)
+                            foreach (var contract in Model.EmployeeDetail.Employee.Contracts)
                             {
                                 if (!string.IsNullOrEmpty(contract.Code))
                                 {
@@ -1411,9 +1396,9 @@
                 </div>
                 <div class="row">
                     @{
-                        if (Model.Employee.StorePapers != null && Model.Employee.StorePapers.Count > 0)
+                        if (Model.EmployeeDetail.Employee.StorePapers != null && Model.EmployeeDetail.Employee.StorePapers.Count > 0)
                         {
-                            foreach (var item in Model.Employee.StorePapers)
+                            foreach (var item in Model.EmployeeDetail.Employee.StorePapers)
                             {
                                 if (item.Count > 0)
                                 {
@@ -1452,7 +1437,7 @@
                 </div>
                 <div class="row">
                     @{
-                        var tra1 = Model.Employee.EmployeeEducations;
+                        var tra1 = Model.EmployeeDetail.Employee.EmployeeEducations;
                         var tra2 = Model.EmployeeChance != null ? Model.EmployeeChance.EmployeeEducations : null;
                         if (tra1 != null && tra1.Count > 0)
                         {
@@ -1539,39 +1524,11 @@
     <div>
         <a asp-action="Index"><i class="icon icon-back"></i>Trở về</a>
     </div>
-
-    <div class="modal fade" id="resultModal" tabindex="-1" role="dialog" aria-labelledby="resultModal" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Tạo nhân viên thành công.</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label for="recipient-name" class="col-form-label">Recipient:</label>
-                        <input type="text" class="form-control-plaintext" id="recipient-name">
-                    </div>
-                    <div class="form-group">
-                        <label for="message-text" class="col-form-label">Message:</label>
-                        <textarea class="form-control" id="message-text"></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <a href="/hr/nhan-su/thong-tin/" class="btn btn-danger" data-dismiss="modal">Thêm thông tin</a>
-                    <a href="/hr/nhan-su/tao-moi" class="btn btn-primary">Thêm mới</a>
-                    <a href="/hr/nhan-su" class="btn btn-info">Danh sách</a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    @section scripts {
-        @{
-            await Html.RenderPartialAsync("_ValidationScriptsPartial");
-            <script src="~/js/employee-data.js"></script>
-        }
+</div>
+@section scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+        <script src="~/js/employee-data.js"></script>
     }
+}
 

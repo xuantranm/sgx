@@ -21,10 +21,12 @@ namespace Models
 
         public bool NoDelete { get; set; } = true;
 
+        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime CreatedOn { get; set; } = DateTime.Now;
 
         public string CreatedBy { get; set; }
 
+        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime ModifiedOn { get; set; } = DateTime.Now;
 
         public string ModifiedBy { get; set; }

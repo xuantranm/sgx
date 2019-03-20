@@ -52,6 +52,9 @@
                                 <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Factory/@Constants.LinkSalary.TheLuong">THẺ LƯƠNG</a>
                             </li>
                             <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Factory/@Constants.LinkSalary.CongTong">CÔNG TỔNG</a>
+                            </li>
+                            <li class="nav-item">
                                 <a class="nav-link" target="_blank" href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Timer?thang=@Model.Thang&khoi=@EKhoiLamViec.NM">CHẤM CÔNG</a>
                             </li>
                             <li class="nav-item">
@@ -85,6 +88,93 @@
                             <a class="btn btn-lg btn-block btn-info" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Factory/@Constants.LinkSalary.ThangLuong/@Constants.LinkSalary.Export" data-toggle="tooltip" title="Xuất ra tài liệu file excel.">
                                 <i class="fas fa-download"></i> Xuất excel
                             </a>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <a class="nav-link custom-more collapsed" data-toggle="collapse" href="#uploadarea" aria-expanded="false" aria-controls="more">
+                            <i class="icon icon-magnifying-glass"></i> Cập nhật dữ liệu: Ngày làm việc - tăng ca, phép năm, lễ tết, tạm ứng, thưởng, đóng bhxh, phụ cấp.
+                        </a>
+                    </div>
+                    <div id="uploadarea" class="col-12 collapse">
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <span>Chọn dữ liệu tháng:</span>
+                                <select asp-for="Thang" id="ddlMonthImport">
+                                    @{
+                                        foreach (var item in Model.MonthYears)
+                                        {
+                                            <option value="@item.Month-@item.Year">@item.Month/@item.Year</option>
+                                        }
+                                    }
+                                </select>
+                                <a href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Factory/@Constants.LinkSalary.SanXuatNgoaiGioPhuCapTemplate?thang=@thang" class="btn btn-success btn-list btn-link-tang-ca" data-toggle="tooltip" title="Bấm tải về mẫu tài liệu.">
+                                    <i class="icon icon-back"></i>Tải mẫu [Tăng ca - Phụ cấp]
+                                </a>
+                                <a href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Factory/@Constants.LinkSalary.SanXuatTamUngTemplate?thang=@thang" class="btn btn-success btn-list btn-link-tam-ung" data-toggle="tooltip" title="Bấm tải về mẫu tài liệu.">
+                                    <i class="icon icon-back"></i>Tải mẫu [Ứng lương]
+                                </a>
+                                <a href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Factory/@Constants.LinkSalary.SanXuatNgayCongThuongBHXHTemplate?thang=@thang" class="btn btn-success btn-list btn-link-thuong-bhxh" data-toggle="tooltip" title="Bấm tải về mẫu tài liệu.">
+                                    <i class="icon icon-back"></i>Tải mẫu [Điều chỉnh ngày công, thưởng, đóng bhxh]
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <form method="post" action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.SanXuatTamUngPost" enctype="multipart/form-data">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <input type="file" name="files" class="form-control fUpload" />
+                                        </div>
+                                        <div class="col-md-8">
+                                            <input type="button" class="btn btn-danger btnUpload" value="Tải lên [Ứng lương]" />
+                                            <button class="btn btn-danger btn-upload-process d-none" type="button" disabled>
+                                                <i class="fas fa-spinner"></i>
+                                                Đang xử lý...
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <form method="post" action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.SanXuatNgayCongThuongBHXHPost" enctype="multipart/form-data">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <input type="file" name="files" class="form-control fUpload" />
+                                        </div>
+                                        <div class="col-md-8">
+                                            <input type="button" class="btn btn-danger btnUpload" value="Tải lên [Ngày làm việc, phép năm, lễ tết, thưởng, đóng bhxh]" />
+                                            <button class="btn btn-danger btn-upload-process d-none" type="button" disabled>
+                                                <i class="fas fa-spinner"></i>
+                                                Đang xử lý...
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <form method="post" action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Factory/@Constants.LinkSalary.SanXuatNgoaiGioPhuCapPost" enctype="multipart/form-data">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <input type="file" name="files" class="form-control fUpload" />
+                                        </div>
+                                        <div class="col-md-8">
+                                            <input type="button" class="btn btn-danger btnUpload" value="Tải lên [Tăng ca - Phụ cấp]" />
+                                            <button class="btn btn-danger btn-upload-process d-none" type="button" disabled>
+                                                <i class="fas fa-spinner"></i>
+                                                Đang xử lý...
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
                     </div>
 
@@ -311,7 +401,7 @@
 </div>
 
 @section scripts {
-    <script type="text/javascript" src="~/js/bang-luong-nha-may.js?@DateTime.Now.Ticks"></script>
+    <script type="text/javascript" src="~/js/bang-luong-nha-may.js?v-@DateTime.Now.Ticks"></script>
 }
 
 

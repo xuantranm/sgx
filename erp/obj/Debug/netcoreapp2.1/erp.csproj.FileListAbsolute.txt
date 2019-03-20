@@ -205,3 +205,11 @@ C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\erp.Views.pdb
 C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\erp.csproj.CopyComplete
 C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\SalaryFactory\Setting.g.cshtml.cs
 C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\SalaryProduction\Setting.g.cshtml.cs
+C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\Employee\Index - Copy.g.cshtml.cs
+C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\SalaryFactory\TheLuong.g.cshtml.cs
+C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\KeHoachTongHop\DuLieuBun.g.cshtml.cs
+C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\KeHoachTongHop\DuLieuDuAnCong.g.cshtml.cs
+C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\KeHoachTongHop\DuLieuKho.g.cshtml.cs
+C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\KeHoachTongHop\Index.g.cshtml.cs
+C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\KeHoachTongHop\DuLieuKho - Copy.g.cshtml.cs
+C:\Projects\Tribat\sourcecode\erp\obj\Debug\netcoreapp2.1\Razor\Views\Employee\Common\_ExtendPartial.g.cshtml.cs

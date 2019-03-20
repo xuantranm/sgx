@@ -19,6 +19,8 @@ using Models;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Serializers;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 namespace erp
 {
@@ -34,6 +36,10 @@ namespace erp
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            // https://edi.wang/post/2017/10/16/get-client-ip-aspnet-20
+            services.AddHttpContextAccessor();
+            services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
+
             services.Configure<FormOptions>(options =>
             {
                 options.ValueCountLimit = int.MaxValue;

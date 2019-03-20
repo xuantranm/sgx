@@ -57,6 +57,9 @@
         var rightLuongNhaMay = false;
         var rightLuongSanXuat = false;
         var rightNhaMay = false;
+        var rightDataKho = false;
+        var rightDataBun = false;
+        var rightDataDAC = false;
         var login = User.Identity.Name;
         if (!string.IsNullOrEmpty(login))
         {
@@ -74,6 +77,9 @@
             rightLuongNhaMay = Utility.IsRight(login, Constants.Rights.LuongNM, (int)ERights.View);
             rightLuongSanXuat = Utility.IsRight(login, Constants.Rights.LuongSX, (int)ERights.View);
             rightNhaMay = Utility.IsRight(login, Constants.Rights.NhaMay, (int)ERights.View);
+            rightDataKho = Utility.IsRight(login, "DataKho", (int)ERights.View);
+            rightDataBun = Utility.IsRight(login, "DataBun", (int)ERights.View);
+            rightDataDAC = Utility.IsRight(login, "DataDAC", (int)ERights.View);
         }
 
     }
@@ -84,11 +90,11 @@
             @ViewData["Disable"]
         </div>
     }
-        @*<div class="d-none d-lg-block">
+    @*<div class="d-none d-lg-block">
             <img style="position:absolute;top:0;right:0px;z-index:1002;" src="~/images/holidays/phaophai2019.png">
             <img style="position:absolute;top:0;left:0px;z-index:1002;" src="~/images/holidays/phaotrai2019.png">
         </div>*@
-   
+
     <div class="nav-container">
         <div class="bg-light navbar-light" data-sticky="top">
             <div class="container">
@@ -133,6 +139,36 @@
                                             <p class="text-small text-muted">Tình trạng gửi mail</p>
                                         </a>
 
+                                    </div>
+                                </li>
+                            }
+                            @if (rightDataKho || rightDataBun || rightDataDAC)
+                            {
+                                <li class="nav-item dropdown">
+                                    <a href="#" class="nav-link" role="button" data-toggle="dropdown"><i class="fas fa-cloud-download-alt"></i> KẾ HOẠCH TỔNG HỢP</a>
+                                    <div class="dropdown-menu" aria-labelledby="pagesDropdown">
+                                        @{
+                                            if (rightDataKho)
+                                            {
+                                                <a class="dropdown-item" href="/khth/du-lieu-kho">
+                                                    <span class="h6 mb-0">DỮ LIỆU KHO</span>
+                                                </a>
+                                                <div class="dropdown-divider"></div>
+                                            }
+                                            if (rightDataBun)
+                                            {
+                                                <a class="dropdown-item" href="/khth/du-lieu-bun">
+                                                    <span class="h6 mb-0">DỮ LIỆU BÙN</span>
+                                                </a>
+                                                <div class="dropdown-divider"></div>
+                                            }
+                                            if (rightDataDAC)
+                                            {
+                                                <a class="dropdown-item" href="/khth/du-lieu-du-an-cong">
+                                                    <span class="h6 mb-0">DỮ LIỆU DỰ ÁN CÔNG</span>
+                                                </a>
+                                            }
+                                        }
                                     </div>
                                 </li>
                             }
@@ -195,13 +231,6 @@
                                     </div>
                                 </li>
                             }
-                            <li class="nav-item dropdown d-none">
-                                <a class="nav-link dropdown-toggle" href="#" id="componentsDropdown" role="button" data-toggle="dropdown">Hướng dẫn</a>
-                                <div class="dropdown-menu" aria-labelledby="componentsDropdown">
-                                    <a class="dropdown-item" href="/tai-lieu/nhan-su">Nhân sự</a>
-                                    <a class="dropdown-item" href="/tai-lieu/hanh-chinh">Hành chính</a>
-                                </div>
-                            </li>
                             @if (isLogin)
                             {
                                 <li class="nav-item">
@@ -321,8 +350,8 @@
                                 <div class="d-none">
                                     @*<button class="btn btn-outline-primary"><i class="icon-add-user"></i> Theo dõi</button>*@
                                     @*<button class="btn btn-outline-primary">
-                                        <i class="icon-mail"></i>
-                                    </button>*@
+                                            <i class="icon-mail"></i>
+                                        </button>*@
                                 </div>
                             </div>
                         </div>
@@ -343,9 +372,9 @@
                                 </div>
                                 <div class="d-none">
                                     @*<button class="btn btn-outline-primary"><i class="icon-add-user"></i> Theo dõi</button>
-                                    <button class="btn btn-outline-primary">
-                                            <i class="icon-mail"></i>
-                                        </button>*@
+                                        <button class="btn btn-outline-primary">
+                                                <i class="icon-mail"></i>
+                                            </button>*@
                                 </div>
                             </div>
                         </script>
@@ -436,13 +465,13 @@
                                     </div>
                                 </a>
                                 @*<a class="list-group-item d-flex justify-content-between d-none" href="/@Constants.LinkNotication.Main/@Constants.LinkNotication.Index">
-                                    <div>
-                                        <span>Thông báo</span>
-                                    </div>
-                                    <div>
-                                        <i class="icon-chevron-right"></i>
-                                    </div>
-                                </a>*@
+                                        <div>
+                                            <span>Thông báo</span>
+                                        </div>
+                                        <div>
+                                            <i class="icon-chevron-right"></i>
+                                        </div>
+                                    </a>*@
 
                                 @if (rightNhaMay)
                                 {
@@ -545,12 +574,12 @@
                     <!--end of col-->
                     <div class="col-12 col-md-8">
                         @*<div class="alert alert-info text-small mb-0" role="alert">
-                            <i class="icon-shield"></i>
-                            <span>
-                                We will never distribute your email address to third parties. Read about email communication in our privacy policy.
-                            </span>
-                            <a href="/nhan-su/thong-tin">Xem thêm ›</a>
-                        </div>*@
+                                <i class="icon-shield"></i>
+                                <span>
+                                    We will never distribute your email address to third parties. Read about email communication in our privacy policy.
+                                </span>
+                                <a href="/nhan-su/thong-tin">Xem thêm ›</a>
+                            </div>*@
 
                         @RenderBody()
 
@@ -586,110 +615,110 @@
         </footer>
 
         @*<div class="d-none d-lg-block">
-            <img class="maidao lazyloaded img-responsive" data-original="~/images/holidays/maidao2019.png" src="~/images/holidays/maidao2019.png">
-        </div>*@
+                <img class="maidao lazyloaded img-responsive" data-original="~/images/holidays/maidao2019.png" src="~/images/holidays/maidao2019.png">
+            </div>*@
     </div>
 
-        <div class="alert alert-light d-none" role="alert">
-            Account beta testing: sysadmin - pwd: 06021988
-        </div>
+    <div class="alert alert-light d-none" role="alert">
+        Account beta testing: sysadmin - pwd: 06021988
+    </div>
 
-        <div class="modal fade" id="pwdModal" tabindex="-1" role="dialog" aria-labelledby="pwdModal" aria-hidden="true">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content" id="modalPwd">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLabel">Thay đổi mật khẩu</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <form class="data-form-change-pwd">
-                        <div class="modal-body">
-                            <div class="form-group">
-                                <label for="recipient-name" class="col-form-label">Mật khẩu mới:</label>
-                                <input type="password" class="form-control form-control-lg" name="newpassword" id="newpassword" />
-                                <span toggle="#newpassword" class="fa fa-fw fa-eye field-icon toggle-password"></span>
-                            </div>
-                            <div class="form-group">
-                                <label for="message-text" class="col-form-label">Nhập lại mật khẩu mới:</label>
-                                <input type="password" class="form-control form-control-lg" id="renewpassword" />
-                                <span toggle="#renewpassword" class="fa fa-fw fa-eye field-icon toggle-password"></span>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
-                            <button type="button" class="btn btn-primary btn-save-pwd">Lưu mật khẩu mới</button>
-                        </div>
-                    </form>
+    <div class="modal fade" id="pwdModal" tabindex="-1" role="dialog" aria-labelledby="pwdModal" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content" id="modalPwd">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Thay đổi mật khẩu</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
                 </div>
+                <form class="data-form-change-pwd">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="recipient-name" class="col-form-label">Mật khẩu mới:</label>
+                            <input type="password" class="form-control form-control-lg" name="newpassword" id="newpassword" />
+                            <span toggle="#newpassword" class="fa fa-fw fa-eye field-icon toggle-password"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="message-text" class="col-form-label">Nhập lại mật khẩu mới:</label>
+                            <input type="password" class="form-control form-control-lg" id="renewpassword" />
+                            <span toggle="#renewpassword" class="fa fa-fw fa-eye field-icon toggle-password"></span>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                        <button type="button" class="btn btn-primary btn-save-pwd">Lưu mật khẩu mới</button>
+                    </div>
+                </form>
             </div>
         </div>
+    </div>
 
-        <input type="hidden" value=""
-               name="clientScreenHeight" id="clientScreenHeight" />
-        <input type="hidden" value=""
-               name="clientScreenWidth" id="clientScreenWidth" />
+    <input type="hidden" value=""
+           name="clientScreenHeight" id="clientScreenHeight" />
+    <input type="hidden" value=""
+           name="clientScreenWidth" id="clientScreenWidth" />
 
 
-        <script>
-            $(document).ready(function () {
-                $("#clientScreenWidth").val($(window).width());
-                $("#clientScreenHeight").val($(window).height());
-            });
-        </script>
-        <script type="text/javascript" src="~/lib/jquery-ui-1.12.1/jquery-ui.min.js"></script>
-        <script type="text/javascript" src="~/lib/popper/popper.min.js"></script>
-        <script type="text/javascript" src="~/assets/wingman/js/jquery.smartWizard.min.js"></script>
-        <script type="text/javascript" src="~/lib/flickity/flickity.pkgd.min.js"></script>
-        <script type="text/javascript" src="~/assets/wingman/js/scrollMonitor.js"></script>
-        <script type="text/javascript" src="~/lib/smooth-scroll/smooth-scroll.polyfills.min.js"></script>
-        <script type="text/javascript" src="~/lib/prism/prism.min.js"></script>
-        <script type="text/javascript" src="~/lib/zoom/zoom-vanilla.min.js"></script>
-        <script type="text/javascript" src="~/lib/bootstrap-4.0.0-dist/js/bootstrap.min.js"></script>
-        <script type="text/javascript" src="~/assets/wingman/js/theme.js"></script>
-        @*<script type="text/javascript" src="~/lib/jquery-autocomplete/jquery.autocomplete.min.js"></script>*@
-        <script type="text/javascript" src="~/lib/bootstrap-multiselect/dist/js/bootstrap-multiselect.js"></script>
-        <script type="text/javascript" src="~/lib/autosize/jquery.textarea_autosize.js"></script>
-        <script type="text/javascript" src="~/lib/bootstrap-datepicker-1.6.4-dist/js/bootstrap-datepicker.min.js"></script>
-        <script type="text/javascript" src="~/lib/bootstrap-datepicker-1.6.4-dist/locales/bootstrap-datepicker.vi.min.js" charset="UTF-8"></script>
-        <script type="text/javascript" src="~/lib/moment/moment.min.js"></script>
-        <script type="text/javascript" src="~/lib/moment/moment-with-locales.min.js"></script>
-        <script type="text/javascript" src="~/lib/chart.js/Chart.min.js"></script>
-        <script type="text/javascript" src="~/lib/autoNumber-4-1/autoNumeric.js"></script>
-        <script type="text/javascript" src="~/lib/accounting.js/accounting.min.js"></script>
-        <script type="text/javascript" src="~/lib/toastr/toastr.min.js"></script>
-        <script type="text/javascript" src="~/lib/daterangepicker/daterangepicker.js"></script>
-        <script type="text/javascript" src="~/lib/datetimepicker-tempusdominus/js/tempusdominus-bootstrap-4.min.js"></script>
-        <script type="text/javascript" src="~/lib/js-render/jsrender.min.js"></script>
-        <script type="text/javascript" src="~/lib/select2/select2.min.js"></script>
-        <script type="text/javascript" src="~/lib/jquery.floatThead/dist/jquery.floatThead.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $("#clientScreenWidth").val($(window).width());
+            $("#clientScreenHeight").val($(window).height());
+        });
+    </script>
+    <script type="text/javascript" src="~/lib/jquery-ui-1.12.1/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="~/lib/popper/popper.min.js"></script>
+    <script type="text/javascript" src="~/assets/wingman/js/jquery.smartWizard.min.js"></script>
+    <script type="text/javascript" src="~/lib/flickity/flickity.pkgd.min.js"></script>
+    <script type="text/javascript" src="~/assets/wingman/js/scrollMonitor.js"></script>
+    <script type="text/javascript" src="~/lib/smooth-scroll/smooth-scroll.polyfills.min.js"></script>
+    <script type="text/javascript" src="~/lib/prism/prism.min.js"></script>
+    <script type="text/javascript" src="~/lib/zoom/zoom-vanilla.min.js"></script>
+    <script type="text/javascript" src="~/lib/bootstrap-4.0.0-dist/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="~/assets/wingman/js/theme.js"></script>
+    @*<script type="text/javascript" src="~/lib/jquery-autocomplete/jquery.autocomplete.min.js"></script>*@
+    <script type="text/javascript" src="~/lib/bootstrap-multiselect/dist/js/bootstrap-multiselect.js"></script>
+    <script type="text/javascript" src="~/lib/autosize/jquery.textarea_autosize.js"></script>
+    <script type="text/javascript" src="~/lib/bootstrap-datepicker-1.6.4-dist/js/bootstrap-datepicker.min.js"></script>
+    <script type="text/javascript" src="~/lib/bootstrap-datepicker-1.6.4-dist/locales/bootstrap-datepicker.vi.min.js" charset="UTF-8"></script>
+    <script type="text/javascript" src="~/lib/moment/moment.min.js"></script>
+    <script type="text/javascript" src="~/lib/moment/moment-with-locales.min.js"></script>
+    <script type="text/javascript" src="~/lib/chart.js/Chart.min.js"></script>
+    <script type="text/javascript" src="~/lib/autoNumber-4-1/autoNumeric.js"></script>
+    <script type="text/javascript" src="~/lib/accounting.js/accounting.min.js"></script>
+    <script type="text/javascript" src="~/lib/toastr/toastr.min.js"></script>
+    <script type="text/javascript" src="~/lib/daterangepicker/daterangepicker.js"></script>
+    <script type="text/javascript" src="~/lib/datetimepicker-tempusdominus/js/tempusdominus-bootstrap-4.min.js"></script>
+    <script type="text/javascript" src="~/lib/js-render/jsrender.min.js"></script>
+    <script type="text/javascript" src="~/lib/select2/select2.min.js"></script>
+    <script type="text/javascript" src="~/lib/jquery.floatThead/dist/jquery.floatThead.min.js"></script>
 
-        <script type="text/javascript" src="~/js/site.js?@DateTime.Now.Ticks"></script>
+    <script type="text/javascript" src="~/js/site.js?@DateTime.Now.Ticks"></script>
 
-        @RenderSection("scripts", required: false)
+    @RenderSection("scripts", required: false)
 
-        <!--Start of Tawk.to Script-->
-        <script type="text/javascript">
-            var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
-            (function () {
-                var s1 = document.createElement("script"), s0 = document.getElementsByTagName("script")[0];
-                s1.async = true;
-                s1.src = 'https://embed.tawk.to/5adae73a227d3d7edc242b43/default';
-                s1.charset = 'UTF-8';
-                s1.setAttribute('crossorigin', '*');
-                s0.parentNode.insertBefore(s1, s0);
-            })();
-        </script>
-        <!--End of Tawk.to Script-->
+    <!--Start of Tawk.to Script-->
+    <script type="text/javascript">
+        var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
+        (function () {
+            var s1 = document.createElement("script"), s0 = document.getElementsByTagName("script")[0];
+            s1.async = true;
+            s1.src = 'https://embed.tawk.to/5adae73a227d3d7edc242b43/default';
+            s1.charset = 'UTF-8';
+            s1.setAttribute('crossorigin', '*');
+            s0.parentNode.insertBefore(s1, s0);
+        })();
+    </script>
+    <!--End of Tawk.to Script-->
 
-        <script type="text/javascript">
-            $(document).ready(function () {
-                console.log("Time until DOMready: ", Date.now() - start);
-            });
-            $(window).on("load", function () {
-                console.log("Time until everything loaded: ", Date.now() - start);
-            });
-        </script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            console.log("Time until DOMready: ", Date.now() - start);
+        });
+        $(window).on("load", function () {
+            console.log("Time until everything loaded: ", Date.now() - start);
+        });
+    </script>
 </body>
 
 </html>

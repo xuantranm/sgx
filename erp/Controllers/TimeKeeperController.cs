@@ -586,7 +586,7 @@ namespace erp.Controllers
                 new EmailAddress { Name = approveEntity.FullName, Address = approveEntity.Email }
             };
             var phone = string.Empty;
-            if (employee.Mobiles != null & employee.Mobiles.Count > 0)
+            if (employee.Mobiles != null && employee.Mobiles.Count > 0)
             {
                 phone = employee.Mobiles[0].Number;
             }

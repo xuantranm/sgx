@@ -31,6 +31,15 @@ namespace Data
         }
 
         #region Location
+        public IMongoCollection<Ip> Ips
+        {
+            get
+            {
+                return _database.GetCollection<Ip>("Ips");
+            }
+        }
+
+
         public IMongoCollection<Country> Countries
         {
             get

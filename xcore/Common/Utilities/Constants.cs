@@ -5,6 +5,8 @@ namespace Common.Utilities
 {
     public static class Constants
     {
+        public static string VersionJs = "v-" + DateTime.Now.Ticks;
+
         public static string Truncate(this string value, int maxChars)
         {
             if (!string.IsNullOrEmpty(value))
@@ -87,7 +89,7 @@ namespace Common.Utilities
             public const string LuongNM = "luong-nha-may";
             public const string LuongSX = "luong-san-xuat";
             public const string LuongVP = "luong-van-phong";
-            
+
             public const string XinNghiPhepDum = "xin-nghi-phep-dum";
             public const string XacNhanNghiPhep = "xac-nhan-nghi-phep";
 
@@ -200,6 +202,16 @@ namespace Common.Utilities
             public const string OvertimeTemplate = "bang-tang-ca-mau";
 
             public const string OvertimeTemplateFull = "bang-tang-ca-mau-full";
+        }
+
+        public static class KeHoachTongHopLink
+        {
+            public const string Main = "khth";
+            public const string DuLieuKho = "du-lieu-kho";
+            public const string DuLieuKhoNhap = "du-lieu-kho";
+
+            public const string DuLieuBun = "du-lieu-bun";
+            public const string DuLieuDuAnCong = "du-lieu-du-an-cong";
         }
 
         public static class LinkSalary
@@ -601,21 +613,29 @@ namespace Common.Utilities
             }
         }
 
+        //Send = 0,
+        //Ok = 1,
+        //Fail = 2,
+        //Resend = 3,
+        //Schedule = 4,
+        //ScheduleASAP = 5
         // 0: send | 1: ok | 2: fail, 3: make resend
         public static string EmailStatus(int status)
         {
             switch (status)
             {
-                case 0:
-                    return "Gửi";
                 case 1:
                     return "Thành công";
                 case 2:
                     return "Lỗi";
                 case 3:
                     return "Gửi lại";
+                case 4:
+                    return "Lên lịch";
+                case 5:
+                    return "Gửi Gấp";
                 default:
-                    return string.Empty;
+                    return "Gửi";
             }
         }
 

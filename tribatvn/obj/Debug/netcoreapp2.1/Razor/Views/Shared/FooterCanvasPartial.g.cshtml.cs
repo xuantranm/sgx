@@ -87,7 +87,7 @@ using ViewModels;
             WriteLiteral("                            ");
             EndContext();
             BeginContext(771, 75, false);
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("img", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.SelfClosing, "e8cabf40848a418db26c091f194ee083", async() => {
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("img", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.SelfClosing, "c6376610c52648f4a318fd07075e3ce5", async() => {
             }
             );
             __Microsoft_AspNetCore_Mvc_Razor_TagHelpers_UrlResolutionTagHelper = CreateTagHelper<global::Microsoft.AspNetCore.Mvc.Razor.TagHelpers.UrlResolutionTagHelper>();
@@ -278,7 +278,7 @@ WriteAttributeValue("", 3159, news.Url, 3159, 9, false);
                         ");
             EndContext();
             BeginContext(5601, 852, false);
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("form", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "4215ddff85924750acedd957be5c3ed8", async() => {
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("form", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "24f68c54e41546b999bff0c26326322f", async() => {
                 BeginContext(5714, 732, true);
                 WriteLiteral(@"
                             <div class=""input-group divcenter"">

@@ -19,11 +19,6 @@ namespace ViewModels
 
         public Employee Manager { get; set; }
 
-        #region Salaries
-        public IList<NgachLuong> NgachLuongs { get; set; }
-        public IList<SalaryThangBangLuong> ThangBangLuongs { get; set; }
-        #endregion
-
         #region Email
         // In Edit, Flag Welcome or Edit
         public bool EmailSend { get; set; }
@@ -51,5 +46,11 @@ namespace ViewModels
         public IList<BoPhan> BoPhanCons { get; set; }
 
         public IList<ChucVu> ChucVus { get; set; }
+
+        public IList<WorkTimeType> WorkTimeTypes { get; set; }
+
+        public IList<BHYTHospital> Hospitals { get; set; }
+
+        public IList<ContractType> Contracts { get; set; }
     }
 }

@@ -31,8 +31,10 @@ namespace xdatafix
 
             //FixEmailLeave(connection, database);
 
-            UpdateEmployeeStructure(connection, database);
-
+            //UpdateEmployeeStructure(connection, database);
+            //FixStructure(connection, database);
+            FixStructureInitBP(connection, database);
+            FixEmployeeData(connection, database);
             //UpdateEmployeeDepartmentAlias(connection, database);
             //UpdateTimerDepartmentAlias(connection, database);
             //UpdateTimekeepingCode(connection, database);
@@ -67,6 +69,92 @@ namespace xdatafix
         }
 
         #region ERP
+
+        static void FixEmployeeData(string connection, string database)
+        {
+            #region Connection, Setting & Filter
+            MongoDBContext.ConnectionString = connection;
+            MongoDBContext.DatabaseName = database;
+            MongoDBContext.IsSSL = true;
+            MongoDBContext dbContext = new MongoDBContext();
+            #endregion
+
+            var congTyChiNhanhVP = dbContext.CongTyChiNhanhs.Find(m => m.Code.Equals("CT1")).FirstOrDefault().Id;
+
+            var builder = Builders<Employee>.Filter;
+            var filter = builder.Eq(m => m.Email, "huy.lt@tribat.vn");
+            var update = Builders<Employee>.Update
+                .Set(m => m.CongTyChiNhanh, congTyChiNhanhVP);
+            dbContext.Employees.UpdateOne(filter, update);
+        }
+
+        static void FixStructureInitBP(string connection, string database)
+        {
+            #region Connection, Setting & Filter
+            MongoDBContext.ConnectionString = connection;
+            MongoDBContext.DatabaseName = database;
+            MongoDBContext.IsSSL = true;
+            MongoDBContext dbContext = new MongoDBContext();
+            #endregion
+
+            var congTyChiNhanhVP = dbContext.CongTyChiNhanhs.Find(m => m.Code.Equals("CT1")).FirstOrDefault().Id;
+            var khoiChucNangVP = dbContext.KhoiChucNangs.Find(m => m.Code.Equals("KHOI1")).FirstOrDefault().Id;
+            var phongBanKinhDoanh = dbContext.PhongBans.Find(m => m.Name.Equals("PHÒNG KINH DOANH")).FirstOrDefault().Id;
+
+            var nameBoPhan = "Trade Marketing";
+            var lastestBoPhan = dbContext.BoPhans.Find(m => m.Enable.Equals(true)).SortByDescending(m => m.Order).Limit(1).FirstOrDefault();
+            var lastestCode = lastestBoPhan != null ? lastestBoPhan.Order + 1 : 1;
+            var boPhanEntity = new BoPhan()
+            {
+                PhongBanId = phongBanKinhDoanh,
+                Code = "BOPHAN" + lastestCode,
+                Name = nameBoPhan,
+                Alias = Utility.AliasConvert(nameBoPhan),
+                Order = lastestCode
+            };
+            dbContext.BoPhans.InsertOne(boPhanEntity);
+
+            //vitri
+            var viTri = "Trưởng Bộ Phận Trade Marketing";
+            var lastestChucVu = dbContext.ChucVus.Find(m => m.Enable.Equals(true)).SortByDescending(m => m.Order).Limit(1).FirstOrDefault();
+            lastestCode = lastestChucVu != null ? lastestChucVu.Order + 1 : 1;
+            var chucVuEntity = new ChucVu()
+            {
+                CongTyChiNhanhId = congTyChiNhanhVP,
+                KhoiChucNangId = khoiChucNangVP,
+                PhongBanId = phongBanKinhDoanh,
+                BoPhanId = boPhanEntity.Id,
+                Code = "CHUCVU" + lastestCode,
+                Name = viTri,
+                Alias = Utility.AliasConvert(viTri),
+                Order = lastestCode
+            };
+            dbContext.ChucVus.InsertOne(chucVuEntity);
+        }
+
+        static void FixStructure(string connection, string database)
+        {
+            #region Connection, Setting & Filter
+            MongoDBContext.ConnectionString = connection;
+            MongoDBContext.DatabaseName = database;
+            MongoDBContext.IsSSL = true;
+            MongoDBContext dbContext = new MongoDBContext();
+            #endregion
+
+            var employees = dbContext.Employees.Find(m => string.IsNullOrEmpty(m.PhongBan)).ToList();
+            foreach(var employee in employees)
+            {
+                var filterHis = Builders<Employee>.Filter.Eq(m => m.Id, employee.Id);
+                var updateHis = Builders<Employee>.Update
+                    .Set(m => m.CongTyChiNhanh, string.Empty)
+                    .Set(m => m.KhoiChucNang, string.Empty)
+                    .Set(m => m.PhongBan, string.Empty)
+                    .Set(m => m.BoPhan, string.Empty)
+                    .Set(m => m.BoPhanCon, string.Empty);
+                dbContext.Employees.UpdateMany(filterHis, updateHis);
+            }
+        }
+
         static void UpdateEmployeeStructure(string connection, string database)
         {
             #region Connection, Setting & Filter
@@ -95,7 +183,7 @@ namespace xdatafix
             name = "Nhà máy Xử lý bùn thải Sài Gòn Xanh";
             dbContext.CongTyChiNhanhs.InsertOne(new CongTyChiNhanh()
             {
-                Code = "CT"+ i,
+                Code = "CT" + i,
                 Name = name,
                 Alias = Utility.AliasConvert(name),
                 Address = "Ấp 1, xã Đa Phước, huyện Bình Chánh",
@@ -108,26 +196,6 @@ namespace xdatafix
             var CongTyChiNhanhNM = dbContext.CongTyChiNhanhs.Find(m => m.Code.Equals("CT2")).FirstOrDefault().Id;
             dbContext.KhoiChucNangs.DeleteMany(m => true);
             i = 1;
-            name = "KHỐI QUẢN TRỊ TỔNG HỢP";
-            dbContext.KhoiChucNangs.InsertOne(new KhoiChucNang()
-            {
-                CongTyChiNhanhId = CongTyChiNhanhNM,
-                Code = "KHOI"+ i,
-                Name = name,
-                Alias = Utility.AliasConvert(name),
-                Order = i
-            });
-            i++;
-            name = "KHỐI SẢN XUẤT";
-            dbContext.KhoiChucNangs.InsertOne(new KhoiChucNang()
-            {
-                CongTyChiNhanhId = CongTyChiNhanhNM,
-                Code = "KHOI" + i,
-                Name = name,
-                Alias = Utility.AliasConvert(name),
-                Order = i
-            });
-            i++;
             name = "KHỐI VĂN PHÒNG";
             dbContext.KhoiChucNangs.InsertOne(new KhoiChucNang()
             {
@@ -138,13 +206,132 @@ namespace xdatafix
                 Order = i
             });
             i++;
+
+            name = "KHỐI QUẢN TRỊ TỔNG HỢP";
+            dbContext.KhoiChucNangs.InsertOne(new KhoiChucNang()
+            {
+                CongTyChiNhanhId = CongTyChiNhanhNM,
+                Code = "KHOI" + i,
+                Name = name,
+                Alias = Utility.AliasConvert(name),
+                Order = i
+            });
+            i++;
+
+            name = "KHỐI SẢN XUẤT";
+            dbContext.KhoiChucNangs.InsertOne(new KhoiChucNang()
+            {
+                CongTyChiNhanhId = CongTyChiNhanhNM,
+                Code = "KHOI" + i,
+                Name = name,
+                Alias = Utility.AliasConvert(name),
+                Order = i
+            });
+            i++;
             #endregion
 
-            #region PhongBan
+            dbContext.PhongBans.DeleteMany(m => true);
+            dbContext.BoPhans.DeleteMany(m => true);
+            dbContext.ChucVus.DeleteMany(m => true);
+
+            #region VAN PHONG
+            var congTyChiNhanhVP = dbContext.CongTyChiNhanhs.Find(m => m.Code.Equals("CT1")).FirstOrDefault().Id;
+            var khoiChucNangVP = dbContext.KhoiChucNangs.Find(m => m.Code.Equals("KHOI1")).FirstOrDefault().Id;
+            var employeesVp = dbContext.Employees.Find(m => !m.Department.Equals("NHÀ MÁY") && !m.UserName.Equals(Constants.System.account)).ToList();
+            //Departments
+            foreach (var employee in employeesVp)
+            {
+                var phongBanId = string.Empty;
+                var boPhanId = string.Empty;
+                var boPhanConId = string.Empty;
+                var chucVuId = string.Empty;
+                // Phong Ban  <=> Departments
+                if (!string.IsNullOrEmpty(employee.Department))
+                {
+                    var phongBanEntity = dbContext.PhongBans.Find(m => m.Name.Equals(employee.Department.ToUpper()) && m.Enable.Equals(true)).FirstOrDefault();
+                    if (phongBanEntity == null)
+                    {
+                        var lastestPhongBan = dbContext.PhongBans.Find(m => m.Enable.Equals(true)).SortByDescending(m => m.Order).Limit(1).FirstOrDefault();
+                        var lastestCode = lastestPhongBan != null ? lastestPhongBan.Order + 1 : 1;
+                        phongBanEntity = new PhongBan()
+                        {
+                            KhoiChucNangId = khoiChucNangVP,
+                            Code = "PHONGBAN" + lastestCode,
+                            Name = employee.Department,
+                            Alias = Utility.AliasConvert(employee.Department),
+                            Order = lastestCode
+                        };
+                        dbContext.PhongBans.InsertOne(phongBanEntity);
+                    }
+                    phongBanId = phongBanEntity.Id;
+                }
+
+                // Bo Phan
+                if (!string.IsNullOrEmpty(employee.Part))
+                {
+                    var boPhanEntity = dbContext.BoPhans.Find(m => m.Name.Equals(employee.Part.ToUpper()) && m.Enable.Equals(true)).FirstOrDefault();
+                    if (boPhanEntity == null)
+                    {
+                        var lastestBoPhan = dbContext.BoPhans.Find(m => m.Enable.Equals(true)).SortByDescending(m => m.Order).Limit(1).FirstOrDefault();
+                        var lastestCode = lastestBoPhan != null ? lastestBoPhan.Order + 1 : 1;
+                        boPhanEntity = new BoPhan()
+                        {
+                            PhongBanId = phongBanId,
+                            Code = "BOPHAN" + lastestCode,
+                            Name = employee.Part,
+                            Alias = Utility.AliasConvert(employee.Part),
+                            Order = lastestCode
+                        };
+                        dbContext.BoPhans.InsertOne(boPhanEntity);
+                    }
+                    boPhanId = boPhanEntity.Id;
+                }
+
+                // Chuc vu
+                if (!string.IsNullOrEmpty(employee.Title))
+                {
+                    var chucVuEntity = dbContext.ChucVus.Find(m => m.Name.Equals(employee.Title.ToUpper()) && m.Enable.Equals(true)).FirstOrDefault();
+                    if (chucVuEntity == null)
+                    {
+                        var lastestChucVu = dbContext.ChucVus.Find(m => m.Enable.Equals(true)).SortByDescending(m => m.Order).Limit(1).FirstOrDefault();
+                        var lastestCode = lastestChucVu != null ? lastestChucVu.Order + 1 : 1;
+                        chucVuEntity = new ChucVu()
+                        {
+                            CongTyChiNhanhId = CongTyChiNhanhVP,
+                            KhoiChucNangId = khoiChucNangVP,
+                            PhongBanId = phongBanId,
+                            BoPhanId = boPhanId,
+                            Code = "CHUCVU" + lastestCode,
+                            Name = employee.Title,
+                            Alias = Utility.AliasConvert(employee.Title),
+                            Order = lastestCode
+                        };
+                        dbContext.ChucVus.InsertOne(chucVuEntity);
+                    }
+                    chucVuId = chucVuEntity.Id;
+                }
+
+                var builder = Builders<Employee>.Filter;
+                var filter = builder.Eq(m => m.Id, employee.Id);
+                var update = Builders<Employee>.Update
+                    .Set(m => m.CongTyChiNhanh, congTyChiNhanhVP)
+                    .Set(m => m.KhoiChucNang, khoiChucNangVP)
+                    .Set(m => m.PhongBan, phongBanId)
+                    .Set(m => m.BoPhan, boPhanId)
+                    .Set(m => m.BoPhanCon, boPhanConId)
+                    .Set(m => m.ChucVu, chucVuId);
+                dbContext.Employees.UpdateOne(filter, update);
+            }
+            #endregion
+
+            #region PhongBan NM
             var KhoiQuanTriTongHop = dbContext.KhoiChucNangs.Find(m => m.Name.Equals("KHỐI QUẢN TRỊ TỔNG HỢP")).FirstOrDefault().Id;
             var KhoiSanXuat = dbContext.KhoiChucNangs.Find(m => m.Name.Equals("KHỐI SẢN XUẤT")).FirstOrDefault().Id;
-            dbContext.PhongBans.DeleteMany(m => true);
-            i = 1;
+
+            var lastestPhongBan2 = dbContext.PhongBans.Find(m => m.Enable.Equals(true)).SortByDescending(m => m.Order).Limit(1).FirstOrDefault();
+            var lastestCode2 = lastestPhongBan2 != null ? lastestPhongBan2.Order + 1 : 1;
+
+            i = lastestCode2;
             name = "PHÒNG QUẢN TRỊ SẢN XUẤT";
             dbContext.PhongBans.InsertOne(new PhongBan()
             {
@@ -208,13 +395,14 @@ namespace xdatafix
             #endregion
 
             #region BoPhan
-            dbContext.BoPhans.DeleteMany(m => true);
+            
             #endregion
 
             #region ChucVu
-            dbContext.ChucVus.DeleteMany(m => true);
+            
             #endregion
 
+            #region NHA MAY
             // Put file in ""
             //Create COM Objects.
             Application excelApp = new Application();
@@ -232,7 +420,22 @@ namespace xdatafix
             int cols = excelRange.Columns.Count;
 
             var congTyChiNhanhId = dbContext.CongTyChiNhanhs.Find(m => m.Code.Equals("CT2")).FirstOrDefault().Id;
-            for (i = 3; i <= rows; i++)
+            // UPDATE BOSS
+            var employeeHuy = dbContext.Employees.Find(m => m.FullName.Equals("Lê Thanh Huy")).FirstOrDefault();
+            if (employeeHuy != null)
+            {
+                var filter = Builders<Employee>.Filter.Eq(m => m.Id, employeeHuy.Id);
+                var update = Builders<Employee>.Update
+                    .Set(m => m.CongTyChiNhanh, congTyChiNhanhId);
+                dbContext.Employees.UpdateMany(filter, update);
+
+                var filterHis = Builders<Employee>.Filter.Eq(m => m.EmployeeId, employeeHuy.Id);
+                var updateHis = Builders<Employee>.Update
+                    .Set(m => m.CongTyChiNhanh, congTyChiNhanhId);
+                dbContext.EmployeeHistories.UpdateMany(filterHis, updateHis);
+            }
+
+            for (i = 2; i <= rows; i++)
             {
                 Console.Write("\r\n");
                 var khoichucnang = string.Empty;
@@ -283,12 +486,21 @@ namespace xdatafix
                 {
                     ghichu = excelRange.Cells[i, y].Value2.ToString();
                 }
-                var khoiChucNangId = dbContext.KhoiChucNangs.Find(m => m.Name.Equals(khoichucnang)).FirstOrDefault().Id;
-                var phongBanId = dbContext.PhongBans.Find(m => m.Name.Equals(phongban)).FirstOrDefault().Id;
 
+
+                var khoiChucNangId = string.Empty;
+                var phongBanId = string.Empty;
                 var boPhanId = string.Empty;
                 var boPhanConId = string.Empty;
                 var chucVuId = string.Empty;
+                if (!string.IsNullOrEmpty(khoichucnang))
+                {
+                    khoiChucNangId = dbContext.KhoiChucNangs.Find(m => m.Name.Equals(khoichucnang)).FirstOrDefault().Id;
+                }
+                if (!string.IsNullOrEmpty(khoichucnang))
+                {
+                    phongBanId = dbContext.PhongBans.Find(m => m.Name.Equals(phongban)).FirstOrDefault().Id;
+                }
                 if (!string.IsNullOrEmpty(bophan))
                 {
                     var boPhanEntity = dbContext.BoPhans.Find(m => m.Name.Equals(bophan) && string.IsNullOrEmpty(m.Parent) && m.Enable.Equals(true)).FirstOrDefault();
@@ -299,7 +511,7 @@ namespace xdatafix
                         boPhanEntity = new BoPhan()
                         {
                             PhongBanId = phongBanId,
-                            Code = "BP" + lastestCode,
+                            Code = "BOPHAN" + lastestCode,
                             Name = bophan,
                             Alias = Utility.AliasConvert(bophan),
                             Order = lastestCode
@@ -317,7 +529,7 @@ namespace xdatafix
                             var lastestCode = lastestBoPhan != null ? lastestBoPhan.Order + 1 : 1;
                             boPhanConEntity = new BoPhan()
                             {
-                                Code = "BPC" + lastestCode,
+                                Code = "BOPHANC" + lastestCode,
                                 Name = bophancon,
                                 Alias = Utility.AliasConvert(bophancon),
                                 Order = lastestCode,
@@ -328,7 +540,7 @@ namespace xdatafix
                         boPhanConId = boPhanConEntity.Id;
                     }
                 }
-                
+
                 if (!string.IsNullOrEmpty(chucvu))
                 {
                     var chucVuEntity = dbContext.ChucVus.Find(m => m.Name.Equals(chucvu) && m.Enable.Equals(true)).FirstOrDefault();
@@ -342,7 +554,7 @@ namespace xdatafix
                             KhoiChucNangId = khoiChucNangId,
                             PhongBanId = phongBanId,
                             BoPhanId = boPhanConId,
-                            Code = "CV" + lastestCode,
+                            Code = "CHUCVU" + lastestCode,
                             Name = chucvu,
                             Alias = Utility.AliasConvert(chucvu),
                             Order = lastestCode
@@ -424,44 +636,7 @@ namespace xdatafix
             //after reading, relaase the excel project
             excelApp.Quit();
             System.Runtime.InteropServices.Marshal.ReleaseComObject(excelApp);
-
-            // Update VP
-            var congTyChiNhanhVP = dbContext.CongTyChiNhanhs.Find(m => m.Code.Equals("CT1")).FirstOrDefault().Id;
-            var khoiChucNangVP = dbContext.KhoiChucNangs.Find(m => m.Code.Equals("KHOI3")).FirstOrDefault().Id;
-            var employeesVp = dbContext.Employees.Find(m => m.Enable.Equals(true) && string.IsNullOrEmpty(m.KhoiChucNang)).ToList();
-            //Departments
-            foreach(var employee in employeesVp)
-            {
-                var phongBanId = string.Empty;
-                var boPhanId = string.Empty;
-                var boPhanConId = string.Empty;
-                var chucVuId = string.Empty;
-                // Phong Ban  <=> Departments
-                if (!string.IsNullOrEmpty(employee.Department))
-                {
-                    var phongBanEntity = dbContext.PhongBans.Find(m => m.Name.Equals(employee.Department.ToUpper()) && m.Enable.Equals(true)).FirstOrDefault();
-                    if (phongBanEntity == null)
-                    {
-                        var lastestPhongBan = dbContext.PhongBans.Find(m => m.Enable.Equals(true)).SortByDescending(m => m.Order).Limit(1).FirstOrDefault();
-                        var lastestCode = lastestPhongBan != null ? lastestPhongBan.Order + 1 : 1;
-                        phongBanEntity = new PhongBan()
-                        {
-                            KhoiChucNangId = khoiChucNangVP,
-                            Code = "PHONGBAN" + lastestCode,
-                            Name = employee.Department,
-                            Alias = Utility.AliasConvert(employee.Department),
-                            Order = lastestCode
-                        };
-                        dbContext.PhongBans.InsertOne(phongBanEntity);
-                    }
-                    phongBanId = phongBanEntity.Id;
-                }
-                // Bo Phan
-
-                // Chuc vu
-
-
-            }
+            #endregion
         }
 
         static void UpdateLocationTimer(string connection, string database)
@@ -700,7 +875,7 @@ namespace xdatafix
             MongoDBContext dbContext = new MongoDBContext();
             #endregion
 
-            dbContext.ProductSales.DeleteMany(m=>true);
+            dbContext.ProductSales.DeleteMany(m => true);
 
             #region Product VI
             dbContext.ProductSales.InsertOne(new ProductSale()
@@ -1126,7 +1301,7 @@ namespace xdatafix
             #endregion
 
             chucvu = string.IsNullOrEmpty(chucvu) ? "CÔNG NHÂN" : chucvu.ToUpper();
-            DateTime joinday = string.IsNullOrEmpty(ngayvaolam) ? DateTime.Now: DateTime.FromOADate(Convert.ToDouble(ngayvaolam));
+            DateTime joinday = string.IsNullOrEmpty(ngayvaolam) ? DateTime.Now : DateTime.FromOADate(Convert.ToDouble(ngayvaolam));
 
             var entity = new Employee
             {
@@ -1460,7 +1635,7 @@ namespace xdatafix
                 {
                     dongiaM3 = Math.Round(Convert.ToDecimal(excelRange.Cells[i, 11].Value2.ToString()), 2);
                 }
-                var dongiatangcaM3 = Convert.ToDecimal((double)dongiaM3 * (1 +  dongiatangcaphantram / 100));
+                var dongiatangcaM3 = Convert.ToDecimal((double)dongiaM3 * (1 + dongiatangcaphantram / 100));
 
                 var factoryProduct = dbContext.FactoryProducts.Find(m => m.Code.Equals(ma)).FirstOrDefault();
                 var id = factoryProduct.Id;
@@ -1604,7 +1779,7 @@ namespace xdatafix
 
             var leaves = dbContext.Leaves.Find(m => listLeave.Contains(m.Id)).ToList();
 
-            foreach(var entity in leaves)
+            foreach (var entity in leaves)
             {
                 var employee = dbContext.Employees.Find(m => m.Id.Equals(entity.EmployeeId)).FirstOrDefault();
 
@@ -1622,7 +1797,7 @@ namespace xdatafix
                 }
                 var webRoot = Environment.CurrentDirectory;
                 var pathToFile = @"C:\Projects\App.Schedule\Templates\LeaveRequest.html";
-                
+
                 var subject = "Xác nhận nghỉ phép.";
                 var requester = employee.FullName;
                 var var3 = employee.FullName;

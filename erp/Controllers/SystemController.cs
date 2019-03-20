@@ -80,6 +80,7 @@ namespace erp.Controllers
 
             var pages = 1;
             var records = dbContext.ScheduleEmails.CountDocuments(filter);
+            
             if (records > 0 && records > Size)
             {
                 pages = (int)Math.Ceiling((double)records / (double)Size);
@@ -88,8 +89,16 @@ namespace erp.Controllers
                     Page = 1;
                 }
             }
-           
-            var list = dbContext.ScheduleEmails.Find(filter).Sort(sortBuilder).Skip((Page - 1) * Size).Limit(Size).ToList();
+            var list = new List<ScheduleEmail>();
+            if (records > 0 && records > Size)
+            {
+                list = dbContext.ScheduleEmails.Find(filter).Sort(sortBuilder).Skip((Page - 1) * Size).Limit(Size).ToList();
+            }
+            else
+            {
+                list = dbContext.ScheduleEmails.Find(filter).Sort(sortBuilder).ToList();
+            }
+
             var viewModel = new MailViewModel
             {
                 ScheduleEmails = list,

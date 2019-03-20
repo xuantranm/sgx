@@ -70,7 +70,7 @@ using ViewModels;
             WriteLiteral("\r\n<div class=\"nav-container\">\r\n    <div class=\"bg-white navbar-light\" data-sticky=\"top\">\r\n        <div class=\"container\">\r\n            <nav class=\"navbar navbar-expand-lg\">\r\n                <a class=\"navbar-brand\" href=\"/\">\r\n                    ");
             EndContext();
             BeginContext(365, 44, false);
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("img", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.SelfClosing, "16f5cdc604ad4bd8820610713b491fe0", async() => {
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("img", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.SelfClosing, "eff9f267f4c7452493263dbef204309b", async() => {
             }
             );
             __Microsoft_AspNetCore_Mvc_Razor_TagHelpers_UrlResolutionTagHelper = CreateTagHelper<global::Microsoft.AspNetCore.Mvc.Razor.TagHelpers.UrlResolutionTagHelper>();
@@ -443,7 +443,7 @@ WriteAttributeValue("", 5638, contact.Url, 5638, 12, false);
             WriteLiteral("                                <a href=\"javascript:;\" class=\"btn-language\" data-value=\"en-US\" alt=\"English\">");
             EndContext();
             BeginContext(6322, 43, false);
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("img", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.SelfClosing, "edf9a423369b439a9604c760fa9f3db0", async() => {
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("img", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.SelfClosing, "41c062bff3f043859e98fd8c42e319cb", async() => {
             }
             );
             __Microsoft_AspNetCore_Mvc_Razor_TagHelpers_UrlResolutionTagHelper = CreateTagHelper<global::Microsoft.AspNetCore.Mvc.Razor.TagHelpers.UrlResolutionTagHelper>();
@@ -472,7 +472,7 @@ WriteAttributeValue("", 5638, contact.Url, 5638, 12, false);
             WriteLiteral("                                <a href=\"javascript:;\" class=\"btn-language\" data-value=\"vi-VN\" alt=\"Tiếng Việt\">");
             EndContext();
             BeginContext(6579, 46, false);
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("img", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.SelfClosing, "9e235a07182f44f8925411774ba9ff15", async() => {
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("img", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.SelfClosing, "a56fbf678dc1459187553269bf9410c0", async() => {
             }
             );
             __Microsoft_AspNetCore_Mvc_Razor_TagHelpers_UrlResolutionTagHelper = CreateTagHelper<global::Microsoft.AspNetCore.Mvc.Razor.TagHelpers.UrlResolutionTagHelper>();

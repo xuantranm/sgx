@@ -1,4 +1,5 @@
-﻿using Common.Utilities;
+﻿using Common.Enums;
+using Common.Utilities;
 using Data;
 using MimeKit;
 using MimeKit.Text;
@@ -113,7 +114,20 @@ namespace xbirthday
                             EmployeeId = item.EmployeeId
                         };
 
-                        new AuthMessageSender().SendEmail(emailMessage);
+                        // For faster update.
+                        var scheduleEmail = new ScheduleEmail
+                        {
+                            Status = (int)EEmailStatus.Schedule,
+                            To = emailMessage.ToAddresses,
+                            CC = emailMessage.CCAddresses,
+                            BCC = emailMessage.BCCAddresses,
+                            Type = emailMessage.Type,
+                            Title = emailMessage.Subject,
+                            Content = emailMessage.BodyContent,
+                            EmployeeId = emailMessage.EmployeeId
+                        };
+                        dbContext.ScheduleEmails.InsertOne(scheduleEmail);
+                        //new AuthMessageSender().SendEmail(emailMessage);
                     }
                 }
             }

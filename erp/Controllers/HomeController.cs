@@ -36,9 +36,8 @@ namespace erp.Controllers
     public class HomeController : Controller
     {
         readonly MongoDBContext dbContext = new MongoDBContext();
-        private readonly IDistributedCache _cache;
         readonly IHostingEnvironment _env;
-
+        private IHttpContextAccessor _accessor;
         private readonly ILogger _logger;
 
         private readonly IEmailSender _emailSender;
@@ -46,14 +45,15 @@ namespace erp.Controllers
 
         public IConfiguration Configuration { get; }
 
-        public HomeController(IDistributedCache cache,
+        public HomeController(
+            IHttpContextAccessor accessor,
             IConfiguration configuration,
             IHostingEnvironment env,
             IEmailSender emailSender,
             ISmsSender smsSender,
             ILogger<HomeController> logger)
         {
-            _cache = cache;
+            _accessor = accessor;
             Configuration = configuration;
             _env = env;
             _emailSender = emailSender;
@@ -63,20 +63,71 @@ namespace erp.Controllers
 
         public async Task<IActionResult> Index()
         {
-            //var userAgent = Request.Headers["User-Agent"];
-            //var ua = new UserAgent(userAgent);
-
+            #region Login
             var login = User.Identity.Name;
             var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
             var userInformation = dbContext.Employees.Find(m => m.Id.Equals(login)).FirstOrDefault();
             if (userInformation == null)
             {
-                #region snippet1
-                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                #endregion
+                var ipAddress = string.Empty;
+                try
+                {
+                    ipAddress = _accessor.HttpContext.Connection.RemoteIpAddress.ToString();
+                    // UAT
+                    // ipAddress = "14.161.24.132";
+                    // Login base ip
 
-                return RedirectToAction("login", "account");
+                    if (string.IsNullOrEmpty(ipAddress) && ipAddress == "::1")
+                    {
+                        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                        return RedirectToAction("login", "account");
+                    }
+                    else
+                    {
+                        var ipE = dbContext.Ips.Find(m => m.IpAddress.Equals(ipAddress)).FirstOrDefault();
+                        if (ipE == null)
+                        {
+                            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                            return RedirectToAction("login", "account");
+                        }
+                        else
+                        {
+                            userInformation = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(ipE.Login)).FirstOrDefault();
+                            if (userInformation == null)
+                            {
+                                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                                return RedirectToAction("login", "account");
+                            }
+                            else
+                            {
+                                var claims = new List<Claim>
+                        {
+                            new Claim("UserName", userInformation.UserName),
+                            new Claim(ClaimTypes.Name, userInformation.Id),
+                            new Claim(ClaimTypes.Email, string.IsNullOrEmpty(userInformation.Email) ? string.Empty : userInformation.Email),
+                            new Claim("FullName", userInformation.FullName)
+                        };
+
+                                var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                                var authProperties = new AuthenticationProperties
+                                {
+                                };
+                                authProperties.IsPersistent = true;
+                                await HttpContext.SignInAsync(
+                                    CookieAuthenticationDefaults.AuthenticationScheme,
+                                    new ClaimsPrincipal(claimsIdentity),
+                                    authProperties);
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                    return RedirectToAction("login", "account");
+                }
             }
+            #endregion
 
             #region Rights
             var rightHr = false;
@@ -134,7 +185,7 @@ namespace erp.Controllers
             var filterHr = filterNotication & builderNotication.Eq(m => m.Type, 2);
             if (!rightHr)
             {
-                filterHr = filterHr & builderNotication.Eq(m => m.UserId, login) & builderNotication.Ne(m=>m.CreatedBy, login);
+                filterHr = filterHr & builderNotication.Eq(m => m.UserId, login) & builderNotication.Ne(m => m.CreatedBy, login);
             }
             var notificationHRs = await dbContext.Notifications.Find(filterHr).Sort(sortNotification).Limit(getItems).ToListAsync();
             #endregion
@@ -193,12 +244,12 @@ namespace erp.Controllers
             var sortMyLeave = Builders<Leave>.Sort.Descending(m => m.UpdatedOn);
             var builderMyLeave = Builders<Leave>.Filter;
             var filterMyLeave = builderMyLeave.Eq(m => m.Enable, true)
-                & builderMyLeave.Eq(m=>m.EmployeeId, login);
+                & builderMyLeave.Eq(m => m.EmployeeId, login);
             var myLeaves = await dbContext.Leaves.Find(filterMyLeave).Sort(sortMyLeave).Limit(5).ToListAsync();
 
             var sortMyWorkTime = Builders<EmployeeWorkTimeLog>.Sort.Descending(m => m.Date);
             var builderMyWorkTime = Builders<EmployeeWorkTimeLog>.Filter;
-            var filterMyWorkTime = builderMyWorkTime.Eq(m => m.Enable, true) & builderMyWorkTime.Lt(m=>m.Date, DateTime.Now.Date) & builderMyWorkTime.Ne(m => m.Status, 1)
+            var filterMyWorkTime = builderMyWorkTime.Eq(m => m.Enable, true) & builderMyWorkTime.Lt(m => m.Date, DateTime.Now.Date) & builderMyWorkTime.Ne(m => m.Status, 1)
                 & builderMyWorkTime.Eq(m => m.EmployeeId, login);
             var myWorkTimes = await dbContext.EmployeeWorkTimeLogs.Find(filterMyWorkTime).Sort(sortMyWorkTime).Limit(5).ToListAsync();
 
@@ -302,7 +353,7 @@ namespace erp.Controllers
                 return RedirectToAction("AccessDenied", "Account");
             }
             #endregion
-            
+
             #region Filter
             var builder = Builders<Employee>.Filter;
             var filter = builder.Eq(m => m.Enable, true);
@@ -367,7 +418,7 @@ namespace erp.Controllers
             };
             #endregion
 
-            var employees = dbContext.Employees.Find(m=>m.Enable.Equals(true) 
+            var employees = dbContext.Employees.Find(m => m.Enable.Equals(true)
                                                     && !m.UserName.Equals(Constants.System.account)
                                                     && !string.IsNullOrEmpty(m.Email)
                                                     && !m.Department.Equals("Phòng HCNS - NS")

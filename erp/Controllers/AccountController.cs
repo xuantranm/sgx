@@ -28,8 +28,8 @@ namespace erp.Controllers
     public class AccountController : Controller
     {
         MongoDBContext dbContext = new MongoDBContext();
-        private readonly IDistributedCache _cache;
         IHostingEnvironment _env;
+        private IHttpContextAccessor _accessor;
 
         private readonly ILogger _logger;
 
@@ -38,10 +38,14 @@ namespace erp.Controllers
         private readonly ISmsSender _smsSender;
 
         public AccountController(
-            IDistributedCache cache, IConfiguration configuration, IHostingEnvironment env, IEmailSender emailSender,
-            ISmsSender smsSender, ILogger<AccountController> logger)
+            IHttpContextAccessor accessor, 
+            IConfiguration configuration, 
+            IHostingEnvironment env,
+            IEmailSender emailSender,
+            ISmsSender smsSender, 
+            ILogger<AccountController> logger)
         {
-            _cache = cache;
+            _accessor = accessor;
             Configuration = configuration;
             _env = env;
             _emailSender = emailSender;
@@ -58,7 +62,6 @@ namespace erp.Controllers
         [Route("/tk/dang-nhap/")]
         public async Task<IActionResult> Login(string returnUrl = null)
         {
-            // If the user is already authenticated we do not need to display the login page, so we redirect to the landing page.
             if (User.Identity.IsAuthenticated)
             {
                 if (!string.IsNullOrEmpty(returnUrl))
@@ -71,10 +74,9 @@ namespace erp.Controllers
                 }
             }
 
-            // Clear the existing external cookie to ensure a clean login process
-            //await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-
+            var remoteIpAddress = _accessor.HttpContext.Connection.RemoteIpAddress;
+            //ViewData["IpAddress"] = remoteIpAddress.ToString();
             ViewData["ReturnUrl"] = returnUrl;
             return View();
         }
@@ -89,7 +91,6 @@ namespace erp.Controllers
                                                     && (m.UserName.Equals(model.UserName.Trim()) || m.Email.Equals(model.UserName.Trim()))
                                                     && m.Password.Equals(Helper.HashedPassword(model.Password.Trim())))
                                                     .FirstOrDefault();
-            // Write log, perfomance...
             if (result != null)
             {
                 var claims = new List<Claim>
@@ -104,40 +105,33 @@ namespace erp.Controllers
 
                 var authProperties = new AuthenticationProperties
                 {
-                    //AllowRefresh = <bool>,
-                    // Refreshing the authentication session should be allowed.
-
-                    //ExpiresUtc = DateTimeOffset.UtcNow.AddMinutes(10),
-                    // The time at which the authentication ticket expires. A 
-                    // value set here overrides the ExpireTimeSpan option of 
-                    // CookieAuthenticationOptions set with AddCookie.
-
-                    //IsPersistent = true,
-                    // Whether the authentication session is persisted across 
-                    // multiple requests. Required when setting the 
-                    // ExpireTimeSpan option of CookieAuthenticationOptions 
-                    // set with AddCookie. Also required when setting 
-                    // ExpiresUtc.
-
-                    //IssuedUtc = <DateTimeOffset>,
-                    // The time at which the authentication ticket was issued.
-
-                    //RedirectUri = <string>
-                    // The full path or absolute URI to be used as an http 
-                    // redirect response value.
                 };
-
                 if (model.RememberMe)
                 {
                     authProperties.IsPersistent = true;
-                    //authProperties.ExpiresUtc = DateTime.UtcNow.AddDays(7);
                 }
-
                 await HttpContext.SignInAsync(
                     CookieAuthenticationDefaults.AuthenticationScheme,
                     new ClaimsPrincipal(claimsIdentity),
                     authProperties);
 
+                var ipAddress = string.Empty;
+                try
+                {
+                    ipAddress = _accessor.HttpContext.Connection.RemoteIpAddress.ToString();
+                    if (!string.IsNullOrEmpty(ipAddress) && ipAddress != "::1")
+                    {
+                        dbContext.Ips.InsertOne(new Ip()
+                        {
+                            IpAddress = ipAddress,
+                            Login = result.Id
+                        });
+                    }
+                }
+                catch (Exception ex)
+                {
+                }
+                   
                 if (string.IsNullOrEmpty(returnUrl))
                 {
                     returnUrl = "/";

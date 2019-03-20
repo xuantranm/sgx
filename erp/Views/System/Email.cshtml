@@ -107,12 +107,7 @@
                                 </td>
                                 <td>
                                     @{
-                                        var result = "Gửi thành công";
-                                        if (item.Status == 2)
-                                        {
-                                            result = "Lỗi: " + item.Error;
-                                        }
-                                        <span>@result</span>
+                                        <span>@Constants.EmailStatus(item.Status)</span>
                                     }
                                 </td>
                             </tr>

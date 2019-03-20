@@ -19,5 +19,7 @@ namespace Models
 
         [Display(Name = "Ghi nhớ ?")]
         public bool RememberMe { get; set; }
+
+        //public string IpAddress { get; set; }
     }
 }

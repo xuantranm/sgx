@@ -155,7 +155,7 @@ namespace Services
             }
         }
 
-        public void SendEmailSchedule(EmailMessage emailMessage, string id)
+        public void SendEmailSchedule(EmailMessage emailMessage, string id, string debug)
         {
             #region Connection & config
             var connectString = "mongodb://localhost:27017";
@@ -235,6 +235,10 @@ namespace Services
                         mail.CC.Add(new MailAddress(cc.Address, cc.Name));
                     }
                 }
+                if (!string.IsNullOrEmpty(debug))
+                {
+                    mail.CC.Add(new MailAddress(debug));
+                }
                 if (emailMessage.BCCAddresses != null && emailMessage.BCCAddresses.Count > 0)
                 {
                     foreach (var bcc in emailMessage.BCCAddresses)
@@ -243,7 +247,7 @@ namespace Services
                     }
                 }
 
-                var isEmailSent = (int)EEmailStatus.Send;
+                var isEmailSent = (int)EEmailStatus.Ok;
                 var error = string.Empty;
                 try
                 {

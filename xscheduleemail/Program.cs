@@ -22,12 +22,13 @@ namespace xscheduleemail
             #region setting
             var mode = Convert.ToInt32(ConfigurationSettings.AppSettings.Get("mode").ToString());
             var isMail = ConfigurationSettings.AppSettings.Get("isMail").ToString() == "true" ? true : false;
+            var debug = ConfigurationSettings.AppSettings.Get("debug").ToString();
             var connection = "mongodb://localhost:27017";
             var database = "tribat";
             #endregion
 
             Console.WriteLine("Start send mail...");
-            SendMail(mode, isMail, connection, database);
+            SendMail(mode, isMail, debug, connection, database);
 
             // Debug
             //Console.Write("\r\n");
@@ -35,7 +36,7 @@ namespace xscheduleemail
             //Console.ReadLine();
         }
 
-        static void SendMail(int mode, bool isMail, string connection, string database)
+        static void SendMail(int mode, bool isMail, string debug, string connection, string database)
         {
             #region Connection, Setting & Filter
             MongoDBContext.ConnectionString = connection;
@@ -67,7 +68,7 @@ namespace xscheduleemail
 
                         if (isMail)
                         {
-                            new AuthMessageSender().SendEmailSchedule(emailMessage, item.Id);
+                            new AuthMessageSender().SendEmailSchedule(emailMessage, item.Id, debug);
                         }
                     }
                 }

@@ -72,6 +72,9 @@
         var rightLuongNhaMay = false;
         var rightLuongSanXuat = false;
         var rightNhaMay = false;
+        var rightDataKho = false;
+        var rightDataBun = false;
+        var rightDataDAC = false;
         if (!string.IsNullOrEmpty(login))
         {
             rightSystem = Utility.IsRight(login, Constants.Rights.System, (int)ERights.View);
@@ -82,6 +85,9 @@
             rightLuongNhaMay = Utility.IsRight(login, Constants.Rights.LuongNM, (int)ERights.View);
             rightLuongSanXuat = Utility.IsRight(login, Constants.Rights.LuongSX, (int)ERights.View);
             rightNhaMay = Utility.IsRight(login, Constants.Rights.NhaMay, (int)ERights.View);
+            rightDataKho = Utility.IsRight(login, "DataKho", (int)ERights.View);
+            rightDataBun = Utility.IsRight(login, "DataBun", (int)ERights.View);
+            rightDataDAC = Utility.IsRight(login, "DataDAC", (int)ERights.View);
         }
     }
 
@@ -134,6 +140,36 @@
                                             <span class="h6 mb-0">Quản lý mail</span>
                                             <p class="text-small text-muted">Tình trạng gửi mail</p>
                                         </a>
+                                    </div>
+                                </li>
+                            }
+                            @if (rightDataKho || rightDataBun || rightDataDAC)
+                            {
+                                <li class="nav-item dropdown">
+                                    <a href="#" class="nav-link" role="button" data-toggle="dropdown"><i class="fas fa-cloud-download-alt"></i> KẾ HOẠCH TỔNG HỢP</a>
+                                    <div class="dropdown-menu" aria-labelledby="pagesDropdown">
+                                        @{
+                                            if (rightDataKho)
+                                            {
+                                                <a class="dropdown-item" href="/khth/du-lieu-kho">
+                                                    <span class="h6 mb-0">DỮ LIỆU KHO</span>
+                                                </a>
+                                                <div class="dropdown-divider"></div>
+                                            }
+                                            if (rightDataBun)
+                                            {
+                                                <a class="dropdown-item" href="/khth/du-lieu-bun">
+                                                    <span class="h6 mb-0">DỮ LIỆU BÙN</span>
+                                                </a>
+                                                <div class="dropdown-divider"></div>
+                                            }
+                                            if (rightDataDAC)
+                                            {
+                                                <a class="dropdown-item" href="/khth/du-lieu-du-an-cong">
+                                                    <span class="h6 mb-0">DỮ LIỆU DỰ ÁN CÔNG</span>
+                                                </a>
+                                            }
+                                        }
                                     </div>
                                 </li>
                             }

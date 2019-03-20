@@ -56,7 +56,6 @@
                             <div>
                                 <small>
                                     Để có kết quả tốt nhất, hãy sử dụng hình ảnh có kích thước tối thiểu 256px x 256px ở định dạng .jpg hoặc .png
-                                    @*For best results, use an image at least 256px by 256px in either .jpg or .png format*@
                                 </small>
                             </div>
                         </div>
@@ -180,135 +179,125 @@
                         <div class="col-12">
                             <div class="form-group">
                                 <label class="control-label">Nơi quản lý</label>
-                                <select asp-for="Employee.CongTyChiNhanh" class="form-control form-control-lg">
-                                    <option value="">Chọn</option>
-                                    @foreach (var item in Model.CongTyChiNhanhs)
-                                    {
-                                        <option value="@item.Code">@item.Name</option>
-                                    }
-                                </select>
+                                <div class="row">
+                                    <div class="col-10">
+                                        <select asp-for="Employee.CongTyChiNhanh" class="form-control form-control-lg">
+                                            <option value="">Chọn</option>
+                                            @foreach (var item in Model.CongTyChiNhanhs)
+                                            {
+                                                <option value="@item.Id">@item.Name</option>
+                                            }
+                                        </select>
+                                    </div>
+                                    <div class="col-2 align-middle">
+                                        <button class="btn btn-sm btn-add-ctcn" type="button" data-toggle="modal" data-target="#newCongTyChiNhanh" title="Tạo mới Công ty/chi nhánh"><i class="fas fa-plus"></i></button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="col-sm-6 col-12">
+                        <div class="col-12">
                             <div class="form-group">
                                 <label class="control-label">Khối chức năng</label>
-                                <select asp-for="Employee.KhoiChucNang" class="form-control form-control-lg">
-                                    <option value="">Chọn</option>
-                                    @foreach (var item in Model.KhoiChucNangs)
-                                    {
-                                        <option value="@item.Code">@item.Name</option>
-                                    }
-                                </select>
+                                <div class="row">
+                                    <div class="col-10">
+                                        <select asp-for="Employee.KhoiChucNang" class="form-control form-control-lg">
+                                            <option value="">Chọn</option>
+                                            @foreach (var item in Model.KhoiChucNangs)
+                                            {
+                                                <option value="@item.Id">@item.Name</option>
+                                            }
+                                        </select>
+                                    </div>
+                                    <div class="col-2 align-middle">
+                                        <button class="btn btn-sm btn-add-kcn" type="button" data-toggle="modal" data-target="#newKhoiChucNang" title="Tạo mới Khối chức năng"><i class="fas fa-plus"></i></button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="col-sm-6 col-12">
+                        <div class="col-12">
                             <div class="form-group">
                                 <label class="control-label">Phòng/Ban</label>
-                                <select asp-for="Employee.PhongBan" class="form-control form-control-lg">
-                                    <option value="">Chọn</option>
-                                    @foreach (var item in Model.PhongBans)
-                                    {
-                                        <option value="@item.Code">@item.Name</option>
-                                    }
-                                </select>
+                                <div class="row">
+                                    <div class="col-10">
+                                        <select asp-for="Employee.PhongBan" class="form-control form-control-lg">
+                                            <option value="">Chọn</option>
+                                            @foreach (var item in Model.PhongBans)
+                                            {
+                                                <option value="@item.Id">@item.Name</option>
+                                            }
+                                        </select>
+                                    </div>
+                                    <div class="col-2 align-middle">
+                                        <button class="btn btn-sm btn-add-pb" type="button" data-toggle="modal" data-target="#newPhongBan" title="Tạo mới Phòng ban"><i class="fas fa-plus"></i></button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="col-sm-6 col-12">
+                        <div class="col-12">
                             <div class="form-group">
                                 <label class="control-label">Bộ phận</label>
-                                <select asp-for="Employee.BoPhan" class="form-control form-control-lg">
-                                    <option value="">Chọn</option>
-                                    @foreach (var item in Model.BoPhans)
-                                    {
-                                        <option value="@item.Code">@item.Name</option>
-                                    }
-                                </select>
+                                <div class="row">
+                                    <div class="col-10">
+                                        <select asp-for="Employee.BoPhan" class="form-control form-control-lg">
+                                            <option value="">Chọn</option>
+                                            @foreach (var item in Model.BoPhans)
+                                            {
+                                                <option value="@item.Id">@item.Name</option>
+                                            }
+                                        </select>
+                                    </div>
+                                    <div class="col-2 align-middle">
+                                        <button class="btn btn-sm btn-add-bp" type="button" data-toggle="modal" data-target="#newBoPhan" title="Tạo mới Bộ phận"><i class="fas fa-plus"></i></button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="col-sm-6 col-12">
+                        <div class="col-12">
                             <div class="form-group">
                                 <label class="control-label">Bộ phận nhỏ (nếu có - thuộc bộ phận)</label>
-                                <select asp-for="Employee.BoPhanCon" class="form-control form-control-lg">
-                                    <option value="">Chọn</option>
-                                    @foreach (var item in Model.BoPhanCons)
-                                    {
-                                        <option value="@item.Code">@item.Name</option>
-                                    }
-                                </select>
+                                <div class="row">
+                                    <div class="col-10">
+                                        <select asp-for="Employee.BoPhanCon" class="form-control form-control-lg">
+                                            <option value="">Chọn</option>
+                                            @foreach (var item in Model.BoPhanCons)
+                                            {
+                                                <option value="@item.Id">@item.Name</option>
+                                            }
+                                        </select>
+                                    </div>
+                                    <div class="col-2 align-middle">
+                                        <button class="btn btn-sm btn-add-bpc" type="button" data-toggle="modal" data-target="#newBoPhanCon" title="Tạo mới Bộ phận con"><i class="fas fa-plus"></i></button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="col-sm-6 col-12">
-                            <div class="form-group">
-                                <i class="icon icon-select-arrows"></i>
-                                <label asp-for="Employee.Department" class="control-label"></label>
-                                <div class="row">
-                                    <div class="col-10">
-                                        <select asp-for="Employee.Department" class="form-control form-control-lg">
-                                            <option value="" selected>Chọn</option>
-                                            @{
-                                                foreach (var item in ViewBag.Departments)
-                                                {
-                                                    <option value="@item.Name">@item.Name</option>
-                                                }
-                                            }
-                                        </select>
-                                    </div>
-                                    <div class="col-2 align-middle">
-                                        <button class="btn btn-sm btn-add-department" type="button" data-toggle="modal" data-target="#newDepartment" title="Tạo mới Phòng/ban">+</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-sm-6 col-12">
-                            <div class="form-group">
-                                <i class="icon icon-select-arrows"></i>
-                                <label asp-for="Employee.Part" class="control-label"></label>
-                                <div class="row">
-                                    <div class="col-10">
-                                        <select asp-for="Employee.Part" class="form-control form-control-lg">
-                                            <option value="" selected>Chọn</option>
-                                            @{
-                                                foreach (var item in ViewBag.Parts)
-                                                {
-                                                    <option value="@item.Name">@item.Name</option>
-                                                }
-                                            }
-                                        </select>
-                                    </div>
-                                    <div class="col-2 align-middle">
-                                        <button class="btn btn-sm btn-add-part" type="button" data-toggle="modal" data-target="#newPart" title="Tạo mới Bộ phận">+</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                         <div class="col-12">
                             <div class="form-group">
                                 <i class="icon icon-select-arrows"></i>
-                                <label asp-for="Employee.Title" class="control-label"></label>
+                                <label class="control-label">Chức vụ</label>
                                 <div class="row">
                                     <div class="col-10">
-                                        <select asp-for="Employee.Title" class="form-control form-control-lg js-select2-basic-single">
+                                        <select asp-for="Employee.ChucVu" class="form-control form-control-lg">
                                             <option value="" selected>Chọn</option>
                                             @{
-                                                foreach (var item in ViewBag.Titles)
+                                                foreach (var item in Model.ChucVus)
                                                 {
-                                                    <option value="@item.Name">@item.Name</option>
+                                                    <option value="@item.Id">@item.Name</option>
                                                 }
                                             }
                                         </select>
                                     </div>
                                     <div class="col-2 align-middle">
-                                        <button class="btn btn-sm btn-add-title" type="button" data-toggle="modal" data-target="#newTitle" title="Tạo mới Công việc">+</button>
+                                        <button class="btn btn-sm btn-add-cv" type="button" data-toggle="modal" data-target="#newChucVuModal" title="Tạo mới Chức vụ">+</button>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
 
                         <div class="col-12">
                             <div class="form-group">
@@ -390,7 +379,7 @@
                                         <label class="control-label">Thời gian làm việc</label>
                                         <select name="Employee.Workplaces[0].WorkingScheduleTime" class="form-control form-control-lg">
                                             @{
-                                                foreach (var workTimeType in ViewBag.WorkTimeTypes)
+                                                foreach (var workTimeType in Model.WorkTimeTypes)
                                                 {
                                                     if (workTimeType.Start == new TimeSpan(7, 30, 0))
                                                     {
@@ -426,7 +415,7 @@
                                         <label class="control-label">Thời gian làm việc</label>
                                         <select name="Employee.Workplaces[1].WorkingScheduleTime" class="form-control form-control-lg">
                                             @{
-                                                foreach (var workTimeType in ViewBag.WorkTimeTypes)
+                                                foreach (var workTimeType in Model.WorkTimeTypes)
                                                 {
                                                     if (workTimeType.Start == new TimeSpan(8, 0, 0))
                                                     {
@@ -684,13 +673,6 @@
                                         <input type="hidden" name="Employee.BhxhEnd" class="form-control form-control-lg hidedatepicker" value="false" />
                                     </div>
                                 </div>
-                                @*<div class="col-6">
-                                        <div class="form-group">
-                                            <label asp-for="Employee.BhxhDependecy" class="control-label"></label>
-                                            <input asp-for="Employee.BhxhDependecy" class="form-control form-control-lg" />
-                                            <span asp-validation-for="Employee.BhxhDependecy" class="text-danger"></span>
-                                        </div>
-                                    </div>*@
                                 <div class="col-6">
                                     <div class="form-group">
                                         <label asp-for="Employee.BhxhStatus" class="control-label"></label>
@@ -709,7 +691,7 @@
                                                 <select asp-for="Employee.BhxhHospital" class="form-control form-control-lg js-select2-basic-single" style="width:100%;">
                                                     <option value="">Chọn</option>
                                                     @{
-                                                        foreach (var hospital in ViewBag.Hospitals)
+                                                        foreach (var hospital in Model.Hospitals)
                                                         {
                                                             <option value="@hospital.Name">@hospital.Name</option>
                                                         }
@@ -933,7 +915,7 @@
                                             <label class="control-label">Loại hợp đồng</label>
                                             <select name="Employee.Contracts[{{:code}}].Type" class="form-control form-control-lg contract-type">
                                                 @{
-                                                    foreach (var item in ViewBag.Contracts)
+                                                    foreach (var item in Model.Contracts)
                                                     {
                                                         <option value="@item.Id">@item.Name</option>
                                                     }
@@ -1143,200 +1125,19 @@
             </div>
         </div>
     </form>
-    <!--end of section-->
 </div>
 
 <div>
     <a asp-action="Index"><i class="icon icon-back"></i>Trở về</a>
 </div>
 
-<div class="modal fade" id="newDepartment" tabindex="-1" role="dialog" aria-labelledby="newDepartmentLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="editItemModalLabel">Thêm mới Phòng/ban</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Đóng">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <form class="data-form" method="post" action="/api/department" enctype="multipart/form-data">
-                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                <span class="result"></span>
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label class="control-label">Phòng/ban</label>
-                        <input name="Name" class="form-control form-control-lg" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Mô tả</label>
-                        <textarea name="Description" class="form-control form-control-lg js-auto-size"></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy & Đóng</button>
-                    <button type="button" class="btn btn-primary btn-save-department"><i class="icon-save"></i>&nbsp;Lưu</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="newPart" tabindex="-1" role="dialog" aria-labelledby="newPartLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="editItemModalLabel">Thêm mới Bộ phận</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Đóng">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <form class="data-form" method="post" action="/api/part" enctype="multipart/form-data">
-                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                <span class="result"></span>
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label class="control-label">Bộ phận</label>
-                        <input name="Name" class="form-control form-control-lg" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Mô tả</label>
-                        <textarea name="Description" class="form-control form-control-lg js-auto-size"></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy & Đóng</button>
-                    <button type="button" class="btn btn-primary btn-save-part"><i class="icon-save"></i>&nbsp;Lưu</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="newTitle" tabindex="-1" role="dialog" aria-labelledby="newTitleLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="editItemModalLabel">Thêm mới Công việc</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Đóng">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <form method="post" action="/api/title" enctype="multipart/form-data">
-                <span class="result"></span>
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label class="control-label">Công việc</label>
-                        <input name="Name" class="form-control form-control-lg" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Mô tả</label>
-                        <textarea name="Description" class="form-control form-control-lg js-auto-size"></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy & Đóng</button>
-                    <button type="button" class="btn btn-primary btn-save-title"><i class="icon-save"></i>&nbsp;Lưu</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="newHospital" tabindex="-1" role="dialog" aria-labelledby="newHospitalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="editItemModalLabel">Thêm mới Bệnh viện</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Đóng">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <form class="data-form" method="post" action="/api/hospital" enctype="multipart/form-data">
-                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                <span class="result"></span>
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label class="control-label">Mã KCB</label>
-                        <input name="Code" class="form-control form-control-lg" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Tuyến</label>
-                        <input name="Local" class="form-control form-control-lg" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Tỉnh/Thành phố</label>
-                        <input name="City" class="form-control form-control-lg" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Quận/Huyện</label>
-                        <input name="District" class="form-control form-control-lg" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Cơ sở khám chữa bệnh</label>
-                        <input name="Name" class="form-control form-control-lg" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Địa chỉ</label>
-                        <input name="Address" class="form-control form-control-lg" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Điều kiện</label>
-                        <textarea name="Condition" class="form-control form-control-lg js-auto-size"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Ghi chú</label>
-                        <textarea name="Note" class="form-control form-control-lg js-auto-size"></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy & Đóng</button>
-                    <button type="button" class="btn btn-primary btn-save-hospital"><i class="icon-save"></i>&nbsp;Lưu</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="resultModal" tabindex="-1" role="dialog" aria-labelledby="resultModal" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content" id="modalnotice">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel"></h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-footer">
-                <a href="/hr/nhan-su/thong-tin/" class="btn btn-danger">Thêm thông tin</a>
-                <a href="/hr/nhan-su/tao-moi" class="btn btn-primary">Thêm mới</a>
-                <a href="/hr/nhan-su" class="btn btn-info">Danh sách</a>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script id="tmplModalNotice" type="text/x-jsrender">
-    <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">{{:message}}</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-        </button>
-    </div>
-    <div class="modal-footer">
-        <a href="/hr/nhan-su/thong-tin/{{:id}}" class="btn btn-info">Xem thông tin</a>
-        <a href="/hr/nhan-su/tao-moi" class="btn btn-primary">Thêm mới</a>
-        <a href="/hr/nhan-su" class="btn btn-cyan">Danh sách</a>
-    </div>
-</script>
+<partial name="Common/_ExtendPartial" />
 
 @section scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
         <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC7PCKw6JWnv5YTgKQbl-mi2wsxAXQTPeM&libraries=places&region=vn&language=vi" defer></script>
-        @*<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC7PCKw6JWnv5YTgKQbl-mi2wsxAXQTPeM&libraries=places&region=vn&language=vi"
-                async defer></script>*@
-
-        <script src="~/js/employee-data.js?v-@DateTime.Now.Ticks"></script>
+        <script src="~/js/employee-data.js?@Constants.VersionJs"></script>
     }
 }
 

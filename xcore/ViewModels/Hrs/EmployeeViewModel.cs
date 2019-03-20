@@ -7,40 +7,57 @@ namespace ViewModels
 {
     public class EmployeeViewModel : ExtensionViewModel
     {
-        // data display
-        public IList<Employee> Employees { get; set; }
+        public IList<EmployeeDisplay> Employees { get; set; }
 
-        // base on Employees
-        public IList<Department> Departments { get; set; }
+        public EmployeeDisplay EmployeeDetail { get; set; }
 
-        public IList<Part> Parts { get; set; }
+        public bool StatusChange { get; set; }
 
-        public IList<Employee> EmployeesDisable { get; set; }
+        public Employee EmployeeChance { get; set; }
 
-        // show title
-        public Employee Employee { get; set; }
+        public IList<CongTyChiNhanh> CongTyChiNhanhs { get; set; }
+
+        public IList<KhoiChucNang> KhoiChucNangs { get; set; }
+
+        public IList<PhongBan> PhongBans { get; set; }
+
+        public IList<BoPhan> BoPhans { get; set; }
+
+        public IList<ChucVu> ChucVus { get; set; }
 
         public IList<Employee> EmployeesDdl { get; set; }
 
         #region Search
-        public string id { get; set; }
+        public string Id { get; set; }
 
-        public string ten { get; set; }
+        public string Ten { get; set; }
 
-        public string code { get; set; }
+        public string Code { get; set; }
 
-        public string finger { get; set; }
+        public string Fg { get; set; }
 
-        public string nl { get; set; }
+        public string Nl { get; set; }
 
-        public int page { get; set; }
+        public string Kcn { get; set; }
 
-        public int size { get; set; }
+        public string Pb { get; set; }
 
-        public string sortBy { get; set; }
+        public string Bp { get; set; }
 
-        public string sort { get; set; }
+        public int Page { get; set; }
+
+        public int Size { get; set; }
+
+        public string Sortby { get; set; }
+
+        public string Sort { get; set; }
+
+        public string LinkCurrent { get; set; }
         #endregion
+
+        public int RecordCurrent { get; set; }
+
+        public int RecordLeave { get; set; }
 
         public int Records { get; set; }
 

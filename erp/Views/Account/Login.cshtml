@@ -33,6 +33,7 @@
                             </div>
                             <div class="row no-gutters justify-content-center">
                                 <form class="text-left col-lg-8 data-form" asp-action="Login" asp-route-returnurl="@ViewData["ReturnUrl"]" method="post">
+                                    @*<input asp-for="IpAddress" type="hidden" value="@ViewData["IpAddress"]"/>*@
                                     <div class="form-group">
                                         <label asp-for="UserName"></label>
                                         <input asp-for="UserName" class="form-control form-control-lg" data-toggle="tooltip" title="Nhập [tên đăng nhập]. Thông tin được gửi qua email công ty." />
@@ -52,13 +53,14 @@
                                         </div>
                                     </div>
                                     <div class="text-center mt-3">
-                                        <input type="submit" class="btn btn-lg btn-primary" value="Đăng nhập" data-toggle="tooltip" title="Bấm [Đăng nhập] để truy cập hệ thống."/>
+                                        <input type="submit" class="btn btn-lg btn-primary" value="Đăng nhập" data-toggle="tooltip" title="Bấm [Đăng nhập] để truy cập hệ thống." />
                                     </div>
                                     <div class="row">
                                         <div class="col-12">
                                             @Html.ValidationSummary(true)
                                         </div>
                                     </div>
+
                                 </form>
                             </div>
                         </div>
