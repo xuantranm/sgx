@@ -1,6 +1,36 @@
 ﻿
 namespace Common.Enums
 {
+    public enum ETrangThai
+    {
+        Kho = 1
+    }
+
+    public enum ETiepNhanXuLy
+    {
+        Nhap = 1,
+        Xuat = 2
+    }
+
+    public enum EKho
+    {
+        NguyenLieu = 1,
+        ThanhPham = 2,
+        XuLy = 3,
+        TramCan = 4
+    }
+
+    public enum EFile
+    {
+        Image = 1,
+        Document = 2
+    }
+
+    public enum EProductStatus
+    {
+        New = 1
+    }
+
     public enum ECreditStatus
     {
         New = 0,

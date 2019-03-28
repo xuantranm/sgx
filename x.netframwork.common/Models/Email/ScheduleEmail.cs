@@ -29,6 +29,8 @@ namespace Models
 
         public string Content { get; set; }
 
+        public List<string> Attachments { get; set; }
+
         // if 4: schedule (use template base [type]) , after sent update status normal.
         public int Status { get; set; } = (int)EEmailStatus.Send;
 

@@ -1,0 +1,248 @@
+﻿@using System;
+@using System.Globalization;
+@using Common.Utilities;
+@using Common.Enums;
+@using ViewModels;
+@model KhoViewModel;
+
+@{
+    Layout = "~/Views/Shared/_LayoutSocialFbFs.cshtml";
+    CultureInfo culture = CultureInfo.CreateSpecificCulture("en-US");
+}
+<link href="~/assets/wingman/css/big-screen.css" rel="stylesheet" />
+<style>
+    tbody th:nth-child(3), tbody td:nth-child(3) {
+        position: sticky;
+        left: 0px;
+    }
+
+    tbody td:nth-child(3) {
+        background-color: lightgoldenrodyellow;
+    }
+</style>
+
+<div class="main-container">
+    <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="/">Trang chủ</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="/@Constants.KeHoachTongHopLink.Main">Kho</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">
+                            @Model.Name
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="flush-with-above space-0">
+        <div class="bg-white">
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <ul class="nav nav-tabs" id="myTab" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoNguyenLieu">@Model.Name.ToUpper()</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoThanhPham">THÀNH PHẨM</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoBun">BÙN</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoXuLy">XỬ LÝ</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuTiepNhanXuLyBun">TIẾP NHẬN XỬ LÝ BÙN</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuDuAnCong">DỰ ÁN CÔNG</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MAIN -->
+    <section class="flush-with-above height-80 d-block">
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="real" role="tabpanel" aria-labelledby="real-tab">
+                <div class="container">
+                    <div id="uploadarea" class="col-12">
+                        <div class="row mb-3">
+                            <div class="col-md-4 col-xs-12">
+                                <a href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoNguyenLieu/@Constants.ActionLink.Template" class="btn btn-success btn-list" data-toggle="tooltip" title="Bấm tải về mẫu tài liệu.">
+                                    <i class="fas fa-download"></i> Tải mẫu @Model.Name
+                                </a>
+                            </div>
+                            <div class="col-md-4 col-xs-12">
+                                <a href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoNguyenLieu/@Constants.ActionLink.Export@Model.LinkCurrent" class="btn btn-info" data-toggle="tooltip" title="Xuất tài liệu ra excel.">
+                                    <i class="fas fa-download"></i> Xuất dữ liệu @Model.Name
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <form method="post" action="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoNguyenLieu/@Constants.ActionLink.Template/@Constants.ActionLink.Post" enctype="multipart/form-data">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <input type="file" name="files" class="form-control fUpload" />
+                                        </div>
+                                        <div class="col-md-8">
+                                            <input type="button" class="btn btn-danger btnUpload" value="Tải lên @Model.Name" />
+                                            <button class="btn btn-danger btn-upload-process d-none" type="button" disabled>
+                                                <i class="fas fa-spinner"></i>
+                                                Đang xử lý...
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="col-12 alert alert-warning error d-none"></div>
+                        </div>
+                    </div>
+
+                    <!-- FILTER -->
+                    <form method="get" action="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoNguyenLieu" id="form-main">
+                        <div class="row">
+                            <div class="col-12">
+                                <span class="badge badge-primary">Tìm kiếm:</span>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            @{
+                                var fromdatesearch = Model.Tu > Constants.MinDate ? Model.Tu.ToString("dd/MM/yyyy") : "";
+                                var todatesearch = Model.Den > Constants.MinDate ? Model.Den.ToString("dd/MM/yyyy") : "";
+                            }
+                            <div class="col-md-3 col-sm-6 col-xs-12">
+                                <span class="mr-2 text-muted text-small text-nowrap">Từ:</span>
+                                <input class="from-date form-control datepicker datepicker-lg" value="@fromdatesearch" />
+                                <input type="hidden" name="Tu" class="tu-ngay" value="@Model.Tu.ToString("MM-dd-yyyy")" />
+                            </div>
+                            <div class="col-md-3 col-sm-6 col-xs-12">
+                                <span class="mr-2 text-muted text-small text-nowrap">đến:</span>
+                                <input class="to-date form-control datepicker datepicker-lg" value="@todatesearch" />
+                                <input type="hidden" name="Den" class="den-ngay" value="@Model.Den.ToString("MM-dd-yyyy")" />
+                            </div>
+                            <div class="col-md-3 col-sm-6 col-xs-12">
+                                <span class="mr-2 text-muted text-small text-nowrap">Mặt hàng:</span>
+                                <select asp-for="Hang" class="custom-select form-control-lg" onchange="formSubmit();">
+                                    <option value="">Tất cả</option>
+                                    @foreach (var item in Model.Products)
+                                    {
+                                        var display = item.Name;
+                                        if (!string.IsNullOrEmpty(item.Code))
+                                        {
+                                            display += "(" + item.Code + ")";
+                                        }
+                                        <option value="@item.Id">@display</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="col-md-3 col-sm-6 col-xs-12">
+                                <span class="mr-2 text-muted text-small text-nowrap">Mặt hàng:</span>
+                                <select asp-for="TrangThai" class="custom-select form-control-lg" onchange="formSubmit();">
+                                    <option value="">Tất cả</option>
+                                    @foreach (var item in Model.TrangThais)
+                                    {
+                                        <option value="@item.Name">@item.Name</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+
+                    <div class="row">
+                        @{
+                            <div class="col-12 table-responsive-sm">
+                                <table class="table table-responsive-sm table-bordered table-striped table-hover floating-header">
+                                    <thead style="background-color:lightgrey">
+                                        <tr>
+                                            <td>#</td>
+                                            <td>Ngày</td>
+                                            <td>Tên sản phẩm</td>
+                                            <td>Mã sản phẩm</td>
+                                            <td>ĐVT</td>
+                                            <td>Tồn đầu</td>
+                                            <td>Nhập từ NCC</td>
+                                            <td>Nhập từ Sản xuất</td>
+                                            <td>Nhập hao hụt</td>
+                                            <td>Nhập chuyển mã</td>
+                                            <td>Tổng nhập</td>
+                                            <td>Xuất trả NCC</td>
+                                            <td>Xuất cho Nhà Máy</td>
+                                            <td>Xuất Logistics</td>
+                                            <td>Xuất hao hụt</td>
+                                            <td>Xuất chuyển mã</td>
+                                            <td>Tổng xuất</td>
+                                            <td>Tồn cuối</td>
+                                            <td>Tồn an toàn</td>
+                                            <td>Ghi chú</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="font-14">
+                                        @{
+                                            var i = 1;
+                                            foreach (var item in Model.KhoNguyenLieus)
+                                            {
+                                        <tr>
+                                            <td>
+                                                @i
+                                            </td>
+                                            <td nowrap>
+                                                @item.Date.ToString("dd/MM/yyyy")
+                                            </td>
+                                            <td nowrap>
+                                                @item.ProductName
+                                            </td>
+                                            <td nowrap>
+                                                @item.ProductCode
+                                            </td>
+                                            <td nowrap>
+                                                @item.ProductUnit
+                                            </td>
+                                            <td>@String.Format("{0:#,###,###.##}", item.TonDau)</td>
+                                            <td>@String.Format("{0:#,###,###.##}", item.NhapTuNCC)</td>
+                                            <td>@String.Format("{0:#,###,###.##}", item.NhapTuSanXuat)</td>
+                                            <td>@String.Format("{0:#,###,###.##}", item.NhapHaoHut)</td>
+                                            <td>@String.Format("{0:#,###,###.##}", item.NhapChuyenMa)</td>
+                                            <td>@String.Format("{0:#,###,###.##}", item.TongNhap)</td>
+                                            <td>@String.Format("{0:#,###,###.##}", item.XuatTraNCC)</td>
+                                            <td>@String.Format("{0:#,###,###.##}", item.XuatChoNhaMay.ToString())</td>
+                                            <td>@String.Format("{0:#,###,###.##}", item.XuatLogistics)</td>
+                                            <td>@String.Format("{0:#,###,###.##}", item.XuatHaoHut)</td>
+                                            <td>@String.Format("{0:#,###,###.##}", item.XuatChuyenMa)</td>
+                                            <td>@String.Format("{0:#,###,###.##}", item.TongXuat)</td>
+                                            <td>@String.Format("{0:#,###,###.##}", item.TonCuoi)</td>
+                                            <td>@String.Format("{0:#,###,###.##}", item.TonAnToan)</td>
+                                            <td>@Constants.Truncate(item.Note, 150)</td>
+                                        </tr>
+                                                i++;
+                                            }
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+@section scripts {
+    <script type="text/javascript" src="~/js/khth/kho-nguyen-lieu.js?@Constants.VersionJs"></script>
+}

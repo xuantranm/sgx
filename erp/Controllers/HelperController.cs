@@ -265,16 +265,18 @@ namespace erp.Controllers
 
         private string NewCode(string groupCode)
         {
-            var newCodeFormat = "001";
-            var lastProduct = dbContext.Products.Find(m => m.GroupDevide.Equals(groupCode)).SortByDescending(m => m.Id).Limit(1);
-            if (lastProduct != null)
-            {
-                var lastCode = lastProduct.First().Code;
-                var newCode = int.Parse(lastCode.Substring(3)) + 1;
-                newCodeFormat = newCode.ToString().PadLeft(3, '0');
-            }
+            //var newCodeFormat = "001";
+            //var lastProduct = dbContext.Products.Find(m => m.GroupDevide.Equals(groupCode)).SortByDescending(m => m.Id).Limit(1);
+            //if (lastProduct != null)
+            //{
+            //    var lastCode = lastProduct.First().Code;
+            //    var newCode = int.Parse(lastCode.Substring(3)) + 1;
+            //    newCodeFormat = newCode.ToString().PadLeft(3, '0');
+            //}
 
-            return groupCode + newCodeFormat;
+            //return groupCode + newCodeFormat;
+
+            return "";
         }
 
         [HttpGet]
@@ -338,7 +340,8 @@ namespace erp.Controllers
             decimal quantity = 0;
             if (entity != null)
             {
-                quantity = entity.Quantity;
+                //quantity = entity.Quantity;
+                quantity = 0;
             }
             return Json(quantity);
         }

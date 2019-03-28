@@ -45,7 +45,7 @@ namespace xtime
 
             if (debug)
             {
-                filter = filter & builder.Eq(m => m.EnrollNumber, ConfigurationSettings.AppSettings.Get("debugString").ToString());
+                filter = filter & builder.Eq(m => m.EnrollNumber,Convert.ToInt32(ConfigurationSettings.AppSettings.Get("debugString")).ToString());
             }
             #endregion
 
@@ -148,9 +148,6 @@ namespace xtime
                 }
                 var email = employee.Email;
                 var fullName = employee.FullName;
-                var part = employee.Part.ToUpper();
-                var department = employee.Department.ToUpper();
-                var title = employee.Title.ToUpper();
                 var linkFinger = linkChamCong + employee.Id;
 
                 var leaves = dbContext.Leaves.Find(m => m.EmployeeId.Equals(employeeId)).ToList();
@@ -193,12 +190,6 @@ namespace xtime
                         var employeeWorkTimeLog = new EmployeeWorkTimeLog
                         {
                             EmployeeId = employee.Id,
-                            EmployeeName = employee.FullName,
-                            EmployeeTitle = employee.Title.ToUpper(),
-                            Department = employee.Department.ToUpper(),
-                            DepartmentId = employee.DepartmentId,
-                            DepartmentAlias = employee.DepartmentAlias,
-                            Part = employee.Part.ToUpper(),
                             EnrollNumber = employeeFinger,
                             Year = year,
                             Month = month,
@@ -232,7 +223,7 @@ namespace xtime
 
                         if (existLeave != null)
                         {
-                            decimal numberLeave = existLeave.Number;
+                            double numberLeave = (double)existLeave.Number;
 
                             var leaveType = leaveTypes.Where(m => m.Id.Equals(existLeave.TypeId)).FirstOrDefault();
                             if (leaveType != null)
@@ -275,7 +266,7 @@ namespace xtime
                                     {
                                         leaveTimeSpan = leaveTo.TimeOfDay - startWorkingScheduleTime;
                                     }
-                                    if (leaveTimeSpan.TotalHours < 4)
+                                    if (leaveTimeSpan.TotalHours <= 4)
                                     {
                                         employeeWorkTimeLog.SoNgayNghi = 0.5;
                                     }
@@ -301,12 +292,13 @@ namespace xtime
                         {
                             if (employeeWorkTimeLog.Mode == (int)ETimeWork.Normal)
                             {
-                                employeeWorkTimeLog.Mode = (int)ETimeWork.None;
+                                //employeeWorkTimeLog.Mode = (int)ETimeWork.None;
+                                employeeWorkTimeLog.Status = (int)EStatusWork.XacNhanCong;
                             }
                         }
                         else
                         {
-                            // Always have data. (No data in timekeeping null)
+                            employeeWorkTimeLog.Mode = (int)ETimeWork.Normal;
                             var records = timekeeping.times.OrderBy(m => m.Date).ToList();
                             #region Procees Times
                             var inLogTime = records.First().TimeOnlyRecord;
@@ -380,6 +372,11 @@ namespace xtime
                                         }
                                     }
                                 }
+
+                                if (employeeWorkTimeLog.SoNgayNghi > 0)
+                                {
+                                    status = (int)EStatusWork.DuCong;
+                                }
                             }
                             else
                             {
@@ -431,6 +428,11 @@ namespace xtime
                                         workDay += -0.5;
                                     }
                                 }
+
+                                if (employeeWorkTimeLog.SoNgayNghi > 0)
+                                {
+                                    status = (int)EStatusWork.DuCong;
+                                }
                             }
 
                             if (tangcathucte.TotalHours >= 1)
@@ -444,7 +446,6 @@ namespace xtime
 
                             employeeWorkTimeLog.VerifyMode = records[0].VerifyMode;
                             employeeWorkTimeLog.InOutMode = records[0].InOutMode;
-
 
                             employeeWorkTimeLog.In = inLogTime;
                             employeeWorkTimeLog.Out = outLogTime;
@@ -483,27 +484,30 @@ namespace xtime
                             }
                             if (isUpdate)
                             {
-                                var filter = Builders<EmployeeWorkTimeLog>.Filter.Eq(m => m.Id, workTimeLogDb.Id);
-                                var update = Builders<EmployeeWorkTimeLog>.Update
-                                    .Set(m => m.EnrollNumber, employeeWorkTimeLog.EnrollNumber)
-                                    .Set(m => m.In, employeeWorkTimeLog.In)
-                                    .Set(m => m.Out, employeeWorkTimeLog.Out)
-                                    .Set(m => m.WorkTime, employeeWorkTimeLog.WorkTime)
-                                    .Set(m => m.Workcode, employeeWorkTimeLog.Workcode)
-                                    .Set(m => m.WorkDay, employeeWorkTimeLog.WorkDay)
-                                    .Set(m => m.Late, employeeWorkTimeLog.Late)
-                                    .Set(m => m.Early, employeeWorkTimeLog.Early)
-                                    .Set(m => m.Status, employeeWorkTimeLog.Status)
-                                    .Set(m => m.StatusLate, employeeWorkTimeLog.StatusLate)
-                                    .Set(m => m.StatusEarly, employeeWorkTimeLog.StatusEarly)
-                                    .Set(m => m.Logs, employeeWorkTimeLog.Logs)
-                                    .Set(m => m.Mode, employeeWorkTimeLog.Mode)
-                                    .Set(m => m.SoNgayNghi, employeeWorkTimeLog.SoNgayNghi)
-                                    .Set(m => m.StatusTangCa, employeeWorkTimeLog.StatusTangCa)
-                                    .Set(m => m.TangCaThucTe, employeeWorkTimeLog.TangCaThucTe)
-                                    .Set(m => m.Reason, employeeWorkTimeLog.Reason)
-                                    .Set(m => m.UpdatedOn, DateTime.Now);
-                                dbContext.EmployeeWorkTimeLogs.UpdateOne(filter, update);
+                                if (employeeWorkTimeLog.Logs != null && employeeWorkTimeLog.Logs.Count > 0)
+                                {
+                                    var filter = Builders<EmployeeWorkTimeLog>.Filter.Eq(m => m.Id, workTimeLogDb.Id);
+                                    var update = Builders<EmployeeWorkTimeLog>.Update
+                                        .Set(m => m.EnrollNumber, employeeWorkTimeLog.EnrollNumber)
+                                        .Set(m => m.In, employeeWorkTimeLog.In)
+                                        .Set(m => m.Out, employeeWorkTimeLog.Out)
+                                        .Set(m => m.WorkTime, employeeWorkTimeLog.WorkTime)
+                                        .Set(m => m.Workcode, employeeWorkTimeLog.Workcode)
+                                        .Set(m => m.WorkDay, employeeWorkTimeLog.WorkDay)
+                                        .Set(m => m.Late, employeeWorkTimeLog.Late)
+                                        .Set(m => m.Early, employeeWorkTimeLog.Early)
+                                        .Set(m => m.Status, employeeWorkTimeLog.Status)
+                                        .Set(m => m.StatusLate, employeeWorkTimeLog.StatusLate)
+                                        .Set(m => m.StatusEarly, employeeWorkTimeLog.StatusEarly)
+                                        .Set(m => m.Logs, employeeWorkTimeLog.Logs)
+                                        .Set(m => m.Mode, employeeWorkTimeLog.Mode)
+                                        .Set(m => m.SoNgayNghi, employeeWorkTimeLog.SoNgayNghi)
+                                        .Set(m => m.StatusTangCa, employeeWorkTimeLog.StatusTangCa)
+                                        .Set(m => m.TangCaThucTe, employeeWorkTimeLog.TangCaThucTe)
+                                        .Set(m => m.Reason, employeeWorkTimeLog.Reason)
+                                        .Set(m => m.UpdatedOn, DateTime.Now);
+                                    dbContext.EmployeeWorkTimeLogs.UpdateOne(filter, update);
+                                }
                             }
                         }
                         #endregion
@@ -595,7 +599,6 @@ namespace xtime
                                     EmployeeId = emailMessage.EmployeeId
                                 };
                                 dbContext.ScheduleEmails.InsertOne(scheduleEmail);
-                                //new AuthMessageSender().SendEmail(emailMessage);
                             }
                         }
                         #endregion
@@ -626,9 +629,9 @@ namespace xtime
                 {
                     EmployeeId = employee.Id,
                     EmployeeName = employee.FullName,
-                    Part = employee.Part.ToUpper(),
-                    Department = employee.Department.ToUpper(),
-                    Title = employee.Title.ToUpper(),
+                    //Part = employee.Part.ToUpper(),
+                    //Department = employee.Department.ToUpper(),
+                    //Title = employee.Title.ToUpper(),
                     EnrollNumber = workplace.Fingerprint,
                     WorkplaceCode = workplace.Code,
                     Month = month,

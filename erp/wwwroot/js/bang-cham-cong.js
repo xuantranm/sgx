@@ -9,8 +9,20 @@
             theme: "bootstrap"
         });
 
-    $('.ddlphong').on('change', function () {
-        formSubmit();
+    $('.ddlNl').on('change', function () {
+        changeByCongTyChiNhanh($(this).val());
+    });
+
+    $('.ddlKcn').on('change', function () {
+        changeByKhoiChucNang($(this).val());
+    });
+
+    $('.ddlPb').on('change', function () {
+        changeByPhongBan($(this).val());
+    });
+
+    $('.ddlBp').on('change', function () {
+        changeByBoPhan($(this).val());
     });
 
     $('.ddlEmployeeId').on('change', function () {
@@ -176,6 +188,99 @@
             }
         }
     }
+
+    function changeByCongTyChiNhanh(congtychinhanh) {
+        $.ajax({
+            type: "GET",
+            url: "/api/GetByCongTyChiNhanh",
+            contentType: "application/json; charset=utf-8",
+            data: { congtychinhanh: congtychinhanh },
+            dataType: "json",
+            success: function (data) {
+                if (data.result === true) {
+                    var $kcn = $(".ddlKcn");
+                    $kcn.empty();
+                    if (data.khoichucnangs.length > 1) {
+                        $kcn.append($("<option></option>")
+                            .attr("value", "").text("Chọn"));
+                    }
+                    $.each(data.khoichucnangs, function (key, khoichucnang) {
+                        $kcn.append($("<option></option>")
+                            .attr("value", khoichucnang.id).text(khoichucnang.name));
+                    });
+
+                    if (data.khoichucnangs.length === 1) {
+                        changeByKhoiChucNang($('.ddlKcn').val());
+                    }
+
+                    var $pb = $(".ddlPb");
+                    $pb.empty();
+
+                    var $bp = $(".ddlBp");
+                    $bp.empty();
+                }
+            }
+        });
+    }
+
+    function changeByKhoiChucNang(khoichucnang) {
+        $.ajax({
+            type: "GET",
+            url: "/api/GetByKhoiChucNang",
+            contentType: "application/json; charset=utf-8",
+            data: { khoichucnang: khoichucnang },
+            dataType: "json",
+            success: function (data) {
+                if (data.result === true) {
+                    $('.ddlNl').val(data.congTyChiNhanhId);
+
+                    var $pb = $(".ddlPb");
+                    $pb.empty();
+                    if (data.phongbans.length > 1) {
+                        $pb.append($("<option></option>")
+                            .attr("value", "").text("Chọn"));
+                    }
+                    $.each(data.phongbans, function (key, phongban) {
+                        $pb.append($("<option></option>")
+                            .attr("value", phongban.id).text(phongban.name));
+                    });
+
+                    if (data.phongbans.length === 1) {
+                        changeByPhongBan($('.ddlPb').val());
+                    }
+                }
+            }
+        });
+    }
+
+    function changeByPhongBan(phongban) {
+        $.ajax({
+            type: "GET",
+            url: "/api/GetByPhongBan",
+            contentType: "application/json; charset=utf-8",
+            data: { phongban: phongban },
+            dataType: "json",
+            success: function (data) {
+                if (data.result === true) {
+                    var $bp = $(".ddlBp");
+                    $bp.empty();
+                    if (data.bophans.length > 1) {
+                        $bp.append($("<option></option>")
+                            .attr("value", "").text("Chọn"));
+                    }
+                    $.each(data.bophans, function (key, bophan) {
+                        $bp.append($("<option></option>")
+                            .attr("value", bophan.id).text(bophan.name));
+                    });
+                }
+            }
+        });
+    }
+
+    function changeByBoPhan(bophan) {
+        formSubmit();
+    }
+
 });
 
 

@@ -183,6 +183,8 @@ namespace erp.Controllers
             {
                 _logger.LogInformation(LoggingEvents.GenerateItems, "Generate first data");
 
+                InitTrangThai();
+
                 //InitWorkingTime();
 
                 //InitContracts();
@@ -205,7 +207,7 @@ namespace erp.Controllers
                 //InitLocations();
 
                 //InitSalaryContentTypes();
-                InitSalaryContents();
+                //InitSalaryContents();
                 //InitBanks();
                 //InitSalaryMonthlyTypes();
                 #endregion
@@ -222,6 +224,36 @@ namespace erp.Controllers
         #endregion
 
         #region Factory
+        private void InitTrangThai()
+        {
+            int code = 1;
+            var name = "Báo động";
+            dbContext.TrangThais.InsertOne(new TrangThai()
+            {
+                Code = "TT" + code,
+                Name = name,
+                Alias = Utility.AliasConvert(name),
+            });
+            code++;
+
+            name = "An toàn";
+            dbContext.TrangThais.InsertOne(new TrangThai()
+            {
+                Code = "TT" + code,
+                Name = name,
+                Alias = Utility.AliasConvert(name),
+            });
+            code++;
+
+            name = "Vượt an toàn";
+            dbContext.TrangThais.InsertOne(new TrangThai()
+            {
+                Code = "TT" + code,
+                Name = name,
+                Alias = Utility.AliasConvert(name),
+            });
+        }
+
         public void InitShift()
         {
             dbContext.FactoryShifts.DeleteMany(new BsonDocument());
@@ -1168,76 +1200,76 @@ namespace erp.Controllers
             _cache.SetString(Constants.Collection.ProductGroups, JsonConvert.SerializeObject(dbContext.ProductGroups.Find(m => true).ToList()));
         }
 
-        public void InitProducts()
-        {
-            var User = dbContext.Employees.Find(m => m.UserName.Equals(Constants.System.account)).First().Id;
-            dbContext.Products.DeleteMany(new BsonDocument());
-            // Read excel
-            string sWebRootFolder = _env.WebRootPath;
-            string sFileName = @"baocaotong.xlsx";
-            FileInfo file = new FileInfo(Path.Combine(sWebRootFolder, sFileName));
-            try
-            {
-                using (ExcelPackage package = new ExcelPackage(file))
-                {
-                    ExcelWorksheet worksheet = package.Workbook.Worksheets[1];
-                    int rowCount = worksheet.Dimension.Rows;
-                    int ColCount = worksheet.Dimension.Columns;
-                    for (int row = 4; row <= rowCount; row++)
-                    {
-                        try
-                        {
-                            var product = new Product()
-                            {
-                                CodeAccountant = worksheet.Cells[row, 2].Value != null ? worksheet.Cells[row, 2].Value.ToString() : string.Empty,
-                                Code = worksheet.Cells[row, 3].Value != null ? worksheet.Cells[row, 3].Value.ToString() : string.Empty,
-                                Name = worksheet.Cells[row, 4].Value != null ? worksheet.Cells[row, 4].Value.ToString() : string.Empty,
-                                Unit = worksheet.Cells[row, 5].Value != null ? Utility.ToTitleCase(worksheet.Cells[row, 5].Value.ToString().Trim()) : string.Empty,
-                                Group = worksheet.Cells[row, 6].Value != null ? worksheet.Cells[row, 6].Value.ToString() : string.Empty,
-                                GroupDevide = worksheet.Cells[row, 7].Value != null ? worksheet.Cells[row, 7].Value.ToString() : string.Empty,
-                                Location = worksheet.Cells[row, 8].Value != null ? Utility.ToTitleCase(worksheet.Cells[row, 8].Value.ToString().Trim()) : string.Empty,
-                                Note = worksheet.Cells[row, 9].Value != null ? worksheet.Cells[row, 9].Value.ToString() : string.Empty,
-                                QuantityInStoreSafe = worksheet.Cells[row, 10].Value != null ? Decimal.Parse(worksheet.Cells[row, 10].Value.ToString()) : 0,
-                                QuantityInStoreSafeQ4 = worksheet.Cells[row, 11].Value != null ? Decimal.Parse(worksheet.Cells[row, 11].Value.ToString()) : 0,
-                                CreatedBy = User,
-                                UpdatedBy = User,
-                                ApprovedBy = User,
-                                Status = "Avg"
-                            };
+        //public void InitProducts()
+        //{
+        //    var User = dbContext.Employees.Find(m => m.UserName.Equals(Constants.System.account)).First().Id;
+        //    dbContext.Products.DeleteMany(new BsonDocument());
+        //    // Read excel
+        //    string sWebRootFolder = _env.WebRootPath;
+        //    string sFileName = @"baocaotong.xlsx";
+        //    FileInfo file = new FileInfo(Path.Combine(sWebRootFolder, sFileName));
+        //    try
+        //    {
+        //        using (ExcelPackage package = new ExcelPackage(file))
+        //        {
+        //            ExcelWorksheet worksheet = package.Workbook.Worksheets[1];
+        //            int rowCount = worksheet.Dimension.Rows;
+        //            int ColCount = worksheet.Dimension.Columns;
+        //            for (int row = 4; row <= rowCount; row++)
+        //            {
+        //                try
+        //                {
+        //                    var product = new Product()
+        //                    {
+        //                        CodeAccountant = worksheet.Cells[row, 2].Value != null ? worksheet.Cells[row, 2].Value.ToString() : string.Empty,
+        //                        Code = worksheet.Cells[row, 3].Value != null ? worksheet.Cells[row, 3].Value.ToString() : string.Empty,
+        //                        Name = worksheet.Cells[row, 4].Value != null ? worksheet.Cells[row, 4].Value.ToString() : string.Empty,
+        //                        Unit = worksheet.Cells[row, 5].Value != null ? Utility.ToTitleCase(worksheet.Cells[row, 5].Value.ToString().Trim()) : string.Empty,
+        //                        Group = worksheet.Cells[row, 6].Value != null ? worksheet.Cells[row, 6].Value.ToString() : string.Empty,
+        //                        GroupDevide = worksheet.Cells[row, 7].Value != null ? worksheet.Cells[row, 7].Value.ToString() : string.Empty,
+        //                        Location = worksheet.Cells[row, 8].Value != null ? Utility.ToTitleCase(worksheet.Cells[row, 8].Value.ToString().Trim()) : string.Empty,
+        //                        Note = worksheet.Cells[row, 9].Value != null ? worksheet.Cells[row, 9].Value.ToString() : string.Empty,
+        //                        QuantityInStoreSafe = worksheet.Cells[row, 10].Value != null ? Decimal.Parse(worksheet.Cells[row, 10].Value.ToString()) : 0,
+        //                        QuantityInStoreSafeQ4 = worksheet.Cells[row, 11].Value != null ? Decimal.Parse(worksheet.Cells[row, 11].Value.ToString()) : 0,
+        //                        CreatedBy = User,
+        //                        UpdatedBy = User,
+        //                        ApprovedBy = User,
+        //                        Status = "Avg"
+        //                    };
 
-                            if (!string.IsNullOrEmpty(product.Code))
-                            {
-                                dbContext.Products.InsertOne(product);
-                                #region Activities
-                                var activity = new TrackingUser
-                                {
-                                    UserId = User,
-                                    Function = Constants.Collection.Stores,
-                                    Action = "create",
-                                    Value = product.Code,
-                                    Content = "create" + " " + Constants.Collection.Stores + " " + product.Code,
-                                    Created = DateTime.Now,
-                                    Link = "/hang-hoa/chi-tiet/" + product.Code
-                                };
-                                dbContext.TrackingUsers.InsertOne(activity);
-                                #endregion
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogWarning(LoggingEvents.GetItemNotFound, ex, "GetById({ID}) NOT FOUND", User);
-                            var mess = ex.ToString();
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                // IMPLEMENT LOG
-                var mess = ex.ToString();
-            }
-            _cache.SetString(Constants.Collection.Products, JsonConvert.SerializeObject(dbContext.Products.Find(m => true).ToList()));
-        }
+        //                    if (!string.IsNullOrEmpty(product.Code))
+        //                    {
+        //                        dbContext.Products.InsertOne(product);
+        //                        #region Activities
+        //                        var activity = new TrackingUser
+        //                        {
+        //                            UserId = User,
+        //                            Function = Constants.Collection.Stores,
+        //                            Action = "create",
+        //                            Value = product.Code,
+        //                            Content = "create" + " " + Constants.Collection.Stores + " " + product.Code,
+        //                            Created = DateTime.Now,
+        //                            Link = "/hang-hoa/chi-tiet/" + product.Code
+        //                        };
+        //                        dbContext.TrackingUsers.InsertOne(activity);
+        //                        #endregion
+        //                    }
+        //                }
+        //                catch (Exception ex)
+        //                {
+        //                    _logger.LogWarning(LoggingEvents.GetItemNotFound, ex, "GetById({ID}) NOT FOUND", User);
+        //                    var mess = ex.ToString();
+        //                }
+        //            }
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        // IMPLEMENT LOG
+        //        var mess = ex.ToString();
+        //    }
+        //    _cache.SetString(Constants.Collection.Products, JsonConvert.SerializeObject(dbContext.Products.Find(m => true).ToList()));
+        //}
 
         public void InitUnits()
         {

@@ -170,6 +170,19 @@ namespace erp.Controllers
         #endregion
 
         #region EMPLOYEE
+        public ActionResult EmployeeDisable(string Id)
+        {
+            var login = User.Identity.Name;
+            var filter = Builders<Employee>.Filter.Eq(m => m.Id, Id);
+            var update = Builders<Employee>.Update
+                .Set(m => m.Enable, false)
+                .Set(m => m.UpdatedBy, login)
+                .Set(m => m.UpdatedOn, DateTime.Now);
+
+            dbContext.Employees.UpdateOne(filter, update);
+            return Json(new { result = true, message = "Cập nhật thành công" });
+        }
+
         public JsonResult GetByCongTyChiNhanh(string congtychinhanh)
         {
             var watch = System.Diagnostics.Stopwatch.StartNew();

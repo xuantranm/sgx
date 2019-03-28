@@ -730,6 +730,19 @@ namespace Common.Utilities
             return new DateTime(year, month, 25);
         }
 
+        public static DateTime GetSalaryToDate(string thang)
+        {
+            if (string.IsNullOrEmpty(thang))
+            {
+                var today = DateTime.Now;
+                return today.Day > 25 ? new DateTime(today.Year, today.Month, 25) : new DateTime(today.AddMonths(-1).Year, today.AddMonths(-1).Month, 25);
+            }
+
+            int month = Convert.ToInt32(thang.Split("-")[0]);
+            int year = Convert.ToInt32(thang.Split("-")[1]);
+            return new DateTime(year, month, 25);
+        }
+
         public static DateTime EndWorkingMonthByDate(DateTime? date)
         {
             var dateHere = DateTime.Now;

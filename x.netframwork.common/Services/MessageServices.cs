@@ -263,6 +263,14 @@ namespace Services
                     //set encoding
                     mail.BodyEncoding = Encoding.UTF8;
                     mail.Body = emailMessage.BodyContent;
+                    if (emailMessage.Attachments != null && emailMessage.Attachments.Count > 0)
+                    {
+                        foreach(var attachment in emailMessage.Attachments)
+                        {
+                            mail.Attachments.Add(new Attachment(attachment));
+                        }
+                    }
+
                     client.Send(mail);
 
                     #region Update status

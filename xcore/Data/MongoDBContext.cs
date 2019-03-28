@@ -30,6 +30,56 @@ namespace Data
             }
         }
 
+        #region KE HOACH TONG HOP
+        public IMongoCollection<KhoNguyenLieu> KhoNguyenLieus
+        {
+            get
+            {
+                return _database.GetCollection<KhoNguyenLieu>("KhoNguyenLieus");
+            }
+        }
+
+        public IMongoCollection<KhoThanhPham> KhoThanhPhams
+        {
+            get
+            {
+                return _database.GetCollection<KhoThanhPham>("KhoThanhPhams");
+            }
+        }
+
+        public IMongoCollection<KhoBun> KhoBuns
+        {
+            get
+            {
+                return _database.GetCollection<KhoBun>("KhoBuns");
+            }
+        }
+
+        public IMongoCollection<KhoXuLy> KhoXuLys
+        {
+            get
+            {
+                return _database.GetCollection<KhoXuLy>("KhoXuLys");
+            }
+        }
+
+        public IMongoCollection<TiepNhanXuLy> TiepNhanXuLys
+        {
+            get
+            {
+                return _database.GetCollection<TiepNhanXuLy>("TiepNhanXuLys");
+            }
+        }
+
+        public IMongoCollection<TrangThai> TrangThais
+        {
+            get
+            {
+                return _database.GetCollection<TrangThai>("TrangThais");
+            }
+        }
+        #endregion
+
         #region Location
         public IMongoCollection<Ip> Ips
         {
@@ -928,6 +978,15 @@ namespace Data
             get
             {
                 return _database.GetCollection<Unit>("Units");
+            }
+        }
+
+        // Use temp. Remove later
+        public IMongoCollection<ProductV100> ProductV100s
+        {
+            get
+            {
+                return _database.GetCollection<ProductV100>("ProductV100s");
             }
         }
 

@@ -1,6 +1,32 @@
 ﻿$(function () {
     eventAutocomplete();
 
+    $(".delete-item").on("click", function (event) {
+        var id = $(this).attr("data-id");
+        if (confirm("Bạn muốn xóa dữ liệu này!")) {
+            $.ajax({
+                type: "GET",
+                url: "/api/EmployeeDisable",
+                contentType: "application/json; charset=utf-8",
+                data: {
+                    Id: id
+                },
+                dataType: "json",
+                success: function (data) {
+                    if (data.result === true) {
+                        toastr.success(data.message);
+                        setTimeout(function () {
+                            location.reload();
+                        }, 1000);
+                    }
+                    else {
+                        toastr.error(data.message);
+                    }
+                }
+            });
+        }
+    });
+
     $('.js-select2-basic-single').select2(
         {
             theme: "bootstrap"
@@ -53,7 +79,7 @@
         } else {
             $('#' + obj).addClass('d-none');
             $('.icon-mark', $('.pb-' + obj)).removeClass('icon-chevron-up').addClass('icon-chevron-down');
-            
+
         }
     });
 

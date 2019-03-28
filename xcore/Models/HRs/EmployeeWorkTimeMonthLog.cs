@@ -66,9 +66,9 @@ namespace Models
         public string Rule { get; set; } = "26-25";
 
         #region Dieu Chinh Tay (Lấy dữ liệu ở đây)
-        public double NgayLamViecChinhTay { get; set; }
-        public double PhepNamChinhTay { get; set; }
-        public double LeTetChinhTay { get; set; }
+        public double NgayLamViecChinhTay { get; set; } = 0;
+        public double PhepNamChinhTay { get; set; } = 0;
+        public double LeTetChinhTay { get; set; } = 0;
         #endregion
 
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]

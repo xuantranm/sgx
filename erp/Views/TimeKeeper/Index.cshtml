@@ -90,15 +90,8 @@
                     </div>
                 </div>
             </div>
-            <!--end of col-->
-            @*<div class="col-auto">
-                    <button class="btn btn-primary"><i class="icon-add-user mr-1"></i> Invite Member</button>
-                </div>*@
-            <!--end of col-->
         </div>
-        <!--end of row-->
     </div>
-    <!--end of container-->
 </section>
 <h5 class="mb-4">Tổng quan</h5>
 <div class="card">
@@ -258,14 +251,13 @@
                                     {
                                         if (log.Status == (int)EStatusWork.XacNhanCong)
                                         {
-
                                             if (log.Month == currentMonth)
                                             {
                                                 <input type="button" class="btn btn-sm btn-danger" value="Xác nhận công" data-toggle="modal" data-target="#requestTimeKeeperModal" data-id="@log.Id" />
                                             }
                                             else
                                             {
-                                                if (today < endDateRequest)
+                                                if (today <= endDateRequest)
                                                 {
                                                     <input type="button" class="btn btn-sm btn-danger" value="Xác nhận công" data-toggle="modal" data-target="#requestTimeKeeperModal" data-id="@log.Id" />
                                                 }
@@ -323,9 +315,6 @@
                                         var statusBag = statusTangCa == (int)ETangCa.TuChoi ? "badge-pill" : "badge-info";
                                         <span class="badge @statusBag">@Constants.StringTangCa(statusTangCa)</span>
                                     }
-
-
-
                                 }
                             }
                         </td>

@@ -59,61 +59,61 @@ namespace erp.Controllers
             _logger = logger;
         }
 
-        [Route(Constants.LinkTimeKeeper.Manage)]
-        public async Task<IActionResult> Manage(string times, string employee, string code, string finger, string nl)
-        {
-            #region Authorization
-            var login = User.Identity.Name;
-            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
-            ViewData["LoginUserName"] = loginUserName;
+        //[Route(Constants.LinkTimeKeeper.Manage)]
+        //public async Task<IActionResult> Manage(string times, string employee, string code, string finger, string nl)
+        //{
+        //    #region Authorization
+        //    var login = User.Identity.Name;
+        //    var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+        //    ViewData["LoginUserName"] = loginUserName;
 
-            var loginInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
-            if (loginInformation == null)
-            {
-                #region snippet1
-                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                #endregion
-                return RedirectToAction("login", "account");
-            }
+        //    var loginInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
+        //    if (loginInformation == null)
+        //    {
+        //        #region snippet1
+        //        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        //        #endregion
+        //        return RedirectToAction("login", "account");
+        //    }
 
-            // Check owner
-            //if (id != login)
-            //{
-            //    if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, "nhan-su", (int)ERights.View)))
-            //    {
-            //        return RedirectToAction("AccessDenied", "Account");
-            //    }
-            //}
+        //    // Check owner
+        //    //if (id != login)
+        //    //{
+        //    //    if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, "nhan-su", (int)ERights.View)))
+        //    //    {
+        //    //        return RedirectToAction("AccessDenied", "Account");
+        //    //    }
+        //    //}
 
-            var userInformation = loginInformation;
-            #endregion
+        //    var userInformation = loginInformation;
+        //    #endregion
 
-            #region Dropdownlist
-            #endregion
+        //    #region Dropdownlist
+        //    #endregion
 
-            var toDate = Utility.WorkingMonthToDate(times);
-            var fromDate = toDate.AddMonths(-1).AddDays(1);
-            ViewData["DayWorking"] = Utility.BusinessDaysUntil(fromDate, toDate);
+        //    var toDate = Utility.WorkingMonthToDate(times);
+        //    var fromDate = toDate.AddMonths(-1).AddDays(1);
+        //    ViewData["DayWorking"] = Utility.BusinessDaysUntil(fromDate, toDate);
 
-            #region Filter
-            var builder = Builders<EmployeeWorkTimeLog>.Filter;
-            var filter = builder.Gte(m => m.Date, fromDate) & builder.Lte(m => m.Date, toDate);
+        //    #region Filter
+        //    var builder = Builders<EmployeeWorkTimeLog>.Filter;
+        //    var filter = builder.Gte(m => m.Date, fromDate) & builder.Lte(m => m.Date, toDate);
 
-            var builderEmployee = Builders<Employee>.Filter;
-            var filterEmployee = builderEmployee.Eq(m => m.Enable, true) & builderEmployee.Eq(m => m.IsTimeKeeper, false);
-            #endregion
+        //    var builderEmployee = Builders<Employee>.Filter;
+        //    var filterEmployee = builderEmployee.Eq(m => m.Enable, true) & builderEmployee.Eq(m => m.IsTimeKeeper, false);
+        //    #endregion
 
-            var timekeepings = await dbContext.EmployeeWorkTimeLogs.Find(filter).SortBy(m => m.Date).ToListAsync();
-            var employees = await dbContext.Employees.Find(filterEmployee).ToListAsync();
-            var viewModel = new TimeKeeperViewModel
-            {
-                EmployeeWorkTimeLogs = timekeepings,
-                Employees = employees,
-                StartWorkingDate = fromDate,
-                EndWorkingDate = toDate
-            };
-            return View(viewModel);
-        }
+        //    var timekeepings = await dbContext.EmployeeWorkTimeLogs.Find(filter).SortBy(m => m.Date).ToListAsync();
+        //    var employees = await dbContext.Employees.Find(filterEmployee).ToListAsync();
+        //    var viewModel = new TimeKeeperViewModel
+        //    {
+        //        EmployeeWorkTimeLogs = timekeepings,
+        //        Employees = employees,
+        //        StartWorkingDate = fromDate,
+        //        EndWorkingDate = toDate
+        //    };
+        //    return View(viewModel);
+        //}
 
         [Route(Constants.LinkTimeKeeper.Index)]
         public async Task<IActionResult> Index(string thang, string id)
@@ -971,7 +971,7 @@ namespace erp.Controllers
 
         #region CHAM CONG
         [Route(Constants.LinkTimeKeeper.Timer)]
-        public async Task<IActionResult> BangChamCong(DateTime Tu, DateTime Den, string thang, string khoi, string phongban, string id)
+        public async Task<IActionResult> BangChamCong(DateTime Tu, DateTime Den, string Thang, string Nl, string Kcn, string Pb, string Bp, string Fg, string Id)
         {
             #region Authorization
             var login = User.Identity.Name;
@@ -994,34 +994,242 @@ namespace erp.Controllers
 
             #endregion
 
+            var linkCurrent = string.Empty;
+
             #region DDL
             var sortTimes = Utility.DllMonths();
-            var departments = dbContext.Departments.Find(m => m.Enable.Equals(true)).SortBy(m => m.Order).ToList();
+            var employees = await dbContext.Employees.Find(m => m.Enable.Equals(true) && !m.UserName.Equals(Constants.System.account)).SortBy(m => m.FullName).ToListAsync();
+            var congtychinhanhs = dbContext.CongTyChiNhanhs.Find(m => m.Enable.Equals(true)).ToList();
+            Nl = string.IsNullOrEmpty(Nl) ? congtychinhanhs.First().Id : Nl;
 
-            var builderE = Builders<Employee>.Filter;
-            var filterE = builderE.Eq(m => m.Enable, true) & !builderE.Eq(m => m.UserName, Constants.System.account);
-            var intKhoi = (int)EKhoiLamViec.VP;
-            if (!string.IsNullOrEmpty(khoi))
-            {
-                switch (khoi)
-                {
-                    case "SX":
-                        intKhoi = (int)EKhoiLamViec.SX;
-                        break;
-                    case "NM":
-                        intKhoi = (int)EKhoiLamViec.NM;
-                        break;
-                }
-                filterE = filterE & builderE.Eq(m => m.SalaryType, intKhoi);
-            }
-            var employees = await dbContext.Employees.Find(filterE).ToListAsync();
+            var khoichucnangs = dbContext.KhoiChucNangs.Find(m => m.Enable.Equals(true)).ToList();
+            Kcn = string.IsNullOrEmpty(Kcn) ? khoichucnangs.Where(m => m.CongTyChiNhanhId.Equals(Nl)).First().Id : Kcn;
+
+            var phongbans = dbContext.PhongBans.Find(m => m.Enable.Equals(true) && m.KhoiChucNangId.Equals(Kcn)).ToList();
+            Pb = string.IsNullOrEmpty(Pb) ? phongbans.Where(m => m.KhoiChucNangId.Equals(Kcn)).First().Id : Pb;
+
+            var bophans = dbContext.BoPhans.Find(m => m.Enable.Equals(true) && m.PhongBanId.Equals(Pb) && string.IsNullOrEmpty(m.Parent)).ToList();
+            var chucvus = dbContext.ChucVus.Find(m => m.Enable.Equals(true)).ToList();
             #endregion
 
             #region Times
             var today = DateTime.Now.Date;
-            if (!string.IsNullOrEmpty(thang))
+            if (!string.IsNullOrEmpty(Thang))
             {
-                Den = Utility.GetToDate(thang);
+                Den = Utility.GetToDate(Thang);
+                Tu = Den.AddMonths(-1).AddDays(1);
+                var year = Den.Year;
+                var month = Den.Month;
+                linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "?";
+                linkCurrent += "Thang=" + Thang;
+            }
+            else
+            {
+                if (Den < Constants.MinDate)
+                {
+                    Den = today;
+                }
+                if (Tu < Constants.MinDate)
+                {
+                    var previous = Den.Day > 25 ? Den : Den.AddMonths(-1);
+                    Tu = new DateTime(previous.Year, previous.Month, 26);
+                }
+            }
+            #endregion
+
+            #region Filter
+            var builder = Builders<Employee>.Filter;
+            var filter = !builder.Eq(i => i.UserName, Constants.System.account) & builder.Eq(m => m.Enable, true) & builder.Eq(m => m.Leave, false);
+
+            filter = filter & builder.Eq(m => m.CongTyChiNhanh, Nl);
+            linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "?";
+            linkCurrent += "Nl=" + Nl;
+
+            filter = filter & builder.Eq(m => m.KhoiChucNang, Kcn);
+            linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "?";
+            linkCurrent += "Kcn=" + Kcn;
+
+            filter = filter & builder.Eq(m => m.PhongBan, Pb);
+            linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "?";
+            linkCurrent += "Pb=" + Pb;
+
+            if (!string.IsNullOrEmpty(Bp))
+            {
+                filter = filter & builder.Eq(m => m.BoPhan, Bp);
+                linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "?";
+                linkCurrent += "Bp=" + Bp;
+            }
+            if (!string.IsNullOrEmpty(Id))
+            {
+                filter = filter & builder.Eq(x => x.Id, Id.Trim());
+                linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "?";
+                linkCurrent += "Id=" + Id;
+            }
+            if (!string.IsNullOrEmpty(Fg))
+            {
+                filter = filter & builder.Where(m => m.Workplaces.Any(c => c.Fingerprint == Fg.Trim()));
+                linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "?";
+                linkCurrent += "Fg=" + Fg;
+            }
+
+            var fields = Builders<Employee>.Projection.Include(p => p.Id);
+            var employeeFilters = dbContext.Employees.Find(filter).ToList();
+
+            var employeeIds = dbContext.Employees.Find(filter).Project<Employee>(fields).ToList().Select(m => m.Id).ToList();
+
+            var builderT = Builders<EmployeeWorkTimeLog>.Filter;
+            var filterT = builderT.Eq(m => m.Enable, true)
+                        & builderT.Gte(m => m.Date, Tu)
+                        & builderT.Lte(m => m.Date, Den);
+            if (employeeIds != null && employeeIds.Count > 0)
+            {
+                filterT = filterT & builderT.Where(m => employeeIds.Contains(m.EmployeeId));
+            }
+            #endregion
+
+            var times = dbContext.EmployeeWorkTimeLogs.Find(filterT).SortBy(m => m.Date).ToList();
+
+            var results = new List<TimeKeeperDisplay>();
+
+            #region method 1: base employee
+            foreach (var employee in employeeFilters)
+            {
+                var employeeWorkTimeLogs = times.Where(m => m.EmployeeId.Equals(employee.Id)).ToList();
+                if (employeeWorkTimeLogs == null || employeeWorkTimeLogs.Count == 0) continue;
+
+                var enrollNumber = string.Empty;
+                var congtychinhanhName = string.Empty;
+                var khoichucnangName = string.Empty;
+                var phongbanName = string.Empty;
+                var bophanName = string.Empty;
+                var bophanConName = string.Empty;
+                var chucvuName = string.Empty;
+
+                enrollNumber = employeeWorkTimeLogs[0].EnrollNumber;
+
+                if (!string.IsNullOrEmpty(employee.CongTyChiNhanh))
+                {
+                    var ctcnE = congtychinhanhs.Where(m => m.Id.Equals(employee.CongTyChiNhanh)).FirstOrDefault();
+                    if (ctcnE != null)
+                    {
+                        congtychinhanhName = ctcnE.Name;
+                    }
+                }
+                if (!string.IsNullOrEmpty(employee.KhoiChucNang))
+                {
+                    var kcnE = khoichucnangs.Where(m => m.Id.Equals(employee.KhoiChucNang)).FirstOrDefault();
+                    if (kcnE != null)
+                    {
+                        khoichucnangName = kcnE.Name;
+                    }
+                }
+                if (!string.IsNullOrEmpty(employee.PhongBan))
+                {
+                    var pbE = phongbans.Where(m => m.Id.Equals(employee.PhongBan)).FirstOrDefault();
+                    if (pbE != null)
+                    {
+                        phongbanName = pbE.Name;
+                    }
+                }
+                if (!string.IsNullOrEmpty(employee.BoPhan))
+                {
+                    var bpE = bophans.Where(m => m.Id.Equals(employee.BoPhan)).FirstOrDefault();
+                    if (bpE != null)
+                    {
+                        bophanName = bpE.Name;
+                    }
+                }
+                if (!string.IsNullOrEmpty(employee.ChucVu))
+                {
+                    var cvE = chucvus.Where(m => m.Id.Equals(employee.ChucVu)).FirstOrDefault();
+                    if (cvE != null)
+                    {
+                        chucvuName = cvE.Name;
+                    }
+                }
+
+                var employeeDisplay = new TimeKeeperDisplay()
+                {
+                    EmployeeWorkTimeLogs = employeeWorkTimeLogs,
+                    Code = employee.Code + "(" + employee.CodeOld + ")",
+                    EnrollNumber = enrollNumber,
+                    FullName = employee.FullName,
+                    CongTyChiNhanh = congtychinhanhName,
+                    KhoiChucNang = khoichucnangName,
+                    PhongBan = phongbanName,
+                    BoPhan = bophanName,
+                    ChucVu = chucvuName
+                };
+                results.Add(employeeDisplay);
+            }
+            #endregion
+
+            #region method 2: base times, skip employee information if exist
+            #endregion
+
+            var viewModel = new TimeKeeperViewModel
+            {
+                TimeKeeperDisplays = results,
+                MonthYears = sortTimes,
+                Employees = employees,
+                CongTyChiNhanhs = congtychinhanhs,
+                KhoiChucNangs = khoichucnangs,
+                PhongBans = phongbans,
+                BoPhans = bophans,
+                Thang = Thang,
+                Tu = Tu,
+                Den = Den,
+                Id = Id,
+                Fg = Fg,
+                Nl = Nl,
+                Pb = Pb,
+                Bp = Bp,
+                LinkCurrent = linkCurrent
+            };
+
+            return View(viewModel);
+        }
+
+        [Route(Constants.LinkTimeKeeper.Timer + "/" + Constants.ActionLink.Export)]
+        public async Task<IActionResult> BangChamCongExport(DateTime Tu, DateTime Den, string Thang, string Nl, string Kcn, string Pb, string Bp, string Fg, string Id)
+        {
+            #region Authorization
+            var login = User.Identity.Name;
+            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+            ViewData["LoginUserName"] = loginUserName;
+
+            var loginInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
+            if (loginInformation == null)
+            {
+                #region snippet1
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                #endregion
+                return RedirectToAction("login", "account");
+            }
+
+            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.BangChamCong, (int)ERights.View)))
+            {
+                return RedirectToAction("AccessDenied", "Account");
+            }
+
+            #endregion
+
+            var linkCurrent = string.Empty;
+            #region DDL
+            var sortTimes = Utility.DllMonths();
+            var employees = await dbContext.Employees.Find(m => m.Enable.Equals(true) && !m.UserName.Equals(Constants.System.account)).SortBy(m => m.FullName).ToListAsync();
+            var congtychinhanhs = dbContext.CongTyChiNhanhs.Find(m => m.Enable.Equals(true)).ToList();
+            var khoichucnangs = dbContext.KhoiChucNangs.Find(m => m.Enable.Equals(true)).ToList();
+            var phongbans = dbContext.PhongBans.Find(m => m.Enable.Equals(true)).ToList();
+            var bophans = dbContext.BoPhans.Find(m => m.Enable.Equals(true) && string.IsNullOrEmpty(m.Parent)).ToList();
+            var chucvus = dbContext.ChucVus.Find(m => m.Enable.Equals(true)).ToList();
+            #endregion
+
+            #region Times
+            var today = DateTime.Now.Date;
+            if (!string.IsNullOrEmpty(Thang))
+            {
+                Den = Utility.GetToDate(Thang);
                 Tu = Den.AddMonths(-1).AddDays(1);
                 var year = Den.Year;
                 var month = Den.Month;
@@ -1040,148 +1248,154 @@ namespace erp.Controllers
             }
             #endregion
 
-            #region Filter
-            var builder = Builders<EmployeeWorkTimeLog>.Filter;
-            var filter = builder.Eq(m => m.Enable, true)
-                        & builder.Gte(m => m.Date, Tu)
-                        & builder.Lte(m => m.Date, Den);
-
-            if (!string.IsNullOrEmpty(khoi))
-            {
-                filter = filter & builder.Eq(x => x.Workcode, intKhoi);
-            }
-            if (!string.IsNullOrEmpty(phongban))
-            {
-                filter = filter & builder.Eq(x => x.DepartmentAlias, phongban.Trim());
-            }
-            if (!string.IsNullOrEmpty(id))
-            {
-                filter = filter & builder.Eq(m => m.EmployeeId, id.Trim());
-            }
-            #endregion
-
-            var times = await dbContext.EmployeeWorkTimeLogs.Find(filter).SortBy(m => m.Date).ToListAsync();
-
-            var viewModel = new BangLuongViewModel
-            {
-                Employees = employees,
-                EmployeeWorkTimeLogs = times,
-                Thang = thang,
-                Tu = Tu,
-                Den = Den,
-                Departments = departments,
-                Phongban = phongban,
-                Khoi = khoi,
-                Id = id,
-                MonthYears = sortTimes
-            };
-
-            return View(viewModel);
-        }
-
-        [Route(Constants.LinkTimeKeeper.Timer + "/" + Constants.ActionLink.Export)]
-        public async Task<IActionResult> BangChamCongExport(DateTime Tu, DateTime Den, string khoi, string phongban, string id)
-        {
-            #region Authorization
-            var login = User.Identity.Name;
-            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
-            ViewData["LoginUserName"] = loginUserName;
-
-            var loginInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
-            if (loginInformation == null)
-            {
-                #region snippet1
-                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                #endregion
-                return RedirectToAction("login", "account");
-            }
-
-            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.BangChamCong, (int)ERights.View)))
-            {
-                return RedirectToAction("AccessDenied", "Account");
-            }
-
-            #endregion
-
-            #region DDL
-            var departments = dbContext.Departments.Find(m => m.Enable.Equals(true)).SortBy(m => m.Order).ToList();
-
-            var builderE = Builders<Employee>.Filter;
-            var filterE = builderE.Eq(m => m.Enable, true) & !builderE.Eq(m => m.UserName, Constants.System.account);
-            var intKhoi = (int)EKhoiLamViec.VP;
-            if (!string.IsNullOrEmpty(khoi))
-            {
-                switch (khoi)
-                {
-                    case "SX":
-                        intKhoi = (int)EKhoiLamViec.SX;
-                        break;
-                    case "NM":
-                        intKhoi = (int)EKhoiLamViec.NM;
-                        break;
-                }
-                filterE = filterE & builderE.Eq(m => m.SalaryType, intKhoi);
-            }
-            var employees = await dbContext.Employees.Find(filterE).ToListAsync();
-            #endregion
-
-            #region Times
-            var today = DateTime.Now.Date;
-            // Default curent
-            if (Den < Constants.MinDate)
-            {
-                Den = today;
-            }
-            if (Tu < Constants.MinDate)
-            {
-                var previous = Den.Day > 25 ? Den : Den.AddMonths(-1);
-                Tu = new DateTime(previous.Year, previous.Month, 26);
-            }
-            #endregion
-
-            #region Filter
-            var builder = Builders<EmployeeWorkTimeLog>.Filter;
-            var filter = builder.Eq(m => m.Enable, true)
-                        & builder.Gte(m => m.Date, Tu)
-                        & builder.Lte(m => m.Date, Den);
-
-            if (!string.IsNullOrEmpty(khoi))
-            {
-                filter = filter & builder.Eq(x => x.Workcode, intKhoi);
-            }
-            if (!string.IsNullOrEmpty(phongban))
-            {
-                filter = filter & builder.Eq(x => x.DepartmentAlias, phongban.Trim());
-            }
-            if (!string.IsNullOrEmpty(id))
-            {
-                filter = filter & builder.Eq(m => m.EmployeeId, id.Trim());
-            }
-            #endregion
-
-            var times = await dbContext.EmployeeWorkTimeLogs.Find(filter).SortBy(m => m.Date).ToListAsync();
-
-            string exportFolder = Path.Combine(_env.WebRootPath, "exports");
             string sFileName = @"cham-cong";
+
+            #region Filter
+            var builder = Builders<Employee>.Filter;
+            var filter = !builder.Eq(i => i.UserName, Constants.System.account) & builder.Eq(m => m.Enable, true) & builder.Eq(m => m.Leave, false);
+            if (!string.IsNullOrEmpty(Id))
+            {
+                filter = filter & builder.Eq(x => x.Id, Id.Trim());
+                linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "";
+                linkCurrent += "Id=" + Id;
+            }
+            if (!string.IsNullOrEmpty(Fg))
+            {
+                filter = filter & builder.Where(m => m.Workplaces.Any(c => c.Fingerprint == Fg.Trim()));
+                linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "";
+                linkCurrent += "Fg=" + Fg;
+                sFileName += "-" + Fg;
+            }
+            if (!string.IsNullOrEmpty(Nl))
+            {
+                filter = filter & builder.Eq(m => m.CongTyChiNhanh, Nl);
+                linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "";
+                linkCurrent += "Nl=" + Nl;
+                sFileName += "-" + Nl;
+            }
+            if (!string.IsNullOrEmpty(Kcn))
+            {
+                filter = filter & builder.Eq(m => m.KhoiChucNang, Kcn);
+                linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "";
+                linkCurrent += "Kcn=" + Kcn;
+                sFileName += "-" + Kcn;
+            }
+            if (!string.IsNullOrEmpty(Pb))
+            {
+                filter = filter & builder.Eq(m => m.PhongBan, Pb);
+                linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "";
+                linkCurrent += "Pb=" + Pb;
+                sFileName += "-" + Pb;
+            }
+            if (!string.IsNullOrEmpty(Bp))
+            {
+                filter = filter & builder.Eq(m => m.BoPhan, Bp);
+                linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "";
+                linkCurrent += "Bp=" + Bp;
+                sFileName += "-" + Bp;
+            }
+
+            var fields = Builders<Employee>.Projection.Include(p => p.Id);
+
+            var employeeFilters = dbContext.Employees.Find(filter).ToList();
+
+            var employeeIds = dbContext.Employees.Find(filter).Project<Employee>(fields).ToList().Select(m => m.Id).ToList();
+
+            var builderT = Builders<EmployeeWorkTimeLog>.Filter;
+            var filterT = builderT.Eq(m => m.Enable, true)
+                        & builderT.Gte(m => m.Date, Tu)
+                        & builderT.Lte(m => m.Date, Den);
+            if (employeeIds != null && employeeIds.Count > 0)
+            {
+                filterT = filterT & builderT.Where(m => employeeIds.Contains(m.EmployeeId));
+            }
+            #endregion
 
             var duration = Tu.ToString("ddMMyyyy") + "-" + Den.ToString("ddMMyyyy");
             sFileName += "-" + duration;
-            if (!string.IsNullOrEmpty(khoi))
-            {
-                sFileName += "-" + khoi;
-            }
-            if (!string.IsNullOrEmpty(phongban))
-            {
-                sFileName += "-" + phongban;
-            }
-            if (!string.IsNullOrEmpty(id))
-            {
-                sFileName += "-" + id;
-            }
             sFileName += "-V" + DateTime.Now.ToString("ddMMyyHHmmss") + ".xlsx";
+
+            var times = dbContext.EmployeeWorkTimeLogs.Find(filterT).SortBy(m => m.Date).ToList();
+            var results = new List<TimeKeeperDisplay>();
+
+            #region method 1: base employee
+            foreach (var employee in employeeFilters)
+            {
+                var employeeWorkTimeLogs = times.Where(m => m.EmployeeId.Equals(employee.Id)).ToList();
+                if (employeeWorkTimeLogs == null || employeeWorkTimeLogs.Count == 0) continue;
+
+                var enrollNumber = string.Empty;
+                var congtychinhanhName = string.Empty;
+                var khoichucnangName = string.Empty;
+                var phongbanName = string.Empty;
+                var bophanName = string.Empty;
+                var bophanConName = string.Empty;
+                var chucvuName = string.Empty;
+
+                enrollNumber = employeeWorkTimeLogs[0].EnrollNumber;
+
+                if (!string.IsNullOrEmpty(employee.CongTyChiNhanh))
+                {
+                    var ctcnE = congtychinhanhs.Where(m => m.Id.Equals(employee.CongTyChiNhanh)).FirstOrDefault();
+                    if (ctcnE != null)
+                    {
+                        congtychinhanhName = ctcnE.Name;
+                    }
+                }
+                if (!string.IsNullOrEmpty(employee.KhoiChucNang))
+                {
+                    var kcnE = khoichucnangs.Where(m => m.Id.Equals(employee.KhoiChucNang)).FirstOrDefault();
+                    if (kcnE != null)
+                    {
+                        khoichucnangName = kcnE.Name;
+                    }
+                }
+                if (!string.IsNullOrEmpty(employee.PhongBan))
+                {
+                    var pbE = phongbans.Where(m => m.Id.Equals(employee.PhongBan)).FirstOrDefault();
+                    if (pbE != null)
+                    {
+                        phongbanName = pbE.Name;
+                    }
+                }
+                if (!string.IsNullOrEmpty(employee.BoPhan))
+                {
+                    var bpE = bophans.Where(m => m.Id.Equals(employee.BoPhan)).FirstOrDefault();
+                    if (bpE != null)
+                    {
+                        bophanName = bpE.Name;
+                    }
+                }
+                if (!string.IsNullOrEmpty(employee.ChucVu))
+                {
+                    var cvE = chucvus.Where(m => m.Id.Equals(employee.ChucVu)).FirstOrDefault();
+                    if (cvE != null)
+                    {
+                        chucvuName = cvE.Name;
+                    }
+                }
+
+                var employeeDisplay = new TimeKeeperDisplay()
+                {
+                    EmployeeWorkTimeLogs = employeeWorkTimeLogs,
+                    Code = employee.Code + "(" + employee.CodeOld + ")",
+                    EnrollNumber = enrollNumber,
+                    FullName = employee.FullName,
+                    CongTyChiNhanh = congtychinhanhName,
+                    KhoiChucNang = khoichucnangName,
+                    PhongBan = phongbanName,
+                    BoPhan = bophanName,
+                    ChucVu = chucvuName
+                };
+                results.Add(employeeDisplay);
+            }
+            #endregion
+
+            string exportFolder = Path.Combine(_env.WebRootPath, "exports", "timers", today.ToString("yyyyMMdd"));
 
             string URL = string.Format("{0}://{1}/{2}", Request.Scheme, Request.Host, sFileName);
             FileInfo file = new FileInfo(Path.Combine(exportFolder, sFileName));
+            file.Directory.Create(); // If the directory already exists, this method does nothing.
             var memory = new MemoryStream();
             using (var fs = new FileStream(Path.Combine(exportFolder, sFileName), FileMode.Create, FileAccess.Write))
             {
@@ -1285,6 +1499,7 @@ namespace erp.Controllers
 
                 ISheet sheet1 = workbook.CreateSheet("Cong-" + duration);
 
+                #region Introduce
                 var rowIndex = 0;
                 var columnIndex = 0;
                 IRow row = sheet1.CreateRow(rowIndex);
@@ -1310,6 +1525,7 @@ namespace erp.Controllers
                 cell.SetCellValue("MST: 0302519810");
                 cell.CellStyle = styleBold;
                 rowIndex++;
+                #endregion
 
                 row = sheet1.CreateRow(rowIndex);
                 CellRangeAddress cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex, columnIndex, columnIndex + 9);
@@ -1319,6 +1535,7 @@ namespace erp.Controllers
                 cell.CellStyle = styleTitle;
                 rowIndex++;
 
+                #region Header
                 row = sheet1.CreateRow(rowIndex);
                 cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex, columnIndex, columnIndex + 9);
                 sheet1.AddMergedRegion(cellRangeAddress);
@@ -1329,43 +1546,31 @@ namespace erp.Controllers
                 rowIndex++;
 
                 row = sheet1.CreateRow(rowIndex);
-                //cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 1, columnIndex, columnIndex);
-                //sheet1.AddMergedRegion(cellRangeAddress);
                 cell = row.CreateCell(columnIndex, CellType.String);
                 cell.SetCellValue("#");
                 cell.CellStyle = styleHeader;
                 columnIndex++;
 
-                //cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 1, columnIndex, columnIndex);
-                //sheet1.AddMergedRegion(cellRangeAddress);
                 cell = row.CreateCell(columnIndex, CellType.String);
                 cell.SetCellValue("Mã NV");
                 cell.CellStyle = styleHeader;
                 columnIndex++;
 
-                //cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 1, columnIndex, columnIndex);
-                //sheet1.AddMergedRegion(cellRangeAddress);
                 cell = row.CreateCell(columnIndex, CellType.String);
                 cell.SetCellValue("Họ tên");
                 cell.CellStyle = styleHeader;
                 columnIndex++;
 
-                //cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 1, columnIndex, columnIndex);
-                //sheet1.AddMergedRegion(cellRangeAddress);
                 cell = row.CreateCell(columnIndex, CellType.String);
                 cell.SetCellValue("Chức vụ");
                 cell.CellStyle = styleHeader;
                 columnIndex++;
 
-                //cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 1, columnIndex, columnIndex);
-                //sheet1.AddMergedRegion(cellRangeAddress);
                 cell = row.CreateCell(columnIndex, CellType.String);
                 cell.SetCellValue("Mã chấm công");
                 cell.CellStyle = styleHeader;
                 columnIndex++;
 
-                //cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 1, columnIndex, columnIndex);
-                //sheet1.AddMergedRegion(cellRangeAddress);
                 cell = row.CreateCell(columnIndex, CellType.String);
                 cell.SetCellValue(string.Empty);
                 cell.CellStyle = styleHeader;
@@ -1390,18 +1595,6 @@ namespace erp.Controllers
                 RegionUtil.SetBorderBottom((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
                 columnIndex = columnIndex + 1;
                 columnIndex++;
-
-                //cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex, columnIndex, columnIndex + 1);
-                //sheet1.AddMergedRegion(cellRangeAddress);
-                //cell = row.CreateCell(columnIndex, CellType.String);
-                //cell.SetCellValue("Giờ công");
-                //cell.CellStyle = styleHeader;
-                //RegionUtil.SetBorderTop((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
-                //RegionUtil.SetBorderLeft((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
-                //RegionUtil.SetBorderRight((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
-                //RegionUtil.SetBorderBottom((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
-                //columnIndex = columnIndex + 1;
-                //columnIndex++;
 
                 cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex, columnIndex, columnIndex + 1);
                 sheet1.AddMergedRegion(cellRangeAddress);
@@ -1439,12 +1632,6 @@ namespace erp.Controllers
                 columnIndex = columnIndex + 2;
                 columnIndex++;
 
-                //cell = row.CreateCell(columnIndex, CellType.String);
-                //cell.SetCellValue("Vắng");
-                //cell.CellStyle = styleHeader;
-                //columnIndex++;
-
-                //cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex, columnIndex, columnIndex + 3);
                 cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex, columnIndex, columnIndex + 1);
                 sheet1.AddMergedRegion(cellRangeAddress);
                 cell = row.CreateCell(columnIndex, CellType.String);
@@ -1475,14 +1662,7 @@ namespace erp.Controllers
                 cell.SetCellValue("CT");
                 cell.CellStyle = styleHeader;
                 columnIndex++;
-                //cell = row.CreateCell(columnIndex);
-                //cell.SetCellValue("NT");
-                //cell.CellStyle = styleHeader;
-                //columnIndex++;
-                //cell = row.CreateCell(columnIndex);
-                //cell.SetCellValue("CT");
-                //cell.CellStyle = styleHeader;
-                //columnIndex++;
+
                 cell = row.CreateCell(columnIndex);
                 cell.SetCellValue("Lần");
                 cell.CellStyle = styleHeader;
@@ -1523,37 +1703,15 @@ namespace erp.Controllers
                 cell.CellStyle = styleHeader;
                 columnIndex++;
 
-                //cell = row.CreateCell(columnIndex);
-                //cell.SetCellValue("OM");
-                //cell.CellStyle = styleHeader;
-                //columnIndex++;
-
-                //cell = row.CreateCell(columnIndex);
-                //cell.SetCellValue("TS");
-                //cell.CellStyle = styleHeader;
-                //columnIndex++;
-
-                //cell = row.CreateCell(columnIndex);
-                //cell.SetCellValue("R");
-                //cell.CellStyle = styleHeader;
                 rowIndex++;
+                #endregion
 
-                var groups = (from s in times
-                              group s by new
-                              {
-                                  s.EmployeeId,
-                                  s.EmployeeName
-                              }
-                              into l
-                              select new
-                              {
-                                  l.Key.EmployeeId,
-                                  l.Key.EmployeeName,
-                                  timekeepers = l.ToList(),
-                              }).ToList();
                 int order = 1;
-                foreach (var group in groups)
+                foreach (var employee in results)
                 {
+                    var timers = employee.EmployeeWorkTimeLogs;
+                    var timesSort = timers.OrderBy(m => m.Date).ToList();
+
                     double ngayCongNT = 0;
                     double ngayCongCT = 0;
                     double gioCongNT = 0;
@@ -1574,7 +1732,6 @@ namespace erp.Controllers
                     var rowEF = rowIndex;
                     var rowET = rowIndex + 4;
 
-                    var employeeInfo = dbContext.Employees.Find(m => m.Id.Equals(group.EmployeeId)).FirstOrDefault();
                     row = sheet1.CreateRow(rowIndex);
 
                     columnIndex = 0;
@@ -1588,28 +1745,28 @@ namespace erp.Controllers
                     cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
                     sheet1.AddMergedRegion(cellRangeAddress);
                     cell = row.CreateCell(columnIndex, CellType.String);
-                    cell.SetCellValue(employeeInfo.Code + " (" + employeeInfo.CodeOld + ")");
+                    cell.SetCellValue(employee.Code);
                     cell.CellStyle = styleFullText;
                     columnIndex++;
 
                     cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
                     sheet1.AddMergedRegion(cellRangeAddress);
                     cell = row.CreateCell(columnIndex, CellType.String);
-                    cell.SetCellValue(employeeInfo.FullName);
+                    cell.SetCellValue(employee.FullName);
                     cell.CellStyle = styleFullText;
                     columnIndex++;
 
                     cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
                     sheet1.AddMergedRegion(cellRangeAddress);
                     cell = row.CreateCell(columnIndex, CellType.String);
-                    cell.SetCellValue(employeeInfo.Title);
+                    cell.SetCellValue(employee.ChucVu);
                     cell.CellStyle = styleFullText;
                     columnIndex++;
 
                     cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
                     sheet1.AddMergedRegion(cellRangeAddress);
                     cell = row.CreateCell(columnIndex, CellType.Numeric);
-                    cell.SetCellValue(Convert.ToInt32(group.timekeepers[0].EnrollNumber).ToString("000"));
+                    cell.SetCellValue(Convert.ToInt32(employee.EnrollNumber));
                     cell.CellStyle = styleFullText;
                     columnIndex++;
 
@@ -1639,7 +1796,7 @@ namespace erp.Controllers
                     cell.CellStyle = styleDedault;
                     columnIndex++;
 
-                    var timesSort = group.timekeepers.OrderBy(m => m.Date).ToList();
+                    
                     for (DateTime date = Tu; date <= Den; date = date.AddDays(1.0))
                     {
                         var item = timesSort.Where(m => m.Date.Equals(date)).FirstOrDefault();
@@ -1759,12 +1916,12 @@ namespace erp.Controllers
                                 cell = rowout2.CreateCell(columnIndex, CellType.String);
                                 cell.SetCellValue(displayOut2);
                                 cell.CellStyle = styleDedault;
-                                
+
                                 cell = rowreason.CreateCell(columnIndex, CellType.String);
-                                cell.SetCellValue(item.Reason);
+                                cell.SetCellValue(item.Reason + ": " + Constants.Truncate(item.ReasonDetail, 50));
                                 cell.CellStyle = styleSmall;
                             }
-                            
+
                             columnIndex++;
                         }
                         else
@@ -1798,20 +1955,6 @@ namespace erp.Controllers
                     cell.SetCellValue(Math.Round(ngayCongCT, 2));
                     cell.CellStyle = styleDedaultMerge;
                     columnIndex++;
-
-                    //cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
-                    //sheet1.AddMergedRegion(cellRangeAddress);
-                    //cell = row.CreateCell(columnIndex, CellType.Numeric);
-                    //cell.SetCellValue(Math.Round(gioCongNT, 2));
-                    //cell.CellStyle = styleDedaultMerge;
-                    //columnIndex++;
-
-                    //cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
-                    //sheet1.AddMergedRegion(cellRangeAddress);
-                    //cell = row.CreateCell(columnIndex, CellType.Numeric);
-                    //cell.SetCellValue(Math.Round(gioCongCT, 2));
-                    //cell.CellStyle = styleDedaultMerge;
-                    //columnIndex++;
 
                     cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
                     sheet1.AddMergedRegion(cellRangeAddress);
@@ -1874,27 +2017,6 @@ namespace erp.Controllers
                     cell = row.CreateCell(columnIndex, CellType.Numeric);
                     cell.SetCellValue(ngayNghiP);
                     cell.CellStyle = styleDedaultMerge;
-                    //columnIndex++;
-
-                    //cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
-                    //sheet1.AddMergedRegion(cellRangeAddress);
-                    //cell = row.CreateCell(columnIndex, CellType.Numeric);
-                    //cell.SetCellValue(ngayNghiOM);
-                    //cell.CellStyle = styleDedaultMerge;
-                    //columnIndex++;
-
-                    //cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
-                    //sheet1.AddMergedRegion(cellRangeAddress);
-                    //cell = row.CreateCell(columnIndex, CellType.Numeric);
-                    //cell.SetCellValue(ngayNghiTS);
-                    //cell.CellStyle = styleDedaultMerge;
-                    //columnIndex++;
-
-                    //cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
-                    //sheet1.AddMergedRegion(cellRangeAddress);
-                    //cell = row.CreateCell(columnIndex, CellType.Numeric);
-                    //cell.SetCellValue(ngayNghiR);
-                    //cell.CellStyle = styleDedaultMerge;
 
                     var columnIndexT = columnIndex;
                     columnIndex++;

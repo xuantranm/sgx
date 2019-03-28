@@ -70,7 +70,6 @@ namespace Models
         [DataType(DataType.Date)]
         public DateTime Contractday { get; set; }
 
-        // No use, use Enable
         [Display(Name = "Nghỉ việc")]
         public bool Leave { get; set; } = false;
 
@@ -261,7 +260,7 @@ namespace Models
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime? BhxhEnd { get; set; }
 
-        [Display(Name = "Số xổ BHXH")]
+        [Display(Name = "Số sổ BHXH")]
         public string BhxhBookNo { get; set; }
 
         [Display(Name = "Mã số BHXH")]
@@ -333,9 +332,13 @@ namespace Models
         // For fast data access, divide other collection
         //public IList<Notification> Notifications { get; set; }
 
-        public bool IsWelcomeEmail { get; set; } = true;
+        // true: sent
+        // false: unsend
+        public bool IsWelcomeEmail { get; set; } = false;
 
-        public bool IsLeaveEmail { get; set; } = true;
+        // true: sent
+        // false: unsend
+        public bool IsLeaveEmail { get; set; } = false;
 
         #region SALARIES
         /// <summary>

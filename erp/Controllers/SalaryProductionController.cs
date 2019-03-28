@@ -51,7 +51,7 @@ namespace erp.Controllers
         }
 
         [Route(Constants.LinkSalary.BangLuong)]
-        public async Task<IActionResult> BangLuong(string thang, string id, string phongban)
+        public async Task<IActionResult> BangLuong(string thang, string id)
         {
             #region Authorization
             var login = User.Identity.Name;
@@ -78,13 +78,12 @@ namespace erp.Controllers
 
             var sortTimes = Utility.DllMonths();
 
-            var departments = await dbContext.Departments.Find(m => m.Enable.Equals(true)).SortBy(m => m.Order).ToListAsync();
-
-            var employeeDdl = await dbContext.Employees.Find(m => m.Enable.Equals(true) && m.SalaryType.Equals((int)EKhoiLamViec.SX) && !m.UserName.Equals(Constants.System.account)).SortBy(m => m.FullName).ToListAsync();
+            var employeeDdl = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false)
+                                && m.ChucVu.Equals("5c88d09bd59d56225c4324de") && !m.UserName.Equals(Constants.System.account)).SortBy(m => m.FullName).ToList();
             #endregion
 
             #region Times
-            var toDate = Utility.GetToDate(thang);
+            var toDate = Utility.GetSalaryToDate(thang);
             var fromDate = toDate.AddMonths(-1).AddDays(1);
             var year = toDate.Year;
             var month = toDate.Month;
@@ -104,14 +103,12 @@ namespace erp.Controllers
 
             #region Filter
             var builder = Builders<Employee>.Filter;
-            var filter = builder.Eq(m => m.Enable, true) & builder.Eq(m => m.SalaryType, (int)EKhoiLamViec.SX) & !builder.Eq(m => m.UserName, Constants.System.account);
+            var filter = builder.Eq(m => m.Enable, true) & builder.Eq(m => m.Leave, false) 
+                        & builder.Eq(m => m.ChucVu, "5c88d09bd59d56225c4324de") 
+                        & !builder.Eq(m => m.UserName, Constants.System.account);
             if (!string.IsNullOrEmpty(id))
             {
                 filter = filter & builder.Eq(x => x.Id, id.Trim());
-            }
-            if (!string.IsNullOrEmpty(phongban))
-            {
-                filter = filter & builder.Eq(m => m.DepartmentAlias, phongban.Trim());
             }
             #endregion
 
@@ -137,7 +134,7 @@ namespace erp.Controllers
                 salary.NoiLamViecOrder = employee.SalaryNoiLamViecOrder;
                 salary.PhongBan = employee.Department;
                 salary.PhongBanOrder = employee.SalaryPhongBanOrder;
-                salary.ChucVu = employee.Title;
+                salary.ChucVu = "Công nhân Đóng gói";
                 salary.ChucVuOrder = employee.SalaryChucVuOrder;
                 salary.ViTriCode = employee.SalaryChucVuViTriCode;
                 salary.SalaryMaSoChucDanhCongViec = employee.NgachLuong;
@@ -149,10 +146,8 @@ namespace erp.Controllers
                 SalaryEmployeeMonths = salaryEmployeeMonths,
                 MonthYears = sortTimes,
                 Thang = thang,
-                Departments = departments,
                 EmployeesDdl = employeeDdl,
-                Id = id,
-                Phongban = phongban
+                Id = id
             };
 
             return View(viewModel);
@@ -498,9 +493,9 @@ namespace erp.Controllers
             {
                 foreach (var chamCong in chamCongs)
                 {
-                    ngayLamViec += chamCong.NgayLamViecChinhTay;
-                    phepNam += chamCong.PhepNamChinhTay;
-                    leTet += chamCong.LeTetChinhTay;
+                    ngayLamViec = chamCong.NgayLamViecChinhTay > 0 ? chamCong.NgayLamViecChinhTay : chamCong.Workday;
+                    phepNam = chamCong.PhepNamChinhTay > 0 ? chamCong.PhepNamChinhTay : chamCong.NghiPhepNam;
+                    leTet = chamCong.LeTetChinhTay > 0 ? chamCong.LeTetChinhTay : chamCong.NghiLe;
                 }
             }
 
@@ -652,11 +647,103 @@ namespace erp.Controllers
 
         #region THE LUONG
         [Route(Constants.LinkSalary.TheLuong)]
-        public IActionResult TheLuong(string thang)
+        public async Task<IActionResult> TheLuong(string thang, string id)
         {
+            #region Authorization
+            var login = User.Identity.Name;
+            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+            ViewData["LoginUserName"] = loginUserName;
+
+            var loginInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
+            if (loginInformation == null)
+            {
+                #region snippet1
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                #endregion
+                return RedirectToAction("login", "account");
+            }
+
+            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.LuongSX, (int)ERights.View)))
+            {
+                return RedirectToAction("AccessDenied", "Account");
+            }
+
+            #endregion
+
+            #region DDL
+
+            var sortTimes = Utility.DllMonths();
+
+            var employeeDdl = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false)
+                                && m.ChucVu.Equals("5c88d09bd59d56225c4324de") && !m.UserName.Equals(Constants.System.account)).SortBy(m => m.FullName).ToList();
+            #endregion
+
+            #region Times
+            var toDate = Utility.GetSalaryToDate(thang);
+            var fromDate = toDate.AddMonths(-1).AddDays(1);
+            var year = toDate.Year;
+            var month = toDate.Month;
+            thang = string.IsNullOrEmpty(thang) ? month + "-" + year : thang;
+            #endregion
+
+            #region Setting
+            var thamsoEntity = dbContext.SalarySettings.Find(m => m.Enable.Equals(true)).ToList();
+            var mauSo = Convert.ToDecimal(thamsoEntity.Find(m => m.Key.Equals("mau-so-lam-viec")).Value);
+            var mauSoBaoVe = Convert.ToDecimal(thamsoEntity.Find(m => m.Key.Equals("mau-so-bao-ve")).Value);
+            var mauSoChuyenCan = Convert.ToDecimal(thamsoEntity.Find(m => m.Key.Equals("mau-so-chuyen-can")).Value);
+            var mauSoTienCom = Convert.ToDecimal(thamsoEntity.Find(m => m.Key.Equals("mau-so-tien-com")).Value);
+            decimal ibhxh = thamsoEntity.Find(m => m.Key.Equals("ti-le-bhxh")) == null ? 8 : Convert.ToDecimal(thamsoEntity.Find(m => m.Key.Equals("ti-le-bhxh")).Value);
+            decimal ibhyt = thamsoEntity.Find(m => m.Key.Equals("ti-le-bhyt")) == null ? (decimal)1.5 : Convert.ToDecimal(thamsoEntity.Find(m => m.Key.Equals("ti-le-bhyt")).Value);
+            decimal ibhtn = thamsoEntity.Find(m => m.Key.Equals("ti-le-bhtn")) == null ? 1 : Convert.ToDecimal(thamsoEntity.Find(m => m.Key.Equals("ti-le-bhtn")).Value);
+            #endregion
+
+            #region Filter
+            var builder = Builders<Employee>.Filter;
+            var filter = builder.Eq(m => m.Enable, true) & builder.Eq(m => m.Leave, false)
+                        & builder.Eq(m => m.ChucVu, "5c88d09bd59d56225c4324de")
+                        & !builder.Eq(m => m.UserName, Constants.System.account);
+            if (!string.IsNullOrEmpty(id))
+            {
+                filter = filter & builder.Eq(x => x.Id, id.Trim());
+            }
+            #endregion
+
+            #region Sort
+            var sortBuilder = Builders<Employee>.Sort.Ascending(m => m.Code);
+            #endregion
+
+            var employees = await dbContext.Employees.Find(filter).Sort(sortBuilder).ToListAsync();
+
+            var salaryEmployeeMonths = new List<SalaryEmployeeMonth>();
+            foreach (var employee in employees)
+            {
+                mauSo = employee.SalaryMauSo != 26 ? 30 : mauSo;
+                var salary = GetSalaryEmployeeMonth(year, month, employee.Id, employee.Joinday, employee.NgachLuong, employee.SalaryLevel, (int)mauSo, mauSoChuyenCan, mauSoTienCom, employee.LuongBHXH, ibhxh, ibhyt, ibhtn, null, true);
+                salary.Year = year;
+                salary.Month = month;
+                salary.Bac = employee.SalaryLevel;
+                salary.ThamNienLamViec = employee.Joinday;
+                salary.EmployeeId = employee.Id;
+                salary.MaNhanVien = employee.Code + "-(" + employee.CodeOld + ")";
+                salary.FullName = employee.FullName;
+                salary.NoiLamViec = Constants.Location(employee.SalaryType);
+                salary.NoiLamViecOrder = employee.SalaryNoiLamViecOrder;
+                salary.PhongBan = employee.Department;
+                salary.PhongBanOrder = employee.SalaryPhongBanOrder;
+                salary.ChucVu = "Công nhân Đóng gói";
+                salary.ChucVuOrder = employee.SalaryChucVuOrder;
+                salary.ViTriCode = employee.SalaryChucVuViTriCode;
+                salary.SalaryMaSoChucDanhCongViec = employee.NgachLuong;
+                salaryEmployeeMonths.Add(salary);
+            }
+
             var viewModel = new BangLuongViewModel
             {
-                Thang = thang
+                SalaryEmployeeMonths = salaryEmployeeMonths,
+                MonthYears = sortTimes,
+                Thang = thang,
+                EmployeesDdl = employeeDdl,
+                Id = id
             };
 
             return View(viewModel);
@@ -704,7 +791,7 @@ namespace erp.Controllers
             #endregion
 
             #region Times
-            var toDate = Utility.GetToDate(thang);
+            var toDate = Utility.GetSalaryToDate(thang);
             var fromDate = toDate.AddMonths(-1).AddDays(1);
             var year = toDate.Year;
             var month = toDate.Month;
@@ -1115,7 +1202,7 @@ namespace erp.Controllers
 
                     var timeRow = sheet.GetRow(5);
                     var time = Utility.GetFormattedCellValue(timeRow.GetCell(1));
-                    var endMonthDate = Utility.GetToDate(time);
+                    var endMonthDate = Utility.GetSalaryToDate(time);
                     var month = endMonthDate.Month;
                     var year = endMonthDate.Year;
                     var toDate = new DateTime(year, month, 25);
@@ -1254,7 +1341,7 @@ namespace erp.Controllers
             #endregion
 
             #region Times
-            var toDate = Utility.GetToDate(thang);
+            var toDate = Utility.GetSalaryToDate(thang);
             var fromDate = toDate.AddMonths(-1).AddDays(1);
             var year = toDate.Year;
             var month = toDate.Month;
@@ -1598,7 +1685,7 @@ namespace erp.Controllers
 
                     var timeRow = sheet.GetRow(5);
                     var time = Utility.GetFormattedCellValue(timeRow.GetCell(1));
-                    var endMonthDate = Utility.GetToDate(time);
+                    var endMonthDate = Utility.GetSalaryToDate(time);
                     var month = endMonthDate.Month;
                     var year = endMonthDate.Year;
                     var toDate = new DateTime(year, month, 25);
@@ -1674,7 +1761,7 @@ namespace erp.Controllers
             #endregion
 
             #region Times
-            var toDate = Utility.GetToDate(thang);
+            var toDate = Utility.GetSalaryToDate(thang);
             var fromDate = toDate.AddMonths(-1).AddDays(1);
             var year = toDate.Year;
             var month = toDate.Month;
@@ -2048,7 +2135,7 @@ namespace erp.Controllers
 
                     var timeRow = sheet.GetRow(5);
                     var time = Utility.GetFormattedCellValue(timeRow.GetCell(1));
-                    var endMonthDate = Utility.GetToDate(time);
+                    var endMonthDate = Utility.GetSalaryToDate(time);
                     var month = endMonthDate.Month;
                     var year = endMonthDate.Year;
                     var toDate = new DateTime(year, month, 25);
@@ -2315,10 +2402,11 @@ namespace erp.Controllers
             #endregion
 
             #region Times
-            var toDate = Utility.GetToDate(thang);
+            var toDate = Utility.GetSalaryToDate(thang);
             var fromDate = toDate.AddMonths(-1).AddDays(1);
             var year = toDate.Year;
             var month = toDate.Month;
+            thang = string.IsNullOrEmpty(thang) ? month + "-" + year : thang;
             #endregion
 
             #region Setting
@@ -2411,10 +2499,11 @@ namespace erp.Controllers
             #endregion
 
             #region Times
-            var toDate = Utility.GetToDate(thang);
+            var toDate = Utility.GetSalaryToDate(thang);
             var fromDate = toDate.AddMonths(-1).AddDays(1);
             var year = toDate.Year;
             var month = toDate.Month;
+            thang = string.IsNullOrEmpty(thang) ? month + "-" + year : thang;
             #endregion
 
             #region Setting
@@ -2499,7 +2588,7 @@ namespace erp.Controllers
             #endregion
 
             #region Times
-            var toDate = Utility.GetToDate(thang);
+            var toDate = Utility.GetSalaryToDate(thang);
             var fromDate = toDate.AddMonths(-1).AddDays(1);
             var year = toDate.Year;
             var month = toDate.Month;
@@ -3012,7 +3101,7 @@ namespace erp.Controllers
 
                     var timeRow = sheet.GetRow(5);
                     var time = Utility.GetFormattedCellValue(timeRow.GetCell(1));
-                    var endMonthDate = Utility.GetToDate(time);
+                    var endMonthDate = Utility.GetSalaryToDate(time);
                     var month = endMonthDate.Month;
                     var year = endMonthDate.Year;
 
@@ -3268,7 +3357,7 @@ namespace erp.Controllers
             #endregion
 
             #region Times
-            var toDate = Utility.GetToDate(thang);
+            var toDate = Utility.GetSalaryToDate(thang);
             var fromDate = toDate.AddMonths(-1).AddDays(1);
             var year = toDate.Year;
             var month = toDate.Month;
@@ -3786,7 +3875,7 @@ namespace erp.Controllers
 
                     var timeRow = sheet.GetRow(5);
                     var time = Utility.GetFormattedCellValue(timeRow.GetCell(1));
-                    var endMonthDate = Utility.GetToDate(time);
+                    var endMonthDate = Utility.GetSalaryToDate(time);
                     var month = endMonthDate.Month;
                     var year = endMonthDate.Year;
 
@@ -4113,7 +4202,7 @@ namespace erp.Controllers
             #endregion
 
             #region Times
-            var toDate = Utility.GetToDate(thang);
+            var toDate = Utility.GetSalaryToDate(thang);
             var fromDate = toDate.AddMonths(-1).AddDays(1);
             var year = toDate.Year;
             var month = toDate.Month;

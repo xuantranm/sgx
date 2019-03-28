@@ -129,19 +129,19 @@
             var khoiVP = Model.KhoiChucNangs.Where(m => m.Code.Equals("KHOI1")).First();
             @foreach (var phongban in Model.PhongBans.Where(x => x.KhoiChucNangId.Equals(khoiVP.Id)))
             {
-                count = Model.Employees.Count(m => m.Employee.Enable.Equals(true) && !string.IsNullOrEmpty(m.Employee.PhongBan) && m.Employee.PhongBan.Equals(phongban.Id));
+                count = Model.Employees.Count(m => m.Employee.Enable.Equals(true) && m.Employee.Leave.Equals(false) && !string.IsNullOrEmpty(m.Employee.PhongBan) && m.Employee.PhongBan.Equals(phongban.Id));
                 if (count > 0)
                 {
                     <a class="list-group-item d-flex justify-content-between pb pb-@phongban.Alias" href="javascript:;" data-alias="@phongban.Alias" data-order="@phongban.Order">
                         <div>
-                            <i class="far fa-building"></i> <span>@phongban.Name</span> <span class="badge badge-info">@count</span>
+                            <i class="far fa-building"></i> <span>@phongban.Name.ToUpper()</span> <span class="badge badge-info">@count</span>
                         </div>
                         <div>
                             <i class="icon-mark icon-chevron-down"></i>
                         </div>
                     </a>
                     <div class="bp-items @expand" id="@phongban.Alias">
-                        @foreach (var item in Model.Employees.Where(m => m.Employee.Enable.Equals(true) && m.Employee.PhongBan.Equals(phongban.Id)).OrderBy(m => m.BoPhan))
+                        @foreach (var item in Model.Employees.Where(m => m.Employee.Enable.Equals(true) && m.Employee.Leave.Equals(false) && m.Employee.PhongBan.Equals(phongban.Id)).OrderBy(m => m.BoPhan))
                         {
                             <div class="list-group-item list-group-item-action">
                                 <div class="media">
@@ -192,8 +192,9 @@
                                                             <i class="icon-dots-three-horizontal"></i>
                                                         </button>
                                                         <div class="dropdown-menu dropdown-menu-sm" aria-labelledby="dropdownMenuButton">
-                                                            <a class="dropdown-item detail-item" href="/hr/nhan-su/thong-tin/@item.Employee.Id">Xem thông tin</a>
-                                                            <a class="dropdown-item edit-item" href="/hr/nhan-su/cap-nhat/@item.Employee.Id">Chỉnh sửa</a>
+                                                            <a class="dropdown-item detail-item" href="/hr/nhan-su/thong-tin/@item.Employee.Id"><i class="fas fa-street-view"></i> Xem thông tin</a>
+                                                            <a class="dropdown-item edit-item" href="/hr/nhan-su/cap-nhat/@item.Employee.Id"><i class="fas fa-user-edit"></i> Chỉnh sửa</a>
+                                                            <a class="dropdown-item delete-item" href="javascript:;" data-id="@item.Employee.Id"><i class="fas fa-user-slash"></i> Xóa</a>
                                                             @{
                                                                 if (item.Employee.Workplaces != null && item.Employee.Workplaces.Count > 0)
                                                                 {
@@ -208,7 +209,7 @@
                                                                     if (enableFinger)
                                                                     {
                                                                         <div class="dropdown-divider"></div>
-                                                                        <a class="dropdown-item disable-item" href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Index?id=@item.Employee.Id">Chấm công</a>
+                                                                        <a class="dropdown-item disable-item" href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Index?id=@item.Employee.Id"><i class="far fa-clock"></i> Chấm công</a>
                                                                     }
                                                                 }
                                                             }
@@ -256,7 +257,7 @@
             }
 
             <!-- NHA MAY STRUCTURE -->
-            count = Model.Employees.Count(m => m.Employee.Enable.Equals(true) && !string.IsNullOrEmpty(m.Employee.CongTyChiNhanh) && m.Employee.CongTyChiNhanh.Equals(congtychinhanhNM.Id));
+            count = Model.Employees.Count(m => m.Employee.Enable.Equals(true) && m.Employee.Leave.Equals(false) && !string.IsNullOrEmpty(m.Employee.CongTyChiNhanh) && m.Employee.CongTyChiNhanh.Equals(congtychinhanhNM.Id));
 
             if (count > 0)
             {
@@ -387,7 +388,7 @@
 
                     @foreach (var khoichucnang in Model.KhoiChucNangs.Where(m => m.CongTyChiNhanhId.Equals(congtychinhanhNM.Id)))
                     {
-                        count = Model.Employees.Count(m => m.Employee.Enable.Equals(true) && !string.IsNullOrEmpty(m.Employee.KhoiChucNang) && m.Employee.KhoiChucNang.Equals(khoichucnang.Id));
+                        count = Model.Employees.Count(m => m.Employee.Enable.Equals(true) && m.Employee.Leave.Equals(false) && !string.IsNullOrEmpty(m.Employee.KhoiChucNang) && m.Employee.KhoiChucNang.Equals(khoichucnang.Id));
                         if (count > 0)
                         {
                             <a class="list-group-item d-flex justify-content-between kcn kcn-@khoichucnang.Alias" href="javascript:;" data-alias="@khoichucnang.Alias" data-order="@khoichucnang.Order">
@@ -401,7 +402,7 @@
                             <div class="kcn-items @expand" id="@khoichucnang.Alias">
                                 @foreach (var phongban in Model.PhongBans.Where(x => x.KhoiChucNangId.Equals(khoichucnang.Id)))
                                 {
-                                    count = Model.Employees.Count(m => m.Employee.Enable.Equals(true) && !string.IsNullOrEmpty(m.Employee.PhongBan) && m.Employee.PhongBan.Equals(phongban.Id));
+                                    count = Model.Employees.Count(m => m.Employee.Enable.Equals(true) && m.Employee.Leave.Equals(false) && !string.IsNullOrEmpty(m.Employee.PhongBan) && m.Employee.PhongBan.Equals(phongban.Id));
                                     if (count > 0)
                                     {
                                         <a class="list-group-item d-flex justify-content-between pb pb-@phongban.Alias" href="javascript:;" data-alias="@phongban.Alias" data-order="@phongban.Order">
@@ -414,7 +415,7 @@
                                             </div>
                                         </a>
                                         <div class="pb-items @expand" id="@phongban.Alias">
-                                            @foreach (var item in Model.Employees.Where(m => m.Employee.Enable.Equals(true) && m.Employee.PhongBan.Equals(phongban.Id)).OrderBy(m => m.BoPhan))
+                                            @foreach (var item in Model.Employees.Where(m => m.Employee.Enable.Equals(true) && m.Employee.Leave.Equals(false) && !string.IsNullOrEmpty(m.Employee.PhongBan) && m.Employee.PhongBan.Equals(phongban.Id)).OrderBy(m => m.BoPhan))
                                             {
                                                 <div class="list-group-item list-group-item-action">
                                                     <div class="media">
@@ -465,8 +466,9 @@
                                                                                 <i class="icon-dots-three-horizontal"></i>
                                                                             </button>
                                                                             <div class="dropdown-menu dropdown-menu-sm" aria-labelledby="dropdownMenuButton">
-                                                                                <a class="dropdown-item detail-item" href="/hr/nhan-su/thong-tin/@item.Employee.Id">Xem thông tin</a>
-                                                                                <a class="dropdown-item edit-item" href="/hr/nhan-su/cap-nhat/@item.Employee.Id">Chỉnh sửa</a>
+                                                                                <a class="dropdown-item detail-item" href="/hr/nhan-su/thong-tin/@item.Employee.Id"><i class="fas fa-street-view"></i> Xem thông tin</a>
+                                                                                <a class="dropdown-item edit-item" href="/hr/nhan-su/cap-nhat/@item.Employee.Id"><i class="fas fa-user-edit"></i> Chỉnh sửa</a>
+                                                                                <a class="dropdown-item delete-item" href="javascript:;" data-id="@item.Employee.Id"><i class="fas fa-user-slash"></i> Xóa</a>
                                                                                 @{
                                                                                     if (item.Employee.Workplaces != null && item.Employee.Workplaces.Count > 0)
                                                                                     {
@@ -537,7 +539,7 @@
         <a class="list-group-item d-flex justify-content-between pb pb-chua-xac-dinh" href="javascript:;" data-alias="chua-xac-dinh" data-order="">
             <div>
                 @{
-                    count = Model.Employees.Count(m => m.Employee.Enable.Equals(true) && string.IsNullOrEmpty(m.Employee.CongTyChiNhanh) && string.IsNullOrEmpty(m.Employee.PhongBan));
+                    count = Model.Employees.Count(m => m.Employee.Enable.Equals(true) && m.Employee.Leave.Equals(false) && string.IsNullOrEmpty(m.Employee.CongTyChiNhanh) && string.IsNullOrEmpty(m.Employee.PhongBan));
                 }
                 <i class="far fa-building"></i> <span>CHƯA XÁC ĐINH</span> <span class="badge badge-info">@count</span>
             </div>
@@ -546,7 +548,7 @@
             </div>
         </a>
         <div class="bp-items @expand" id="chua-xac-dinh">
-            @foreach (var item in Model.Employees.Where(m => m.Employee.Enable.Equals(true) && string.IsNullOrEmpty(m.Employee.CongTyChiNhanh) && string.IsNullOrEmpty(m.Employee.PhongBan)).OrderBy(m => m.BoPhan))
+            @foreach (var item in Model.Employees.Where(m => m.Employee.Enable.Equals(true) && m.Employee.Leave.Equals(false) && string.IsNullOrEmpty(m.Employee.CongTyChiNhanh) && string.IsNullOrEmpty(m.Employee.PhongBan)).OrderBy(m => m.BoPhan))
             {
                 <div class="list-group-item list-group-item-action">
                     <div class="media">
@@ -597,8 +599,9 @@
                                                 <i class="icon-dots-three-horizontal"></i>
                                             </button>
                                             <div class="dropdown-menu dropdown-menu-sm" aria-labelledby="dropdownMenuButton">
-                                                <a class="dropdown-item detail-item" href="/hr/nhan-su/thong-tin/@item.Employee.Id">Xem thông tin</a>
-                                                <a class="dropdown-item edit-item" href="/hr/nhan-su/cap-nhat/@item.Employee.Id">Chỉnh sửa</a>
+                                                <a class="dropdown-item detail-item" href="/hr/nhan-su/thong-tin/@item.Employee.Id"><i class="fas fa-street-view"></i> Xem thông tin</a>
+                                                <a class="dropdown-item edit-item" href="/hr/nhan-su/cap-nhat/@item.Employee.Id"><i class="fas fa-user-edit"></i> Chỉnh sửa</a>
+                                                <a class="dropdown-item delete-item" href="javascript:;" data-id="@item.Employee.Id"><i class="fas fa-user-slash"></i> Xóa</a>
                                                 @{
                                                     if (item.Employee.Workplaces != null && item.Employee.Workplaces.Count > 0)
                                                     {
@@ -666,7 +669,7 @@
         </div>
 
         <div class="bp-items @expand" id="disable">
-            @foreach (var item in Model.Employees.Where(m => m.Employee.Enable.Equals(false)))
+            @foreach (var item in Model.Employees.Where(m => m.Employee.Enable.Equals(true) && m.Employee.Leave.Equals(true)))
             {
                 <div class="list-group-item list-group-item-action @leaveShow">
                     <div class="media">
@@ -739,7 +742,9 @@
                                     <i class="icon-dots-three-horizontal"></i>
                                 </button>
                                 <div class="dropdown-menu dropdown-menu-sm" aria-labelledby="dropdownMenuButton">
-                                    <a class="dropdown-item edit-item" href="/hr/nhan-su/thong-tin/@item.Employee.Id">Xem thông tin</a>
+                                    <a class="dropdown-item detail-item" href="/hr/nhan-su/thong-tin/@item.Employee.Id"><i class="fas fa-street-view"></i> Xem thông tin</a>
+                                    <a class="dropdown-item edit-item" href="/hr/nhan-su/cap-nhat/@item.Employee.Id"><i class="fas fa-user-edit"></i> Chỉnh sửa</a>
+                                    <a class="dropdown-item delete-item" href="javascript:;" data-id="@item.Employee.Id"><i class="fas fa-user-slash"></i> Xóa</a>
                                     @{
                                         if (item.Employee.Workplaces != null && item.Employee.Workplaces.Count > 0)
                                         {

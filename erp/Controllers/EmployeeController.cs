@@ -118,7 +118,7 @@ namespace erp.Controllers
 
             #region Filter
             var builder = Builders<Employee>.Filter;
-            var filter = !builder.Eq(i => i.UserName, Constants.System.account);
+            var filter = !builder.Eq(i => i.UserName, Constants.System.account) & builder.Eq(m => m.Enable, true);
             if (!string.IsNullOrEmpty(Id))
             {
                 filter = filter & builder.Eq(x => x.Id, Id.Trim());
@@ -281,7 +281,7 @@ namespace erp.Controllers
                 }
             }
 
-            filter = filter & builder.Eq(m => m.Enable, true);
+            filter = filter & builder.Eq(m => m.Leave, false);
             var recordCurrent = await dbContext.Employees.CountDocumentsAsync(filter);
 
             linkCurrent = !string.IsNullOrEmpty(linkCurrent) ? "?" + linkCurrent : linkCurrent;
@@ -357,7 +357,7 @@ namespace erp.Controllers
 
             #region Filter
             var builder = Builders<Employee>.Filter;
-            var filter = !builder.Eq(i => i.UserName, Constants.System.account);
+            var filter = !builder.Eq(i => i.UserName, Constants.System.account) & builder.Eq(m => m.Enable, true);
             if (!string.IsNullOrEmpty(Ten))
             {
                 filter = filter & (builder.Eq(x => x.Email, Ten.Trim()) | builder.Regex(x => x.FullName, Ten.Trim()));
@@ -489,7 +489,7 @@ namespace erp.Controllers
                 }
             }
 
-            filter = filter & builder.Eq(m => m.Enable, true);
+            filter = filter & builder.Eq(m => m.Leave, false);
             var recordCurrent = await dbContext.Employees.CountDocumentsAsync(filter);
 
             string exportFolder = Path.Combine(_env.WebRootPath, "exports");
@@ -708,7 +708,7 @@ namespace erp.Controllers
 
             #endregion
 
-            var birthdays = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Birthday > Constants.MinDate).ToEnumerable()
+            var birthdays = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.Birthday > Constants.MinDate).ToEnumerable()
                 .OrderBy(m => m.RemainingBirthDays).ToList();
 
             var viewModel = new BirthdayViewModel()
@@ -1439,7 +1439,8 @@ namespace erp.Controllers
         public async Task<ActionResult> EditAsync(EmployeeDataViewModel viewModel)
         {
             var entity = viewModel.Employee;
-            var isLeave = dbContext.Employees.CountDocuments(m => m.Enable.Equals(false) && m.EmployeeId.Equals(entity.Id));
+
+            var isLeave = dbContext.Employees.CountDocuments(m => m.EmployeeId.Equals(entity.Id) && m.Enable.Equals(true) && m.Leave.Equals(true));
             var userId = entity.Id;
 
             #region Authorization
@@ -1488,6 +1489,16 @@ namespace erp.Controllers
             #endregion
 
             #region Update missing field
+            if (string.IsNullOrEmpty(entity.UserName))
+            {
+                if (string.IsNullOrEmpty(entity.Email))
+                {
+                    entity.Email = Utility.EmailConvert(entity.FullName);
+                }
+
+                entity.UserName = entity.Email.Replace(Constants.MailExtension, string.Empty);
+            }
+
             if (entity.Contracts != null)
             {
                 if (entity.Contracts.Count > 0)
@@ -1647,6 +1658,10 @@ namespace erp.Controllers
                         }
                     }
 
+                    if (entity.Leaveday.HasValue)
+                    {
+                        entity.Leave = true;
+                    }
                     var filter = Builders<Employee>.Filter.Eq(m => m.Id, entity.Id);
                     var update = Builders<Employee>.Update
                         .Set(m => m.UpdatedBy, login)
@@ -1665,7 +1680,7 @@ namespace erp.Controllers
                         .Set(m => m.Gender, entity.Gender)
                         .Set(m => m.Joinday, entity.Joinday)
                         .Set(m => m.Contractday, entity.Contractday)
-                        .Set(m => m.Enable, entity.Enable)
+                        .Set(m => m.Leave, entity.Leave)
                         .Set(m => m.Leaveday, entity.Leaveday)
                         .Set(m => m.LeaveReason, entity.LeaveReason)
                         .Set(m => m.LeaveHandover, entity.LeaveHandover)
@@ -1812,7 +1827,7 @@ namespace erp.Controllers
                     #endregion
 
                     #region Send email leave
-                    if (isLeave == 0 && entity.Leaveday.HasValue)
+                    if (entity.Leave && !entity.IsLeaveEmail)
                     {
                         if (!string.IsNullOrEmpty(viewModel.EmailLeaveGroup))
                         {
@@ -1836,9 +1851,9 @@ namespace erp.Controllers
                             }
                         }
 
-                        if (sendMailLeave && viewModel.EmailLeave)
+                        if (!viewModel.EmailLeave)
                         {
-                            sendMailLeave = true;
+                            sendMailLeave = false;
                         }
                         if (sendMailLeave)
                         {
@@ -1891,22 +1906,6 @@ namespace erp.Controllers
                                 }
                             }
                         }
-
-                        #region UAT
-                        var uat = dbContext.Settings.Find(m => m.Key.Equals("UAT")).FirstOrDefault();
-                        if (uat != null && uat.Value == "true")
-                        {
-                            tos = new List<EmailAddress>
-                        {
-                            new EmailAddress { Name = "Xuan", Address = "xuan.tm1988@gmail.com" }
-                        };
-
-                            ccs = new List<EmailAddress>
-                        {
-                            new EmailAddress { Name = "Xuan CC", Address = "xuantranm@gmail.com" }
-                        };
-                        }
-                        #endregion
 
                         var webRoot = Environment.CurrentDirectory;
                         var pathToFile = _env.WebRootPath
@@ -2017,25 +2016,28 @@ namespace erp.Controllers
                 #endregion
 
                 #region SEND MAIL WELCOME
-                var sendMailWelcome = true;
-                var emailSettingWelcome = settings.Where(m => m.Key.Equals("email-tao-nhan-vien")).FirstOrDefault();
-                if (emailSettingWelcome != null)
+                if (!entity.IsWelcomeEmail)
                 {
-                    sendMailWelcome = emailSettingWelcome.Value == "true" ? true : false;
-                }
-                if (sendMailWelcome && viewModel.EmailSend)
-                {
-                    sendMailWelcome = true;
-                }
-                if (sendMailWelcome)
-                {
-                    if (string.IsNullOrEmpty(viewModel.EmailGroup))
+                    var sendMailWelcome = false;
+                    var emailSettingWelcome = settings.Where(m => m.Key.Equals("email-tao-nhan-vien")).FirstOrDefault();
+                    if (emailSettingWelcome != null)
                     {
-                        SendMailNewUser(string.Empty, entity.UserName);
+                        sendMailWelcome = emailSettingWelcome.Value == "true" ? true : false;
                     }
-                    else
+                    if (!viewModel.EmailSend)
                     {
-                        SendMailNewUser(viewModel.EmailGroup.Trim().ToUpper(), string.Empty);
+                        sendMailWelcome = false;
+                    }
+                    if (sendMailWelcome)
+                    {
+                        if (string.IsNullOrEmpty(viewModel.EmailGroup))
+                        {
+                            SendMailNewUser(string.Empty, entity.UserName);
+                        }
+                        else
+                        {
+                            SendMailNewUser(viewModel.EmailGroup.Trim().ToUpper(), string.Empty);
+                        }
                     }
                 }
                 #endregion
@@ -2310,7 +2312,6 @@ namespace erp.Controllers
                 //      to: employee have email
                 // 2. Send to IT setup email,...
                 var url = Constants.System.domain;
-
                 var subject = "THÔNG BÁO NHÂN SỰ MỚI.";
                 var nhansumoi = string.Empty;
                 nhansumoi += "<table class='MsoNormalTable' border='0 cellspacing='0' cellpadding='0' width='738' style='width: 553.6pt; margin-left: -1.15pt; border-collapse: collapse;'>";
@@ -2383,7 +2384,6 @@ namespace erp.Controllers
                             chucvuName = cvE.Name;
                         }
                     }
-
                     var entity = new EmployeeDisplay()
                     {
                         Employee = employee,
@@ -2394,13 +2394,11 @@ namespace erp.Controllers
                         BoPhanCon = bophanConName,
                         ChucVu = chucvuName
                     };
-
                     var contact = string.Empty;
                     if (entity.Employee.Mobiles != null && entity.Employee.Mobiles.Count > 0)
                     {
                         contact = entity.Employee.Mobiles[0].Number;
                     }
-
                     nhansumoi += "<tr style='height: 12.75pt'>";
                     nhansumoi += "<td nowrap='nowrap' style='border: solid windowtext 1.0pt; border-top: none; padding: 0cm 5.4pt 0cm 5.4pt;'>" + i.ToString("00") + "</td>";
                     nhansumoi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + entity.Employee.FullName + "</td>";
@@ -2412,7 +2410,12 @@ namespace erp.Controllers
                     nhansumoi += "</tr>";
                     i++;
 
-                    //SendMailRegister(entity.Employee);
+                    // UPDATE SENT MAIL
+                    var filter = Builders<Employee>.Filter.Eq(m => m.Id, employee.Id);
+                    var update = Builders<Employee>.Update
+                        .Set(m => m.IsWelcomeEmail, true)
+                        .Set(m => m.UpdatedOn, DateTime.Now);
+                    dbContext.Employees.UpdateOne(filter, update);
                 }
 
                 nhansumoi += "</tbody>";
@@ -2420,10 +2423,10 @@ namespace erp.Controllers
                 var tos = new List<EmailAddress>();
                 var ccs = new List<EmailAddress>();
                 var listboss = new List<string>
-            {
-                "C.01",
-                "C.02"
-            };
+                {
+                    "C.01",
+                    "C.02"
+                };
                 var employees = dbContext.Employees.Find(m => m.Enable.Equals(true) && !string.IsNullOrEmpty(m.Email) && !m.UserName.Equals(Constants.System.account)).ToList();
                 foreach (var employee in employees)
                 {
@@ -2505,14 +2508,11 @@ namespace erp.Controllers
             var list = dbContext.Employees.Find(m => arrs.Contains(m.UserName)).ToList();
             if (list != null && list.Count > 0)
             {
-                // Send mail
-
                 // 1. Notication
                 //      cc: cấp cao
                 //      to: employee have email
                 // 2. Send to IT setup email,...
                 var url = Constants.System.domain;
-
                 var subject = "THÔNG BÁO NHÂN SỰ NGHỈ VIỆC.";
                 var nhansunghi = string.Empty;
                 var noidungbangiao = string.Empty;
@@ -2614,6 +2614,13 @@ namespace erp.Controllers
                     nhansunghi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'><a href='tel:" + contact + "'>" + contact + "</a></td>";
                     nhansunghi += "</tr>";
                     i++;
+
+                    // UPDATE SENT MAIL
+                    var filter = Builders<Employee>.Filter.Eq(m => m.Id, employee.Id);
+                    var update = Builders<Employee>.Update
+                        .Set(m => m.IsLeaveEmail, true)
+                        .Set(m => m.UpdatedOn, DateTime.Now);
+                    dbContext.Employees.UpdateOne(filter, update);
                 }
 
                 nhansunghi += "</tbody>";
@@ -2647,18 +2654,6 @@ namespace erp.Controllers
                     }
                 }
 
-                #region UAT
-                //tos = new List<EmailAddress>
-                //            {
-                //                new EmailAddress { Name = "Xuan", Address = "xuan.tm1988@gmail.com" }
-                //            };
-
-                //ccs = new List<EmailAddress>
-                //            {
-                //                new EmailAddress { Name = "Xuan CC", Address = "xuantranm@gmail.com" }
-                //            };
-                #endregion
-
                 var pathToFile = _env.WebRootPath
                         + Path.DirectorySeparatorChar.ToString()
                         + "Templates"
@@ -2686,8 +2681,6 @@ namespace erp.Controllers
                     BodyContent = messageBody,
                     Type = "nhan-su-nghi"
                 };
-
-                // For faster update.
                 var scheduleEmail = new ScheduleEmail
                 {
                     Status = (int)EEmailStatus.ScheduleASAP,
@@ -2699,7 +2692,6 @@ namespace erp.Controllers
                     Content = emailMessage.BodyContent
                 };
                 dbContext.ScheduleEmails.InsertOne(scheduleEmail);
-                //_emailSender.SendEmail(emailMessage);
             }
         }
 

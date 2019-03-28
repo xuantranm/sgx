@@ -84,41 +84,43 @@ namespace erp.Controllers
                     }
                     else
                     {
-                        var ipE = dbContext.Ips.Find(m => m.IpAddress.Equals(ipAddress)).FirstOrDefault();
-                        if (ipE == null)
-                        {
-                            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                            return RedirectToAction("login", "account");
-                        }
-                        else
-                        {
-                            userInformation = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(ipE.Login)).FirstOrDefault();
-                            if (userInformation == null)
-                            {
-                                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                                return RedirectToAction("login", "account");
-                            }
-                            else
-                            {
-                                var claims = new List<Claim>
-                        {
-                            new Claim("UserName", userInformation.UserName),
-                            new Claim(ClaimTypes.Name, userInformation.Id),
-                            new Claim(ClaimTypes.Email, string.IsNullOrEmpty(userInformation.Email) ? string.Empty : userInformation.Email),
-                            new Claim("FullName", userInformation.FullName)
-                        };
-
-                                var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-                                var authProperties = new AuthenticationProperties
-                                {
-                                };
-                                authProperties.IsPersistent = true;
-                                await HttpContext.SignInAsync(
-                                    CookieAuthenticationDefaults.AuthenticationScheme,
-                                    new ClaimsPrincipal(claimsIdentity),
-                                    authProperties);
-                            }
-                        }
+                        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                        return RedirectToAction("login", "account");
+                        // Ip + more information
+                        //var ipE = dbContext.Ips.Find(m => m.IpAddress.Equals(ipAddress)).FirstOrDefault();
+                        //if (ipE == null)
+                        //{
+                        //    await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                        //    return RedirectToAction("login", "account");
+                        //}
+                        //else
+                        //{
+                        //    userInformation = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(ipE.Login)).FirstOrDefault();
+                        //    if (userInformation == null)
+                        //    {
+                        //        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                        //        return RedirectToAction("login", "account");
+                        //    }
+                        //    else
+                        //    {
+                        //        var claims = new List<Claim>
+                        //        {
+                        //            new Claim("UserName", userInformation.UserName),
+                        //            new Claim(ClaimTypes.Name, userInformation.Id),
+                        //            new Claim(ClaimTypes.Email, string.IsNullOrEmpty(userInformation.Email) ? string.Empty : userInformation.Email),
+                        //            new Claim("FullName", userInformation.FullName)
+                        //        };
+                        //        var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                        //        var authProperties = new AuthenticationProperties
+                        //        {
+                        //        };
+                        //        authProperties.IsPersistent = true;
+                        //        await HttpContext.SignInAsync(
+                        //            CookieAuthenticationDefaults.AuthenticationScheme,
+                        //            new ClaimsPrincipal(claimsIdentity),
+                        //            authProperties);
+                        //    }
+                        //}
                     }
                 }
                 catch (Exception ex)
@@ -169,7 +171,7 @@ namespace erp.Controllers
             #region Notification Birthday
             ViewData["birthdayNoticeBefore"] = birthdayNoticeBefore;
 
-            var nextBirthdays = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Birthday > Constants.MinDate).ToEnumerable()
+            var nextBirthdays = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.Birthday > Constants.MinDate).ToEnumerable()
                 .Where(m => m.RemainingBirthDays <= birthdayNoticeBefore).OrderBy(m => m.RemainingBirthDays).Take(6).ToList();
             #endregion
 

@@ -87,6 +87,7 @@ namespace erp.Controllers
         public async Task<IActionResult> Login(LoginViewModel model, string returnUrl = null)
         {
             var result = dbContext.Employees.Find(m => m.Enable.Equals(true)
+                                                    && m.Leave.Equals(false)
                                                     && m.IsOnline.Equals(true)
                                                     && (m.UserName.Equals(model.UserName.Trim()) || m.Email.Equals(model.UserName.Trim()))
                                                     && m.Password.Equals(Helper.HashedPassword(model.Password.Trim())))
@@ -225,7 +226,7 @@ namespace erp.Controllers
         [Route("/tk/quen-mat-khau/")]
         public ActionResult ForgotPassword(ForgotPasswordViewModel model)
         {
-            var user = dbContext.Employees.Find(m => m.Email.Equals(model.Email)).FirstOrDefault();
+            var user = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.Email.Equals(model.Email)).FirstOrDefault();
             if (user == null)
             {
                 return Redirect("/tk/ket-qua-quen-mat-khau/");

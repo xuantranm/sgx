@@ -4,6 +4,17 @@ namespace Common.Utilities
 {
     public static class Constants
     {
+        public static string Truncate(this string value, int maxChars)
+        {
+            if (!string.IsNullOrEmpty(value))
+            {
+                return value.Length <= maxChars ? value : value.Substring(0, maxChars) + "...";
+            }
+            return string.Empty;
+        }
+
+        public const string NA = "N/A";
+
         public const string ImgMissLink = "http://via.placeholder.com/";
 
         public const string WaitData = "Chờ lấy dữ liệu";
@@ -585,6 +596,28 @@ namespace Common.Utilities
             else
             {
                 return "00:00";
+            }
+        }
+
+        public static string DayOfWeekT2(DateTime date)
+        {
+            int today = (int)date.DayOfWeek;
+            switch (today)
+            {
+                case (int)DayOfWeek.Monday:
+                    return "T2";
+                case (int)DayOfWeek.Tuesday:
+                    return "T3";
+                case (int)DayOfWeek.Wednesday:
+                    return "T4";
+                case (int)DayOfWeek.Thursday:
+                    return "T5";
+                case (int)DayOfWeek.Friday:
+                    return "T6";
+                case (int)DayOfWeek.Saturday:
+                    return "T7";
+                default:
+                    return "CN";
             }
         }
     }

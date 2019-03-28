@@ -30,11 +30,12 @@ namespace xdatafix
             #endregion
 
             //FixEmailLeave(connection, database);
+            FixEmployeeLeave(connection, database);
 
             //UpdateEmployeeStructure(connection, database);
             //FixStructure(connection, database);
-            FixStructureInitBP(connection, database);
-            FixEmployeeData(connection, database);
+            //FixStructureInitBP(connection, database);
+            //FixEmployeeData(connection, database);
             //UpdateEmployeeDepartmentAlias(connection, database);
             //UpdateTimerDepartmentAlias(connection, database);
             //UpdateTimekeepingCode(connection, database);
@@ -69,6 +70,39 @@ namespace xdatafix
         }
 
         #region ERP
+
+        static void FixEmployeeLeave(string connection, string database)
+        {
+            #region Connection, Setting & Filter
+            MongoDBContext.ConnectionString = connection;
+            MongoDBContext.DatabaseName = database;
+            MongoDBContext.IsSSL = true;
+            MongoDBContext dbContext = new MongoDBContext();
+            #endregion
+
+            var employees = dbContext.Employees.Find(m => m.Enable.Equals(false)).ToList();
+            foreach(var employee in employees)
+            {
+                var builder = Builders<Employee>.Filter;
+                var filter = builder.Eq(m => m.Id, employee.Id);
+                var update = Builders<Employee>.Update
+                    .Set(m => m.Leave, true)
+                    .Set(m => m.Enable, true)
+                    .Set(m => m.IsWelcomeEmail, true)
+                    .Set(m => m.IsLeaveEmail, true);
+                dbContext.Employees.UpdateOne(filter, update);
+            }
+
+            var employeeAs = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false)).ToList();
+            foreach (var employee in employeeAs)
+            {
+                var builder = Builders<Employee>.Filter;
+                var filter = builder.Eq(m => m.Id, employee.Id);
+                var update = Builders<Employee>.Update
+                    .Set(m => m.IsWelcomeEmail, true);
+                dbContext.Employees.UpdateOne(filter, update);
+            }
+        }
 
         static void FixEmployeeData(string connection, string database)
         {

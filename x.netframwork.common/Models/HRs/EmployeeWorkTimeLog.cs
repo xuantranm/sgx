@@ -7,6 +7,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Models
 {
+    /// <summary>
+    /// Get full data in viewmodel, same employee
+    /// </summary>
     public class EmployeeWorkTimeLog: Common
     {
         [BsonId]
@@ -15,7 +18,7 @@ namespace Models
         public string Id { get; set; }
 
         public string EmployeeId { get; set; }
-
+        // NO USE
         public string EmployeeName { get; set; }
 
         public string Part { get; set; }
@@ -27,6 +30,8 @@ namespace Models
         public string DepartmentAlias { get; set; }
 
         public string EmployeeTitle { get; set; }
+
+        // END NO USE
 
         public string EnrollNumber { get; set; }
 

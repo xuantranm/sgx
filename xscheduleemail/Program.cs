@@ -29,11 +29,6 @@ namespace xscheduleemail
 
             Console.WriteLine("Start send mail...");
             SendMail(mode, isMail, debug, connection, database);
-
-            // Debug
-            //Console.Write("\r\n");
-            //Console.Write("Done..... Press any key to exist!");
-            //Console.ReadLine();
         }
 
         static void SendMail(int mode, bool isMail, string debug, string connection, string database)
@@ -63,6 +58,7 @@ namespace xscheduleemail
                             Subject = item.Title,
                             BodyContent = item.Content,
                             Type = item.Type,
+                            Attachments = item.Attachments,
                             EmployeeId = item.EmployeeId
                         };
 

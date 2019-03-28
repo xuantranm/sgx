@@ -491,6 +491,154 @@
         });
         //event.preventDefault();
     });
+
+    function changeByCongTyChiNhanh(congtychinhanh) {
+        $.ajax({
+            type: "GET",
+            url: "/api/GetByCongTyChiNhanh",
+            contentType: "application/json; charset=utf-8",
+            data: { congtychinhanh: congtychinhanh },
+            dataType: "json",
+            success: function (data) {
+                if (data.result === true) {
+                    var $kcn = $("#Employee_KhoiChucNang");
+                    $kcn.empty();
+                    if (data.khoichucnangs.length > 1) {
+                        $kcn.append($("<option></option>")
+                            .attr("value", "").text("Chọn"));
+                    }
+                    $.each(data.khoichucnangs, function (key, khoichucnang) {
+                        $kcn.append($("<option></option>")
+                            .attr("value", khoichucnang.id).text(khoichucnang.name));
+                    });
+
+                    if (data.khoichucnangs.length === 1) {
+                        changeByKhoiChucNang($('#Employee_KhoiChucNang').val());
+                    }
+
+                    var $pb = $("#Employee_PhongBan");
+                    $pb.empty();
+
+                    var $bp = $("#Employee_BoPhan");
+                    $bp.empty();
+
+                    var $bpc = $("#Employee_BoPhanCon");
+                    $bpc.empty();
+                }
+
+                getChucVu($('#Employee_CongTyChiNhanh').val(), $('#Employee_KhoiChucNang').val(), $("#Employee_PhongBan").val(), $("#Employee_BoPhan").val());
+            }
+        });
+    }
+
+    function changeByKhoiChucNang(khoichucnang) {
+        $.ajax({
+            type: "GET",
+            url: "/api/GetByKhoiChucNang",
+            contentType: "application/json; charset=utf-8",
+            data: { khoichucnang: khoichucnang },
+            dataType: "json",
+            success: function (data) {
+                if (data.result === true) {
+                    $('#Employee_CongTyChiNhanh').val(data.congTyChiNhanhId);
+
+                    var $pb = $("#Employee_PhongBan");
+                    $pb.empty();
+                    if (data.phongbans.length > 1) {
+                        $pb.append($("<option></option>")
+                            .attr("value", "").text("Chọn"));
+                    }
+                    $.each(data.phongbans, function (key, phongban) {
+                        $pb.append($("<option></option>")
+                            .attr("value", phongban.id).text(phongban.name));
+                    });
+
+                    if (data.phongbans.length === 1) {
+                        changeByPhongBan($('#Employee_PhongBan').val());
+                    }
+
+                    var $bp = $("#Employee_BoPhan");
+                    $bp.empty();
+
+                    var $bpc = $("#Employee_BoPhanCon");
+                    $bpc.empty();
+                }
+
+                getChucVu($('#Employee_CongTyChiNhanh').val(), $('#Employee_KhoiChucNang').val(), $("#Employee_PhongBan").val(), $("#Employee_BoPhan").val());
+            }
+        });
+    }
+
+    function changeByPhongBan(phongban) {
+        $.ajax({
+            type: "GET",
+            url: "/api/GetByPhongBan",
+            contentType: "application/json; charset=utf-8",
+            data: { phongban: phongban },
+            dataType: "json",
+            success: function (data) {
+                if (data.result === true) {
+                    var $bp = $("#Employee_BoPhan");
+                    $bp.empty();
+                    $.each(data.bophans, function (key, bophan) {
+                        $bp.append($("<option></option>")
+                            .attr("value", bophan.id).text(bophan.name));
+                    });
+
+                    var $bpc = $("#Employee_BoPhanCon");
+                    $bpc.empty();
+                }
+
+                getChucVu($('#Employee_CongTyChiNhanh').val(), $('#Employee_KhoiChucNang').val(), $("#Employee_PhongBan").val(), $("#Employee_BoPhan").val());
+            }
+        });
+    }
+
+    function changeByBoPhan(bophan) {
+        $.ajax({
+            type: "GET",
+            url: "/api/GetByBoPhan",
+            contentType: "application/json; charset=utf-8",
+            data: { bophan: bophan },
+            dataType: "json",
+            success: function (data) {
+                if (data.result === true) {
+                    var $pbc = $("#Employee_BoPhanCon");
+                    $pbc.empty();
+                    $.each(data.bophancons, function (key, bophancon) {
+                        $pbc.append($("<option></option>")
+                            .attr("value", bophancon.id).text(bophancon.name));
+                    });
+                }
+            }
+        });
+    }
+
+    function getChucVu(congtychinhanh, khoichucnang, phongban, bophan) {
+        $.ajax({
+            type: "GET",
+            url: "/api/GetChucVu",
+            contentType: "application/json; charset=utf-8",
+            data: {
+                congtychinhanh: congtychinhanh,
+                khoichucnang: khoichucnang,
+                phongban: phongban,
+                bophan: bophan
+            },
+            dataType: "json",
+            success: function (data) {
+                if (data.result === true) {
+                    var $pbc = $("#Employee_ChucVu");
+                    $pbc.empty();
+                    $.each(data.chucvus, function (key, chucvu) {
+                        $pbc.append($("<option></option>")
+                            .attr("value", chucvu.id).text(chucvu.name));
+                    });
+                }
+            }
+        });
+    }
+
 });
 
 function resetForm() {
@@ -574,153 +722,6 @@ function enableRemoveMobileExist() {
 
 function enableAutoSize() {
     $('textarea.js-auto-size').textareaAutoSize();
-}
-
-function changeByCongTyChiNhanh(congtychinhanh) {
-    $.ajax({
-        type: "GET",
-        url: "/api/GetByCongTyChiNhanh",
-        contentType: "application/json; charset=utf-8",
-        data: { congtychinhanh: congtychinhanh },
-        dataType: "json",
-        success: function (data) {
-            if (data.result === true) {
-                var $kcn = $("#Employee_KhoiChucNang");
-                $kcn.empty();
-                if (data.khoichucnangs.length > 1) {
-                    $kcn.append($("<option></option>")
-                        .attr("value", "").text("Chọn"));
-                }
-                $.each(data.khoichucnangs, function (key, khoichucnang) {
-                    $kcn.append($("<option></option>")
-                        .attr("value", khoichucnang.id).text(khoichucnang.name));
-                });
-
-                if (data.khoichucnangs.length === 1) {
-                    changeByKhoiChucNang($('#Employee_KhoiChucNang').val());
-                }
-
-                var $pb = $("#Employee_PhongBan");
-                $pb.empty();
-
-                var $bp = $("#Employee_BoPhan");
-                $bp.empty();
-
-                var $bpc = $("#Employee_BoPhanCon");
-                $bpc.empty();
-            }
-
-            getChucVu($('#Employee_CongTyChiNhanh').val(), $('#Employee_KhoiChucNang').val(), $("#Employee_PhongBan").val(), $("#Employee_BoPhan").val());
-        }
-    });
-}
-
-function changeByKhoiChucNang(khoichucnang) {
-    $.ajax({
-        type: "GET",
-        url: "/api/GetByKhoiChucNang",
-        contentType: "application/json; charset=utf-8",
-        data: { khoichucnang: khoichucnang },
-        dataType: "json",
-        success: function (data) {
-            if (data.result === true) {
-                $('#Employee_CongTyChiNhanh').val(data.congTyChiNhanhId);
-
-                var $pb = $("#Employee_PhongBan");
-                $pb.empty();
-                if (data.phongbans.length > 1) {
-                    $pb.append($("<option></option>")
-                        .attr("value", "").text("Chọn"));
-                }
-                $.each(data.phongbans, function (key, phongban) {
-                    $pb.append($("<option></option>")
-                        .attr("value", phongban.id).text(phongban.name));
-                });
-
-                if (data.phongbans.length === 1) {
-                    changeByPhongBan($('#Employee_PhongBan').val());
-                }
-
-                var $bp = $("#Employee_BoPhan");
-                $bp.empty();
-
-                var $bpc = $("#Employee_BoPhanCon");
-                $bpc.empty();
-            }
-
-            getChucVu($('#Employee_CongTyChiNhanh').val(), $('#Employee_KhoiChucNang').val(), $("#Employee_PhongBan").val(), $("#Employee_BoPhan").val());
-        }
-    });
-}
-
-function changeByPhongBan(phongban) {
-    $.ajax({
-        type: "GET",
-        url: "/api/GetByPhongBan",
-        contentType: "application/json; charset=utf-8",
-        data: { phongban: phongban },
-        dataType: "json",
-        success: function (data) {
-            if (data.result === true) {
-                var $bp = $("#Employee_BoPhan");
-                $bp.empty();
-                $.each(data.bophans, function (key, bophan) {
-                    $bp.append($("<option></option>")
-                        .attr("value", bophan.id).text(bophan.name));
-                });
-
-                var $bpc = $("#Employee_BoPhanCon");
-                $bpc.empty();
-            }
-
-            getChucVu($('#Employee_CongTyChiNhanh').val(), $('#Employee_KhoiChucNang').val(), $("#Employee_PhongBan").val(), $("#Employee_BoPhan").val());
-        }
-    });
-}
-
-function changeByBoPhan(bophan) {
-    $.ajax({
-        type: "GET",
-        url: "/api/GetByBoPhan",
-        contentType: "application/json; charset=utf-8",
-        data: { bophan: bophan },
-        dataType: "json",
-        success: function (data) {
-            if (data.result === true) {
-                var $pbc = $("#Employee_BoPhanCon");
-                $pbc.empty();
-                $.each(data.bophancons, function (key, bophancon) {
-                    $pbc.append($("<option></option>")
-                        .attr("value", bophancon.id).text(bophancon.name));
-                });
-            }
-        }
-    });
-}
-
-function getChucVu(congtychinhanh, khoichucnang, phongban, bophan) {
-    $.ajax({
-        type: "GET",
-        url: "/api/GetChucVu",
-        contentType: "application/json; charset=utf-8",
-        data: {
-            congtychinhanh: congtychinhanh,
-            khoichucnang: khoichucnang,
-            phongban: phongban,
-            bophan: bophan
-        },
-        dataType: "json",
-        success: function (data) {
-            if (data.result === true) {
-                var $pbc = $("#Employee_ChucVu");
-                $pbc.empty();
-                $.each(data.chucvus, function (key, chucvu) {
-                    $pbc.append($("<option></option>")
-                        .attr("value", chucvu.id).text(chucvu.name));
-                });
-            }
-        }
-    });
 }
 
 function eventModal(modal, mode) {

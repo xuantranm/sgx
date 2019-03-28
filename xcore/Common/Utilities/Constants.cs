@@ -20,11 +20,12 @@ namespace Common.Utilities
         {
             public const string Init = "init";
             public const string Export = "xuat-tai-lieu";
+            public const string Template = "mau-tai-lieu";
             public const string Add = "nhan-su";
             public const string Edit = "thong-tin";
             public const string Update = "cap-nhat";
             public const string Delete = "danh-sach";
-            public const string Disable = "nhap-lieu";
+            public const string Disable = "disable";
             public const string Post = "post";
         }
 
@@ -100,6 +101,13 @@ namespace Common.Utilities
 
             public const string NhaMay = "nha-may";
             public const string TonSX = "ton-sx";
+
+            public const string KhoNguyenLieuDuLieu = "kho-nguyen-lieu-du-lieu";
+            public const string KhoThanhPhamDuLieu = "kho-thanh-pham-du-lieu";
+            public const string KhoBunDuLieu = "kho-bun-du-lieu";
+            public const string KhoXuLyBunDuLieu = "kho-xu-ly-bun-du-lieu";
+            public const string TiepNhanXuLyDuLieu = "tiep-nhan-xu-ly-du-lieu";
+            public const string DuAnCongDuLieu = "du-an-cong-du-lieu";
         }
 
         public static class ContactType
@@ -208,9 +216,13 @@ namespace Common.Utilities
         {
             public const string Main = "khth";
             public const string DuLieuKho = "du-lieu-kho";
-            public const string DuLieuKhoNhap = "du-lieu-kho";
+            // DU LIEU KHO: Kho nguyên liệu, Kho thành phẩm, Kho bùn, Kho xử lý, Tiếp nhận xử lý bùn
+            public const string DuLieuKhoNguyenLieu = "du-lieu-kho-nguyen-lieu";
+            public const string DuLieuKhoThanhPham = "du-lieu-kho-thanh-pham";
+            public const string DuLieuKhoBun = "du-lieu-kho-bun";
+            public const string DuLieuKhoXuLy = "du-lieu-kho-xu-ly";
+            public const string DuLieuTiepNhanXuLyBun = "du-lieu-tiep-nhan-xu-ly-bun";
 
-            public const string DuLieuBun = "du-lieu-bun";
             public const string DuLieuDuAnCong = "du-lieu-du-an-cong";
         }
 
