@@ -307,6 +307,7 @@ namespace erp.Controllers
             var filter = Builders<EmployeeWorkTimeLog>.Filter.Eq(m => m.Id, id);
             var update = Builders<EmployeeWorkTimeLog>.Update
                 .Set(m => m.SecureCode, Helper.HashedPassword(Guid.NewGuid().ToString("N").Substring(0, 12)))
+                .Set(m => m.WorkDay, 1)
                 .Set(m => m.Status, approve)
                 .Set(m => m.ConfirmDate, DateTime.Now.Date);
             dbContext.EmployeeWorkTimeLogs.UpdateOne(filter, update);

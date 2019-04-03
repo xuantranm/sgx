@@ -772,6 +772,21 @@
     <Content Update="Views\File\NgayPhep.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
+    <Content Update="Views\KeHoachTongHop\DuLieuKhoXuLy.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\KeHoachTongHop\DuLieuDuAnCong.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\KeHoachTongHop\DuLieuTiepNhanXuLyBun.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\KeHoachTongHop\DuLieuKhoBun.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\KeHoachTongHop\DuLieuKhoThanhPham.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
     <Content Update="Views\KeHoachTongHop\Index.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>

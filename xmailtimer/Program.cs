@@ -1244,7 +1244,7 @@ namespace xmailtimer
 
             var scheduleEmail = new ScheduleEmail
             {
-                Status = (int)EEmailStatus.Schedule,
+                Status = (int)EEmailStatus.TimerMonth,
                 To = emailMessage.ToAddresses,
                 CC = emailMessage.CCAddresses,
                 BCC = emailMessage.BCCAddresses,

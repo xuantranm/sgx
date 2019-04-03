@@ -64,7 +64,7 @@ namespace xbirthday
                 }
             }
 
-            var birthdays = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Birthday > Constants.MinDate).ToEnumerable()
+            var birthdays = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.Birthday > Constants.MinDate).ToEnumerable()
                .Where(m => m.RemainingBirthDays == 0).ToList();
 
             if (birthdays.Count > 0)

@@ -29,8 +29,11 @@ namespace xdatafix
             var database = "tribat";
             #endregion
 
+            //InitSetting(connection, database);
+            //FixTimer(connection, database);
+            UpdateEmployeeCode(connection, database);
             //FixEmailLeave(connection, database);
-            FixEmployeeLeave(connection, database);
+            //FixEmployeeLeave(connection, database);
 
             //UpdateEmployeeStructure(connection, database);
             //FixStructure(connection, database);
@@ -70,6 +73,67 @@ namespace xdatafix
         }
 
         #region ERP
+        static void UpdateEmployeeCode(string connection, string database)
+        {
+            #region Connection, Setting & Filter
+            MongoDBContext.ConnectionString = connection;
+            MongoDBContext.DatabaseName = database;
+            MongoDBContext.IsSSL = true;
+            MongoDBContext dbContext = new MongoDBContext();
+            #endregion
+
+            var timers = dbContext.EmployeeWorkTimeLogs.Find(m => m.Status.Equals((int)EStatusWork.DongY) && !m.WorkDay.Equals(1)).ToList();
+            foreach (var timer in timers)
+            {
+                var filter = Builders<EmployeeWorkTimeLog>.Filter.Eq(m => m.Id, timer.Id);
+                var update = Builders<EmployeeWorkTimeLog>.Update
+                    .Set(m => m.WorkDay, 1);
+                dbContext.EmployeeWorkTimeLogs.UpdateOne(filter, update);
+            }
+        }
+
+        static void InitSetting(string connection, string database)
+        {
+            #region Connection, Setting & Filter
+            MongoDBContext.ConnectionString = connection;
+            MongoDBContext.DatabaseName = database;
+            MongoDBContext.IsSSL = true;
+            MongoDBContext dbContext = new MongoDBContext();
+            #endregion
+
+            dbContext.Settings.InsertOne(new Setting()
+            {
+                Type = "system",
+                Key = "page-size",
+                Value = "50"
+            });
+
+            dbContext.Settings.InsertOne(new Setting()
+            {
+                Type = "system",
+                Key = "page-size-khth",
+                Value = "100"
+            });
+        }
+
+        static void FixTimer(string connection, string database)
+        {
+            #region Connection, Setting & Filter
+            MongoDBContext.ConnectionString = connection;
+            MongoDBContext.DatabaseName = database;
+            MongoDBContext.IsSSL = true;
+            MongoDBContext dbContext = new MongoDBContext();
+            #endregion
+
+            var timers = dbContext.EmployeeWorkTimeLogs.Find(m => m.Status.Equals((int)EStatusWork.DongY) && !m.WorkDay.Equals(1)).ToList();
+            foreach (var timer in timers)
+            {
+                var filter = Builders<EmployeeWorkTimeLog>.Filter.Eq(m => m.Id, timer.Id);
+                var update = Builders<EmployeeWorkTimeLog>.Update
+                    .Set(m => m.WorkDay, 1);
+                dbContext.EmployeeWorkTimeLogs.UpdateOne(filter, update);
+            }
+        }
 
         static void FixEmployeeLeave(string connection, string database)
         {

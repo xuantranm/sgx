@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace ViewModels
 {
-    public class KhoViewModel
+    public class KhoViewModel: CommonViewModel
     {
         public string Name { get; set;}
 
@@ -14,9 +14,9 @@ namespace ViewModels
 
         public string Hang { get; set; }
 
-        public string TrangThai { get; set; }
+        public int? SoPhieu { get; set; }
 
-        public string LinkCurrent { get; set; }
+        public string TrangThai { get; set; }
 
         public IList<TrangThai> TrangThais { get; set; }
 

@@ -1,0 +1,353 @@
+﻿@using System;
+@using System.Globalization;
+@using Common.Utilities;
+@using Common.Enums;
+@using ViewModels;
+@model KhoViewModel;
+
+@{
+    Layout = "~/Views/Shared/_LayoutSocialFbFs.cshtml";
+    CultureInfo culture = CultureInfo.CreateSpecificCulture("en-US");
+}
+<div class="main-container">
+    <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="/">Trang chủ</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="/@Constants.KeHoachTongHopLink.Main">Kho</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">
+                            @Model.Name
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="flush-with-above space-0">
+        <div class="bg-white">
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <ul class="nav nav-tabs" id="myTab" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoNguyenLieu">NGUYÊN LIỆU</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoThanhPham">THÀNH PHẨM</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoBun">BÙN</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoXuLy">XỬ LÝ</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link active" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuTiepNhanXuLyBun">@Model.Name.ToUpper()</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuDuAnCong">DỰ ÁN CÔNG</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MAIN -->
+    <section class="flush-with-above height-80 d-block">
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="real" role="tabpanel" aria-labelledby="real-tab">
+                <div class="container">
+                    <div id="uploadarea" class="col-12">
+                        <div class="form-row">
+                            <div class="form-group col-md-4 col-xs-12">
+                                <a href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuTiepNhanXuLyBun/@Constants.ActionLink.Template" class="btn btn-success btn-list" data-toggle="tooltip" title="Bấm tải về mẫu tài liệu.">
+                                    <i class="fas fa-download"></i> Tải mẫu @Model.Name
+                                </a>
+                            </div>
+                            <div class="form-group col-md-4 col-xs-12">
+                                <a href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuTiepNhanXuLyBun/@Constants.ActionLink.Export@Model.LinkCurrent" class="btn btn-info" data-toggle="tooltip" title="Xuất tài liệu ra excel.">
+                                    <i class="fas fa-download"></i> Xuất dữ liệu @Model.Name
+                                </a>
+                            </div>
+                        </div>
+
+                        <form method="post" action="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuTiepNhanXuLyBun/@Constants.ActionLink.Template/@Constants.ActionLink.Post" enctype="multipart/form-data">
+                            <div class="form-row">
+                                <div class="form-group col-md-4 col-xs-12">
+                                    <input type="file" name="files" class="form-control fUpload" />
+                                </div>
+                                <div class="form-group col-md-8 col-xs-12">
+                                    <input type="button" class="btn btn-danger btnUpload" value="Tải lên @Model.Name" />
+                                    <button class="btn btn-danger btn-upload-process d-none" type="button" disabled>
+                                        <i class="fas fa-spinner"></i>
+                                        Đang xử lý...
+                                    </button>
+                                </div>
+                                <div class="col-12 alert alert-warning error d-none"></div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- FILTER -->
+                    <form method="get" action="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuTiepNhanXuLyBun" id="form-main">
+                        <input asp-for="Trang" type="hidden" value="1" />
+                        <input asp-for="SapXep" class="sap-xep" type="hidden" />
+                        <input asp-for="ThuTu" class="thu-tu" type="hidden" />
+                        <div class="row">
+                            <div class="col-12">
+                                <span class="badge badge-primary">Tìm kiếm:</span>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            @{
+                                var fromdatesearch = Model.Tu > Constants.MinDate ? Model.Tu.ToString("dd/MM/yyyy") : "";
+                                var todatesearch = Model.Den > Constants.MinDate ? Model.Den.ToString("dd/MM/yyyy") : "";
+                            }
+                            <div class="col-md-3 col-sm-6 col-xs-12">
+                                <span class="mr-2 text-muted text-small text-nowrap">Từ:</span>
+                                <input class="from-date form-control datepicker datepicker-lg" value="@fromdatesearch" />
+                                <input type="hidden" name="Tu" class="tu-ngay" value="@Model.Tu.ToString("MM-dd-yyyy")" />
+                            </div>
+                            <div class="col-md-3 col-sm-6 col-xs-12">
+                                <span class="mr-2 text-muted text-small text-nowrap">đến:</span>
+                                <input class="to-date form-control datepicker datepicker-lg" value="@todatesearch" />
+                                <input type="hidden" name="Den" class="den-ngay" value="@Model.Den.ToString("MM-dd-yyyy")" />
+                            </div>
+                            <div class="col-md-3 col-sm-6 col-xs-12">
+                                <span class="mr-2 text-muted text-small text-nowrap">Số phiếu:</span>
+                                <input asp-for="SoPhieu" class="form-control form-control-lg" onfocusout="formSubmit();" />
+                                <small>[Enter], [Tab] hoặc rê chuột ra để tìm kiếm</small>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <span>Sắp xếp theo: </span>
+                                @{
+                                    var sortFlagSoPhieuDesc = "badge-default";
+                                    if (Model.SapXep == "so-phieu" && Model.ThuTu == "desc")
+                                    {
+                                        sortFlagSoPhieuDesc = "badge-success";
+                                    }
+                                    var sortFlagSoPhieuAsc = "badge-default";
+                                    if (Model.SapXep == "so-phieu" && Model.ThuTu == "asc")
+                                    {
+                                        sortFlagSoPhieuAsc = "badge-success";
+                                    }
+                                    var sortFlagNgayDesc = "badge-default";
+                                    if (Model.SapXep == "ngay" && Model.ThuTu == "desc")
+                                    {
+                                        sortFlagNgayDesc = "badge-success";
+                                    }
+                                    var sortFlagNgayAsc = "badge-default";
+                                    if (Model.SapXep == "ngay" && Model.ThuTu == "asc")
+                                    {
+                                        sortFlagNgayAsc = "badge-success";
+                                    }
+                                    var sortFlagTrongLuongDesc = "badge-default";
+                                    if (Model.SapXep == "trong-luong" && Model.ThuTu == "desc")
+                                    {
+                                        sortFlagTrongLuongDesc = "badge-success";
+                                    }
+                                    var sortFlagTrongLuongAsc = "badge-default";
+                                    if (Model.SapXep == "nguoi-can" && Model.ThuTu == "asc")
+                                    {
+                                        sortFlagTrongLuongAsc = "badge-success";
+                                    }
+                                    var sortFlagNguoiCanDesc = "badge-default";
+                                    if (Model.SapXep == "nguoi-can" && Model.ThuTu == "desc")
+                                    {
+                                        sortFlagNguoiCanDesc = "badge-success";
+                                    }
+                                    var sortFlagNguoiCanAsc = "badge-default";
+                                    if (Model.SapXep == "trong-luong" && Model.ThuTu == "asc")
+                                    {
+                                        sortFlagTrongLuongAsc = "badge-success";
+                                    }
+                                    <a href="javascript:;" data-sortby="so-phieu" data-sortorder="asc" class="btn-sort">
+                                        <span class="badge @sortFlagSoPhieuAsc"><i class="fas fa-sort-alpha-up"></i> Số phiếu tăng dần</span>
+                                    </a>
+                                    <a href="javascript:;" data-sortby="so-phieu" data-sortorder="desc" class="btn-sort">
+                                        <span class="badge @sortFlagSoPhieuDesc"><i class="fas fa-sort-alpha-down"></i> Số phiêu giảm dần</span>
+                                    </a>
+                                    <a href="javascript:;" data-sortby="ngay" data-sortorder="asc" class="btn-sort">
+                                        <span class="badge @sortFlagNgayAsc"><i class="fas fa-sort-alpha-up"></i> Ngày tăng dần</span>
+                                    </a>
+                                    <a href="javascript:;" data-sortby="ngay" data-sortorder="desc" class="btn-sort">
+                                        <span class="badge @sortFlagNgayDesc"><i class="fas fa-sort-alpha-down"></i> Ngày giảm dần</span>
+                                    </a>
+                                    <a href="javascript:;" data-sortby="trong-luong" data-sortorder="asc" class="btn-sort">
+                                        <span class="badge @sortFlagTrongLuongAsc"><i class="fas fa-sort-alpha-up"></i> Trọng lượng tăng dần</span>
+                                    </a>
+                                    <a href="javascript:;" data-sortby="trong-luong" data-sortorder="desc" class="btn-sort">
+                                        <span class="badge @sortFlagTrongLuongDesc"><i class="fas fa-sort-alpha-down"></i> Trọng lượng giảm dần</span>
+                                    </a>
+                                    <a href="javascript:;" data-sortby="nguoi-can" data-sortorder="asc" class="btn-sort">
+                                        <span class="badge @sortFlagNguoiCanAsc"><i class="fas fa-sort-alpha-up"></i> Người cân tăng dần</span>
+                                    </a>
+                                    <a href="javascript:;" data-sortby="nguoi-can" data-sortorder="desc" class="btn-sort">
+                                        <span class="badge @sortFlagNguoiCanDesc"><i class="fas fa-sort-alpha-down"></i> Người cân giảm dần</span>
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    </form>
+
+                    <div class="row">
+                        @{
+                            <div class="col-12">Tìm thấy <span class="badge badge-info">@Model.Records</span> kết quả.</div>
+                            <div class="col-12 table-responsive mb-1">
+                                <table class="table table-sm table-striped table-bordered table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">#</th>
+                                            <th scope="col">Số phiếu</th>
+                                            <th scope="col">Ngày giờ L1</th>
+                                            <th scope="col">Ngày giờ L2</th>
+                                            <th scope="col">Biển số 1</th>
+                                            <th scope="col">Biển số 2</th>
+                                            <th scope="col">T.Lượng L1</th>
+                                            <th scope="col">T.Lượng L2</th>
+                                            <th scope="col">T.Lượng</th>
+                                            <th scope="col">Khách hàng</th>
+                                            <th scope="col">Khách hàng con</th>
+                                            <th scope="col">Đơn vị vận chuyển</th>
+                                            <th scope="col">Loại hàng</th>
+                                            <th scope="col">Kho hàng</th>
+                                            <th scope="col">Nhập/Xuất</th>
+                                            <th scope="col">Người cân</th>
+                                            <th scope="col">Ghi chú</th>
+                                            <th scope="col">Giờ cân L1</th>
+                                            <th scope="col">Giờ cân L2</th>
+                                            <th scope="col">Phân loại</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="font-14">
+                                        @{
+                                            var i = (Model.Trang - 1) * Model.PageSize + 1;
+                                            foreach (var item in Model.TiepNhanXuLys)
+                                            {
+                                                <tr>
+                                                    <th scope="row">@i</th>
+                                                    <td nowrap>
+                                                        @item.SoPhieu
+                                                    </td>
+                                                    <td nowrap>
+                                                        @item.NgayGioL1.ToString("dd/MM/yyyy")
+                                                    </td>
+                                                    <td nowrap>
+                                                        @item.NgayGioL2.ToString("dd/MM/yyyy")
+                                                    </td>
+                                                    <td nowrap>
+                                                        @item.BienSo1
+                                                    </td>
+                                                    <td nowrap>
+                                                        @item.BienSo2
+                                                    </td>
+                                                    <td>@String.Format("{0:#,###,###.##}", item.TrongLuongL1)</td>
+                                                    <td>@String.Format("{0:#,###,###.##}", item.TrongLuongL2)</td>
+                                                    <td>@String.Format("{0:#,###,###.##}", item.TrongLuong)</td>
+                                                    <td>@item.Customer</td>
+                                                    <td>@item.CustomerChild</td>
+                                                    <td>@item.DonViVanChuyen</td>
+                                                    <td>@item.LoaiHang</td>
+                                                    <td>@item.KhoHang</td>
+                                                    <td>@item.NhapXuat</td>
+                                                    <td>@item.NguoiCan</td>
+                                                    <td>@Constants.Truncate(item.Note, 150)</td>
+                                                    <td nowrap>
+                                                        @item.GioCan1.ToString("HH:mm:ss")
+                                                    </td>
+                                                    <td nowrap>
+                                                        @item.GioCan2.ToString("HH:mm:ss")
+                                                    </td>
+                                                    <td>@item.PhanLoai</td>
+                                                </tr>
+                                                i++;
+                                            }
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            @if (Model.SoTrang > 1)
+                            {
+                                <div class="col-12">
+                                    <form method="get" action="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuTiepNhanXuLyBun" id="form-main-paging">
+                                        <input asp-for="Tu" type="hidden" id="tu-fage" />
+                                        <input asp-for="Den" type="hidden" id="den-fpage" />
+                                        <input asp-for="Hang" type="hidden" id="hang-fpage" />
+                                        <input asp-for="TrangThai" type="hidden" id="trangthai-fpage" />
+                                        <input asp-for="Trang" type="hidden" id="trang-fpage" />
+                                        <input asp-for="SapXep" class="sap-xep" type="hidden" />
+                                        <input asp-for="ThuTu" class="thu-tu" type="hidden" />
+                                        @{
+                                            var disablePrevious = string.Empty;
+                                            int previous = 1;
+                                            int next = 1;
+                                            var disableNext = string.Empty;
+                                            if (Model.Trang == 1)
+                                            {
+                                                disablePrevious = "disabled";
+                                            }
+                                            if (Model.Trang == Model.SoTrang)
+                                            {
+                                                disableNext = "disabled";
+                                            }
+                                            if (Model.Trang > 1)
+                                            {
+                                                previous = Model.Trang - 1;
+                                            }
+                                            if (Model.Trang < Model.SoTrang)
+                                            {
+                                                next = Model.Trang + 1;
+                                            }
+                                        }
+                                        <nav aria-label="Page navigation example">
+                                            <ul class="pagination">
+                                                <li class="page-item @disablePrevious">
+                                                    <a class="page-link page-click" data-page="1" href="javascript:;" tabindex="-1" alt="Đầu"><i class="fas fa-fast-backward"></i></a>
+                                                </li>
+                                                <li class="page-item @disablePrevious">
+                                                    <a class="page-link page-click" data-page="@previous" href="javascript:;" tabindex="-1" alt="Trước"><i class="fas fa-arrow-circle-left"></i></a>
+                                                </li>
+                                                <li class="page-item">
+                                                    <select asp-for="Trang" name="TrangDll" id="TrangDll" class="form-control" style="height:100%">
+                                                        @for (int pageNo = 1; pageNo <= Model.SoTrang; pageNo++)
+                                                        {
+                                                            <option value="@pageNo">@pageNo</option>
+                                                        }
+                                                    </select>
+                                                </li>
+                                                <li class="page-item @disableNext">
+                                                    <a class="page-link page-click" data-page="@next" href="javascript:;" alt="Sau"><i class="fas fa-arrow-circle-right"></i></a>
+                                                </li>
+                                                <li class="page-item @disableNext">
+                                                    <a class="page-link page-click" data-page="@Model.SoTrang" href="javascript:;" alt="Cuối"><i class="fas fa-fast-forward"></i></a>
+                                                </li>
+                                            </ul>
+                                        </nav>
+                                    </form>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+@section scripts {
+    <script src="~/lib/tablesorter/tablesorter.min.js"></script>
+    <script type="text/javascript" src="~/js/khth/tiep-nhan-xu-ly.js?@Constants.VersionJs"></script>
+}

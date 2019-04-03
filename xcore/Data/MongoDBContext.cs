@@ -78,6 +78,14 @@ namespace Data
                 return _database.GetCollection<TrangThai>("TrangThais");
             }
         }
+
+        public IMongoCollection<HoChua> HoChuas
+        {
+            get
+            {
+                return _database.GetCollection<HoChua>("HoChuas");
+            }
+        }
         #endregion
 
         #region Location

@@ -1147,6 +1147,10 @@ namespace Common.Utilities
                     {
                         return cell.DateCellValue;
                     }
+                    else
+                    {
+                        return DateTime.FromOADate(cell.NumericCellValue);
+                    }
                 }
                 else if (cell.CellType == CellType.Formula)
                 {
@@ -1154,6 +1158,18 @@ namespace Common.Utilities
                     {
                         return cell.DateCellValue;
                     }
+                }
+                else if (cell.CellType == CellType.String)
+                {
+                    try
+                    {
+                        return DateTime.ParseExact(cell.StringCellValue, "MM/dd/yyyy",
+                                       System.Globalization.CultureInfo.InvariantCulture);
+                    }catch(Exception ex)
+                    {
+                        return DateTime.Now;
+                    }
+                    
                 }
             }
             // null or blank cell, or unknown cell type
@@ -1169,6 +1185,10 @@ namespace Common.Utilities
                     if (DateUtil.IsCellDateFormatted(cell))
                     {
                         return cell.DateCellValue;
+                    }
+                    else
+                    {
+                        return DateTime.FromOADate(cell.NumericCellValue);
                     }
                 }
             }

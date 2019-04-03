@@ -57,9 +57,12 @@
         var rightLuongNhaMay = false;
         var rightLuongSanXuat = false;
         var rightNhaMay = false;
-        var rightDataKho = false;
-        var rightDataBun = false;
-        var rightDataDAC = false;
+        var rightDataKhoNguyenLieu = false;
+        var rightDataKhoThanhPham = false;
+        var rightDataKhoBun = false;
+        var rightDataKhoXuLy = false;
+        var rightDataTiepNhanXuLyBun = false;
+        var rightDataDuAnCong = false;
         var login = User.Identity.Name;
         if (!string.IsNullOrEmpty(login))
         {
@@ -77,9 +80,12 @@
             rightLuongNhaMay = Utility.IsRight(login, Constants.Rights.LuongNM, (int)ERights.View);
             rightLuongSanXuat = Utility.IsRight(login, Constants.Rights.LuongSX, (int)ERights.View);
             rightNhaMay = Utility.IsRight(login, Constants.Rights.NhaMay, (int)ERights.View);
-            rightDataKho = Utility.IsRight(login, "DataKho", (int)ERights.View);
-            rightDataBun = Utility.IsRight(login, "DataBun", (int)ERights.View);
-            rightDataDAC = Utility.IsRight(login, "DataDAC", (int)ERights.View);
+            rightDataKhoNguyenLieu = Utility.IsRight(login, Constants.Rights.KhoNguyenLieuDuLieu, (int)ERights.View);
+            rightDataKhoThanhPham = Utility.IsRight(login, Constants.Rights.KhoThanhPhamDuLieu, (int)ERights.View);
+            rightDataKhoBun = Utility.IsRight(login, Constants.Rights.KhoBunDuLieu, (int)ERights.View);
+            rightDataKhoXuLy = Utility.IsRight(login, Constants.Rights.KhoXuLyBunDuLieu, (int)ERights.View);
+            rightDataTiepNhanXuLyBun = Utility.IsRight(login, Constants.Rights.TiepNhanXuLyDuLieu, (int)ERights.View);
+            rightDataDuAnCong = Utility.IsRight(login, Constants.Rights.DuAnCongDuLieu, (int)ERights.View);
         }
 
     }
@@ -142,31 +148,53 @@
                                     </div>
                                 </li>
                             }
-                            @if (rightDataKho || rightDataBun || rightDataDAC)
+                            @if (rightDataKhoNguyenLieu || rightDataKhoThanhPham || rightDataKhoBun || rightDataKhoXuLy || rightDataTiepNhanXuLyBun || rightDataDuAnCong)
                             {
                                 <li class="nav-item dropdown">
                                     <a href="#" class="nav-link" role="button" data-toggle="dropdown"><i class="fas fa-cloud-download-alt"></i> KẾ HOẠCH TỔNG HỢP</a>
                                     <div class="dropdown-menu" aria-labelledby="pagesDropdown">
                                         @{
-                                            if (rightDataKho)
+                                            if (rightDataKhoNguyenLieu)
                                             {
-                                                <a class="dropdown-item" href="/khth/du-lieu-kho-nguyen-lieu">
+                                                <a class="dropdown-item" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoNguyenLieu">
                                                     <span class="h6 mb-0">DỮ LIỆU KHO NGUYÊN LIỆU</span>
                                                 </a>
                                                 <div class="dropdown-divider"></div>
                                             }
-                                            if (rightDataBun)
+                                            if (rightDataKhoThanhPham)
                                             {
-                                                <a class="dropdown-item" href="/khth/du-lieu-bun">
-                                                    <span class="h6 mb-0">DỮ LIỆU BÙN</span>
+                                                <a class="dropdown-item" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoThanhPham">
+                                                    <span class="h6 mb-0">DỮ LIỆU KHO THÀNH PHẨM</span>
                                                 </a>
                                                 <div class="dropdown-divider"></div>
                                             }
-                                            if (rightDataDAC)
+                                            if (rightDataKhoBun)
                                             {
-                                                <a class="dropdown-item" href="/khth/du-lieu-du-an-cong">
-                                                    <span class="h6 mb-0">DỮ LIỆU DỰ ÁN CÔNG</span>
+                                                <a class="dropdown-item" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoBun">
+                                                    <span class="h6 mb-0">DỮ LIỆU KHO BÙN</span>
                                                 </a>
+                                                <div class="dropdown-divider"></div>
+                                            }
+                                            if (rightDataKhoXuLy)
+                                            {
+                                                <a class="dropdown-item" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoXuLy">
+                                                    <span class="h6 mb-0">DỮ LIỆU KHO XỬ LÝ</span>
+                                                </a>
+                                                <div class="dropdown-divider"></div>
+                                            }
+                                            if (rightDataTiepNhanXuLyBun)
+                                            {
+                                                <a class="dropdown-item" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuTiepNhanXuLyBun">
+                                                    <span class="h6 mb-0">TIẾP NHẬN XỬ LÝ BÙN</span>
+                                                </a>
+                                                <div class="dropdown-divider"></div>
+                                            }
+                                            if (rightDataDuAnCong)
+                                            {
+                                                <a class="dropdown-item" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuDuAnCong">
+                                                    <span class="h6 mb-0">DỰ ÁN CÔNG</span>
+                                                </a>
+                                                <div class="dropdown-divider"></div>
                                             }
                                         }
                                     </div>

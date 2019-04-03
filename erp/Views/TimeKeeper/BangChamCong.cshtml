@@ -88,34 +88,29 @@
                                     <div class="col-md-4 col-sm-6 col-12">
                                         <label class="control-label">Khối chức năng:</label>
                                         <select asp-for="Kcn" class="form-control form-control-lg ddlKcn">
-                                            @{
-                                                foreach (var item in Model.KhoiChucNangs)
-                                                {
-                                                    <option value="@item.Id">@item.Name</option>
-                                                }
+                                            @foreach (var item in Model.KhoiChucNangs)
+                                            {
+                                                <option value="@item.Id">@item.Name</option>
                                             }
                                         </select>
                                     </div>
                                     <div class="col-md-4 col-sm-6 col-12">
                                         <label class="control-label">Phòng ban:</label>
                                         <select asp-for="Pb" class="form-control form-control-lg ddlPb">
-                                            @{
-                                                foreach (var item in Model.PhongBans)
-                                                {
-                                                    <option value="@item.Id">@item.Name</option>
-                                                }
+                                            @foreach (var item in Model.PhongBans)
+                                            {
+                                                <option value="@item.Id">@item.Name</option>
                                             }
                                         </select>
                                     </div>
                                     <div class="col-md-4 col-sm-6 col-12">
                                         <label class="control-label">Bộ phận:</label>
                                         <select asp-for="Bp" class="form-control form-control-lg ddlBp">
-                                            @{
-                                                foreach (var item in Model.BoPhans)
-                                                {
-                                                    <option value="@item.Id">@item.Name</option>
-                                                }
+                                            @foreach (var item in Model.BoPhans)
+                                            {
+                                                <option value="@item.Id">@item.Name</option>
                                             }
+                                            
                                         </select>
                                     </div>
                                     <div class="col-md-4 col-sm-6 col-12">

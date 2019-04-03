@@ -1,6 +1,13 @@
 ﻿
 namespace Common.Enums
 {
+    public enum ECustomer
+    {
+        Supplier = 1,
+        Client = 2,
+        Bun = 3,
+    }
+
     public enum ETrangThai
     {
         Kho = 1
@@ -16,8 +23,9 @@ namespace Common.Enums
     {
         NguyenLieu = 1,
         ThanhPham = 2,
-        XuLy = 3,
-        TramCan = 4
+        Bun = 3,
+        XuLy = 4,
+        TiepNhanXuLy = 5 // Tram Can
     }
 
     public enum EFile
@@ -195,7 +203,7 @@ namespace Common.Enums
         DownTimeWarningMessage = 1,
         DownTimeErrorMessage = 2
     }
-    
+
     public enum EAlertType
     {
         /// <summary>

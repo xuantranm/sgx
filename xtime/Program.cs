@@ -130,6 +130,7 @@ namespace xtime
                 employees = dbContext.Employees.Find(m => m.Workplaces.Any(w => w.Code.Equals(location) && w.Fingerprint.Equals(debugString))).ToList();
             }
 
+            // FUTURE SET CAP BAC. QUÉT HẾT CHỪA BGĐ....
             foreach (var employee in employees)
             {
                 Console.WriteLine("Employee Name: " + employee.FullName);
@@ -197,9 +198,9 @@ namespace xtime
                             WorkplaceCode = location,
                             Workcode = employee.SalaryType,
                             Start = startWorkingScheduleTime,
-                            End = endWorkingScheduleTime
+                            End = endWorkingScheduleTime,
+                            Mode = (int)ETimeWork.Normal
                         };
-
                         // Check in holiday & leave
                         var holiday = holidays.Where(m => m.Date.Equals(date)).FirstOrDefault();
 
@@ -298,7 +299,6 @@ namespace xtime
                         }
                         else
                         {
-                            employeeWorkTimeLog.Mode = (int)ETimeWork.Normal;
                             var records = timekeeping.times.OrderBy(m => m.Date).ToList();
                             #region Procees Times
                             var inLogTime = records.First().TimeOnlyRecord;
@@ -473,17 +473,35 @@ namespace xtime
                         }
                         else
                         {
-                            bool isUpdate = false;
-                            if (string.IsNullOrEmpty(workTimeLogDb.SecureCode))
+                            bool isUpdate = true;
+                            if (!string.IsNullOrEmpty(workTimeLogDb.SecureCode))
                             {
-                                isUpdate = true;
-                            }
-                            if (workTimeLogDb.Mode != (int)ETimeWork.Normal)
-                            {
-                                isUpdate = true;
+                                isUpdate = false;
+                                // Fix data, remove after fix
+                                if (workTimeLogDb.Logs != null && employeeWorkTimeLog.Logs != null)
+                                {
+                                    if (workTimeLogDb.Logs.Count < employeeWorkTimeLog.Logs.Count)
+                                    {
+                                        isUpdate = true;
+                                        employeeWorkTimeLog.SecureCode = string.Empty;
+                                    }
+                                }
+                                if (workTimeLogDb.Logs == null && employeeWorkTimeLog.Logs != null)
+                                {
+                                    isUpdate = true;
+                                    employeeWorkTimeLog.SecureCode = string.Empty;
+                                }
+                                if (employeeWorkTimeLog.Mode > (int)ETimeWork.Normal)
+                                {
+                                    isUpdate = true;
+                                    employeeWorkTimeLog.SecureCode = string.Empty;
+                                }
                             }
                             if (isUpdate)
                             {
+                                // Truong hop bam 2 noi: sang 1 noi, chieu 1 noi...
+                                // Lưu mỗi nơi theo mã chấm công
+                                // Tính công cộng 2 nơi lại. Check không vượt quá 1 ngày.
                                 if (employeeWorkTimeLog.Logs != null && employeeWorkTimeLog.Logs.Count > 0)
                                 {
                                     var filter = Builders<EmployeeWorkTimeLog>.Filter.Eq(m => m.Id, workTimeLogDb.Id);

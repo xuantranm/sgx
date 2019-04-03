@@ -507,9 +507,36 @@ namespace erp.Controllers
             #endregion
 
             var timekeepings = await dbContext.EmployeeWorkTimeLogs.Find(filter).SortByDescending(m => m.Date).ToListAsync();
+
+            var timers = new List<TimeKeeperDisplay>();
+            foreach (var time in timekeepings)
+            {
+                var enrollNumber = string.Empty;
+                var chucvuName = string.Empty;
+                var employee = dbContext.Employees.Find(m => m.Id.Equals(time.EmployeeId)).FirstOrDefault();
+                if (!string.IsNullOrEmpty(employee.ChucVu))
+                {
+                    var cvE = dbContext.ChucVus.Find(m => m.Id.Equals(employee.ChucVu)).FirstOrDefault();
+                    if (cvE != null)
+                    {
+                        chucvuName = cvE.Name;
+                    }
+                }
+
+                var employeeDisplay = new TimeKeeperDisplay()
+                {
+                    EmployeeWorkTimeLogs = new List<EmployeeWorkTimeLog>() {
+                        time
+                    },
+                    Code = employee.Code + "(" + employee.CodeOld + ")",
+                    FullName = employee.FullName,
+                    ChucVu = chucvuName
+                };
+                timers.Add(employeeDisplay);
+            }
             var viewModel = new TimeKeeperViewModel
             {
-                EmployeeWorkTimeLogs = timekeepings,
+                TimeKeeperDisplays = timers,
                 Employee = userInformation,
                 //EmployeeWorkTimeMonthLog = monthTime,
                 MonthYears = sortTimes,
@@ -760,6 +787,7 @@ namespace erp.Controllers
             var filter = Builders<EmployeeWorkTimeLog>.Filter.Eq(m => m.Id, id);
             var update = Builders<EmployeeWorkTimeLog>.Update
                 .Set(m => m.SecureCode, Helper.HashedPassword(Guid.NewGuid().ToString("N").Substring(0, 12)))
+                .Set(m => m.WorkDay, 1)
                 .Set(m => m.Status, approve)
                 .Set(m => m.ConfirmDate, DateTime.Now.Date);
             dbContext.EmployeeWorkTimeLogs.UpdateOne(filter, update);
@@ -1041,30 +1069,42 @@ namespace erp.Controllers
             var builder = Builders<Employee>.Filter;
             var filter = !builder.Eq(i => i.UserName, Constants.System.account) & builder.Eq(m => m.Enable, true) & builder.Eq(m => m.Leave, false);
 
-            filter = filter & builder.Eq(m => m.CongTyChiNhanh, Nl);
-            linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "?";
-            linkCurrent += "Nl=" + Nl;
-
-            filter = filter & builder.Eq(m => m.KhoiChucNang, Kcn);
-            linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "?";
-            linkCurrent += "Kcn=" + Kcn;
-
-            filter = filter & builder.Eq(m => m.PhongBan, Pb);
-            linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "?";
-            linkCurrent += "Pb=" + Pb;
-
-            if (!string.IsNullOrEmpty(Bp))
-            {
-                filter = filter & builder.Eq(m => m.BoPhan, Bp);
-                linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "?";
-                linkCurrent += "Bp=" + Bp;
-            }
             if (!string.IsNullOrEmpty(Id))
             {
                 filter = filter & builder.Eq(x => x.Id, Id.Trim());
                 linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "?";
                 linkCurrent += "Id=" + Id;
+                var employeeEId = dbContext.Employees.Find(m => m.Id.Equals(Id)).FirstOrDefault();
+                if (employeeEId != null)
+                {
+                    Nl = employeeEId.CongTyChiNhanh;
+                    Kcn = employeeEId.KhoiChucNang;
+                    Pb = employeeEId.PhongBan;
+                    Bp = employeeEId.BoPhan;
+                }
             }
+            else
+            {
+                filter = filter & builder.Eq(m => m.CongTyChiNhanh, Nl);
+                linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "?";
+                linkCurrent += "Nl=" + Nl;
+
+                filter = filter & builder.Eq(m => m.KhoiChucNang, Kcn);
+                linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "?";
+                linkCurrent += "Kcn=" + Kcn;
+
+                filter = filter & builder.Eq(m => m.PhongBan, Pb);
+                linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "?";
+                linkCurrent += "Pb=" + Pb;
+
+                if (!string.IsNullOrEmpty(Bp))
+                {
+                    filter = filter & builder.Eq(m => m.BoPhan, Bp);
+                    linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "?";
+                    linkCurrent += "Bp=" + Bp;
+                }
+            }
+            
             if (!string.IsNullOrEmpty(Fg))
             {
                 filter = filter & builder.Where(m => m.Workplaces.Any(c => c.Fingerprint == Fg.Trim()));

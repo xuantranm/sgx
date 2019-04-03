@@ -44,7 +44,8 @@
         Fail = 2,
         Resend = 3,
         Schedule = 4,
-        ScheduleASAP = 5
+        ScheduleASAP = 5,
+        TimerMonth = 6
     }
 
     public enum EPCPL

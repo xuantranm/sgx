@@ -46,6 +46,6 @@ namespace ViewModels
 
         public IList<Leave> Leaves { get; set; }
 
-        public IList<EmployeeWorkTimeLog> TimeKeepers { get; set; }
+        public IList<TimeKeeperDisplay> TimeKeepers { get; set; }
     }
 }

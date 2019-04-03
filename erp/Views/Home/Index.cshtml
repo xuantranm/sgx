@@ -270,22 +270,22 @@
                                 <div class="col-12 time-item" style="padding:5px 0">
                                     <div class="alert alert-info text-small mb-0" role="alert">
                                         <i class="fas fa-fingerprint"></i>
-                                        <b>@timeKeeper.EmployeeName</b>
-                                        @if (!string.IsNullOrEmpty(timeKeeper.EmployeeTitle))
+                                        <b>@timeKeeper.FullName</b>
+                                        @if (!string.IsNullOrEmpty(timeKeeper.ChucVu))
                                         {
-                                            <span> - @timeKeeper.EmployeeTitle</span>
+                                            <span> - @timeKeeper.ChucVu</span>
                                         }
-                                        . Ngày gửi xác nhận: <b>@timeKeeper.RequestDate.Value.ToString("dd/MM/yyyy")</b>
+                                        . Ngày gửi xác nhận: <b>@timeKeeper.EmployeeWorkTimeLogs[0].RequestDate.Value.ToString("dd/MM/yyyy")</b>
                                         <br />
-                                        Lý do: <b>@timeKeeper.Reason</b>
+                                        Lý do: <b>@timeKeeper.EmployeeWorkTimeLogs[0].Reason</b>
                                         <br />
                                         Chi tiết chấm công:
                                         @{
                                             var detail = string.Empty;
-                                            var inTime = timeKeeper.In.HasValue ? timeKeeper.In.Value.ToString(@"hh\:mm") : "trống";
-                                            var outTime = timeKeeper.Out.HasValue ? timeKeeper.Out.Value.ToString(@"hh\:mm") : "trống";
-                                            var lateTime = timeKeeper.Late.TotalMilliseconds > 0 ? Math.Round(timeKeeper.Late.TotalMinutes, 0).ToString() : string.Empty;
-                                            var earlyTime = timeKeeper.Early.TotalMilliseconds > 0 ? Math.Round(timeKeeper.Early.TotalMinutes, 0).ToString() : string.Empty;
+                                            var inTime = timeKeeper.EmployeeWorkTimeLogs[0].In.HasValue ? timeKeeper.EmployeeWorkTimeLogs[0].In.Value.ToString(@"hh\:mm") : "trống";
+                                            var outTime = timeKeeper.EmployeeWorkTimeLogs[0].Out.HasValue ? timeKeeper.EmployeeWorkTimeLogs[0].Out.Value.ToString(@"hh\:mm") : "trống";
+                                            var lateTime = timeKeeper.EmployeeWorkTimeLogs[0].Late.TotalMilliseconds > 0 ? Math.Round(timeKeeper.EmployeeWorkTimeLogs[0].Late.TotalMinutes, 0).ToString() : string.Empty;
+                                            var earlyTime = timeKeeper.EmployeeWorkTimeLogs[0].Early.TotalMilliseconds > 0 ? Math.Round(timeKeeper.EmployeeWorkTimeLogs[0].Early.TotalMinutes, 0).ToString() : string.Empty;
                                             var sumTime = string.Empty;
                                             if (string.IsNullOrEmpty(inTime) && string.IsNullOrEmpty(outTime))
                                             {
@@ -295,7 +295,7 @@
                                             {
                                                 sumTime = "0.5 ngày";
                                             }
-                                            var minutesMissing = TimeSpan.FromMilliseconds(timeKeeper.Late.TotalMilliseconds + timeKeeper.Early.TotalMilliseconds).TotalMinutes;
+                                            var minutesMissing = TimeSpan.FromMilliseconds(timeKeeper.EmployeeWorkTimeLogs[0].Late.TotalMilliseconds + timeKeeper.EmployeeWorkTimeLogs[0].Early.TotalMilliseconds).TotalMinutes;
                                             if (minutesMissing > 0)
                                             {
                                                 if (!string.IsNullOrEmpty(sumTime))
@@ -305,22 +305,22 @@
                                                 sumTime += Math.Round(minutesMissing, 0).ToString() + " phút";
                                             }
 
-                                            detail = "Ngày: " + timeKeeper.Date.ToString("dd/MM/yyyy") + "; thiếu: " + sumTime + " | giờ vào: " + inTime + "; trễ: " + lateTime + "; giờ ra: " + outTime + "; sớm: " + earlyTime;
+                                            detail = "Ngày: " + timeKeeper.EmployeeWorkTimeLogs[0].Date.ToString("dd/MM/yyyy") + "; thiếu: " + sumTime + " | giờ vào: " + inTime + "; trễ: " + lateTime + "; giờ ra: " + outTime + "; sớm: " + earlyTime;
                                         }
                                         <b>@detail</b>
                                         <div class="row">
                                             <div class="col-md-4 col-sm-6 col-xs-12">
                                                 <form action="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.AprrovePost" method="post" class="navbar-right leave-home-submit">
-                                                    <input name="id" type="hidden" value="@timeKeeper.Id" />
-                                                    <input name="secure" type="hidden" value="@timeKeeper.SecureCode" />
+                                                    <input name="id" type="hidden" value="@timeKeeper.EmployeeWorkTimeLogs[0].Id" />
+                                                    <input name="secure" type="hidden" value="@timeKeeper.EmployeeWorkTimeLogs[0].SecureCode" />
                                                     <input name="approve" type="hidden" value="3" />
                                                     <button type="submit" data-original-text="Đồng ý" class="btn btn-sm btn-success btn-submit btn-accept">Đồng ý</button>
                                                 </form>
                                             </div>
                                             <div class="col-md-4 col-sm-6 col-xs-12">
                                                 <form action="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.AprrovePost" method="post" class="navbar-right leave-home-submit">
-                                                    <input name="id" type="hidden" value="@timeKeeper.Id" />
-                                                    <input name="secure" type="hidden" value="@timeKeeper.SecureCode" />
+                                                    <input name="id" type="hidden" value="@timeKeeper.EmployeeWorkTimeLogs[0].Id" />
+                                                    <input name="secure" type="hidden" value="@timeKeeper.EmployeeWorkTimeLogs[0].SecureCode" />
                                                     <input name="approve" type="hidden" value="4" />
                                                     <button type="submit" data-original-text="Không đồng ý" class="btn btn-sm btn-danger btn-submit btn-cancel">Không đồng ý</button>
                                                 </form>

@@ -236,9 +236,37 @@ namespace erp.Controllers
             #endregion
 
             #region Times Manager
-            var timeKeepers = await dbContext.EmployeeWorkTimeLogs.Find(m => m.ConfirmId.Equals(login) && m.Status.Equals(2)).ToListAsync();
-            #endregion
+            var timeKeepers = dbContext.EmployeeWorkTimeLogs.Find(m => m.ConfirmId.Equals(login) && m.Status.Equals(2)).ToList();
+            var timers = new List<TimeKeeperDisplay>();
+            if (timeKeepers != null && timeKeepers.Count > 0)
+            {
+                foreach (var time in timeKeepers)
+                {
+                    var enrollNumber = string.Empty;
+                    var chucvuName = string.Empty;
+                    var employee = dbContext.Employees.Find(m => m.Id.Equals(time.EmployeeId)).FirstOrDefault();
+                    if (!string.IsNullOrEmpty(employee.ChucVu))
+                    {
+                        var cvE = dbContext.ChucVus.Find(m => m.Id.Equals(employee.ChucVu)).FirstOrDefault();
+                        if (cvE != null)
+                        {
+                            chucvuName = cvE.Name;
+                        }
+                    }
 
+                    var employeeDisplay = new TimeKeeperDisplay()
+                    {
+                        EmployeeWorkTimeLogs = new List<EmployeeWorkTimeLog>() {
+                        time
+                    },
+                        Code = employee.Code + "(" + employee.CodeOld + ")",
+                        FullName = employee.FullName,
+                        ChucVu = chucvuName
+                    };
+                    timers.Add(employeeDisplay);
+                }
+            }
+            #endregion
 
             #region My Activities
             //public IList<Leave> MyLeaves { get; set; }
@@ -272,7 +300,7 @@ namespace erp.Controllers
                 News = news,
                 Birthdays = nextBirthdays,
                 Leaves = leaves,
-                TimeKeepers = timeKeepers,
+                TimeKeepers = timers,
                 // My activities
                 MyLeaves = myLeaves,
                 MyWorkTimeLogs = myWorkTimes,

@@ -18,7 +18,7 @@ namespace Models
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime Date { get; set; }
 
-        public string SoPhieu { get; set; }
+        public int SoPhieu { get; set; }
 
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime NgayGioL1 { get; set; }
@@ -50,7 +50,7 @@ namespace Models
 
         public string KhoHang { get; set; }
 
-        public int NhapXuat { get; set; } = (int)ETiepNhanXuLy.Nhap;
+        public string NhapXuat { get; set; }
 
         public string NguoiCan { get; set; }
 
@@ -63,6 +63,8 @@ namespace Models
         public DateTime GioCan2 { get; set; }
 
         public string PhanLoai { get; set; }
+
+        public string TrangThai { get; set; }
 
         public string Note { get; set; }
     }

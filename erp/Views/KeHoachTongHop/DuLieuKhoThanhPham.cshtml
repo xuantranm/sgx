@@ -1,0 +1,358 @@
+﻿@using System;
+@using System.Globalization;
+@using Common.Utilities;
+@using Common.Enums;
+@using ViewModels;
+@model KhoViewModel;
+
+@{
+    Layout = "~/Views/Shared/_LayoutSocialFbFs.cshtml";
+    CultureInfo culture = CultureInfo.CreateSpecificCulture("en-US");
+}
+
+<div class="main-container">
+    <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="/">Trang chủ</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="/@Constants.KeHoachTongHopLink.Main">Kho</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">
+                            @Model.Name
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="flush-with-above space-0">
+        <div class="bg-white">
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <ul class="nav nav-tabs" id="myTab" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoNguyenLieu">NGUYÊN LIỆU</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link active" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoThanhPham">@Model.Name.ToUpper()</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoBun">BÙN</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoXuLy">XỬ LÝ</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuTiepNhanXuLyBun">TIẾP NHẬN XỬ LÝ BÙN</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuDuAnCong">DỰ ÁN CÔNG</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MAIN -->
+    <section class="flush-with-above height-80 d-block">
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="real" role="tabpanel" aria-labelledby="real-tab">
+                <div class="container">
+                    <div id="uploadarea" class="col-12">
+                        <div class="form-row">
+                            <div class="form-group col-md-4 col-xs-12">
+                                <a href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoThanhPham/@Constants.ActionLink.Template" class="btn btn-success btn-list" data-toggle="tooltip" title="Bấm tải về mẫu tài liệu.">
+                                    <i class="fas fa-download"></i> Tải mẫu @Model.Name
+                                </a>
+                            </div>
+                            <div class="form-group col-md-4 col-xs-12">
+                                <a href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoThanhPham/@Constants.ActionLink.Export@Model.LinkCurrent" class="btn btn-info" data-toggle="tooltip" title="Xuất tài liệu ra excel.">
+                                    <i class="fas fa-download"></i> Xuất dữ liệu @Model.Name
+                                </a>
+                            </div>
+                        </div>
+
+                        <form method="post" action="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoThanhPham/@Constants.ActionLink.Template/@Constants.ActionLink.Post" enctype="multipart/form-data">
+                            <div class="form-row">
+                                <div class="form-group col-md-4 col-xs-12">
+                                    <input type="file" name="files" class="form-control fUpload" />
+                                </div>
+                                <div class="form-group col-md-8 col-xs-12">
+                                    <input type="button" class="btn btn-danger btnUpload" value="Tải lên @Model.Name" />
+                                    <button class="btn btn-danger btn-upload-process d-none" type="button" disabled>
+                                        <i class="fas fa-spinner"></i>
+                                        Đang xử lý...
+                                    </button>
+                                </div>
+                                <div class="col-12 alert alert-warning error d-none"></div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- FILTER -->
+                    <form method="get" action="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoThanhPham" id="form-main">
+                        <input asp-for="Trang" type="hidden" value="1" />
+                        <input asp-for="SapXep" class="sap-xep" type="hidden" />
+                        <input asp-for="ThuTu" class="thu-tu" type="hidden" />
+                        <div class="row">
+                            <div class="col-12">
+                                <span class="badge badge-primary">Tìm kiếm:</span>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            @{
+                                var fromdatesearch = Model.Tu > Constants.MinDate ? Model.Tu.ToString("dd/MM/yyyy") : "";
+                                var todatesearch = Model.Den > Constants.MinDate ? Model.Den.ToString("dd/MM/yyyy") : "";
+                            }
+                            <div class="col-md-3 col-sm-6 col-xs-12">
+                                <span class="mr-2 text-muted text-small text-nowrap">Từ:</span>
+                                <input class="from-date form-control datepicker datepicker-lg" value="@fromdatesearch" />
+                                <input type="hidden" name="Tu" class="tu-ngay" value="@Model.Tu.ToString("MM-dd-yyyy")" />
+                            </div>
+                            <div class="col-md-3 col-sm-6 col-xs-12">
+                                <span class="mr-2 text-muted text-small text-nowrap">đến:</span>
+                                <input class="to-date form-control datepicker datepicker-lg" value="@todatesearch" />
+                                <input type="hidden" name="Den" class="den-ngay" value="@Model.Den.ToString("MM-dd-yyyy")" />
+                            </div>
+                            <div class="col-md-3 col-sm-6 col-xs-12">
+                                <span class="mr-2 text-muted text-small text-nowrap">Mặt hàng:</span>
+                                <select asp-for="Hang" class="custom-select form-control-lg" onchange="formSubmit();">
+                                    <option value="">Tất cả</option>
+                                    @foreach (var item in Model.Products)
+                                    {
+                                        var display = item.Name;
+                                        if (!string.IsNullOrEmpty(item.Code))
+                                        {
+                                            display += "(" + item.Code + ")";
+                                        }
+                                        <option value="@item.Id">@display</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="col-md-3 col-sm-6 col-xs-12">
+                                <span class="mr-2 text-muted text-small text-nowrap">Trạng thái:</span>
+                                <select asp-for="TrangThai" class="custom-select form-control-lg" onchange="formSubmit();">
+                                    <option value="">Tất cả</option>
+                                    @foreach (var item in Model.TrangThais)
+                                    {
+                                        <option value="@item.Name">@item.Name</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <span>Sắp xếp theo: </span>
+                                @{
+                                    var sortFlagNgayDesc = "badge-default";
+                                    if (Model.SapXep == "ngay" && Model.ThuTu == "desc")
+                                    {
+                                        sortFlagNgayDesc = "badge-success";
+                                    }
+                                    var sortFlagNgayAsc = "badge-default";
+                                    if (Model.SapXep == "ngay" && Model.ThuTu == "asc")
+                                    {
+                                        sortFlagNgayAsc = "badge-success";
+                                    }
+                                    var sortFlagSanPhamDesc = "badge-default";
+                                    if (Model.SapXep == "san-pham" && Model.ThuTu == "desc")
+                                    {
+                                        sortFlagSanPhamDesc = "badge-success";
+                                    }
+                                    var sortFlagSanPhamAsc = "badge-default";
+                                    if (Model.SapXep == "san-pham" && Model.ThuTu == "asc")
+                                    {
+                                        sortFlagSanPhamAsc = "badge-success";
+                                    }
+                                    var sortFlagMaSanPhamDesc = "badge-default";
+                                    if (Model.SapXep == "ma-san-pham" && Model.ThuTu == "desc")
+                                    {
+                                        sortFlagMaSanPhamDesc = "badge-success";
+                                    }
+                                    var sortFlagMaSanPhamAsc = "badge-default";
+                                    if (Model.SapXep == "ma-san-pham" && Model.ThuTu == "asc")
+                                    {
+                                        sortFlagMaSanPhamAsc = "badge-success";
+                                    }
+                                    var sortFlagTonDesc = "badge-default";
+                                    if (Model.SapXep == "ton" && Model.ThuTu == "desc")
+                                    {
+                                        sortFlagTonDesc = "badge-success";
+                                    }
+                                    var sortFlagTonAsc = "badge-default";
+                                    if (Model.SapXep == "ton" && Model.ThuTu == "asc")
+                                    {
+                                        sortFlagTonAsc = "badge-success";
+                                    }
+                                    <a href="javascript:;" data-sortby="ngay" data-sortorder="asc" class="btn-sort">
+                                        <span class="badge @sortFlagNgayAsc"><i class="fas fa-sort-alpha-up"></i> Ngày tăng dần</span>
+                                    </a>
+                                    <a href="javascript:;" data-sortby="ngay" data-sortorder="desc" class="btn-sort">
+                                        <span class="badge @sortFlagNgayDesc"><i class="fas fa-sort-alpha-down"></i> Ngày giảm dần</span>
+                                    </a>
+                                    <a href="javascript:;" data-sortby="san-pham" data-sortorder="asc" class="btn-sort">
+                                        <span class="badge @sortFlagSanPhamAsc"><i class="fas fa-sort-alpha-up"></i> Sản phẩm tăng dần</span>
+                                    </a>
+                                    <a href="javascript:;" data-sortby="san-pham" data-sortorder="desc" class="btn-sort">
+                                        <span class="badge @sortFlagSanPhamDesc"><i class="fas fa-sort-alpha-down"></i> Sản phẩm giảm dần</span>
+                                    </a>
+                                    <a href="javascript:;" data-sortby="ma-san-pham" data-sortorder="asc" class="btn-sort">
+                                        <span class="badge @sortFlagMaSanPhamAsc"><i class="fas fa-sort-alpha-up"></i> Mã tăng dần</span>
+                                    </a>
+                                    <a href="javascript:;" data-sortby="ma-san-pham" data-sortorder="desc" class="btn-sort">
+                                        <span class="badge @sortFlagMaSanPhamDesc"><i class="fas fa-sort-alpha-down"></i> Mã giảm dần</span>
+                                    </a>
+                                    <a href="javascript:;" data-sortby="ton" data-sortorder="asc" class="btn-sort">
+                                        <span class="badge @sortFlagTonAsc"><i class="fas fa-sort-alpha-up"></i> Tồn tăng dần</span>
+                                    </a>
+                                    <a href="javascript:;" data-sortby="ton" data-sortorder="desc" class="btn-sort">
+                                        <span class="badge @sortFlagTonDesc"><i class="fas fa-sort-alpha-down"></i> Tồn giảm dần</span>
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    </form>
+
+                    <div class="row">
+                        @{
+                            <div class="col-12">Tìm thấy <span class="badge badge-info">@Model.Records</span> kết quả.</div>
+                            <div class="col-12 table-responsive mb-1">
+                                <table class="table table-sm table-striped table-bordered table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">#</th>
+                                            <th scope="col">Ngày</th>
+                                            <th scope="col">Mã hàng</th>
+                                            <th scope="col">Tên hàng</th>
+                                            <th scope="col">ĐVT</th>
+                                            <th scope="col">Tồn đầu</th>
+                                            <th scope="col">Nhập từ Sản xuất</th>
+                                            <th scope="col">Nhập từ Kho XL</th>
+                                            <th scope="col">Nhập khác</th>
+                                            <th scope="col">Xuất bán</th>
+                                            <th scope="col">Xuất kho xử lý</th>
+                                            <th scope="col">Xuất khác</th>
+                                            <th scope="col">Tồn cuối</th>
+                                            <th scope="col">Tồn an toàn</th>
+                                            <th scope="col">Ghi chú</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="font-14">
+                                        @{
+                                            var i = (Model.Trang - 1) * Model.PageSize + 1;
+                                            foreach (var item in Model.KhoThanhPhams)
+                                            {
+                                                <tr>
+                                                    <th scope="row">@i</th>
+                                                    <td nowrap>
+                                                        @item.Date.ToString("dd/MM/yyyy")
+                                                    </td>
+                                                    <td nowrap>
+                                                        @item.ProductCode
+                                                    </td>
+                                                    <td nowrap>
+                                                        @item.ProductName
+                                                    </td>
+                                                    <td nowrap>
+                                                        @item.ProductUnit
+                                                    </td>
+                                                    <td>@String.Format("{0:#,###,###.##}", item.TonDau)</td>
+                                                    <td>@String.Format("{0:#,###,###.##}", item.NhapTuSanXuat)</td>
+                                                    <td>@String.Format("{0:#,###,###.##}", item.NhapTuKhoXuLy)</td>
+                                                    <td>@String.Format("{0:#,###,###.##}", item.NhapKhac)</td>
+                                                    <td>@String.Format("{0:#,###,###.##}", item.XuatBan)</td>
+                                                    <td>@String.Format("{0:#,###,###.##}", item.XuatKhoXuLy)</td>
+                                                    <td>@String.Format("{0:#,###,###.##}", item.XuatKhac)</td>
+                                                    <td>@String.Format("{0:#,###,###.##}", item.TonCuoi)</td>
+                                                    <td>@String.Format("{0:#,###,###.##}", item.TonAnToan)</td>
+                                                    <td>@Constants.Truncate(item.Note, 150)</td>
+                                                </tr>
+                                                i++;
+                                            }
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            @if (Model.SoTrang > 1)
+                            {
+                                <div class="col-12">
+                                    <form method="get" action="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoThanhPham" id="form-main-paging">
+                                        <input asp-for="Tu" type="hidden" id="tu-fage" />
+                                        <input asp-for="Den" type="hidden" id="den-fpage" />
+                                        <input asp-for="Hang" type="hidden" id="hang-fpage" />
+                                        <input asp-for="TrangThai" type="hidden" id="trangthai-fpage" />
+                                        <input asp-for="Trang" type="hidden" id="trang-fpage" />
+                                        <input asp-for="SapXep" class="sap-xep" type="hidden" />
+                                        <input asp-for="ThuTu" class="thu-tu" type="hidden" />
+                                        @{
+                                            var disablePrevious = string.Empty;
+                                            int previous = 1;
+                                            int next = 1;
+                                            var disableNext = string.Empty;
+                                            if (Model.Trang == 1)
+                                            {
+                                                disablePrevious = "disabled";
+                                            }
+                                            if (Model.Trang == Model.SoTrang)
+                                            {
+                                                disableNext = "disabled";
+                                            }
+                                            if (Model.Trang > 1)
+                                            {
+                                                previous = Model.Trang - 1;
+                                            }
+                                            if (Model.Trang < Model.SoTrang)
+                                            {
+                                                next = Model.Trang + 1;
+                                            }
+                                        }
+                                        <nav aria-label="Page navigation example">
+                                            <ul class="pagination">
+                                                <li class="page-item @disablePrevious">
+                                                    <a class="page-link page-click" data-page="1" href="javascript:;" tabindex="-1" alt="Đầu"><i class="fas fa-fast-backward"></i></a>
+                                                </li>
+                                                <li class="page-item @disablePrevious">
+                                                    <a class="page-link page-click" data-page="@previous" href="javascript:;" tabindex="-1" alt="Trước"><i class="fas fa-arrow-circle-left"></i></a>
+                                                </li>
+                                                <li class="page-item">
+                                                    <select asp-for="Trang" name="TrangDll" id="TrangDll" class="form-control" style="height:100%">
+                                                        @for (int pageNo = 1; pageNo <= Model.SoTrang; pageNo++)
+                                                        {
+                                                            <option value="@pageNo">@pageNo</option>
+                                                        }
+                                                    </select>
+                                                </li>
+                                                <li class="page-item @disableNext">
+                                                    <a class="page-link page-click" data-page="@next" href="javascript:;" alt="Sau"><i class="fas fa-arrow-circle-right"></i></a>
+                                                </li>
+                                                <li class="page-item @disableNext">
+                                                    <a class="page-link page-click" data-page="@Model.SoTrang" href="javascript:;" alt="Cuối"><i class="fas fa-fast-forward"></i></a>
+                                                </li>
+                                            </ul>
+                                        </nav>
+                                    </form>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+@section scripts {
+    <script type="text/javascript" src="~/js/khth/kho-thanh-pham.js?@Constants.VersionJs"></script>
+}

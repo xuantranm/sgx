@@ -38,7 +38,7 @@ namespace xleave
             var year = now.Year;
             var endDateMonth = now.AddDays(-1);
 
-            var employees = dbContext.Employees.Find(m => m.Enable.Equals(true)).ToList();
+            var employees = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false)).ToList();
             // UAT
             //employees = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.UserName.Equals("xuan.tm")).ToList();
             // End UAT

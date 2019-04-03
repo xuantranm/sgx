@@ -65,7 +65,7 @@ namespace xbhxh
             #endregion
 
             // Notice bhxh base joinday to 6 months.
-            var bhxhs = dbContext.Employees.Find(m => m.Enable.Equals(true)).ToEnumerable()
+            var bhxhs = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false)).ToEnumerable()
                .Where(m => m.RemainingBhxh == 0).ToList();
 
             if (bhxhs.Count > 0)

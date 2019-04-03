@@ -22,6 +22,8 @@ namespace Models
 
         public string ProductName { get; set; }
 
+        public string ProductAlias { get; set; }
+
         public string ProductCode { get; set; }
 
         public string ProductUnit { get; set; }
@@ -43,6 +45,8 @@ namespace Models
         public double TonCuoi { get; set; } = 0;
 
         public double TonAnToan { get; set; } = 0;
+
+        public string TrangThai { get; set; }
 
         public string Note { get; set; }
     }

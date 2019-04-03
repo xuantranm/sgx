@@ -28,7 +28,7 @@
     </div>
 </div>
 
-@if (Model.EmployeeWorkTimeLogs.Count > 0)
+@if (Model.TimeKeeperDisplays.Count > 0)
 {
     <div class="row">
         <div class="col-12 table-responsive-sm">
@@ -54,8 +54,9 @@
                     @{
                         var linkapprove = Constants.System.domain + "/xacnhan/cong";
                         int i = 1;
-                        foreach (var log in Model.EmployeeWorkTimeLogs)
+                        foreach (var display in Model.TimeKeeperDisplays)
                         {
+                            var log = display.EmployeeWorkTimeLogs[0];
                             <tr>
                                 <td>@i</td>
                                 <td>
@@ -95,8 +96,8 @@
                                     <span class="text-muted">@dateRequest</span>
                                 </td>
                                 <td nowrap>
-                                    @log.EmployeeName <br />
-                                    <small>@log.EmployeeTitle</small>
+                                    @display.FullName <br />
+                                    <small>@display.ChucVu</small>
                                 </td>
                                 <td>
                                     <span class="text-muted">@log.DateOnlyRecord.ToString("dd/MM/yyyy")</span>

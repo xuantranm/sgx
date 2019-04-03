@@ -1,0 +1,73 @@
+﻿@using System;
+@using System.Globalization;
+@using Common.Utilities;
+@using Common.Enums;
+@using ViewModels;
+@model KhoViewModel;
+
+@{
+    Layout = "~/Views/Shared/_LayoutSocialFbFs.cshtml";
+    CultureInfo culture = CultureInfo.CreateSpecificCulture("en-US");
+}
+
+<div class="main-container">
+    <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="/">Trang chủ</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="/@Constants.KeHoachTongHopLink.Main">Kho</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">
+                            @Model.Name
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="flush-with-above space-0">
+        <div class="bg-white">
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <ul class="nav nav-tabs" id="myTab" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoNguyenLieu">NGUYÊN LIỆU</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoThanhPham">THÀNH PHẨM</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoBun">BÙN</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoXuLy">XỬ LÝ</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuTiepNhanXuLyBun">TIẾP NHẬN XỬ LÝ BÙN</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link active" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuDuAnCong">@Model.Name.ToUpper()</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MAIN -->
+    @{
+        await Html.RenderPartialAsync("Empty");
+    }
+</div>
+
+@section scripts {
+    <script type="text/javascript" src="~/js/khth/du-an-cong.js?@Constants.VersionJs"></script>
+}
