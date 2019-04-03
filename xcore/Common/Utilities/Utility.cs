@@ -1163,11 +1163,25 @@ namespace Common.Utilities
                 {
                     try
                     {
-                        return DateTime.ParseExact(cell.StringCellValue, "MM/dd/yyyy",
-                                       System.Globalization.CultureInfo.InvariantCulture);
-                    }catch(Exception ex)
+                        return DateTime.ParseExact(cell.StringCellValue, "MM/dd/yyyy", CultureInfo.InvariantCulture);
+                    }
+                    catch (Exception ex)
                     {
-                        return DateTime.Now;
+                        try
+                        {
+                            return DateTime.ParseExact(cell.StringCellValue, "M/d/yyyy", CultureInfo.InvariantCulture);
+                        }
+                        catch(Exception ex2)
+                        {
+                            try
+                            {
+                                return DateTime.ParseExact(cell.StringCellValue, "M/dd/yyyy", CultureInfo.InvariantCulture);
+                            }
+                            catch (Exception ex3)
+                            {
+                                return DateTime.Now;
+                            }
+                        }
                     }
                     
                 }

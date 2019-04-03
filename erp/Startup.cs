@@ -89,6 +89,16 @@ namespace erp
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
             //services.AddAntiforgery(o => o.HeaderName = "XSRF-TOKEN");
+
+
+            //--< set uploadsize large files >----
+            services.Configure<FormOptions>(options =>
+            {
+                options.ValueLengthLimit = int.MaxValue;
+                options.MultipartBodyLengthLimit = int.MaxValue;
+                options.MultipartHeadersLengthLimit = int.MaxValue;
+            });
+            //--</ set uploadsize large files >----
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
