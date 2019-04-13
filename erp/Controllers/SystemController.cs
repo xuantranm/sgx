@@ -99,8 +99,10 @@ namespace erp.Controllers
                 list = dbContext.ScheduleEmails.Find(filter).Sort(sortBuilder).ToList();
             }
 
+            var employees = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && !string.IsNullOrEmpty(m.Email)).ToList();
             var viewModel = new MailViewModel
             {
+                Employees = employees,
                 ScheduleEmails = list,
                 Records = (int)records,
                 Pages = pages,

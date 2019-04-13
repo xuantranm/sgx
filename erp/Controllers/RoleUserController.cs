@@ -58,13 +58,6 @@ namespace erp.Controllers
             var sort = Builders<RoleUser>.Sort.Ascending(m => m.User).Descending(m => m.UpdatedOn);
             var RoleUsers = dbContext.RoleUsers.Find(m => m.Enable.Equals(true)).Sort(sort).ToList();
 
-            // JOIN
-            //var personcollection = dbContext.Employees;
-            //var aggregate = personcollection.Aggregate()
-            //            .Group(new BsonDocument { { "_id", "$Address.Street" }, { "sum", new BsonDocument("$sum", "$Income") } });
-            //var results = await aggregate.ToListAsync();
-            //END
-
             var viewModel = new RoleUserViewModel
             {
                 RoleUsers = RoleUsers

@@ -44,14 +44,71 @@ namespace erp.Controllers
         }
 
         [Route(Constants.LinkRole.Index)]
-        public ActionResult Index(string name)
+        public ActionResult Index(string Ten, int Trang, string SapXep, string ThuTu)
         {
-            var sort = Builders<Role>.Sort.Descending(m=>m.UpdatedOn);
-            var Roles = dbContext.Roles.Find(m => m.Enable.Equals(true)).Sort(sort).ToList();
+            #region Filter
+            var builder = Builders<Role>.Filter;
+            var filter = builder.Eq(m => m.Enable, true);
+            if (!string.IsNullOrEmpty(Ten))
+            {
+                filter = filter & builder.AnyIn(m => m.Alias, Ten);
+            }
+            #endregion
+
+            #region Sort
+            var sortBuilder = Builders<Role>.Sort.Ascending(m => m.CreatedOn);
+            SapXep = string.IsNullOrEmpty(SapXep) ? "ngay" : SapXep;
+            ThuTu = string.IsNullOrEmpty(ThuTu) ? "asc" : ThuTu;
+            switch (SapXep)
+            {
+                case "ten":
+                    sortBuilder = ThuTu == "asc" ? Builders<Role>.Sort.Ascending(m => m.Alias) : Builders<Role>.Sort.Descending(m => m.Alias);
+                    break;
+                case "thoi-han":
+                    sortBuilder = ThuTu == "asc" ? Builders<Role>.Sort.Ascending(m => m.Duration) : Builders<Role>.Sort.Descending(m => m.Duration);
+                    break;
+                default:
+                    sortBuilder = ThuTu == "asc" ? Builders<Role>.Sort.Ascending(m => m.CreatedOn) : Builders<Role>.Sort.Descending(m => m.CreatedOn);
+                    break;
+            }
+            #endregion
+
+            Trang = Trang == 0 ? 1 : Trang;
+            var settingPage = dbContext.Settings.Find(m => m.Type.Equals("system") && m.Key.Equals("page-size")).FirstOrDefault();
+            int Size = settingPage != null ? Convert.ToInt32(settingPage.Value) : 100;
+            int pages = 1;
+            var records = dbContext.Roles.CountDocuments(filter);
+            var enablePage = false;
+            if (records > 0 && records > Size)
+            {
+                enablePage = true;
+                pages = (int)Math.Ceiling((double)records / (double)Size);
+                if (Trang > pages)
+                {
+                    Trang = 1;
+                }
+            }
+
+            var list = new List<Role>();
+            if (enablePage)
+            {
+                list = dbContext.Roles.Find(filter).Sort(sortBuilder).Skip((Trang - 1) * Size).Limit(Size).ToList();
+            }
+            else
+            {
+                list = dbContext.Roles.Find(filter).Sort(sortBuilder).ToList();
+            }
 
             var viewModel = new RoleViewModel
             {
-                Roles = Roles
+                Roles = list,
+                Ten = Ten,
+                ThuTu = ThuTu,
+                SapXep = SapXep,
+                Records = (int)records,
+                PageSize = Size,
+                SoTrang = pages,
+                Trang = Trang
             };
             return View(viewModel);
         }
@@ -63,7 +120,6 @@ namespace erp.Controllers
             var item = dbContext.Roles.Find(m => m.Id.Equals(id)).First();
             return Json(item);
         }
-
 
         [HttpPost]
         [Route(Constants.LinkRole.Create)]

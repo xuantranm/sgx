@@ -14,7 +14,7 @@ namespace Models
     {
         // Hiện tại: Mỗi kho mỗi mã
         // Tạo sản phẩm từng kho
-        public int TypeId { get; set; } = (int)EKho.NguyenLieu;
+        public int TypeId { get; set; } = (int)EKho.NguyenVatLieu;
 
         public string Code { get; set; }
 

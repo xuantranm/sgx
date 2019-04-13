@@ -38,22 +38,19 @@
                     <div class="col">
                         <ul class="nav nav-tabs" id="myTab" role="tablist">
                             <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoNguyenLieu">NGUYÊN LIỆU</a>
+                                <a class="nav-link" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoNguyenVatLieu">KHO NGUYÊN VẬT LIỆU</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link active" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoThanhPham">@Model.Name.ToUpper()</a>
+                                <a class="nav-link active" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoThanhPham">KHO THÀNH PHẨM</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoBun">BÙN</a>
+                                <a class="nav-link" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoHangTraVe">KHO HÀNG TRẢ VỀ</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoXuLy">XỬ LÝ</a>
+                                <a class="nav-link" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoBun">KHO BÙN</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuTiepNhanXuLyBun">TIẾP NHẬN XỬ LÝ BÙN</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuDuAnCong">DỰ ÁN CÔNG</a>
+                                <a class="nav-link" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuTramCan">TRẠM CÂN</a>
                             </li>
                         </ul>
                     </div>
@@ -238,10 +235,10 @@
                                             <th scope="col">ĐVT</th>
                                             <th scope="col">Tồn đầu</th>
                                             <th scope="col">Nhập từ Sản xuất</th>
-                                            <th scope="col">Nhập từ Kho XL</th>
+                                            <th scope="col">Nhập từ Kho Hàng Trả Về</th>
                                             <th scope="col">Nhập khác</th>
                                             <th scope="col">Xuất bán</th>
-                                            <th scope="col">Xuất kho xử lý</th>
+                                            <th scope="col">Xuất Kho Hàng Trả Về</th>
                                             <th scope="col">Xuất khác</th>
                                             <th scope="col">Tồn cuối</th>
                                             <th scope="col">Tồn an toàn</th>
@@ -269,10 +266,10 @@
                                                     </td>
                                                     <td>@String.Format("{0:#,###,###.##}", item.TonDau)</td>
                                                     <td>@String.Format("{0:#,###,###.##}", item.NhapTuSanXuat)</td>
-                                                    <td>@String.Format("{0:#,###,###.##}", item.NhapTuKhoXuLy)</td>
+                                                    <td>@String.Format("{0:#,###,###.##}", item.NhapTuKhoHangTraVe)</td>
                                                     <td>@String.Format("{0:#,###,###.##}", item.NhapKhac)</td>
                                                     <td>@String.Format("{0:#,###,###.##}", item.XuatBan)</td>
-                                                    <td>@String.Format("{0:#,###,###.##}", item.XuatKhoXuLy)</td>
+                                                    <td>@String.Format("{0:#,###,###.##}", item.XuatKhoHangTraVe)</td>
                                                     <td>@String.Format("{0:#,###,###.##}", item.XuatKhac)</td>
                                                     <td>@String.Format("{0:#,###,###.##}", item.TonCuoi)</td>
                                                     <td>@String.Format("{0:#,###,###.##}", item.TonAnToan)</td>

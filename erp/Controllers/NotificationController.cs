@@ -67,5 +67,11 @@ namespace erp.Controllers
         {
             return View();
         }
+
+        [Route(Constants.LinkNotication.Index + "/2019-04-10-cv-122-tb-nghi-le-gio-to-hung-vuong-GPMN-thong nhat-dat-nuoc-30-04-QTLD-01-05-nam-2019")]
+        public ActionResult Index3(string name)
+        {
+            return View();
+        }
     }
 }

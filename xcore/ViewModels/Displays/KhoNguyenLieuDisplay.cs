@@ -12,7 +12,7 @@ namespace ViewModels
 {
     public class KhoNguyenLieuDisplay
     {
-        public KhoNguyenLieu KhoNguyenLieu { get; set; }
+        public KhoNguyenVatLieu KhoNguyenLieu { get; set; }
 
         public string TenSanPham { get; set; }
 

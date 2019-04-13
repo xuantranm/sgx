@@ -37,22 +37,19 @@
                     <div class="col">
                         <ul class="nav nav-tabs" id="myTab" role="tablist">
                             <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoNguyenLieu">NGUYÊN LIỆU</a>
+                                <a class="nav-link" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoNguyenVatLieu">KHO NGUYÊN VẬT LIỆU</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoThanhPham">THÀNH PHẨM</a>
+                                <a class="nav-link" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoThanhPham">KHO THÀNH PHẨM</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoBun">BÙN</a>
+                                <a class="nav-link" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoHangTraVe">KHO HÀNG TRẢ VỀ</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoXuLy">XỬ LÝ</a>
+                                <a class="nav-link" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoBun">KHO BÙN</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link active" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuTiepNhanXuLyBun">@Model.Name.ToUpper()</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuDuAnCong">DỰ ÁN CÔNG</a>
+                                <a class="nav-link active" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuTramCan">TRẠM CÂN</a>
                             </li>
                         </ul>
                     </div>
@@ -69,18 +66,18 @@
                     <div id="uploadarea" class="col-12">
                         <div class="form-row">
                             <div class="form-group col-md-4 col-xs-12">
-                                <a href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuTiepNhanXuLyBun/@Constants.ActionLink.Template" class="btn btn-success btn-list" data-toggle="tooltip" title="Bấm tải về mẫu tài liệu.">
+                                <a href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuTramCan/@Constants.ActionLink.Template" class="btn btn-success btn-list" data-toggle="tooltip" title="Bấm tải về mẫu tài liệu.">
                                     <i class="fas fa-download"></i> Tải mẫu @Model.Name
                                 </a>
                             </div>
                             <div class="form-group col-md-4 col-xs-12">
-                                <a href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuTiepNhanXuLyBun/@Constants.ActionLink.Export@Model.LinkCurrent" class="btn btn-info" data-toggle="tooltip" title="Xuất tài liệu ra excel.">
+                                <a href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuTramCan/@Constants.ActionLink.Export@Model.LinkCurrent" class="btn btn-info" data-toggle="tooltip" title="Xuất tài liệu ra excel.">
                                     <i class="fas fa-download"></i> Xuất dữ liệu @Model.Name
                                 </a>
                             </div>
                         </div>
 
-                        <form method="post" action="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuTiepNhanXuLyBun/@Constants.ActionLink.Template/@Constants.ActionLink.Post" enctype="multipart/form-data">
+                        <form method="post" action="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuTramCan/@Constants.ActionLink.Template/@Constants.ActionLink.Post" enctype="multipart/form-data">
                             <div class="form-row">
                                 <div class="form-group col-md-4 col-xs-12">
                                     <input type="file" name="files" class="form-control fUpload" />
@@ -98,7 +95,7 @@
                     </div>
 
                     <!-- FILTER -->
-                    <form method="get" action="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuTiepNhanXuLyBun" id="form-main">
+                    <form method="get" action="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuTramCan" id="form-main">
                         <input asp-for="Trang" type="hidden" value="1" />
                         <input asp-for="SapXep" class="sap-xep" type="hidden" />
                         <input asp-for="ThuTu" class="thu-tu" type="hidden" />
@@ -177,7 +174,7 @@
                                         <span class="badge @sortFlagSoPhieuAsc"><i class="fas fa-sort-alpha-up"></i> Số phiếu tăng dần</span>
                                     </a>
                                     <a href="javascript:;" data-sortby="so-phieu" data-sortorder="desc" class="btn-sort">
-                                        <span class="badge @sortFlagSoPhieuDesc"><i class="fas fa-sort-alpha-down"></i> Số phiêu giảm dần</span>
+                                        <span class="badge @sortFlagSoPhieuDesc"><i class="fas fa-sort-alpha-down"></i> Số phiếu giảm dần</span>
                                     </a>
                                     <a href="javascript:;" data-sortby="ngay" data-sortorder="asc" class="btn-sort">
                                         <span class="badge @sortFlagNgayAsc"><i class="fas fa-sort-alpha-up"></i> Ngày tăng dần</span>
@@ -229,49 +226,53 @@
                                             <th scope="col">Giờ cân L1</th>
                                             <th scope="col">Giờ cân L2</th>
                                             <th scope="col">Phân loại</th>
+                                            <th scope="col">Ngày</th>
+                                            <th scope="col">Phân loại dự án</th>
                                         </tr>
                                     </thead>
                                     <tbody class="font-14">
                                         @{
                                             var i = (Model.Trang - 1) * Model.PageSize + 1;
-                                            foreach (var item in Model.TiepNhanXuLys)
+                                            foreach (var item in Model.TramCans)
                                             {
-                                                <tr>
-                                                    <th scope="row">@i</th>
-                                                    <td nowrap>
-                                                        @item.SoPhieu
-                                                    </td>
-                                                    <td nowrap>
-                                                        @item.NgayGioL1.ToString("dd/MM/yyyy")
-                                                    </td>
-                                                    <td nowrap>
-                                                        @item.NgayGioL2.ToString("dd/MM/yyyy")
-                                                    </td>
-                                                    <td nowrap>
-                                                        @item.BienSo1
-                                                    </td>
-                                                    <td nowrap>
-                                                        @item.BienSo2
-                                                    </td>
-                                                    <td>@String.Format("{0:#,###,###.##}", item.TrongLuongL1)</td>
-                                                    <td>@String.Format("{0:#,###,###.##}", item.TrongLuongL2)</td>
-                                                    <td>@String.Format("{0:#,###,###.##}", item.TrongLuong)</td>
-                                                    <td>@item.Customer</td>
-                                                    <td>@item.CustomerChild</td>
-                                                    <td>@item.DonViVanChuyen</td>
-                                                    <td>@item.LoaiHang</td>
-                                                    <td>@item.KhoHang</td>
-                                                    <td>@item.NhapXuat</td>
-                                                    <td>@item.NguoiCan</td>
-                                                    <td>@Constants.Truncate(item.Note, 150)</td>
-                                                    <td nowrap>
-                                                        @item.GioCan1.ToString("HH:mm:ss")
-                                                    </td>
-                                                    <td nowrap>
-                                                        @item.GioCan2.ToString("HH:mm:ss")
-                                                    </td>
-                                                    <td>@item.PhanLoai</td>
-                                                </tr>
+                                        <tr>
+                                            <th scope="row">@i</th>
+                                            <td nowrap>
+                                                @item.SoPhieu
+                                            </td>
+                                            <td nowrap>
+                                                @item.NgayGioL1.ToString("dd/MM/yyyy")
+                                            </td>
+                                            <td nowrap>
+                                                @item.NgayGioL2.ToString("dd/MM/yyyy")
+                                            </td>
+                                            <td nowrap>
+                                                @item.BienSo1
+                                            </td>
+                                            <td nowrap>
+                                                @item.BienSo2
+                                            </td>
+                                            <td>@String.Format("{0:#,###,###.##}", item.TrongLuongL1)</td>
+                                            <td>@String.Format("{0:#,###,###.##}", item.TrongLuongL2)</td>
+                                            <td>@String.Format("{0:#,###,###.##}", item.TrongLuong)</td>
+                                            <td>@item.Customer</td>
+                                            <td>@item.CustomerChild</td>
+                                            <td>@item.DonViVanChuyen</td>
+                                            <td>@item.LoaiHang</td>
+                                            <td>@item.KhoHang</td>
+                                            <td>@item.NhapXuat</td>
+                                            <td>@item.NguoiCan</td>
+                                            <td>@Constants.Truncate(item.Note, 150)</td>
+                                            <td nowrap>
+                                                @item.GioCan1.ToString("HH:mm:ss")
+                                            </td>
+                                            <td nowrap>
+                                                @item.GioCan2.ToString("HH:mm:ss")
+                                            </td>
+                                            <td>@item.PhanLoai</td>
+                                            <td>@item.Date.ToString("dd/MM/yyyy")</td>
+                                            <td>@Constants.PhanLoaiDuAnBun(item.PhanLoaiDuAn)</td>
+                                        </tr>
                                                 i++;
                                             }
                                         }
@@ -282,7 +283,7 @@
                             @if (Model.SoTrang > 1)
                             {
                                 <div class="col-12">
-                                    <form method="get" action="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuTiepNhanXuLyBun" id="form-main-paging">
+                                    <form method="get" action="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuTramCan" id="form-main-paging">
                                         <input asp-for="Tu" type="hidden" id="tu-fage" />
                                         <input asp-for="Den" type="hidden" id="den-fpage" />
                                         <input asp-for="Hang" type="hidden" id="hang-fpage" />

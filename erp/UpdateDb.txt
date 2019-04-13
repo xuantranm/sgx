@@ -251,6 +251,16 @@ db.SEOs.drop()
 db.ProductCategorySales.drop()
 db.ProductSales.drop()
 
+// 13/04/2019
+db.KhoNguyenLieus.drop()
+db.KhoThanhPhams.drop()
+db.KhoXuLys.drop()
+db.KhoBuns.drop()
+db.TiepNhanXuLys.drop()
+db.DuAnCongs.drop()
+
+
+
 
 
 

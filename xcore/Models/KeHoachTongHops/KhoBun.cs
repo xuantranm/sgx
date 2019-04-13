@@ -57,5 +57,7 @@ namespace Models
         public string TrangThai { get; set; }
 
         public string Note { get; set; }
+
+        public int PhanLoaiDuAn { get; set; } = (int)EBun.DAC;
     }
 }

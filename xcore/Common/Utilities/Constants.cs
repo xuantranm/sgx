@@ -7,6 +7,19 @@ namespace Common.Utilities
     {
         public static string VersionJs = "v-" + DateTime.Now.Ticks;
 
+        public static string PhanLoaiDuAnBun(this int input)
+        {
+            if (input == (int)EBun.DAC)
+            {
+                return "DAC";
+            }
+            else if (input == (int)EBun.DAT)
+            {
+                return "DAT";
+            }
+            return string.Empty;
+        }
+
         public static string Truncate(this string value, int maxChars)
         {
             if (!string.IsNullOrEmpty(value))
@@ -102,12 +115,11 @@ namespace Common.Utilities
             public const string NhaMay = "nha-may";
             public const string TonSX = "ton-sx";
 
-            public const string KhoNguyenLieuDuLieu = "kho-nguyen-lieu-du-lieu";
+            public const string KhoNguyenVatLieuDuLieu = "kho-nguyen-vat-lieu-du-lieu";
             public const string KhoThanhPhamDuLieu = "kho-thanh-pham-du-lieu";
+            public const string KhoHangTraVeDuLieu = "kho-hang-tra-ve-du-lieu";
             public const string KhoBunDuLieu = "kho-bun-du-lieu";
-            public const string KhoXuLyBunDuLieu = "kho-xu-ly-bun-du-lieu";
-            public const string TiepNhanXuLyDuLieu = "tiep-nhan-xu-ly-du-lieu";
-            public const string DuAnCongDuLieu = "du-an-cong-du-lieu";
+            public const string TramCanDuLieu = "tram-can-du-lieu";
         }
 
         public static class ContactType
@@ -217,13 +229,11 @@ namespace Common.Utilities
             public const string Main = "khth";
             public const string DuLieuKho = "du-lieu-kho";
             // DU LIEU KHO: Kho nguyên liệu, Kho thành phẩm, Kho bùn, Kho xử lý, Tiếp nhận xử lý bùn
-            public const string DuLieuKhoNguyenLieu = "du-lieu-kho-nguyen-lieu";
+            public const string DuLieuKhoNguyenVatLieu = "du-lieu-kho-nguyen-vat-lieu";
             public const string DuLieuKhoThanhPham = "du-lieu-kho-thanh-pham";
+            public const string DuLieuKhoHangTraVe = "du-lieu-kho-hang-tra-ve";
             public const string DuLieuKhoBun = "du-lieu-kho-bun";
-            public const string DuLieuKhoXuLy = "du-lieu-kho-xu-ly";
-            public const string DuLieuTiepNhanXuLyBun = "du-lieu-tiep-nhan-xu-ly-bun";
-
-            public const string DuLieuDuAnCong = "du-lieu-du-an-cong";
+            public const string DuLieuTramCan = "du-lieu-tram-can";
         }
 
         public static class LinkSalary
@@ -408,6 +418,23 @@ namespace Common.Utilities
             public const string ApprovePost = "post-duyet-phep";
             // API
             public const string Approve = "duyet-phep";
+        }
+
+        public static class LinkQuyen
+        {
+            public const string Main = "quyen";
+        }
+
+        public static class LinkPhanQuyen
+        {
+            public const string Main = "phan-quyen";
+            public const string Index = "danh-sach";
+            public const string Detail = "chi-tiet";
+            public const string Create = "tao-moi";
+            public const string Edit = "chinh-sua";
+            public const string Disable = "vo-hieu";
+            public const string Active = "khoi-phuc";
+            public const string Delete = "xoa";
         }
 
         public static class LinkLeave

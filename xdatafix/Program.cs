@@ -29,9 +29,10 @@ namespace xdatafix
             var database = "tribat";
             #endregion
 
+            UpdateLeaveDay(connection, database);
             //InitSetting(connection, database);
             //FixTimer(connection, database);
-            UpdateEmployeeCode(connection, database);
+            //UpdateEmployeeCode(connection, database);
             //FixEmailLeave(connection, database);
             //FixEmployeeLeave(connection, database);
 
@@ -73,6 +74,30 @@ namespace xdatafix
         }
 
         #region ERP
+        static void UpdateLeaveDay(string connection, string database)
+        {
+            #region Connection, Setting & Filter
+            MongoDBContext.ConnectionString = connection;
+            MongoDBContext.DatabaseName = database;
+            MongoDBContext.IsSSL = true;
+            MongoDBContext dbContext = new MongoDBContext();
+            #endregion
+
+            dbContext.LeaveEmployees.InsertOne(new LeaveEmployee()
+            {
+                LeaveTypeId = "5bbdb5a97caedd0c7411c89d",
+                EmployeeId = "5c3e90b5566d7c0a345e5488",
+                LeaveTypeName = "Phép năm",
+                EmployeeName = "Vòng Thị Thúy Phượng",
+                Number = 0,
+                Department = "PHÒNG HCNS - NS",
+                Part = "HCNS",
+                Title = "NV HÀNH CHÍNH",
+                LeaveLevel = 12,
+                NumberUsed = 1
+            });
+        }
+
         static void UpdateEmployeeCode(string connection, string database)
         {
             #region Connection, Setting & Filter
@@ -145,7 +170,7 @@ namespace xdatafix
             #endregion
 
             var employees = dbContext.Employees.Find(m => m.Enable.Equals(false)).ToList();
-            foreach(var employee in employees)
+            foreach (var employee in employees)
             {
                 var builder = Builders<Employee>.Filter;
                 var filter = builder.Eq(m => m.Id, employee.Id);
@@ -240,7 +265,7 @@ namespace xdatafix
             #endregion
 
             var employees = dbContext.Employees.Find(m => string.IsNullOrEmpty(m.PhongBan)).ToList();
-            foreach(var employee in employees)
+            foreach (var employee in employees)
             {
                 var filterHis = Builders<Employee>.Filter.Eq(m => m.Id, employee.Id);
                 var updateHis = Builders<Employee>.Update
@@ -493,11 +518,11 @@ namespace xdatafix
             #endregion
 
             #region BoPhan
-            
+
             #endregion
 
             #region ChucVu
-            
+
             #endregion
 
             #region NHA MAY

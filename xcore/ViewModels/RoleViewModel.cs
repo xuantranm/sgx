@@ -5,9 +5,8 @@ using ViewModels;
 
 namespace ViewModels
 {
-    public class RoleViewModel : ExtensionViewModel
+    public class RoleViewModel : CommonViewModel
     {
-        // data display
         public IList<Role> Roles { get; set; }
 
         public IList<RoleUser> RoleUsers { get; set; }
@@ -15,5 +14,7 @@ namespace ViewModels
         public Role Role { get; set; }
 
         public RoleUser RoleUser { get; set; }
+
+        public string Ten { get; set; }
     }
 }

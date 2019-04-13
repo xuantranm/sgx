@@ -13,7 +13,6 @@ namespace Models
     public class EmployeeWorkTimeLog: Common
     {
         [BsonId]
-        // Mvc don't know how to create ObjectId from string
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
 
@@ -103,6 +102,8 @@ namespace Models
         public int Workcode { get; set; }
 
         public string SecureCode { get; set; }
+
+        public bool IsSendMail { get; set; } = false;
 
         #region Automactic
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]

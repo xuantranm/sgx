@@ -4656,7 +4656,7 @@ WriteAttributeValue("", 87682, item.Count, 87682, 11, false);
         ");
             EndContext();
             BeginContext(93373, 62, false);
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("a", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "3616341cc69c4043bc458e2ab91db8ff", async() => {
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("a", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "78f617bdc2594f9d9d8b12b6e57535f5", async() => {
                 BeginContext(93395, 36, true);
                 WriteLiteral("<i class=\"icon icon-back\"></i>Trở về");
                 EndContext();
@@ -4691,7 +4691,7 @@ WriteAttributeValue("", 87682, item.Count, 87682, 11, false);
                 WriteLiteral("        ");
                 EndContext();
                 BeginContext(93562, 45, false);
-                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("script", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "7e96eef2682946b3bef3a4b525780e2c", async() => {
+                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("script", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "a7c84f015d5244228644dc06c5cdd0cb", async() => {
                 }
                 );
                 __Microsoft_AspNetCore_Mvc_Razor_TagHelpers_UrlResolutionTagHelper = CreateTagHelper<global::Microsoft.AspNetCore.Mvc.Razor.TagHelpers.UrlResolutionTagHelper>();

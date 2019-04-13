@@ -31,11 +31,11 @@ namespace Data
         }
 
         #region KE HOACH TONG HOP
-        public IMongoCollection<KhoNguyenLieu> KhoNguyenLieus
+        public IMongoCollection<KhoNguyenVatLieu> KhoNguyenVatLieus
         {
             get
             {
-                return _database.GetCollection<KhoNguyenLieu>("KhoNguyenLieus");
+                return _database.GetCollection<KhoNguyenVatLieu>("KhoNguyenVatLieus");
             }
         }
 
@@ -55,19 +55,19 @@ namespace Data
             }
         }
 
-        public IMongoCollection<KhoXuLy> KhoXuLys
+        public IMongoCollection<KhoHangTraVe> KhoHangTraVes
         {
             get
             {
-                return _database.GetCollection<KhoXuLy>("KhoXuLys");
+                return _database.GetCollection<KhoHangTraVe>("KhoHangTraVes");
             }
         }
 
-        public IMongoCollection<TiepNhanXuLy> TiepNhanXuLys
+        public IMongoCollection<TramCan> TramCans
         {
             get
             {
-                return _database.GetCollection<TiepNhanXuLy>("TiepNhanXuLys");
+                return _database.GetCollection<TramCan>("TramCans");
             }
         }
 
@@ -908,6 +908,22 @@ namespace Data
             get
             {
                 return _database.GetCollection<Role>("Roles");
+            }
+        }
+
+        public IMongoCollection<GroupPolicy> GroupPolicies
+        {
+            get
+            {
+                return _database.GetCollection<GroupPolicy>("GroupPolicies");
+            }
+        }
+
+        public IMongoCollection<RoleUsage> RoleUsages
+        {
+            get
+            {
+                return _database.GetCollection<RoleUsage>("RoleUsages");
             }
         }
 

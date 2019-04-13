@@ -12,7 +12,7 @@ namespace Models
     /// Product: Name, Code, Unit for faster.
     /// If change, update all.
     /// </summary>
-    public class KhoNguyenLieu: CommonV101
+    public class KhoNguyenVatLieu: CommonV101
     {
         [DataType(DataType.Date)]
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
@@ -55,6 +55,8 @@ namespace Models
         public double TonCuoi { get; set; } = 0;
 
         public double TonAnToan { get; set; } = 0;
+
+        public string LOT { get; set; }
 
         public string TrangThai { get; set; }
 

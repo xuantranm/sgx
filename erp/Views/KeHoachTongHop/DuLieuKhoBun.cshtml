@@ -38,22 +38,19 @@
                     <div class="col">
                         <ul class="nav nav-tabs" id="myTab" role="tablist">
                             <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoNguyenLieu">NGUYÊN LIỆU</a>
+                                <a class="nav-link" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoNguyenVatLieu">KHO NGUYÊN VẬT LIỆU</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoThanhPham">THÀNH PHẨM</a>
+                                <a class="nav-link" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoThanhPham">KHO THÀNH PHẨM</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link active" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoBun">@Model.Name.ToUpper()</a>
+                                <a class="nav-link" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoHangTraVe">KHO HÀNG TRẢ VỀ</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoXuLy">XỬ LÝ</a>
+                                <a class="nav-link active" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoBun">KHO BÙN</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuTiepNhanXuLyBun">TIẾP NHẬN XỬ LÝ BÙN</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuDuAnCong">DỰ ÁN CÔNG</a>
+                                <a class="nav-link" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuTramCan">TRẠM CÂN</a>
                             </li>
                         </ul>
                     </div>
@@ -264,6 +261,7 @@
                                             <th scope="col">Hao hụt</th>
                                             <th scope="col">Tồn kho</th>
                                             <th scope="col">Ghi chú</th>
+                                            <th scope="col">Phân Loại dự án</th>
                                         </tr>
                                     </thead>
                                     <tbody class="font-14">
@@ -271,32 +269,33 @@
                                             var i = (Model.Trang - 1) * Model.PageSize + 1;
                                             foreach (var item in Model.KhoBuns)
                                             {
-                                                <tr>
-                                                    <th scope="row">@i</th>
-                                                    <td nowrap>
-                                                        @item.Date.ToString("dd/MM/yyyy")
-                                                    </td>
-                                                    <td nowrap>
-                                                        @item.ProductName
-                                                    </td>
-                                                    <td nowrap>
-                                                        @item.Customer
-                                                    </td>
-                                                    <td nowrap>
-                                                        @item.HoChua
-                                                    </td>
-                                                    <td nowrap>
-                                                        @item.ProductUnit
-                                                    </td>
-                                                    <td>@String.Format("{0:#,###,###.##}", item.TonDau)</td>
-                                                    <td>@String.Format("{0:#,###,###.##}", item.NhapKho)</td>
-                                                    <td>@String.Format("{0:#,###,###.##}", item.XuLy)</td>
-                                                    <td>@String.Format("{0:#,###,###.##}", item.XuLyBao)</td>
-                                                    <td>@String.Format("{0:#,###,###.##}", item.XuLyKhac)</td>
-                                                    <td>@String.Format("{0:#,###,###.##}", item.HaoHut)</td>
-                                                    <td>@String.Format("{0:#,###,###.##}", item.TonKho)</td>
-                                                    <td>@Constants.Truncate(item.Note, 150)</td>
-                                                </tr>
+                                        <tr>
+                                            <th scope="row">@i</th>
+                                            <td nowrap>
+                                                @item.Date.ToString("dd/MM/yyyy")
+                                            </td>
+                                            <td nowrap>
+                                                @item.ProductName
+                                            </td>
+                                            <td nowrap>
+                                                @item.Customer
+                                            </td>
+                                            <td nowrap>
+                                                @item.HoChua
+                                            </td>
+                                            <td nowrap>
+                                                @item.ProductUnit
+                                            </td>
+                                            <td>@String.Format("{0:#,###,###.##}", item.TonDau)</td>
+                                            <td>@String.Format("{0:#,###,###.##}", item.NhapKho)</td>
+                                            <td>@String.Format("{0:#,###,###.##}", item.XuLy)</td>
+                                            <td>@String.Format("{0:#,###,###.##}", item.XuLyBao)</td>
+                                            <td>@String.Format("{0:#,###,###.##}", item.XuLyKhac)</td>
+                                            <td>@String.Format("{0:#,###,###.##}", item.HaoHut)</td>
+                                            <td>@String.Format("{0:#,###,###.##}", item.TonKho)</td>
+                                            <td>@Constants.Truncate(item.Note, 150)</td>
+                                            <td>@Constants.PhanLoaiDuAnBun(item.PhanLoaiDuAn)</td>
+                                        </tr>
                                                 i++;
                                             }
                                         }

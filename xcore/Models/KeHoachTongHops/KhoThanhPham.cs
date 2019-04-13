@@ -32,13 +32,13 @@ namespace Models
 
         public double NhapTuSanXuat { get; set; } = 0;
 
-        public double NhapTuKhoXuLy { get; set; } = 0;
+        public double NhapTuKhoHangTraVe { get; set; } = 0;
 
         public double NhapKhac { get; set; } = 0;
 
         public double XuatBan { get; set; } = 0;
 
-        public double XuatKhoXuLy { get; set; } = 0;
+        public double XuatKhoHangTraVe { get; set; } = 0;
 
         public double XuatKhac { get; set; } = 0;
 

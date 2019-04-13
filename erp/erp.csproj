@@ -25,6 +25,7 @@
 
   <ItemGroup>
     <Content Remove="Views\Factory\PhieuInCa - A4.cshtml" />
+    <Content Remove="Views\KeHoachTongHop\DuLieuDuAnCong.cshtml" />
     <Content Remove="Views\SalaryProduction\CongTong.cshtml" />
     <Content Remove="Views\SalaryProduction\CongTongUpdate.cshtml" />
     <Content Remove="Views\TimeKeeper\BangChamCong - Copy.cshtml" />
@@ -772,13 +773,10 @@
     <Content Update="Views\File\NgayPhep.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
-    <Content Update="Views\KeHoachTongHop\DuLieuKhoXuLy.cshtml">
+    <Content Update="Views\KeHoachTongHop\DuLieuKhoHangTraVe.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
-    <Content Update="Views\KeHoachTongHop\DuLieuDuAnCong.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\KeHoachTongHop\DuLieuTiepNhanXuLyBun.cshtml">
+    <Content Update="Views\KeHoachTongHop\DuLieuTramCan.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
     <Content Update="Views\KeHoachTongHop\DuLieuKhoBun.cshtml">
@@ -802,7 +800,16 @@
     <Content Update="Views\Notification\Create.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
+    <Content Update="Views\Notification\Index3.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
     <Content Update="Views\Notification\Index2.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\PhanQuyen\Create.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\PhanQuyen\Index.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
     <Content Update="Views\RoleUser\Index.cshtml">

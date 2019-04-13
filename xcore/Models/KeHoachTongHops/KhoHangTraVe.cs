@@ -12,7 +12,7 @@ namespace Models
     /// Product: Name, Code, Unit for faster.
     /// If change, update all.
     /// </summary>
-    public class KhoXuLy: CommonV101
+    public class KhoHangTraVe: CommonV101
     {
         [DataType(DataType.Date)]
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]

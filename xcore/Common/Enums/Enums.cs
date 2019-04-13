@@ -1,11 +1,20 @@
 ﻿
 namespace Common.Enums
 {
+    public enum EBun
+    {
+        DAC = 1,
+        DAT = 2        
+    }
+
     public enum ECustomer
     {
         Supplier = 1,
         Client = 2,
         Bun = 3,
+        ChuDauTu = 4,
+        ThiCong = 5,
+        GiamSat = 6,
     }
 
     public enum ETrangThai
@@ -21,11 +30,12 @@ namespace Common.Enums
 
     public enum EKho
     {
-        NguyenLieu = 1,
+        NguyenVatLieu = 1,
         ThanhPham = 2,
         Bun = 3,
-        XuLy = 4,
-        TiepNhanXuLy = 5 // Tram Can
+        HangTraVe = 4,
+        TramCan = 5, // Tram Can
+        DuAnCong = 6 // Tram Can
     }
 
     public enum EFile
@@ -152,11 +162,22 @@ namespace Common.Enums
         // up to 10
     }
 
+    public enum EGroupPolicy
+    {
+        User = 1,
+        Title = 2
+    }
+
+    public enum ERoleControl
+    {
+        User = 1,
+        Group = 2,
+        ChucVu = 3
+    }
+
     public enum ERights
     {
-        // Owner
         None = 0,
-        // List, Detail
         View = 1,
         Add = 2,
         Edit = 3,

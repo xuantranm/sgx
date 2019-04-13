@@ -116,6 +116,8 @@ namespace Models
 
         public string SecureCode { get; set; }
 
+        public bool IsSendMail { get; set; } = false;
+
         #region Automactic
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime DateOnlyRecord

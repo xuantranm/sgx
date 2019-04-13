@@ -12,7 +12,7 @@ namespace Models
     /// Product: Name, Code, Unit for faster.
     /// If change, update all.
     /// </summary>
-    public class TiepNhanXuLy: CommonV101
+    public class TramCan: CommonV101
     {
         [DataType(DataType.Date)]
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
@@ -67,5 +67,7 @@ namespace Models
         public string TrangThai { get; set; }
 
         public string Note { get; set; }
+
+        public int PhanLoaiDuAn { get; set; } = (int)EBun.DAC;
     }
 }
