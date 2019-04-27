@@ -79,15 +79,15 @@ namespace erp.Controllers
 
             if (leave == null)
             {
-                ViewData["Status"] = "Rất tiếc! Dữ liệu đã được cập nhật hoặc thông tin không tồn tại trên hệ thống.";
-
+                ViewData["Status"] = Constants.ErrorParameter;
+                viewModel.Error = true;
                 return View(viewModel);
             }
 
             if (leave.SecureCode != secure && leave.Status != 0)
             {
-                ViewData["Status"] = "Rất tiếc! Dữ liệu đã được cập nhật hoặc thông tin không tồn tại trên hệ thống.";
-
+                ViewData["Status"] = Constants.ErrorParameter;
+                viewModel.Error = true;
                 return View(viewModel);
             }
 
@@ -127,6 +127,7 @@ namespace erp.Controllers
             #endregion
 
             var approvement = dbContext.Employees.Find(m => m.Id.Equals(leave.ApproverId)).FirstOrDefault();
+
             // Tự yêu cầu
             bool seftFlag = leave.EmployeeId == leave.CreatedBy ? true : false;
             var employee = dbContext.Employees.Find(m => m.Id.Equals(leave.EmployeeId)).FirstOrDefault();
@@ -227,7 +228,7 @@ namespace erp.Controllers
                 status,
                 approvement.FullName,
                 approvement.Email,
-                approvement.Title,
+                approvement.ChucVuName,
                 dateRequest + countLeaveDay,
                 leave.Reason,
                 leave.TypeName,
@@ -289,15 +290,15 @@ namespace erp.Controllers
 
             if (entity == null)
             {
-                ViewData["Status"] = "Rất tiếc! Dữ liệu đã được cập nhật hoặc thông tin không tồn tại trên hệ thống.";
-
+                ViewData["Status"] = Constants.ErrorParameter;
+                viewModel.Error = true;
                 return View(viewModel);
             }
 
             if (entity.SecureCode != secure && entity.Status != 2)
             {
-                ViewData["Status"] = "Rất tiếc! Dữ liệu đã được cập nhật hoặc thông tin không tồn tại trên hệ thống.";
-
+                ViewData["Status"] = Constants.ErrorParameter;
+                viewModel.Error = true;
                 return View(viewModel);
             }
 
@@ -366,14 +367,7 @@ namespace erp.Controllers
             #endregion
 
             var approvement = dbContext.Employees.Find(m => m.Id.Equals(entity.ConfirmId)).FirstOrDefault();
-            // Tự yêu cầu
-            //bool seftFlag = entity.EmployeeId == entity.Request ? true : false;
             var employee = dbContext.Employees.Find(m => m.Id.Equals(entity.EmployeeId)).FirstOrDefault();
-            //var userCreate = employee;
-            //if (!seftFlag)
-            //{
-            //    userCreate = dbContext.Employees.Find(m => m.Id.Equals(entity.CreatedBy)).FirstOrDefault();
-            //}
 
             #region Send email to user
             var requester = employee.FullName;
@@ -491,7 +485,7 @@ namespace erp.Controllers
                 status,
                 approvement.FullName,
                 approvement.Email,
-                approvement.Title,
+                approvement.ChucVuName,
                 detailTimeKeeping,
                 entity.Reason,
                 entity.ReasonDetail,
@@ -509,12 +503,9 @@ namespace erp.Controllers
                 EmployeeId = entity.EmployeeId
             };
 
-            // For faster. Add to schedule.
-            // Send later
             var scheduleEmail = new ScheduleEmail
             {
                 Status = (int)EEmailStatus.Schedule,
-                //From = emailMessage.FromAddresses,
                 To = emailMessage.ToAddresses,
                 CC = emailMessage.CCAddresses,
                 BCC = emailMessage.BCCAddresses,
@@ -524,8 +515,6 @@ namespace erp.Controllers
                 EmployeeId = emailMessage.EmployeeId
             };
             dbContext.ScheduleEmails.InsertOne(scheduleEmail);
-
-            //_emailSender.SendEmail(emailMessage);
             #endregion
 
             ViewData["Status"] = "Cám ơn đã xác nhận, kết quả đang gửi cho người liên quan.";

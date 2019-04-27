@@ -43,7 +43,7 @@
                                             <h4 class="card-title">@birthday.FullName</h4>
                                             <p class="card-text">
                                                 <span class="badge badge-primary">@birthday.Code</span>
-                                                <span class="badge badge-danger">@birthday.Title</span>
+                                                <span class="badge badge-danger">@birthday.ChucVuName</span>
                                             </p>
                                             <i class="icon-cake mr-1"></i>
 
@@ -64,6 +64,5 @@
 </section>
 
 @section scripts {
-    @*<script type="text/javascript" src="~/js/birthday.js?@DateTime.Now.Ticks"></script>*@
-    <script src="~/js/charts/gender.js?@DateTime.Now.Ticks"></script>
+    <script src="~/js/charts/gender.js?@Constants.VersionJs"></script>
 }

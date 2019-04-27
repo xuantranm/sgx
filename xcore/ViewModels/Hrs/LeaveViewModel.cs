@@ -40,5 +40,7 @@ namespace ViewModels
         #endregion
 
         public bool Approver { get; set; }
+
+        public bool Error { get; set; } = false;
     }
 }

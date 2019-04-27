@@ -77,5 +77,7 @@ namespace ViewModels
         #endregion
 
         public string LinkCurrent { get; set; }
+
+        public bool Error { get; set; } = false;
     }
 }

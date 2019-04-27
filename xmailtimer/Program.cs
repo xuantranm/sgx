@@ -26,18 +26,15 @@ namespace xmailtimer
         {
             #region setting
             var location = ConfigurationSettings.AppSettings.Get("location").ToString();
-            var modeData = ConfigurationSettings.AppSettings.Get("modeData").ToString() == "1" ? true : false; // true: Get all data | false get by date
-            var day = Convert.ToInt32(ConfigurationSettings.AppSettings.Get("day").ToString());
-            var isMail = ConfigurationSettings.AppSettings.Get("isMail").ToString() == "1" ? true : false;
-            var debug = ConfigurationSettings.AppSettings.Get("debug").ToString() == "1" ? true : false;
+            var debug = ConfigurationSettings.AppSettings.Get("debugString").ToString();
             var connection = "mongodb://localhost:27017";
             var database = "tribat";
             #endregion
 
-            SendTimeKeeper(location, modeData, day, isMail, connection, database, debug);
+            SendTimeKeeper(location, connection, database, debug);
         }
 
-        static void SendTimeKeeper(string location, bool modeData, int day, bool isMail, string connection, string database, bool debug)
+        static void SendTimeKeeper(string location, string connection, string database, string debug)
         {
             #region Connection, Setting & Filter
             MongoDBContext.ConnectionString = connection;
@@ -47,15 +44,9 @@ namespace xmailtimer
             var url = Constants.System.domain;
             #endregion
 
-            #region DDL
             var congtychinhanhs = dbContext.CongTyChiNhanhs.Find(m => m.Enable.Equals(true)).ToList();
             var congtychinhanhTruSo = congtychinhanhs.Where(m => m.Code.Equals("CT1")).FirstOrDefault();
             var congtychinhanhNhaMay = congtychinhanhs.Where(m => m.Code.Equals("CT2")).FirstOrDefault();
-            var khoichucnangs = dbContext.KhoiChucNangs.Find(m => m.Enable.Equals(true)).ToList();
-            var phongbans = dbContext.PhongBans.Find(m => m.Enable.Equals(true)).ToList();
-            var bophans = dbContext.BoPhans.Find(m => m.Enable.Equals(true) && string.IsNullOrEmpty(m.Parent)).ToList();
-            var chucvus = dbContext.ChucVus.Find(m => m.Enable.Equals(true)).ToList();
-            #endregion
 
             #region Times : 26 run
             var today = DateTime.Now;
@@ -67,153 +58,147 @@ namespace xmailtimer
             #region Filter
             var builder = Builders<Employee>.Filter;
             var filter = !builder.Eq(i => i.UserName, Constants.System.account)
-                        & builder.Eq(m => m.CongTyChiNhanh, congtychinhanhNhaMay.Id)
                         & builder.Eq(m => m.Enable, true)
                         & builder.Eq(m => m.Leave, false);
-
-            if (debug)
+            if (!string.IsNullOrEmpty(location))
             {
-                var debugString = ConfigurationSettings.AppSettings.Get("debugString").ToString();
-                filter = filter & builder.Eq(m => m.Id, debugString);
+                var locationId = location == "NM" ? congtychinhanhNhaMay.Id : congtychinhanhTruSo.Id;
+                filter = filter & builder.Eq(m => m.CongTyChiNhanh, locationId);
+            }
+            if (!string.IsNullOrEmpty(debug))
+            {
+                filter = filter & builder.Eq(m => m.Id, debug);
             }
 
             var fields = Builders<Employee>.Projection.Include(p => p.Id);
 
-            //var employeeFilters1 = dbContext.Employees.Find(filter).ToList();
-            //var employeeIds1 = dbContext.Employees.Find(filter).Project<Employee>(fields).ToList().Select(m => m.Id).ToList();
+            var employees = dbContext.Employees.Find(filter).ToList();
+            var employeesId = dbContext.Employees.Find(filter).Project<Employee>(fields).ToList().Select(m => m.Id).ToList();
 
-            // NHA MAY: + Phong XDCB + Phong Du An, Vat Tu, TTNC, NCUD
-            var listPhongBanTinhCongONhaMay = new List<string>
+            if (string.IsNullOrEmpty(debug) && !string.IsNullOrEmpty(location))
             {
-                "5c88d094d59d56225c43242a", // XDCB
-                "5c88d094d59d56225c432437", // DA
-                "5c88d094d59d56225c43242f", // VATTU
-                "5c88d094d59d56225c432435", // BAN VAT TU
-                "5c88d094d59d56225c43243c", // TTNC
-                "5c88d094d59d56225c432441" // NCUD
-            };
-            var listPrevent = new List<string>
-            {
-                "5b6bb22fe73a301f941c589e", // Huyen
-                "5bc048540ae7341a7ce7f1fb" // Hien
-            };
-            // Add HCNS: Thy, Thoa, Xuan, Phuong
-            //var listEmpHCNSONhaMay = new List<string>
+                // NHA MAY: + Phong XDCB + Phong Du An, Vat Tu, TTNC, NCUD
+                var listPhongBanTinhCongONhaMay = new List<string>
+                {
+                    "5c88d094d59d56225c43242a", // XDCB
+                    "5c88d094d59d56225c432437", // DA
+                    "5c88d094d59d56225c43242f", // VATTU
+                    "5c88d094d59d56225c432435", // BAN VAT TU
+                    "5c88d094d59d56225c43243c", // TTNC
+                    "5c88d094d59d56225c432441" // NCUD
+                };
+                var listIdLoaiTruONhaMay = new List<string>
+                {
+                    "5b6bb22fe73a301f941c589e", // Huyen
+                    "5bc048540ae7341a7ce7f1fb" // Hien
+                };
+                var listIdCongThemONhaMay = new List<string>
+                {
+                    "5b6bb22fe73a301f941c5885", // Thy
+                    "5b6bb231e73a301f941c58dd", // Thoa
+                    "5b6bfc463ee8461ee48cbbea", // Xuan
+                    "5c3e90b5566d7c0a345e5488" // Phuong
+                };
+
+                if (location == "NM")
+                {
+                    var employeesPhongBanONhaMay = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false)
+                                            && listPhongBanTinhCongONhaMay.Contains(m.PhongBan) && !listIdLoaiTruONhaMay.Contains(m.Id)).ToList();
+                    var employeesPhongBanONhaMayId = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false)
+                                            && listPhongBanTinhCongONhaMay.Contains(m.PhongBan) && !listIdLoaiTruONhaMay.Contains(m.Id)).ToList()
+                                            .Select(m => m.Id).ToList();
+                    var employeesCongThem = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false)
+                                            && listIdCongThemONhaMay.Contains(m.Id)).ToList();
+                    var employeesCongThemId = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false)
+                                            && listIdCongThemONhaMay.Contains(m.Id)).ToList()
+                                            .Select(m => m.Id).ToList();
+
+                    employees = employees.Concat(employeesPhongBanONhaMay).Concat(employeesCongThem).ToList();
+                    employeesId = employeesId.Concat(employeesPhongBanONhaMayId).Concat(employeesCongThemId).ToList();
+                }
+                else
+                {
+                    employees = employees.Where(m => !listPhongBanTinhCongONhaMay.Contains(m.PhongBan)
+                                    && !listIdCongThemONhaMay.Contains(m.Id)).ToList();
+                    employeesId = employees.Where(m => !listPhongBanTinhCongONhaMay.Contains(m.PhongBan)
+                                    && !listIdCongThemONhaMay.Contains(m.Id)).ToList().Select(m => m.Id).ToList();
+                }
+            }
+
+            // ANH
+            //employeesId = new List<string>
             //{
-            //    "5b6bb22fe73a301f941c5885",
-            //    "5b6bb231e73a301f941c58dd",
-            //    "5b6bfc463ee8461ee48cbbea",
-            //    "5c3e90b5566d7c0a345e5488"
+            //    "5b6bb230e73a301f941c58ba", // Phan Thanh Tùng
+            //    "5b6bb230e73a301f941c58c0", // Nguyễn Đức Trung
+            //    "5b6bb230e73a301f941c58c1",// Nguyễn Minh Đại
+            //    "5b6bb230e73a301f941c58ad",//Ngô Mạnh Linh
+            //    "5b6bb230e73a301f941c58ac",//Thạch Minh Châu
+            //    "5b6bb230e73a301f941c58c3",//Nguyễn Hồng Hải
+            //    "5b6bb230e73a301f941c58bc",//Trịnh Minh Hảo
+            //    "5b7d1ce80be6b00f1478d13c",//Huỳnh Ngọc Minh
+            //    "5b7d16aa0be6b00f1478d131",//Hoàng Văn Nhân
+            //    "5b7bddcf5bee9d1678e2dd17",//Nguyễn Thái Bình
+            //    "5b7be17c5bee9d1678e2dd1b",//Nguyễn Ngọc Hồng Vy
+            //    "5c8b3e143ee1e90fdc3e5199"//Tran Chi Minh
             //};
-            // UAT
-            var listEmpHCNSONhaMay = new List<string>
-            {
-                "5b6bb232e73a301f941c592f"
-            };
-            var employeeXDCBDuAn = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && listPhongBanTinhCongONhaMay.Contains(m.PhongBan) && !listPrevent.Contains(m.Id)).ToList();
-            var employeeXDCBDuAnIds = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && listPhongBanTinhCongONhaMay.Contains(m.PhongBan) && !listPrevent.Contains(m.Id)).ToList().Select(m => m.Id).ToList();
-            var employeeHCNSNMs = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && listEmpHCNSONhaMay.Contains(m.Id)).ToList();
-            var employeeHCNSNMIds = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && listEmpHCNSONhaMay.Contains(m.Id)).ToList().Select(m => m.Id).ToList();
-
-            //var employeeFilters = employeeFilters1.Concat(employeeXDCBDuAn).Concat(employeeHCNSNMs).ToList();
-            //var employeeIds = employeeIds1.Concat(employeeXDCBDuAnIds).Concat(employeeHCNSNMIds).ToList();
-
-            //var employeeFilters = employeeXDCBDuAn.Concat(employeeHCNSNMs).ToList();
-            //var employeeIds = employeeXDCBDuAnIds.Concat(employeeHCNSNMIds).ToList();
-            var employeeFilters = employeeHCNSNMs;
-            var employeeIds = employeeHCNSNMIds;
+            //employees = dbContext.Employees.Find(m => employeesId.Contains(m.Id)).ToList();
+            // ANH
 
             var builderT = Builders<EmployeeWorkTimeLog>.Filter;
             var filterT = builderT.Eq(m => m.Enable, true)
                         & builderT.Gte(m => m.Date, Tu)
                         & builderT.Lte(m => m.Date, Den);
-            if (employeeIds != null && employeeIds.Count > 0)
+            if (employeesId != null && employeesId.Count > 0)
             {
-                filterT = filterT & builderT.Where(m => employeeIds.Contains(m.EmployeeId));
+                filterT = filterT & builderT.Where(m => employeesId.Contains(m.EmployeeId));
             }
             #endregion
 
             var times = dbContext.EmployeeWorkTimeLogs.Find(filterT).SortBy(m => m.Date).ToList();
+
             var results = new List<TimeKeeperDisplay>();
 
             #region method 1: base employee
-            foreach (var employee in employeeFilters)
+            foreach (var employee in employees)
             {
                 var employeeWorkTimeLogs = times.Where(m => m.EmployeeId.Equals(employee.Id)).ToList();
                 if (employeeWorkTimeLogs == null || employeeWorkTimeLogs.Count == 0) continue;
 
                 var enrollNumber = string.Empty;
-                var congtychinhanhName = string.Empty;
-                var khoichucnangName = string.Empty;
-                var phongbanName = string.Empty;
-                var bophanName = string.Empty;
-                var bophanConName = string.Empty;
-                var chucvuName = string.Empty;
-
-                enrollNumber = employeeWorkTimeLogs[0].EnrollNumber;
-
-                if (!string.IsNullOrEmpty(employee.CongTyChiNhanh))
+                if (employee.Workplaces !=null && employee.Workplaces.Count > 0)
                 {
-                    var ctcnE = congtychinhanhs.Where(m => m.Id.Equals(employee.CongTyChiNhanh)).FirstOrDefault();
-                    if (ctcnE != null)
+                    foreach(var workplace in employee.Workplaces)
                     {
-                        congtychinhanhName = ctcnE.Name;
+                        if (!string.IsNullOrEmpty(workplace.Fingerprint))
+                        {
+                            if (!string.IsNullOrEmpty(enrollNumber))
+                            {
+                                enrollNumber += ";";
+                            }
+                            enrollNumber += workplace.Code + ":" + workplace.Fingerprint;
+                        }
                     }
                 }
-                if (!string.IsNullOrEmpty(employee.KhoiChucNang))
-                {
-                    var kcnE = khoichucnangs.Where(m => m.Id.Equals(employee.KhoiChucNang)).FirstOrDefault();
-                    if (kcnE != null)
-                    {
-                        khoichucnangName = kcnE.Name;
-                    }
-                }
-                if (!string.IsNullOrEmpty(employee.PhongBan))
-                {
-                    var pbE = phongbans.Where(m => m.Id.Equals(employee.PhongBan)).FirstOrDefault();
-                    if (pbE != null)
-                    {
-                        phongbanName = pbE.Name;
-                    }
-                }
-                if (!string.IsNullOrEmpty(employee.BoPhan))
-                {
-                    var bpE = bophans.Where(m => m.Id.Equals(employee.BoPhan)).FirstOrDefault();
-                    if (bpE != null)
-                    {
-                        bophanName = bpE.Name;
-                    }
-                }
-                if (!string.IsNullOrEmpty(employee.ChucVu))
-                {
-                    var cvE = chucvus.Where(m => m.Id.Equals(employee.ChucVu)).FirstOrDefault();
-                    if (cvE != null)
-                    {
-                        chucvuName = cvE.Name;
-                    }
-                }
-
-                var employeeDisplay = new TimeKeeperDisplay()
+                results.Add(new TimeKeeperDisplay()
                 {
                     EmployeeWorkTimeLogs = employeeWorkTimeLogs,
                     Id = employee.Id,
-                    Code = employee.Code + "(" + employee.CodeOld + ")",
+                    Code = employee.CodeOld,
                     EnrollNumber = enrollNumber,
                     FullName = employee.FullName,
-                    CongTyChiNhanh = congtychinhanhName,
-                    KhoiChucNang = khoichucnangName,
-                    PhongBan = phongbanName,
-                    BoPhan = bophanName,
-                    ChucVu = chucvuName,
+                    CongTyChiNhanh = employee.CongTyChiNhanhName,
+                    KhoiChucNang = employee.KhoiChucNangName,
+                    PhongBan = employee.PhongBanName,
+                    BoPhan = employee.BoPhanName,
+                    ChucVu = employee.ChucVuName,
                     Alias = employee.AliasFullName,
                     Email = employee.Email,
                     ManageId = employee.ManagerId
-                };
-                results.Add(employeeDisplay);
+                });
             }
 
             // UAT : Check data
-            var nhamayCount = results.Count(m => m.CongTyChiNhanh.Equals("Nhà máy Xử lý bùn thải Sài Gòn Xanh"));
+            //var nhamayCount = results.Count(m => m.CongTyChiNhanh.Equals("Nhà máy Xử lý bùn thải Sài Gòn Xanh"));
             #endregion
 
             #region Get Hrs: For case empty Email of user and manager
@@ -248,14 +233,10 @@ namespace xmailtimer
 
             int thang = ngaychot.Month;
             int nam = ngaychot.Year;
-            var subject = string.Empty;
-            var note = string.Empty;
-            var owner = string.Empty;
-            var to2 = string.Empty;
 
             #region Step 1: Employee have email
-            var listFull = results.Where(m => !string.IsNullOrEmpty(m.Email)).ToList();
-            foreach (var employee in listFull)
+            var listEmail = results.Where(m => !string.IsNullOrEmpty(m.Email)).ToList();
+            foreach (var employee in listEmail)
             {
                 string sFileName = @"bang-cham-cong";
                 sFileName += "-" + thang + "-" + nam;
@@ -269,19 +250,19 @@ namespace xmailtimer
 
                 #region SCHEDULE MAIL
                 Console.WriteLine("Send email to:" + employee.Email);
-                subject = "CHẤM CÔNG THÁNG " + thang + "-" + nam;
-                note = string.Empty;
-                owner = string.Empty;
-                to2 = employee.FullName;
+                var subject = "CHẤM CÔNG THÁNG " + thang + "-" + nam;
+                var note = string.Empty;
+                var owner = string.Empty;
+                var to2 = employee.FullName;
                 var tos = new List<EmailAddress>
                 {
                     new EmailAddress { Name = employee.FullName, Address = employee.Email }
                 };
 
+                // Because some case have enrollNumber but no time manage.
+                // If ngaycongNT = 0: gui nhan su
                 if (excelViewModel.NgayCongNT == 0)
                 {
-                    // Because some case have enrollNumber but no time manage.
-                    // If ngaycongNT = 0: gui thoa
                     subject = "CHẤM CÔNG THÁNG " + thang + "-" + nam + " của " + employee.FullName.ToUpper();
                     to2 = "Cao Thị Minh Thoa";
                     owner = " của " + employee.FullName;
@@ -330,207 +311,142 @@ namespace xmailtimer
             }
             #endregion
 
-            //#region Step 2: Employee miss email: Have manager
-            //var listEmptyEmail = results.Where(m => string.IsNullOrEmpty(m.Email) && !string.IsNullOrEmpty(m.ManageId)).ToList();
-            //var groupManager = (from s in listEmptyEmail
-            //                    group s by new
-            //                    {
-            //                        s.ManageId
-            //                    }
-            //                                        into l
-            //                    select new
-            //                    {
-            //                        l.Key.ManageId,
-            //                        list = l.ToList(),
-            //                    }).ToList();
-            //foreach (var manager in groupManager)
-            //{
-            //    var listControl = manager.list;
-            //    string sFileName = @"bang-cham-cong";
-            //    sFileName += "-" + thang + "-" + nam;
-            //    var managerE = dbContext.Employees.Find(m => m.Id.Equals(manager.ManageId)).FirstOrDefault();
-            //    if (managerE != null && !string.IsNullOrEmpty(managerE.Email))
-            //    {
-            //        sFileName += "-nhan-vien-cua-" + managerE.AliasFullName + ".xlsx";
+            #region Step 2: Employee miss email: Have manager or none.
+            var listEmptyEmail = results.Where(m => string.IsNullOrEmpty(m.Email)).ToList();
+            var groupManager = (from s in listEmptyEmail
+                                group s by new
+                                {
+                                    s.ManageId
+                                }
+                                                    into l
+                                select new
+                                {
+                                    l.Key.ManageId,
+                                    list = l.ToList(),
+                                }).ToList();
+            foreach (var manager in groupManager)
+            {
+                var listControl = manager.list;
 
-            //        var excelViewModel = RenderExcel(Tu, Den, ngaychot, sFileName, 2, listControl);
+                if (!string.IsNullOrEmpty(manager.ManageId))
+                {
+                    var managerE = dbContext.Employees.Find(m => m.Id.Equals(manager.ManageId)).FirstOrDefault();
+                    if (managerE != null && !string.IsNullOrEmpty(managerE.Email))
+                    {
+                        string sFileName = @"bang-cham-cong";
+                        sFileName += "-" + thang + "-" + nam;
+                        sFileName += "-nhan-vien-cua-" + managerE.AliasFullName + ".xlsx";
 
-            //        #region SEND MAIL
-            //        Console.WriteLine("Send email to:" + managerE.Email);
-            //        subject = "CHẤM CÔNG THÁNG " + thang + "-" + nam + " CỦA NHÂN VIÊN ĐANG QUẢN LÝ";
-            //        note = "<b>Xin lỗi về bất tiện này. Anh/chị nhận được email này do đang quản lý danh sách nhân viên (chưa có thông tin email). Vui lòng xem công và liên hệ nhân viên liên quan.</b><br />";
-            //        to2 = managerE.FullName;
-            //        var tos = new List<EmailAddress>
-            //        {
-            //            new EmailAddress { Name = managerE.FullName, Address = managerE.Email }
-            //        };
+                        var excelViewModel = RenderExcel(Tu, Den, ngaychot, sFileName, 2, listControl);
 
-            //        var attachments = new List<string>
-            //        {
-            //            excelViewModel.FileNameFullPath
-            //        };
+                        Console.WriteLine("Send email to:" + managerE.Email);
+                        var subject = "CHẤM CÔNG THÁNG " + thang + "-" + nam + " CỦA NHÂN VIÊN ĐANG QUẢN LÝ";
+                        var note = "<b>Xin lỗi về bất tiện này. Anh/chị nhận được email này do đang quản lý danh sách nhân viên (chưa có thông tin email). Vui lòng xem công và liên hệ nhân viên liên quan.</b><br />";
+                        var to2 = managerE.FullName;
+                        var tos = new List<EmailAddress>
+                        {
+                            new EmailAddress { Name = managerE.FullName, Address = managerE.Email }
+                        };
 
-            //        var pathToFile = @"C:\Projects\App.Schedule\Templates\bangchamcongnhom.html";
-            //        var bodyBuilder = new BodyBuilder();
-            //        using (StreamReader SourceReader = File.OpenText(pathToFile))
-            //        {
-            //            bodyBuilder.HtmlBody = SourceReader.ReadToEnd();
-            //        }
-            //        string messageBody = string.Format(bodyBuilder.HtmlBody,
-            //            subject,
-            //            note,
-            //            " anh/chị " + to2,
-            //            thang + "-" + nam,
-            //            "28/" + thang.ToString("00") + "/" + nam,
-            //            url + "/" + Constants.LinkTimeKeeper.Main + "/" + Constants.LinkTimeKeeper.Index,
-            //            url + "/" + Constants.LinkLeave.Main + "/" + Constants.LinkLeave.Index,
-            //            url);
+                        var attachments = new List<string>
+                        {
+                            excelViewModel.FileNameFullPath
+                        };
 
-            //        var emailMessage = new EmailMessage()
-            //        {
-            //            ToAddresses = tos,
-            //            Subject = subject,
-            //            BodyContent = messageBody,
-            //            Type = "bang-cham-cong-nhom",
-            //            EmployeeId = managerE.Id,
-            //            Attachments = attachments
-            //        };
+                        var pathToFile = @"C:\Projects\App.Schedule\Templates\bangchamcongnhom.html";
+                        var bodyBuilder = new BodyBuilder();
+                        using (StreamReader SourceReader = File.OpenText(pathToFile))
+                        {
+                            bodyBuilder.HtmlBody = SourceReader.ReadToEnd();
+                        }
+                        string messageBody = string.Format(bodyBuilder.HtmlBody,
+                            subject,
+                            note,
+                            " anh/chị " + to2,
+                            thang + "-" + nam,
+                            "28/" + thang.ToString("00") + "/" + nam,
+                            url + "/" + Constants.LinkTimeKeeper.Main + "/" + Constants.LinkTimeKeeper.Index,
+                            url + "/" + Constants.LinkLeave.Main + "/" + Constants.LinkLeave.Index,
+                            url);
 
-            //        ScheduleMail(connection, database, emailMessage);
-            //        #endregion
-            //    }
-            //    else
-            //    {
-            //        // Gui HR
-            //        sFileName = @"bang-cham-cong";
-            //        sFileName += "-" + thang + "-" + nam;
-            //        subject = "CHẤM CÔNG THÁNG " + thang + "-" + nam;
-            //        note = "<b>Xin lỗi về bất tiện này. Anh/chị nhận được email này do đang quản lý danh sách nhân viên (chưa có thông tin email và chưa có người quản lý trực tiếp). Vui lòng xem công và liên hệ nhân viên liên quan.</b><br />";
-            //        var tos = new List<EmailAddress>();
-            //        sFileName += "-nhan-vien-nha-may.xlsx";
-            //        subject += " CỦA NHÂN VIÊN NHÀ MÁY";
-            //        foreach (var hrEmployee in hrsNhaMay)
-            //        {
-            //            to2 += string.IsNullOrEmpty(to2) ? hrEmployee.FullName : ", " + hrEmployee.FullName;
-            //            tos.Add(new EmailAddress { Name = hrEmployee.FullName, Address = hrEmployee.Email });
-            //        }
-            //        var excelViewModel = RenderExcel(Tu, Den, ngaychot, sFileName, 2, listControl);
+                        var emailMessage = new EmailMessage()
+                        {
+                            ToAddresses = tos,
+                            Subject = subject,
+                            BodyContent = messageBody,
+                            Type = "bang-cham-cong-nhom",
+                            EmployeeId = managerE.Id,
+                            Attachments = attachments
+                        };
 
-            //        var attachments = new List<string>
-            //        {
-            //            excelViewModel.FileNameFullPath
-            //        };
+                        ScheduleMail(connection, database, emailMessage);
+                    }
+                }
+                else
+                {
+                    // Gui HR
+                    var sFileName = @"bang-cham-cong";
+                    sFileName += "-" + thang + "-" + nam;
+                    sFileName += "-nhan-vien-khac.xlsx";
+                    var subject = "CHẤM CÔNG THÁNG " + thang + "-" + nam;
+                    subject += " CỦA NHÂN VIÊN KHÁC";
+                    var note = "<b>Xin lỗi về bất tiện này. Anh/chị nhận được email này do đang quản lý danh sách nhân viên (chưa có thông tin email và chưa có người quản lý trực tiếp). Vui lòng xem công và liên hệ nhân viên liên quan.</b><br />";
+                    var to2 = string.Empty;
+                    var tos = new List<EmailAddress>();
+                    if (location == "NM")
+                    {
+                        foreach (var hrEmployee in hrsNhaMay)
+                        {
+                            to2 += string.IsNullOrEmpty(to2) ? hrEmployee.FullName : ", " + hrEmployee.FullName;
+                            tos.Add(new EmailAddress { Name = hrEmployee.FullName, Address = hrEmployee.Email });
+                        }
+                    }
+                    else
+                    {
+                        foreach (var hrEmployee in hrsCongTy)
+                        {
+                            to2 += string.IsNullOrEmpty(to2) ? hrEmployee.FullName : ", " + hrEmployee.FullName;
+                            tos.Add(new EmailAddress { Name = hrEmployee.FullName, Address = hrEmployee.Email });
+                        }
+                    }
+                    
+                    var excelViewModel = RenderExcel(Tu, Den, ngaychot, sFileName, 2, listControl);
 
-            //        var pathToFile = @"C:\Projects\App.Schedule\Templates\bangchamcongnhom.html";
-            //        var bodyBuilder = new BodyBuilder();
-            //        using (StreamReader SourceReader = File.OpenText(pathToFile))
-            //        {
-            //            bodyBuilder.HtmlBody = SourceReader.ReadToEnd();
-            //        }
-            //        string messageBody = string.Format(bodyBuilder.HtmlBody,
-            //            subject,
-            //            note,
-            //            " anh/chị " + to2,
-            //            thang + "-" + nam,
-            //            "28/" + thang.ToString("00") + "/" + nam,
-            //            url + "/" + Constants.LinkTimeKeeper.Main + "/" + Constants.LinkTimeKeeper.Index,
-            //            url + "/" + Constants.LinkLeave.Main + "/" + Constants.LinkLeave.Index,
-            //            url);
+                    var attachments = new List<string>
+                    {
+                        excelViewModel.FileNameFullPath
+                    };
 
-            //        var emailMessage = new EmailMessage()
-            //        {
-            //            ToAddresses = tos,
-            //            Subject = subject,
-            //            BodyContent = messageBody,
-            //            Type = "bang-cham-cong-nhom",
-            //            EmployeeId = string.Empty,
-            //            Attachments = attachments
-            //        };
+                    var pathToFile = @"C:\Projects\App.Schedule\Templates\bangchamcongnhom.html";
+                    var bodyBuilder = new BodyBuilder();
+                    using (StreamReader SourceReader = File.OpenText(pathToFile))
+                    {
+                        bodyBuilder.HtmlBody = SourceReader.ReadToEnd();
+                    }
+                    string messageBody = string.Format(bodyBuilder.HtmlBody,
+                        subject,
+                        note,
+                        " anh/chị " + to2,
+                        thang + "-" + nam,
+                        "28/" + thang.ToString("00") + "/" + nam,
+                        url + "/" + Constants.LinkTimeKeeper.Main + "/" + Constants.LinkTimeKeeper.Index,
+                        url + "/" + Constants.LinkLeave.Main + "/" + Constants.LinkLeave.Index,
+                        url);
 
-            //        ScheduleMail(connection, database, emailMessage);
-            //    }
-            //}
-            //#endregion
+                    var emailMessage = new EmailMessage()
+                    {
+                        ToAddresses = tos,
+                        Subject = subject,
+                        BodyContent = messageBody,
+                        Type = "bang-cham-cong-nhom",
+                        EmployeeId = string.Empty,
+                        Attachments = attachments
+                    };
 
-            //#region Step 3: Employee miss email, miss manager
-            //var listEmptyEmailNoManager = results.Where(m => string.IsNullOrEmpty(m.Email) && string.IsNullOrEmpty(m.ManageId)).ToList();
-            //var groupHrs = (from s in listEmptyEmailNoManager
-            //                group s by new
-            //                {
-            //                    s.CongTyChiNhanh
-            //                }
-            //                                        into l
-            //                select new
-            //                {
-            //                    l.Key.CongTyChiNhanh,
-            //                    list = l.ToList(),
-            //                }).ToList();
-            //foreach (var grouphr in groupHrs)
-            //{
-            //    string sFileName = @"bang-cham-cong";
-            //    sFileName += "-" + thang + "-" + nam;
-
-            //    subject = "CHẤM CÔNG THÁNG " + thang + "-" + nam;
-            //    note = "<b>Xin lỗi về bất tiện này. Anh/chị nhận được email này do đang quản lý danh sách nhân viên (chưa có thông tin email và chưa có người quản lý trực tiếp). Vui lòng xem công và liên hệ nhân viên liên quan.</b><br />";
-            //    var tos = new List<EmailAddress>();
-            //    if (grouphr.CongTyChiNhanh == congtychinhanhTruSo.Id)
-            //    {
-            //        sFileName += "-nhan-vien-khoi-van-phong.xlsx";
-            //        subject += " CỦA NHÂN VIÊN KHỐI VĂN PHÒNG";
-
-            //        foreach (var hrEmployee in hrsCongTy)
-            //        {
-            //            to2 += string.IsNullOrEmpty(to2) ? hrEmployee.FullName : ", " + hrEmployee.FullName;
-            //            tos.Add(new EmailAddress { Name = hrEmployee.FullName, Address = hrEmployee.Email });
-            //        }
-            //    }
-            //    else
-            //    {
-            //        sFileName += "-nhan-vien-nha-may.xlsx";
-            //        subject += " CỦA NHÂN VIÊN NHÀ MÁY";
-            //        foreach (var hrEmployee in hrsNhaMay)
-            //        {
-            //            to2 += string.IsNullOrEmpty(to2) ? hrEmployee.FullName : ", " + hrEmployee.FullName;
-            //            tos.Add(new EmailAddress { Name = hrEmployee.FullName, Address = hrEmployee.Email });
-            //        }
-            //    }
-            //    var listControl = grouphr.list;
-            //    var excelViewModel = RenderExcel(Tu, Den, ngaychot, sFileName, 2, listControl);
-
-            //    var attachments = new List<string>
-            //        {
-            //            excelViewModel.FileNameFullPath
-            //        };
-
-            //    var pathToFile = @"C:\Projects\App.Schedule\Templates\bangchamcongnhom.html";
-            //    var bodyBuilder = new BodyBuilder();
-            //    using (StreamReader SourceReader = File.OpenText(pathToFile))
-            //    {
-            //        bodyBuilder.HtmlBody = SourceReader.ReadToEnd();
-            //    }
-            //    string messageBody = string.Format(bodyBuilder.HtmlBody,
-            //        subject,
-            //        note,
-            //        " anh/chị " + to2,
-            //        thang + "-" + nam,
-            //        "28/" + thang.ToString("00") + "/" + nam,
-            //        url + "/" + Constants.LinkTimeKeeper.Main + "/" + Constants.LinkTimeKeeper.Index,
-            //        url + "/" + Constants.LinkLeave.Main + "/" + Constants.LinkLeave.Index,
-            //        url);
-
-            //    var emailMessage = new EmailMessage()
-            //    {
-            //        ToAddresses = tos,
-            //        Subject = subject,
-            //        BodyContent = messageBody,
-            //        Type = "bang-cham-cong-nhom",
-            //        EmployeeId = string.Empty,
-            //        Attachments = attachments
-            //    };
-
-            //    ScheduleMail(connection, database, emailMessage);
-            //}
-            //#endregion
+                    ScheduleMail(connection, database, emailMessage);
+                }
+            }
+            #endregion
         }
 
         static ExcelViewModel RenderExcel(DateTime Tu, DateTime Den, DateTime ngaychot, string sFileName, int mode, List<TimeKeeperDisplay> list)
@@ -927,8 +843,8 @@ namespace xmailtimer
 
                     cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
                     sheet1.AddMergedRegion(cellRangeAddress);
-                    cell = row.CreateCell(columnIndex, CellType.Numeric);
-                    cell.SetCellValue(Convert.ToInt32(employee.EnrollNumber));
+                    cell = row.CreateCell(columnIndex, CellType.String);
+                    cell.SetCellValue(employee.EnrollNumber);
                     cell.CellStyle = styleFullText;
                     columnIndex++;
 
@@ -1079,7 +995,20 @@ namespace xmailtimer
                                 cell.CellStyle = styleDedault;
 
                                 cell = rowreason.CreateCell(columnIndex, CellType.String);
-                                cell.SetCellValue(item.Reason + ": " + Constants.Truncate(item.ReasonDetail, 50));
+                                var detail = string.Empty;
+                                if (item.Logs != null && !string.IsNullOrEmpty(item.WorkplaceCode))
+                                {
+                                    detail += item.WorkplaceCode;
+                                }
+                                if (!string.IsNullOrEmpty(item.Reason))
+                                {
+                                    if (!string.IsNullOrEmpty(detail))
+                                    {
+                                        detail += ";";
+                                    }
+                                    detail += item.Reason;
+                                }
+                                cell.SetCellValue(detail);
                                 cell.CellStyle = styleSmall;
                             }
 

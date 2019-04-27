@@ -13,19 +13,33 @@ namespace Models
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
 
+        #region Employee
         public string EmployeeId { get; set; }
 
         public string EmployeeName { get; set; }
 
-        public string Part { get; set; }
+        public string Department { get; set; } // PhongBan
 
-        public string Department { get; set; }
+        public string DepartmentId { get; set; } // PhongBanId
 
-        public string Title { get; set; }
+        public string DepartmentAlias { get; set; } // PhongBanId
+
+        public string Part { get; set; } // BoPhan
+
+        public string PartId { get; set; } // BoPhanId
+
+        public string PartAlias { get; set; } // BoPhanId
+
+        public string Title { get; set; } // ChucVu
+
+        public string TitleId { get; set; } // ChucVuId
+
+        public string TitleAlias { get; set; } // ChucVuId
 
         public string EnrollNumber { get; set; }
 
         public string WorkplaceCode { get; set; }
+        #endregion
 
         public int Year { get; set; } = DateTime.Now.Year;
 

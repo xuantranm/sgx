@@ -12,7 +12,6 @@
     var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
     var thang = Model.Thang;
 }
-<link href="~/assets/wingman/css/big-screen.css" rel="stylesheet" />
 <style>
     tbody th:nth-child(3), tbody td:nth-child(3) {
         position: sticky;
@@ -207,28 +206,14 @@
                                 <span class="mr-2 text-muted text-small text-nowrap">Nhân viên</span>
                                 <select asp-for="Id" class="custom-select ddlEmployeeId">
                                     <option value="">Tất cả</option>
-                                    @foreach (var employee in Model.EmployeesDdl)
+                                    @foreach (var employee in Model.Employees)
                                     {
                                         string displayTitle = string.Empty;
-                                        if (!string.IsNullOrEmpty(employee.Title))
-                                        {
-                                            displayTitle += "[" + employee.Title + "]";
-                                        }
                                         if (!string.IsNullOrEmpty(employee.Email))
                                         {
                                             displayTitle += "- " + employee.Email + "";
                                         }
                                         <option value="@employee.Id">@employee.FullName @displayTitle</option>
-                                    }
-                                </select>
-                            </div>
-                            <div class="col-md-4 col-sm-6 col-xs-12">
-                                <span class="mr-2 text-muted text-small text-nowrap">Phòng ban:</span>
-                                <select asp-for="Phongban" class="custom-select">
-                                    <option value="">Tất cả</option>
-                                    @foreach (var item in Model.Departments)
-                                    {
-                                        <option value="@item.Alias">@item.Name</option>
                                     }
                                 </select>
                             </div>
@@ -287,19 +272,19 @@
                                                         @i
                                                     </td>
                                                     <td nowrap>
-                                                        @item.MaNhanVien <small>@item.ViTriCode</small>
+                                                        @item.EmployeeCode
                                                     </td>
                                                     <td nowrap>
-                                                        @item.FullName
+                                                        @item.EmployeeFullName
                                                     </td>
                                                     <td>
-                                                        <small class="bold">@item.ChucVu</small>
+                                                        <small class="bold">@item.ChucVuName</small>
                                                     </td>
                                                     <td>
-                                                        <small class="bold">@item.PhongBan</small>
+                                                        <small class="bold">@item.PhongBanName</small>
                                                     </td>
                                                     <td>
-                                                        @item.ThamNienLamViec.ToString("dd/MM/yyyy")
+                                                        @item.JoinDate.ToString("dd/MM/yyyy")
                                                     </td>
                                                     <td>
                                                         <span class="badge badge-info">@item.ThamNienMonth</span>
@@ -308,10 +293,10 @@
                                                         @item.HeSoThamNien
                                                     </td>
                                                     <td>
-                                                        @item.SalaryMaSoChucDanhCongViec
+                                                        @item.NgachLuongCode
                                                     </td>
                                                     <td>
-                                                        @item.Bac
+                                                        @item.NgachLuongLevel
                                                     </td>
                                                     <td>
                                                         @item.LuongCanBan.ToString("N0", culture)
@@ -401,7 +386,7 @@
 </div>
 
 @section scripts {
-    <script type="text/javascript" src="~/js/bang-luong-nha-may.js?v-@DateTime.Now.Ticks"></script>
+    <script type="text/javascript" src="~/js/bang-luong-nha-may.js?@Constants.VersionJs"></script>
 }
 
 

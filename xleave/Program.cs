@@ -7,6 +7,7 @@ using MongoDB.Driver;
 using Services;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -18,18 +19,23 @@ namespace xleave
     {
         static void Main(string[] args)
         {
-            UpdateLeave();
+            #region setting
+            var debug = ConfigurationSettings.AppSettings.Get("debugString").ToString();
+            var connection = "mongodb://localhost:27017";
+            var database = "tribat";
+            #endregion
+
+            UpdateLeave(connection, database, debug);
         }
 
-        static void UpdateLeave()
+        static void UpdateLeave(string connection, string database, string debug)
         {
-            #region Connection
-            //var connectString = "mongodb://192.168.2.223:27017";
-            var connectString = "mongodb://localhost:27017";
-            MongoDBContext.ConnectionString = connectString;
-            MongoDBContext.DatabaseName = "tribat";
+            #region Connection, Setting & Filter
+            MongoDBContext.ConnectionString = connection;
+            MongoDBContext.DatabaseName = database;
             MongoDBContext.IsSSL = true;
             MongoDBContext dbContext = new MongoDBContext();
+            var url = Constants.System.domain;
             #endregion
 
             // ngày 01 hàng tháng run.
@@ -38,19 +44,22 @@ namespace xleave
             var year = now.Year;
             var endDateMonth = now.AddDays(-1);
 
-            var employees = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false)).ToList();
-            // UAT
-            //employees = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.UserName.Equals("xuan.tm")).ToList();
-            // End UAT
+            #region Filter
+            var builder = Builders<Employee>.Filter;
+            var filter = !builder.Eq(i => i.UserName, Constants.System.account)
+                        & builder.Eq(m => m.Enable, true)
+                        & builder.Eq(m => m.Leave, false);
+            if (!string.IsNullOrEmpty(debug))
+            {
+                filter = filter & builder.Eq(m => m.Id, debug);
+            }
+            #endregion
+
+            var employees = dbContext.Employees.Find(filter).ToList();
             var leaveType = dbContext.LeaveTypes.Find(m => m.Alias.Equals("phep-nam")).FirstOrDefault();
             var leaveTypeId = leaveType.Id;
             foreach (var employee in employees)
             {
-                // UAT
-                //employee.Joinday = new DateTime(2018, 10, 2);
-                //employee.LeaveLevelYear = 16;
-                // End UAT
-
                 // default, normal employee
                 decimal numLeave = 1;
                 var description = "Cộng từng tháng: " + numLeave + " ngày;";
@@ -69,7 +78,7 @@ namespace xleave
                     for (int i = 0; i < hesophep; i++)
                     {
                         var xetmucphep = dateApplyHeSo.AddMonths(12 / hesophep * i);
-                        var thangxetmucphep = dateApplyHeSo.AddMonths((12/ hesophep) * i).Month;
+                        var thangxetmucphep = dateApplyHeSo.AddMonths((12 / hesophep) * i).Month;
                         if (thangxetmucphep == month)
                         {
                             numLeave += 1;
@@ -90,7 +99,7 @@ namespace xleave
                         ngayphepthamnien++;
                     }
                 }
-                
+
                 if (ngayphepthamnien > 0)
                 {
                     if (thamnienlamviec.Month == month)
@@ -109,7 +118,8 @@ namespace xleave
                     useFlag = false;
                 }
                 // No update if updated
-                if (dbContext.LeaveEmployeeHistories.CountDocuments(m => m.EmployeeId.Equals(employeeId) && m.Month.Equals(month) && m.Year.Equals(year)) == 0)
+                var checkUpdated = dbContext.LeaveEmployeeHistories.CountDocuments(m => m.EmployeeId.Equals(employeeId) && m.Month.Equals(month) && m.Year.Equals(year)) == 0 ? true : false;
+                if (checkUpdated)
                 {
                     decimal currentLeaveNum = 0;
                     var currentLeave = dbContext.LeaveEmployees.Find(m => m.EmployeeId.Equals(employeeId) && m.LeaveTypeId.Equals(leaveTypeId)).FirstOrDefault();

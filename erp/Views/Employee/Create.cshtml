@@ -1,6 +1,6 @@
 ﻿@using Common.Utilities;
 @using Common.Enums;
-@model ViewModels.EmployeeDataViewModel
+@model ViewModels.EmployeeViewModel
 
 @{
     Layout = "~/Views/Shared/_LayoutSocialFb.cshtml";
@@ -23,9 +23,7 @@
                 </div>
                 <!--end of col-->
             </div>
-            <!--end of row-->
         </div>
-        <!--end of container-->
     </nav>
 
     <section class="bg-white space-sm pb-4">
@@ -188,10 +186,11 @@
                                                 <option value="@item.Id">@item.Name</option>
                                             }
                                         </select>
+                                        <input type="hidden" asp-for="Employee.CongTyChiNhanhName" />
                                     </div>
                                     @*<div class="col-2 align-middle">
-                                        <button class="btn btn-sm btn-add-ctcn" type="button" data-toggle="modal" data-target="#newCongTyChiNhanh" title="Tạo mới Công ty/chi nhánh"><i class="fas fa-plus"></i></button>
-                                    </div>*@
+                        <button class="btn btn-sm btn-add-ctcn" type="button" data-toggle="modal" data-target="#newCongTyChiNhanh" title="Tạo mới Công ty/chi nhánh"><i class="fas fa-plus"></i></button>
+                    </div>*@
                                 </div>
                             </div>
                         </div>
@@ -208,10 +207,8 @@
                                                 <option value="@item.Id">@item.Name</option>
                                             }
                                         </select>
+                                        <input type="hidden" asp-for="Employee.KhoiChucNangName" />
                                     </div>
-                                    @*<div class="col-2 align-middle">
-                                        <button class="btn btn-sm btn-add-kcn" type="button" data-toggle="modal" data-target="#newKhoiChucNang" title="Tạo mới Khối chức năng"><i class="fas fa-plus"></i></button>
-                                    </div>*@
                                 </div>
                             </div>
                         </div>
@@ -228,10 +225,8 @@
                                                 <option value="@item.Id">@item.Name</option>
                                             }
                                         </select>
+                                        <input type="hidden" asp-for="Employee.PhongBanName" />
                                     </div>
-                                    @*<div class="col-2 align-middle">
-                                        <button class="btn btn-sm btn-add-pb" type="button" data-toggle="modal" data-target="#newPhongBan" title="Tạo mới Phòng ban"><i class="fas fa-plus"></i></button>
-                                    </div>*@
                                 </div>
                             </div>
                         </div>
@@ -248,10 +243,8 @@
                                                 <option value="@item.Id">@item.Name</option>
                                             }
                                         </select>
+                                        <input type="hidden" asp-for="Employee.BoPhanName" />
                                     </div>
-                                    @*<div class="col-2 align-middle">
-                                        <button class="btn btn-sm btn-add-bp" type="button" data-toggle="modal" data-target="#newBoPhan" title="Tạo mới Bộ phận"><i class="fas fa-plus"></i></button>
-                                    </div>*@
                                 </div>
                             </div>
                         </div>
@@ -268,10 +261,8 @@
                                                 <option value="@item.Id">@item.Name</option>
                                             }
                                         </select>
+                                        <input type="hidden" asp-for="Employee.BoPhanConName" />
                                     </div>
-                                    @*<div class="col-2 align-middle">
-                                        <button class="btn btn-sm btn-add-bpc" type="button" data-toggle="modal" data-target="#newBoPhanCon" title="Tạo mới Bộ phận con"><i class="fas fa-plus"></i></button>
-                                    </div>*@
                                 </div>
                             </div>
                         </div>
@@ -291,6 +282,7 @@
                                                 }
                                             }
                                         </select>
+                                        <input type="hidden" asp-for="Employee.ChucVuName" />
                                     </div>
                                     <div class="col-2 align-middle">
                                         <button class="btn btn-sm btn-add-cv" type="button" data-toggle="modal" data-target="#newChucVuModal" title="Tạo mới Chức vụ">+</button>
@@ -309,10 +301,6 @@
                                         foreach (var item in Model.Employees)
                                         {
                                             string displayTitle = string.Empty;
-                                            if (!string.IsNullOrEmpty(item.Title))
-                                            {
-                                                displayTitle += "[" + item.Title + "]";
-                                            }
                                             if (!string.IsNullOrEmpty(item.Email))
                                             {
                                                 displayTitle += "- " + item.Email + "";
@@ -322,6 +310,7 @@
                                     }
                                 </select>
                                 <input type="hidden" value="@Model.Employee.ManagerId" id="hidManagerId" />
+                                <input type="hidden" asp-for="Employee.ManagerInformation" id="hidManagerInformation" />
                             </div>
                         </div>
 
@@ -337,8 +326,15 @@
                         </div>
                         <div class="col-6">
                             <div class="form-group">
+                                <label class="control-label">Nhân viên chính thức</label>
+                                <input type="checkbox" class="form-control form-control-lg big-checkbox chkOfficial">
+                                <input asp-for="Employee.Official" type="hidden" />
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-group">
                                 <i class="icon icon-archive"></i>
-                                <label asp-for="Employee.LeaveLevelYear" class="control-label"></label>
+                                <label class="control-label">Mức phép năm</label>
                                 <select asp-for="Employee.LeaveLevelYear" class="form-control form-control-lg">
                                     <option value="12">12 ngày</option>
                                     <option value="14">14 ngày</option>
@@ -346,21 +342,13 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="col-6 workplace">
-                            <div class="form-group">
-                                <i class="icon icon-location"></i>
-                                <label class="control-label">Nơi làm việc</label>
-                            </div>
-                        </div>
                         <div class="col-6">
-                            <div>
-                                <div class="custom-control custom-checkbox">
-                                    <input type="checkbox" class="custom-control-input" id="check-timekeeper">
-                                    <label class="custom-control-label text-small" for="check-timekeeper">
-                                        Không tính thời gian làm việc
-                                    </label>
-                                    <input type="hidden" name="Employee.IsTimeKeeper" value="false" />
-                                </div>
+                            <div class="form-group">
+                                <label class="control-label">
+                                    Không tính thời gian làm việc
+                                </label>
+                                <input type="checkbox" class="form-control form-control-lg big-checkbox chkOfficial" id="check-timekeeper">
+                                <input type="hidden" name="Employee.IsTimeKeeper" value="false" />
                             </div>
                         </div>
 
@@ -1081,46 +1069,79 @@
                     <!-- NGUOI LIEN LAC -->
                     <!-- GIAY TO KHAC -->
                     <!-- NGUOI CHECK -->
-                </div>
-            </div>
-        </div>
-
-        <div class="row">
-            <!-- Autocomplete -->
-            <div class="col-12 col-md-6">
-                <div class="form-group">
-                    <label class="control-label">Nhóm gửi email</label>
-                    <input asp-for="EmailGroup" class="form-control form-control-lg" />
-                    <small><span class="badge badge-info">1</span> Đặt tên nhóm theo ngày, theo ký tự nào đó. Vd: 20122018.</small>
-                    <small><span class="badge badge-info">2</span> Sau khi hoàn tất muốn gửi mail theo nhóm thì đánh dấu bên dưới. Muốn tạo thêm thông tin theo nhóm thì bỏ chọn bên dưới.</small>
-                    <small>*** Hệ thống sẽ gửi email thông báo theo tên nhóm. Sau khi lên lịch gửi tên nhóm sẽ hủy.</small>
-                </div>
-            </div>
-            <div class="col-12 divEmailGroupInfo"></div>
-            <div class="col-12">
-                <div class="form-group">
-                    <div class="float-left">
-                        @{
-                            if (Model.EmailSend)
-                            {
-                                <input type="checkbox" checked class="big-checkbox chkEmailSend">
-                            }
-                            else
-                            {
-                                <input type="checkbox" class="big-checkbox chkEmailSend">
-                            }
-                        }
-                        <input asp-for="EmailSend" type="hidden" />
+                    <!-- SALARY -->
+                    <hr />
+                    <div class="row mb-4">
+                        <div class="col">
+                            <h5>THÔNG TIN LƯƠNG</h5>
+                        </div>
                     </div>
-                    <div class="float-left" style="margin-left:8px"><b>Gửi email thông báo</b></div>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="form-group">
+                                <label class="control-label">Ngạch lương</label>
+                                <select asp-for="Employee.NgachLuongCode" class="form-control form-control-lg">
+                                    @foreach (var item in Model.NgachLuongs)
+                                    {
+                                        <option value="@item.Id">@item.MaSo - @item.ChucDanhCongViec</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-group">
+                                <label class="control-label">Bậc lương</label>
+                                <select asp-for="Employee.NgachLuongCode" class="form-control form-control-lg">
+                                    @for (var bac = 1; bac <= 10; bac++)
+                                    {
+                                        <option value="@bac">Bậc @bac</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="row">
-            <div class="col-12 col-md-8">
-                <div class="form-group">
-                    <button class="btn btn-success btn-lg btn-block btn-submit" id="btn-save-submit" type="submit" data-toggle="tooltip" title="Lưu thông tin nhân viên mới"><i class="icon icon-save"></i> Lưu</button>
+            <hr />
+            <div class="row">
+                <!-- Autocomplete -->
+                <div class="col-12 col-md-6">
+                    <div class="form-group">
+                        <label class="control-label">Nhóm gửi email</label>
+                        <input asp-for="EmailGroup" class="form-control form-control-lg" />
+                        <small><span class="badge badge-info">1</span> Đặt tên nhóm theo ngày, theo ký tự nào đó. Vd: 20122018.</small>
+                        <small><span class="badge badge-info">2</span> Sau khi hoàn tất muốn gửi mail theo nhóm thì đánh dấu bên dưới. Muốn tạo thêm thông tin theo nhóm thì bỏ chọn bên dưới.</small>
+                        <small>*** Hệ thống sẽ gửi email thông báo theo tên nhóm. Sau khi lên lịch gửi tên nhóm sẽ hủy.</small>
+                    </div>
+                </div>
+                <div class="col-12 divEmailGroupInfo"></div>
+                <div class="col-12">
+                    <div class="form-group">
+                        <div class="float-left">
+                            @{
+                                if (Model.EmailSend)
+                                {
+                                    <input type="checkbox" checked class="big-checkbox chkEmailSend">
+                                }
+                                else
+                                {
+                                    <input type="checkbox" class="big-checkbox chkEmailSend">
+                                }
+                            }
+                            <input asp-for="EmailSend" type="hidden" />
+                        </div>
+                        <div class="float-left" style="margin-left:8px"><b>Gửi email thông báo nhân sự mới</b></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-12 col-md-8">
+                    <button class="btn btn-success btn-lg btn-block btn-submit" id="btn-save-submit" type="submit" data-toggle="tooltip" title="Lưu thông tin nhân viên mới">
+                        <i class="icon icon-save"></i> Lưu
+                    </button>
                 </div>
             </div>
         </div>

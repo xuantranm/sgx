@@ -22,11 +22,6 @@ namespace Models
 
         public string Unit { get; set; } = "đồng";
 
-        /// <summary>
-        /// Thoi gian ap dung.
-        /// Dung de cap nhat thang luong moi, lich sử,...
-        /// Get lastest base Month + Year
-        /// </summary>
         public int Month { get; set; } = DateTime.Now.Month;
 
         public int Year { get; set; } = DateTime.Now.Year;

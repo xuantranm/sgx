@@ -7,9 +7,9 @@ namespace ViewModels
 {
     public class EmployeeViewModel : ExtensionViewModel
     {
-        public IList<EmployeeDisplay> Employees { get; set; }
+        public IList<Employee> Employees { get; set; }
 
-        public EmployeeDisplay EmployeeDetail { get; set; }
+        public Employee Employee { get; set; }
 
         public bool StatusChange { get; set; }
 
@@ -23,9 +23,21 @@ namespace ViewModels
 
         public IList<BoPhan> BoPhans { get; set; }
 
+        public IList<BoPhan> BoPhanCons { get; set; }
+
         public IList<ChucVu> ChucVus { get; set; }
 
         public IList<Employee> EmployeesDdl { get; set; }
+
+        public IList<WorkTimeType> WorkTimeTypes { get; set; }
+
+        public IList<BHYTHospital> Hospitals { get; set; }
+
+        public IList<ContractType> Contracts { get; set; }
+
+        //public IList<WorkTimeType> WorkTimeTypes { get; set; }
+
+        public IList<NgachLuong> NgachLuongs { get; set; }
 
         #region Search
         public string Id { get; set; }
@@ -54,6 +66,16 @@ namespace ViewModels
 
         public string LinkCurrent { get; set; }
         #endregion
+
+        public Employee Manager { get; set; }
+
+        public string EmailGroup { get; set; }
+
+        public string EmailLeaveGroup { get; set; }
+
+        public bool EmailSend { get; set; }
+
+        public bool EmailLeave { get; set; }
 
         public int RecordCurrent { get; set; }
 

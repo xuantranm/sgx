@@ -63,6 +63,8 @@ namespace Common.Utilities
 
         public const string DataDuplicate = "Dữ liệu đã tồn tại. Không thể tạo nhiều dữ liệu cùng tên.";
 
+        public const string ErrorParameter = "Có lỗi truyền tham số xác thực thông tin hoặc thông tin đã được xử lý!";
+
         public const string NA = "N/A";
 
         // System not store db. highest right
@@ -317,6 +319,8 @@ namespace Common.Utilities
             public const string TongHopNgoaiGio = "tong-hop-ngoai-gio";
 
             public const string DinhMuc = "dinh-muc";
+            public const string DinhMucTemplate = "dinh-muc-mau";
+            public const string DinhMucPost = "dinh-muc-post";
 
             public const string SanXuatTamUngTemplate = "tam-ung-mau";
             public const string SanXuatTamUngPost = "tam-ung-post";

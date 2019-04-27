@@ -64,6 +64,5 @@ namespace Models
         public string CreatedOn { get; set; } = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
 
         public string UpdatedOn { get; set; } = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
-
     }
 }

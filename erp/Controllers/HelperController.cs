@@ -142,10 +142,6 @@ namespace erp.Controllers
             var notifications = dbContext.Notifications.Find(m => m.Enable.Equals(true) && m.UserId.Equals(ownerId)).Sort(sortNotification).ToList();
 
             #region Fix no data
-            if (string.IsNullOrEmpty(userInformation.Title))
-            {
-                userInformation.Title = Constants.MissTitle;
-            }
             if (string.IsNullOrEmpty(userInformation.AddressResident))
             {
                 userInformation.AddressResident = Constants.MissTitle;

@@ -12,8 +12,6 @@ namespace ViewModels
     {
         public IList<SalaryEmployeeMonth> SalaryEmployeeMonths { get; set; }
 
-        public IList<SalaryThangBacLuongEmployee> SalaryThangBacLuongEmployees { get; set; }
-
         public SalaryMucLuongVung SalaryMucLuongVung { get; set; }
 
         public IList<SalaryThangBangLuong> SalaryThangBangLuongLaws { get; set; }
@@ -34,8 +32,6 @@ namespace ViewModels
 
         public IList<MonthYear> MonthYears { get; set; }
 
-        public IList<SalarySetting> SalarySettings { get; set; }
-
         public IList<SaleKPI> SaleKPIs { get; set; }
 
         public IList<SaleKPIEmployee> SaleKPIEmployees { get; set; }
@@ -53,16 +49,15 @@ namespace ViewModels
 
         public IList<Employee> Employees { get; set; }
 
-        // EmployeeId / Id /...
         public string Id { get; set; }
 
         public string Manv { get; set; }
 
-        public IList<Department> Departments { get; set; }
+        public string KhoiChucNang { get; set; }
 
         public string Phongban { get; set; }
 
-        public string Khoi { get; set; }
+        public string BoPhan { get; set; }
 
         public DateTime Tu { get; set; }
 
@@ -90,10 +85,10 @@ namespace ViewModels
         public IList<FactoryProductDinhMucViewModel> DonGiaDMFulls { get; set; }
         #endregion
 
+        public int ThamSoTinhLuong { get; set; }
+
         public int Records { get; set; }
 
         public int Pages { get; set; }
-
-        public IList<Employee> EmployeesDdl { get; set; }
     }
 }

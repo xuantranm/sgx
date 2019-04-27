@@ -7,7 +7,6 @@
     var login = User.Identity.Name;
     var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
 }
-<link href="~/assets/wingman/css/big-screen.css" rel="stylesheet" />
 <style>
     tbody th:nth-child(3), tbody td:nth-child(3) {
         position: sticky;
@@ -27,7 +26,7 @@
                         <li class="breadcrumb-item">
                             <a href="/">Trang chủ</a>
                         </li>
-                        <li class="breadcrumb-item active" aria-current="page">Bảng lương Nhà Máy</li>
+                        <li class="breadcrumb-item active" aria-current="page">Bảng lương</li>
                     </ol>
                 </div>
             </div>
@@ -83,14 +82,6 @@
                             <a class="btn btn-lg btn-block btn-info" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.VanPhong/@Constants.LinkSalary.ThangLuong/@Constants.LinkSalary.Export" data-toggle="tooltip" title="Xuất ra tài liệu file excel.">
                                 <i class="fas fa-download"></i> Xuất excel
                             </a>
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-12 d-none">
-                            <b>MỨC LƯƠNG TỐI THIỂU VÙNG:</b> <b>@String.Format("{0:#,###,###}", Math.Round((double)Model.SalaryMucLuongVung.ToiThieuVungQuiDinh / 1000d, 0))</b> đồng/tháng
-                        </div>
-                        <div class="col-12">
-                            Mức lương tối thiểu mà doanh nghiệp đang áp dụng: <b>@String.Format("{0:#,###,###}", Math.Round((double)Model.SalaryMucLuongVung.ToiThieuVungDoanhNghiepApDung / 1000d, 0))</b> đồng/tháng
                         </div>
                     </div>
                     <div class="card card-sm">
@@ -252,191 +243,145 @@
                                     <tbody class="font-14">
                                         @{
                                             var i = 1;
-                                            var groupLocation = (from s in Model.SalaryEmployeeMonths.Where(m => !m.NoiLamViecOrder.Equals(0))
-                                                                 group s by new
-                                                                 {
-                                                                     s.NoiLamViecOrder,
-                                                                     s.NoiLamViec
-                                                                 }
-                                                                            into l
-                                                                 select new
-                                                                 {
-                                                                     NoiLamViecOrder = l.Key.NoiLamViecOrder,
-                                                                     NoiLamViec = l.Key.NoiLamViec,
-                                                                     salaries = l.ToList(),
-                                                                 }).ToList();
-
-                                            var locations = groupLocation.OrderBy(m => m.NoiLamViecOrder).ToList();
-                                            foreach (var location in locations)
+                                            foreach (var item in Model.SalaryEmployeeMonths)
                                             {
                                                 <tr>
-                                                    <td style="background-color:red"></td>
-                                                    <td colspan="41" style="background-color:red">
-                                                        @location.salaries[0].NoiLamViec
+                                                    <td>
+                                                        @i
+                                                    </td>
+                                                    <td>
+                                                        @item.EmployeeCode
+                                                    </td>
+                                                    <td nowrap>
+                                                        @item.EmployeeFullName
+                                                    </td>
+                                                    <td nowrap>
+                                                        <small class="bold">@item.ChucVuName</small>
+                                                    </td>
+                                                    <td>
+                                                        @item.JoinDate.ToString("dd/MM/yyyy")
+                                                    </td>
+                                                    <td>
+                                                        @item.ThamNienYear
+                                                    </td>
+                                                    <td>
+                                                        @item.ThamNienMonth
+                                                    </td>
+                                                    <td>
+                                                        @item.ThamNienDay
+                                                    </td>
+                                                    <td>
+                                                        @item.NgachLuongLevel
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", Math.Round((double)item.LuongCanBan / 1000d, 0))
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", Math.Round((double)item.NangNhocDocHai / 1000d, 0))
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", Math.Round((double)item.TrachNhiem / 1000d, 0))
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", Math.Round((double)item.ThamNien / 1000d, 0))
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", Math.Round((double)item.ThuHut / 1000d, 0))
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", Math.Round((double)item.Xang / 1000d, 0))
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", Math.Round((double)item.DienThoai / 1000d, 0))
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", Math.Round((double)item.Com / 1000d, 0))
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", Math.Round((double)item.KiemNhiem / 1000d, 0))
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", Math.Round((double)item.BhytDacBiet / 1000d, 0))
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", Math.Round((double)item.ViTriCanKnNhieuNam / 1000d, 0))
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", Math.Round((double)item.ViTriDacThu / 1000d, 0))
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", Math.Round((double)item.LuongCoBanBaoGomPhuCap / 1000d, 0))
+                                                    </td>
+                                                    <td>
+                                                        @item.NgayCongLamViec
+                                                    </td>
+                                                    <td>
+                                                        @item.NgayNghiPhepHuongLuong
+                                                    </td>
+                                                    <td>
+                                                        @item.NgayNghiLeTetHuongLuong
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", item.CongCNGio)
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", item.CongTangCaNgayThuongGio)
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", item.CongLeTet)
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", Math.Round((double)item.CongTacXa / 1000d, 0))
+                                                    </td>
+                                                    <td>
+                                                        @if (item.MucDatTrongThang > 10000)
+                                                        {
+                                                            @String.Format("{0:#,###,###}", Math.Round((double)item.MucDatTrongThang / 1000d, 0))
+                                                        }
+                                                        else
+                                                        {
+                                                            @String.Format("{0:#,###,###}", item.MucDatTrongThang)
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", Math.Round((double)item.LuongTheoDoanhThuDoanhSo / 1000d, 0))
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", item.TongBunBoc)
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", Math.Round((double)item.ThanhTienBunBoc / 1000d, 0))
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", Math.Round((double)item.LuongKhac / 1000d, 0))
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", Math.Round((double)item.ThiDua / 1000d, 0))
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", Math.Round((double)item.HoTroNgoaiLuong / 1000d, 0))
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", Math.Round((double)item.TongThuNhap / 1000d, 0))
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", Math.Round((double)item.BHXHBHYT / 1000d, 0))
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", Math.Round((double)item.LuongThamGiaBHXH / 1000d, 0))
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", Math.Round((double)item.TamUng / 1000d, 0))
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", Math.Round((double)item.ThuongLeTet / 1000d, 0))
+                                                    </td>
+                                                    <td>
+                                                        @String.Format("{0:#,###,###}", Math.Round((double)item.ThucLanh / 1000d, 0))
                                                     </td>
                                                 </tr>
-                                                var locationSalaries = location.salaries;
-
-                                                var groupDepartment = (from a in locationSalaries
-                                                                       group a by new
-                                                                       {
-                                                                           a.PhongBan,
-                                                                           a.PhongBanOrder
-                                                                       }
-                                                            into b
-                                                                       select new
-                                                                       {
-                                                                           PhongBan = b.Key.PhongBan,
-                                                                           PhongBanOrder = b.Key.PhongBanOrder,
-                                                                           salaries = b.ToList(),
-                                                                       }).ToList();
-                                                var departments = groupDepartment.OrderBy(m => m.PhongBanOrder);
-
-                                                foreach (var department in departments)
-                                                {
-                                                    <tr><td colspan="2" style="background-color:forestgreen"></td><td colspan="40" style="background-color:forestgreen">@department.PhongBan</td></tr>
-                                                    foreach (var item in department.salaries)
-                                                    {
-                                                        <tr>
-                                                            <td>
-                                                                @i
-                                                            </td>
-                                                            <td>
-                                                                @item.MaNhanVien <small>@item.ViTriCode</small>
-                                                            </td>
-                                                            <td nowrap>
-                                                                @item.FullName
-                                                            </td>
-                                                            <td nowrap>
-                                                                <small class="bold">@item.ChucVu</small>
-                                                            </td>
-                                                            <td>
-                                                                @item.ThamNienLamViec.ToString("dd/MM/yyyy")
-                                                            </td>
-                                                            <td>
-                                                                @item.ThamNienYear
-                                                            </td>
-                                                            <td>
-                                                                @item.ThamNienMonth
-                                                            </td>
-                                                            <td>
-                                                                @item.ThamNienDay
-                                                            </td>
-                                                            <td>
-                                                                @item.Bac
-                                                            </td>
-                                                            <td>
-                                                                @String.Format("{0:#,###,###}", Math.Round((double)item.LuongCanBan / 1000d, 0))
-                                                            </td>
-                                                            <td>
-                                                                @String.Format("{0:#,###,###}", Math.Round((double)item.NangNhocDocHai / 1000d, 0))
-                                                            </td>
-                                                            <td>
-                                                                @String.Format("{0:#,###,###}", Math.Round((double)item.TrachNhiem / 1000d, 0))
-                                                            </td>
-                                                            <td>
-                                                                @String.Format("{0:#,###,###}", Math.Round((double)item.ThamNien / 1000d, 0))
-                                                            </td>
-                                                            <td>
-                                                                @String.Format("{0:#,###,###}", Math.Round((double)item.ThuHut / 1000d, 0))
-                                                            </td>
-                                                            <td>
-                                                                @String.Format("{0:#,###,###}", Math.Round((double)item.Xang / 1000d, 0))
-                                                            </td>
-                                                            <td>
-                                                                @String.Format("{0:#,###,###}", Math.Round((double)item.DienThoai / 1000d, 0))
-                                                            </td>
-                                                            <td>
-                                                                @String.Format("{0:#,###,###}", Math.Round((double)item.Com / 1000d, 0))
-                                                            </td>
-                                                            <td>
-                                                                @String.Format("{0:#,###,###}", Math.Round((double)item.KiemNhiem / 1000d, 0))
-                                                            </td>
-                                                            <td>
-                                                                @String.Format("{0:#,###,###}", Math.Round((double)item.BhytDacBiet / 1000d, 0))
-                                                            </td>
-                                                            <td>
-                                                                @String.Format("{0:#,###,###}", Math.Round((double)item.ViTriCanKnNhieuNam / 1000d, 0))
-                                                            </td>
-                                                            <td>
-                                                                @String.Format("{0:#,###,###}", Math.Round((double)item.ViTriDacThu / 1000d, 0))
-                                                            </td>
-                                                            <td>
-                                                                @String.Format("{0:#,###,###}", Math.Round((double)item.LuongCoBanBaoGomPhuCap / 1000d, 0))
-                                                            </td>
-                                                            <td>
-                                                                @item.NgayCongLamViec
-                                                            </td>
-                                                            <td>
-                                                                @item.NgayNghiPhepHuongLuong
-                                                            </td>
-                                                            <td>
-                                                                @item.NgayNghiLeTetHuongLuong
-                                                            </td>
-                                                            <td>
-                                                                @String.Format("{0:#,###,###}", item.CongCNGio)
-                                                            </td>
-                                                            <td>
-                                                                @String.Format("{0:#,###,###}", item.CongTangCaNgayThuongGio)
-                                                            </td>
-                                                            <td>
-                                                                @String.Format("{0:#,###,###}", item.CongLeTet)
-                                                            </td>
-                                                            <td>
-                                                                @String.Format("{0:#,###,###}", Math.Round((double)item.CongTacXa / 1000d, 0))
-                                                            </td>
-                                                            <td>
-                                                                @if (item.MucDatTrongThang > 10000)
-                                                                {
-                                                                    @String.Format("{0:#,###,###}", Math.Round((double)item.MucDatTrongThang / 1000d, 0))
-                                                                }
-                                                                else
-                                                                {
-                                                                    @String.Format("{0:#,###,###}", item.MucDatTrongThang)
-                                                                }
-                                                            </td>
-                                                            <td>
-                                                                @String.Format("{0:#,###,###}", Math.Round((double)item.LuongTheoDoanhThuDoanhSo / 1000d, 0))
-                                                            </td>
-                                                            <td>
-                                                                @String.Format("{0:#,###,###}", item.TongBunBoc)
-                                                            </td>
-                                                            <td>
-                                                                @String.Format("{0:#,###,###}", Math.Round((double)item.ThanhTienBunBoc / 1000d, 0))
-                                                            </td>
-                                                            <td>
-                                                                @String.Format("{0:#,###,###}", Math.Round((double)item.LuongKhac / 1000d, 0))
-                                                            </td>
-                                                            <td>
-                                                                @String.Format("{0:#,###,###}", Math.Round((double)item.ThiDua / 1000d, 0))
-                                                            </td>
-                                                            <td>
-                                                                @String.Format("{0:#,###,###}", Math.Round((double)item.HoTroNgoaiLuong / 1000d, 0))
-                                                            </td>
-                                                            <td>
-                                                                @String.Format("{0:#,###,###}", Math.Round((double)item.TongThuNhap / 1000d, 0))
-                                                            </td>
-                                                            <td>
-                                                                @String.Format("{0:#,###,###}", Math.Round((double)item.BHXHBHYT / 1000d, 0))
-                                                            </td>
-                                                            <td>
-                                                                @String.Format("{0:#,###,###}", Math.Round((double)item.LuongThamGiaBHXH / 1000d, 0))
-                                                            </td>
-                                                            <td>
-                                                                @String.Format("{0:#,###,###}", Math.Round((double)item.TamUng / 1000d, 0))
-                                                            </td>
-                                                            <td>
-                                                                @String.Format("{0:#,###,###}", Math.Round((double)item.ThuongLeTet / 1000d, 0))
-                                                            </td>
-                                                            <td>
-                                                                @String.Format("{0:#,###,###}", Math.Round((double)item.ThucLanh / 1000d, 0))
-                                                            </td>
-                                                        </tr>
-                                                        i++;
-                                                    }
-                                                }
+                                                i++;
                                             }
-                                            //foreach (var item in Model.SalaryEmployeeMonths)
                                         }
                                     </tbody>
                                 </table>
@@ -450,7 +395,7 @@
 </div>
 
 @section scripts {
-    <script type="text/javascript" src="~/js/bang-luong.js?@DateTime.Now.Ticks"></script>
+    <script type="text/javascript" src="~/js/bang-luong.js?@Constants.VersionJs"></script>
 }
 
 

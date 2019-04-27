@@ -15,10 +15,6 @@
             @foreach (var employee in Model.Employees)
             {
                 string displayTitle = string.Empty;
-                if (!string.IsNullOrEmpty(employee.Title))
-                {
-                    displayTitle += "[" + employee.Title + "]";
-                }
                 if (!string.IsNullOrEmpty(employee.Email))
                 {
                     displayTitle += "- " + employee.Email + "";

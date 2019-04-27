@@ -19,10 +19,6 @@
                     @foreach (var employee in Model.Employees)
                     {
                         string displayTitle = string.Empty;
-                        if (!string.IsNullOrEmpty(employee.Title))
-                        {
-                            displayTitle += "[" + employee.Title + "]";
-                        }
                         if (!string.IsNullOrEmpty(employee.Email))
                         {
                             displayTitle += "- " + employee.Email + "";
@@ -66,9 +62,14 @@
                         <div class="mb-3">
                             <h1 class="h2 mb-2">@Model.Employee.FullName</h1>
                             <span class="badge badge-primary">@Model.Employee.Code</span>
-                            <span class="badge badge-danger">@Model.Employee.Department</span>
-                            <span class="badge badge-danger">@Model.Employee.Part</span>
-                            <span class="badge badge-danger">@Model.Employee.Title</span>
+                            @if (!string.IsNullOrEmpty(Model.Employee.ChucVuName))
+                            {
+                                <span class="badge badge-primary">@Model.Employee.ChucVuName</span>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.Employee.PhongBanName))
+                            {
+                                <span class="badge badge-primary">@Model.Employee.PhongBanName</span>
+                            }
                         </div>
                         @{
                             if (Model.Employee.Workplaces != null && Model.Employee.Workplaces.Count > 0)
@@ -92,22 +93,13 @@
                                 <li class="list-inline-item">
                                     <i class="icon-link"></i>  <a href="/hr/nhan-su/thong-tin/@Model.Employee.Id">@Constants.System.domain/hr/nhan-su/thong-tin/@Model.Employee.Id</a>
                                 </li>
-                                <li class="list-inline-item"><i class="icon-users"></i> 12</li>
-                                <li class="list-inline-item"><i class="icon-message"></i> 6</li>
                             </ul>
                         </div>
                     </div>
                 </div>
             </div>
-            <!--end of col-->
-            @*<div class="col-auto">
-                    <button class="btn btn-primary"><i class="icon-add-user mr-1"></i> Invite Member</button>
-                </div>*@
-            <!--end of col-->
         </div>
-        <!--end of row-->
     </div>
-    <!--end of container-->
 </section>
 <h5 class="mb-4">Tổng quan</h5>
 <div class="card">
@@ -129,18 +121,15 @@
         if (Model.EmployeeWorkTimeMonthLogs != null && Model.EmployeeWorkTimeMonthLogs.Count > 0)
         {
             lastUpdated = Model.EmployeeWorkTimeMonthLogs[0].LastUpdated.ToString("dd/MM/yyyy");
-            var filterMonth = Model.EmployeeWorkTimeMonthLogs.FirstOrDefault(m => m.Month.Equals(month) && m.Year.Equals(year));
-            if (filterMonth != null)
+            workday = 0;
+            var timesinmonth = Model.EmployeeWorkTimeMonthLogs.Where(m => m.Month.Equals(month) && m.Year.Equals(year)).ToList();
+            foreach (var timemonth in timesinmonth)
             {
-                workday = filterMonth.Workday;
-                thoigianthieu = TimeSpan.FromMilliseconds(filterMonth.Late + filterMonth.Early).TotalMinutes;
-                tangcangaythuong = filterMonth.CongTangCaNgayThuongGio;
-                tangcachunhat = filterMonth.CongCNGio;
-                tangcale = filterMonth.CongLeTet;
-            }
-            else
-            {
-                workday = 0;
+                workday += timemonth.Workday;
+                thoigianthieu += TimeSpan.FromMilliseconds(timemonth.Late + timemonth.Early).TotalMinutes;
+                tangcangaythuong += timemonth.CongTangCaNgayThuongGio;
+                tangcachunhat += timemonth.CongCNGio;
+                tangcale += timemonth.CongLeTet;
             }
         }
     }
@@ -197,17 +186,6 @@
         <div>
             <h6>Lịch sử chấm công</h6>
         </div>
-        <form class="d-flex align-items-center" method="get" action="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Index" id="form-main">
-            <span class="mr-2 text-muted text-small text-nowrap">Tháng:</span>
-            <select asp-for="Thang" class="custom-select ddl-times">
-                @{
-                    foreach (var item in Model.MonthYears)
-                    {
-                        <option value="@item.Month-@item.Year">@item.Month/@item.Year</option>
-                    }
-                }
-            </select>
-        </form>
     </div>
 </div>
 
@@ -559,7 +537,7 @@ else
 @section scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
-        <script type="text/javascript" src="~/js/timekeeper-help.js?@DateTime.Now.Ticks"></script>
+        <script type="text/javascript" src="~/js/timekeeper-help.js?@Constants.VersionJs"></script>
     }
 }
 

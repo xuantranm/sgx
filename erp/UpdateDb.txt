@@ -259,13 +259,203 @@ db.KhoBuns.drop()
 db.TiepNhanXuLys.drop()
 db.DuAnCongs.drop()
 
+// 16.04.2019 (done)
+db.Employees.update({},
+{$set : {"Official": true}},
+{upsert:false,
+multi:true})
 
+db.Settings.update({},
+{$set : {"Type": 1}},
+{upsert:false,
+multi:true})
 
+db.SalarySettings.drop()
 
+db.Employees.update({},
+{$set : {"Department": false}},
+{upsert:false,
+multi:true})
 
+db.Employees.update({},
+{$set : {"DepartmentId": false}},
+{upsert:false,
+multi:true})
 
+db.Employees.update({},
+{$set : {"DepartmentAlias": false}},
+{upsert:false,
+multi:true})
 
+db.Employees.update({},
+{$set : {"Part": false}},
+{upsert:false,
+multi:true})
 
+db.Employees.update({},
+{$set : {"PartId": false}},
+{upsert:false,
+multi:true})
 
+db.Employees.update({},
+{$set : {"PartAlias": false}},
+{upsert:false,
+multi:true})
 
+db.Employees.update({},
+{$set : {"Title": false}},
+{upsert:false,
+multi:true})
+
+db.Employees.update({},
+{$set : {"TitleId": false}},
+{upsert:false,
+multi:true})
+
+db.Employees.update({},
+{$set : {"TitleAlias": false}},
+{upsert:false,
+multi:true})
+
+db.Employees.update({},
+{$set : {"Function": false}},
+{upsert:false,
+multi:true})
+
+db.Employees.update({}, {$unset: {Department:false}}, false, true);
+db.Employees.update({}, {$unset: {DepartmentId:false}}, false, true);
+db.Employees.update({}, {$unset: {DepartmentAlias:false}}, false, true);
+
+db.Employees.update({}, {$unset: {Part:false}}, false, true);
+db.Employees.update({}, {$unset: {PartId:false}}, false, true);
+db.Employees.update({}, {$unset: {PartAlias:false}}, false, true);
+
+db.Employees.update({}, {$unset: {Title:false}}, false, true);
+db.Employees.update({}, {$unset: {TitleId:false}}, false, true);
+db.Employees.update({}, {$unset: {TitleAlias:false}}, false, true);
+
+db.Employees.update({}, {$unset: {Function:false}}, false, true);
+
+db.Employees.update({},
+{$set : {"SalaryNoiLamViecOrder": false}},
+{upsert:false,
+multi:true})
+db.Employees.update({}, {$unset: {SalaryNoiLamViecOrder:false}}, false, true);
+
+db.Employees.update({},
+{$set : {"SalaryPhongBanOrder": false}},
+{upsert:false,
+multi:true})
+db.Employees.update({}, {$unset: {SalaryPhongBanOrder:false}}, false, true);
+
+db.Employees.update({},
+{$set : {"SalaryChucVuOrder": false}},
+{upsert:false,
+multi:true})
+db.Employees.update({}, {$unset: {SalaryChucVuOrder:false}}, false, true);
+
+db.Employees.update({}, {$rename:{"NgachLuong":"NgachLuongCode"}}, false, true);
+db.Employees.update({}, {$rename:{"SalaryLevel":"NgachLuongLevel"}}, false, true);
+db.Employees.update({}, {$rename:{"SalaryMauSo":"ThamSoTinhLuong"}}, false, true);
+
+db.SalaryThangBacLuongEmployees.drop()
+db.Departments.drop()
+db.Titles.drop()
+
+db.EmployeeHistories.update({},
+{$set : {"Official": true}},
+{upsert:false,
+multi:true})
+
+db.EmployeeHistories.update({},
+{$set : {"Department": false}},
+{upsert:false,
+multi:true})
+
+db.EmployeeHistories.update({},
+{$set : {"DepartmentId": false}},
+{upsert:false,
+multi:true})
+
+db.EmployeeHistories.update({},
+{$set : {"DepartmentAlias": false}},
+{upsert:false,
+multi:true})
+
+db.EmployeeHistories.update({},
+{$set : {"Part": false}},
+{upsert:false,
+multi:true})
+
+db.EmployeeHistories.update({},
+{$set : {"PartId": false}},
+{upsert:false,
+multi:true})
+
+db.EmployeeHistories.update({},
+{$set : {"PartAlias": false}},
+{upsert:false,
+multi:true})
+
+db.EmployeeHistories.update({},
+{$set : {"Title": false}},
+{upsert:false,
+multi:true})
+
+db.EmployeeHistories.update({},
+{$set : {"TitleId": false}},
+{upsert:false,
+multi:true})
+
+db.EmployeeHistories.update({},
+{$set : {"TitleAlias": false}},
+{upsert:false,
+multi:true})
+
+db.EmployeeHistories.update({},
+{$set : {"Function": false}},
+{upsert:false,
+multi:true})
+
+db.EmployeeHistories.update({}, {$unset: {Department:false}}, false, true);
+db.EmployeeHistories.update({}, {$unset: {DepartmentId:false}}, false, true);
+db.EmployeeHistories.update({}, {$unset: {DepartmentAlias:false}}, false, true);
+
+db.EmployeeHistories.update({}, {$unset: {Part:false}}, false, true);
+db.EmployeeHistories.update({}, {$unset: {PartId:false}}, false, true);
+db.EmployeeHistories.update({}, {$unset: {PartAlias:false}}, false, true);
+
+db.EmployeeHistories.update({}, {$unset: {Title:false}}, false, true);
+db.EmployeeHistories.update({}, {$unset: {TitleId:false}}, false, true);
+db.EmployeeHistories.update({}, {$unset: {TitleAlias:false}}, false, true);
+
+db.EmployeeHistories.update({}, {$unset: {Function:false}}, false, true);
+
+db.EmployeeHistories.update({},
+{$set : {"SalaryNoiLamViecOrder": false}},
+{upsert:false,
+multi:true})
+db.EmployeeHistories.update({}, {$unset: {SalaryNoiLamViecOrder:false}}, false, true);
+
+db.EmployeeHistories.update({},
+{$set : {"SalaryPhongBanOrder": false}},
+{upsert:false,
+multi:true})
+db.EmployeeHistories.update({}, {$unset: {SalaryPhongBanOrder:false}}, false, true);
+
+db.EmployeeHistories.update({},
+{$set : {"SalaryChucVuOrder": false}},
+{upsert:false,
+multi:true})
+db.EmployeeHistories.update({}, {$unset: {SalaryChucVuOrder:false}}, false, true);
+
+db.EmployeeHistories.update({}, {$rename:{"NgachLuong":"NgachLuongCode"}}, false, true);
+db.EmployeeHistories.update({}, {$rename:{"SalaryLevel":"NgachLuongLevel"}}, false, true);
+db.EmployeeHistories.update({}, {$rename:{"SalaryMauSo":"ThamSoTinhLuong"}}, false, true);
+
+db.SalaryEmployeeMonths.drop()
+// Run Fix Data : FixEmployeeNewStructure, FixEmployeeNewStructure and FixEmployeeOldCode
+(done)
+
+// 24.04.2019
 

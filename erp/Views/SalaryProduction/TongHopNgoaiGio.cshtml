@@ -10,7 +10,6 @@
     CultureInfo culture = CultureInfo.CreateSpecificCulture("en-US");
     var login = User.Identity.Name;
     var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
-    var thang = "07-2018";
 
     var thanhphams = Model.ThanhPhams;
     var congviecs = Model.CongViecs;
@@ -19,7 +18,6 @@
     var tpCount = thanhphams.Count;
     var cvCount = congviecs.Count;
 }
-<link href="~/assets/wingman/css/big-screen.css" rel="stylesheet" />
 <style>
     tbody th:nth-child(3), tbody td:nth-child(3) {
         position: sticky;
@@ -56,44 +54,23 @@
                                 <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.BangLuong">BẢNG LƯƠNG</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.TheLuong">THẺ LƯƠNG</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" target="_blank" href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Timer?thang=@thang&khoi=@EKhoiLamViec.SX">CHẤM CÔNG</a>
-                            </li>
-                            <li class="nav-item">
                                 <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.TongHopTrongGio">TỔNG HỢP TRONG GIỜ</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link active" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.TongHopNgoaiGio">TỔNG HỢP NGOÀI GIỜ</a>
                             </li>
-                            @*<li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.PhuCap">PHỤ CẤP</a>
-                            </li>*@
-                            <li class="nav-item">
-                                <a class="nav-link" target="_blank" href="/@Constants.LinkCredit.Main/@Constants.LinkCredit.Credits?thang=@thang&khoi=@EKhoiLamViec.SX">ỨNG LƯƠNG</a>
-                            </li>
-                            @*<li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.DongGoiTrongGio">ĐÓNG GÓI TRONG GIỜ</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.DongGoiNgoaiGio">ĐÓNG GÓI NGOÀI GIỜ</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.BocHangTrongGio">BÓC HÀNG TRONG GIỜ</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.BocHangNgoaiGio">BÓC HÀNG NGOÀI GIỜ</a>
-                            </li>*@
                             <li class="nav-item">
                                 <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.DinhMuc">ĐỊNH MỨC</a>
                             </li>
                             <li class="nav-item">
+                                <a class="nav-link" target="_blank" href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Timer?thang=@Model.Thang&khoi=@EKhoiLamViec.SX">CHẤM CÔNG</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" target="_blank" href="/@Constants.LinkCredit.Main/@Constants.LinkCredit.Credits?thang=@Model.Thang&khoi=@EKhoiLamViec.SX">ỨNG LƯƠNG</a>
+                            </li>
+                            <li class="nav-item">
                                 <a class="nav-link" target="_blank" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.ThangLuongTrue/@Constants.LinkSalary.ThangLuong">THANG LƯƠNG</a>
                             </li>
-                            @*<li class="nav-item">
-                                <a class="nav-link" target="_blank" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.Setting">THAM SỐ</a>
-                            </li>*@
                         </ul>
                     </div>
                 </div>
@@ -106,19 +83,6 @@
         <div class="tab-content">
             <div class="tab-pane fade show active" id="real" role="tabpanel" aria-labelledby="real-tab">
                 <div class="container">
-                    <div class="row mb-3">
-                        <div class="col-lg-3 col-md-4 col-xs-12">
-                            <a class="btn btn-lg btn-block btn-success btn-edit-real" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.TongHopNgoaiGio/@Constants.LinkSalary.Update" data-toggle="tooltip" title="Bấm thay đổi dữ liệu.">
-                                <i class="icon icon-edit"></i>Chỉnh sửa
-                            </a>
-                        </div>
-                        <div class="col-lg-3 col-md-4 col-xs-12 d-none">
-                            <a class="btn btn-lg btn-block btn-info" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.TongHopNgoaiGio/@Constants.LinkSalary.Export" data-toggle="tooltip" title="Xuất ra tài liệu file excel.">
-                                <i class="fas fa-download"></i> Xuất excel
-                            </a>
-                        </div>
-                    </div>
-
                     <div class="row mb-3">
                         <a class="nav-link custom-more collapsed" data-toggle="collapse" href="#uploadarea" aria-expanded="false" aria-controls="more">
                             <i class="icon icon-magnifying-glass"></i> Đẩy dữ liệu
@@ -136,7 +100,7 @@
                                         }
                                     }
                                 </select>
-                                <a href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.SanXuatTongHopNgoaiGioTemplate?thang=@thang" class="btn btn-success btn-list btn-link-import" data-toggle="tooltip" title="Bấm tải về mẫu tài liệu.">
+                                <a href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.SanXuatTongHopNgoaiGioTemplate?thang=@Model.Thang" class="btn btn-success btn-list btn-link-import" data-toggle="tooltip" title="Bấm tải về mẫu tài liệu.">
                                     <i class="icon icon-back"></i>Tải mẫu dữ liệu
                                 </a>
                             </div>
@@ -172,7 +136,7 @@
                         <div class="card card-sm">
                             <div class="card-header bg-secondary d-flex justify-content-between align-items-center">
                                 <div>
-                                    <h6>TỔNG HỢP TRONG GIỜ</h6>
+                                    <h6>TỔNG HỢP NGOÀI GIỜ</h6>
                                 </div>
                                 <div class="d-flex align-items-center">
                                     <span class="mr-2 text-muted text-small text-nowrap">Tháng:</span>
@@ -195,13 +159,9 @@
                                 <span class="mr-2 text-muted text-small text-nowrap">Nhân viên</span>
                                 <select asp-for="Id" class="custom-select js-select2-basic-single ddlEmployeeId">
                                     <option value="">Tất cả</option>
-                                    @foreach (var employee in Model.EmployeesDdl)
+                                    @foreach (var employee in Model.Employees)
                                     {
                                         string displayTitle = string.Empty;
-                                        if (!string.IsNullOrEmpty(employee.Title))
-                                        {
-                                            displayTitle += "[" + employee.Title + "]";
-                                        }
                                         if (!string.IsNullOrEmpty(employee.Email))
                                         {
                                             displayTitle += "- " + employee.Email + "";
@@ -265,7 +225,7 @@
                                             }
                                             <td style="background-color:darkblue"></td>
                                             <td style="background-color:rgb(248,203,173)">
-                                                @{ 
+                                                @{
                                                     decimal dongiaM3tangca = dongiaM3.Price * (decimal)1.1;
                                                 }
                                                 @dongiaM3tangca.ToString("N0", culture)
@@ -362,7 +322,7 @@
                                                         foreach (var congcongvieckhac in congcongvieckhacs)
                                                         {
                                                             tongthoigiancongvieckhac += congcongvieckhac.Value;
-                                                            tongcongvieckhac +=congcongvieckhac.Amount;
+                                                            tongcongvieckhac += congcongvieckhac.Amount;
                                                             <td>@Math.Round(congcongvieckhac.Value, 0).ToString("N0", culture)</td>
                                                         }
                                                     }
@@ -371,7 +331,7 @@
                                                         <span>@Math.Round(tongthoigiancongvieckhac / 60, 2)</span>
                                                     </td>
                                                     <td>
-                                                        <span>@Math.Round(tongcongvieckhac / 60, 0).ToString("N0", culture)</span>
+                                                        <span>@Math.Round(tongcongvieckhac / 60, 2).ToString("N2", culture)</span>
                                                     </td>
                                                     <td>
                                                         @{
@@ -394,7 +354,7 @@
 </div>
 
 @section scripts {
-    <script type="text/javascript" src="~/js/luong-san-xuat-tong-hop-ngoai-gio.js?v-@DateTime.Now.Ticks"></script>
+    <script type="text/javascript" src="~/js/luong-san-xuat-tong-hop-ngoai-gio.js?@Constants.VersionJs"></script>
 }
 
 

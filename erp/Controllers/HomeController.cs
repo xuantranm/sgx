@@ -451,8 +451,7 @@ namespace erp.Controllers
             var employees = dbContext.Employees.Find(m => m.Enable.Equals(true)
                                                     && !m.UserName.Equals(Constants.System.account)
                                                     && !string.IsNullOrEmpty(m.Email)
-                                                    && !m.Department.Equals("Phòng HCNS - NS")
-                                                    && !listboss.Contains(m.NgachLuong)
+                                                    && !listboss.Contains(m.NgachLuongCode)
                                                     && !listused.Contains(m.FullName)).ToList();
             var password = string.Empty;
             foreach (var employee in employees)

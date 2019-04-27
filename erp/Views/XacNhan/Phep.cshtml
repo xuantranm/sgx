@@ -13,6 +13,10 @@
     {
         alerttype = "alert-dark";
     }
+    if (Model.Error)
+    {
+        alerttype = "alert-danger";
+    }
 }
 <div class="alert @alerttype" role="alert">
     @ViewData["Status"]

@@ -965,7 +965,7 @@ namespace erp.Controllers
                 FirstName = "Administrator",
                 LastName = "Tribat",
                 FullName = "Trần Minh Xuân",
-                Department = Constants.System.department,
+                //Department = Constants.System.department,
                 Tel = "02837509077",
                 Mobiles = new List<EmployeeMobile>()
                 {

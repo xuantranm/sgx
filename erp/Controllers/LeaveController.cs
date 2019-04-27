@@ -83,7 +83,7 @@ namespace erp.Controllers
             id = string.IsNullOrEmpty(id) ? login : id;
             if (id != login)
             {
-                userInformation = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(id)).FirstOrDefault();
+                userInformation = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.Id.Equals(id)).FirstOrDefault();
             }
 
             var approves = new List<IdName>();
@@ -209,17 +209,17 @@ namespace erp.Controllers
             id = string.IsNullOrEmpty(id) ? login : id;
             if (id != login)
             {
-                userInformation = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(id)).FirstOrDefault();
+                userInformation = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.Id.Equals(id)).FirstOrDefault();
             }
 
             #region Dropdownlist
             var types = dbContext.LeaveTypes.Find(m => m.Enable.Equals(true) && m.Display.Equals(true)).ToList();
             // Danh sách nhân viên để tạo phép dùm
             var builder = Builders<Employee>.Filter;
-            var filter = builder.Eq(m => m.Enable, true);
+            var filter = builder.Eq(m => m.Enable, true) & builder.Eq(m => m.Leave, false);
             filter = filter & !builder.Eq(m => m.UserName, Constants.System.account);
             // Remove cấp cao ra (theo mã số lương)
-            filter = filter & !builder.In(m => m.NgachLuong, new string[] { "C.01", "C.02", "C.03" });
+            filter = filter & !builder.In(m => m.NgachLuongCode, new string[] { "C.01", "C.02", "C.03" });
             var employees = await dbContext.Employees.Find(filter).SortBy(m => m.FullName).ToListAsync();
             var approves = new List<IdName>();
             #endregion
@@ -308,85 +308,6 @@ namespace erp.Controllers
             return View(viewModel);
         }
 
-        [Route("cap-nhat-du-lieu-app102")]
-        public async Task<IActionResult> ApprovementInit()
-        {
-            #region Authorization
-            var login = User.Identity.Name;
-            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
-            ViewData["LoginUserName"] = loginUserName;
-
-            var userInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
-            if (userInformation == null)
-            {
-                #region snippet1
-                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                #endregion
-                return RedirectToAction("login", "account");
-            }
-            if (loginUserName != Constants.System.account)
-            {
-                return RedirectToAction("AccessDenied", "Account");
-            }
-            #endregion
-
-            var phepNam = dbContext.LeaveTypes.Find(m => m.Enable.Equals(true) && m.Alias.Equals("phep-nam")).FirstOrDefault();
-            var leavesHis = dbContext.Leaves.Find(m => true).ToList();
-            foreach (var his in leavesHis)
-            {
-                if (!string.IsNullOrEmpty(his.EmployeeId))
-                {
-                    var employee = dbContext.Employees.Find(m => m.Id.Equals(his.EmployeeId)).FirstOrDefault();
-                    if (employee != null)
-                    {
-                        var filterH = Builders<Leave>.Filter.Eq(m => m.Id, his.Id);
-                        var updateH = Builders<Leave>.Update
-                            .Set(m => m.EmployeeDepartment, employee.Department)
-                            .Set(m => m.EmployeePart, employee.Part)
-                            .Set(m => m.EmployeeTitle, employee.Title);
-                        dbContext.Leaves.UpdateOne(filterH, updateH);
-                    }
-                }
-            }
-
-            var leavesEmployees = dbContext.LeaveEmployees.Find(m => true).ToList();
-            foreach (var leaveEm in leavesEmployees)
-            {
-                string department = string.Empty;
-                string part = string.Empty;
-                string title = string.Empty;
-                decimal used = 0;
-                if (!string.IsNullOrEmpty(leaveEm.EmployeeId))
-                {
-                    var employee = dbContext.Employees.Find(m => m.Id.Equals(leaveEm.EmployeeId)).FirstOrDefault();
-                    if (employee != null)
-                    {
-                        department = employee.Department;
-                        part = employee.Part;
-                        title = employee.Title;
-                    }
-                }
-                var leavesUsed = dbContext.Leaves.Find(m => m.EmployeeId.Equals(leaveEm.EmployeeId) && m.TypeId.Equals(phepNam.Id)).ToList();
-
-                if (leavesUsed != null & leavesUsed.Count > 0)
-                {
-                    foreach (var leaveUsed in leavesUsed)
-                    {
-                        used += leaveUsed.Number;
-                    }
-                }
-                var filterE = Builders<LeaveEmployee>.Filter.Eq(m => m.Id, leaveEm.Id);
-                var updateE = Builders<LeaveEmployee>.Update
-                    .Set(m => m.NumberUsed, used)
-                    .Set(m => m.Department, department)
-                    .Set(m => m.Part, part)
-                    .Set(m => m.Title, title);
-                dbContext.LeaveEmployees.UpdateOne(filterE, updateE);
-            }
-
-            return Json(new { result = true });
-        }
-
         [Route(Constants.LinkLeave.Approvement)]
         public async Task<IActionResult> Approvement(string id, string thang, string phep)
         {
@@ -417,10 +338,10 @@ namespace erp.Controllers
             id = string.IsNullOrEmpty(id) ? login : id;
             if (id != login)
             {
-                userInformation = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(id)).FirstOrDefault();
+                userInformation = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.Id.Equals(id)).FirstOrDefault();
             }
 
-            var myDepartment = userInformation.Department;
+            var myDepartment = userInformation.PhongBan;
 
             #region Dropdownlist
             var types = dbContext.LeaveTypes.Find(m => m.Enable.Equals(true) && m.Display.Equals(true)).ToList();
@@ -429,7 +350,7 @@ namespace erp.Controllers
             var filter = builder.Eq(m => m.Enable, true);
             filter = filter & !builder.Eq(m => m.UserName, Constants.System.account);
             // Remove cấp cao ra (theo mã số lương)
-            filter = filter & !builder.In(m => m.NgachLuong, new string[] { "C.01", "C.02", "C.03" });
+            filter = filter & !builder.In(m => m.NgachLuongCode, new string[] { "C.01", "C.02", "C.03" });
             var employees = await dbContext.Employees.Find(filter).SortBy(m => m.FullName).ToListAsync();
             var approves = new List<IdName>();
             #endregion
@@ -499,7 +420,7 @@ namespace erp.Controllers
             var filter = builder.Eq(m => m.Enable, true);
             filter = filter & !builder.Eq(m => m.UserName, Constants.System.account);
             // Remove cấp cao ra (theo mã số lương)
-            filter = filter & !builder.In(m => m.NgachLuong, new string[] { "C.01", "C.02", "C.03" });
+            filter = filter & !builder.In(m => m.NgachLuongCode, new string[] { "C.01", "C.02", "C.03" });
             var employees = await dbContext.Employees.Find(filter).SortBy(m => m.FullName).ToListAsync();
             var approves = new List<IdName>();
             #endregion
@@ -700,9 +621,10 @@ namespace erp.Controllers
 
             entity.SecureCode = Helper.HashedPassword(Guid.NewGuid().ToString("N").Substring(0, 12));
             entity.EmployeeName = employee.FullName;
-            entity.EmployeeDepartment = employee.Department;
-            entity.EmployeePart = employee.Part;
-            entity.EmployeeTitle = employee.Title;
+            entity.EmployeeDepartment = employee.PhongBanName;
+            entity.EmployeePart = employee.BoPhanName;
+            entity.EmployeeTitle = employee.ChucVuName;
+
             entity.Status = (int)StatusLeave.New;
             entity.CreatedBy = login;
             entity.UpdatedBy = login;
@@ -761,7 +683,7 @@ namespace erp.Controllers
             var var3 = employee.FullName;
             if (entity.EmployeeId != login)
             {
-                requester += " (người tạo phép: " + userInformation.FullName + " , chức vụ " + userInformation.Title + ")";
+                requester += " (người tạo phép: " + userInformation.FullName + ")";
             }
             var dateRequest = entity.From.ToString("dd/MM/yyyy HH:mm") + " - " + entity.To.ToString("dd/MM/yyyy HH:mm") + " (" + entity.Number + " ngày)";
             // Api update, generate code.
@@ -780,7 +702,7 @@ namespace erp.Controllers
                 requester,
                 var3,
                 employee.Email,
-                employee.Title,
+                employee.ChucVuName,
                 dateRequest,
                 entity.Reason,
                 entity.TypeName,
@@ -840,14 +762,14 @@ namespace erp.Controllers
 
             if (leave == null)
             {
-                ViewData["Status"] = "Rất tiếc! Dữ liệu đã được cập nhật hoặc thông tin không tồn tại trên hệ thống.";
+                ViewData["Status"] = Constants.ErrorParameter;
 
                 return View(viewModel);
             }
 
             if (leave.SecureCode != secure && leave.Status != 0)
             {
-                return Json(new { result = true, message = "Rất tiếc! Dữ liệu đã được cập nhật hoặc thông tin không tồn tại trên hệ thống." });
+                return Json(new { result = true, message = Constants.ErrorParameter });
             }
 
             viewModel.Leave = leave;
@@ -974,7 +896,7 @@ namespace erp.Controllers
                 status,
                 approvement.FullName,
                 approvement.Email,
-                approvement.Title,
+                approvement.ChucVuName,
                 dateRequest + countLeaveDay,
                 leave.Reason,
                 leave.TypeName,
@@ -998,7 +920,6 @@ namespace erp.Controllers
             var scheduleEmail = new ScheduleEmail
             {
                 Status = (int)EEmailStatus.Schedule,
-                //From = emailMessage.FromAddresses,
                 To = emailMessage.ToAddresses,
                 CC = emailMessage.CCAddresses,
                 BCC = emailMessage.BCCAddresses,
@@ -1075,48 +996,6 @@ namespace erp.Controllers
                 YearMax = 0,
                 MonthMax = 0,
                 Description = "Hiện tại công ty áp dụng hình thức tính lương, nên không áp dụng Nghỉ bù."
-            });
-            dbContext.LeaveTypes.InsertOne(new LeaveType()
-            {
-                Name = "Nguyên Đán dương lịch",
-                YearMax = 1,
-                MonthMax = 0,
-                Display = false
-            });
-            dbContext.LeaveTypes.InsertOne(new LeaveType()
-            {
-                Name = "Nguyên Đán âm lịch",
-                YearMax = 4,
-                MonthMax = 0,
-                Display = false
-            });
-            dbContext.LeaveTypes.InsertOne(new LeaveType()
-            {
-                Name = "Ngày Giỗ tổ Hùng Vương",
-                YearMax = 1,
-                MonthMax = 0,
-                Display = false
-            });
-            dbContext.LeaveTypes.InsertOne(new LeaveType()
-            {
-                Name = "Ngày Thống nhất đất nước",
-                YearMax = 1,
-                MonthMax = 0,
-                Display = false
-            });
-            dbContext.LeaveTypes.InsertOne(new LeaveType()
-            {
-                Name = "Ngày Quốc tế lao động",
-                YearMax = 1,
-                MonthMax = 0,
-                Display = false
-            });
-            dbContext.LeaveTypes.InsertOne(new LeaveType()
-            {
-                Name = " Ngày Quốc khánh",
-                YearMax = 1,
-                MonthMax = 0,
-                Display = false
             });
 
             foreach (var item in dbContext.LeaveTypes.Find(m => true).ToList())

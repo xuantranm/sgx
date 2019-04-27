@@ -108,15 +108,6 @@ namespace Data
         #endregion
 
         #region HRs
-        public IMongoCollection<Department> Departments
-        {
-            get
-            {
-                return _database.GetCollection<Department>("Departments");
-            }
-        }
-
-
         public IMongoCollection<WorkTimeType> WorkTimeTypes
         {
             get
@@ -332,6 +323,7 @@ namespace Data
         }
 
         #endregion
+
         public IMongoCollection<CreditEmployee> CreditEmployees
         {
             get

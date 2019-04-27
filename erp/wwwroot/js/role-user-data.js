@@ -4,17 +4,17 @@
             theme: "bootstrap"
         });
 
-    $('#part').on('change', function () {
-        loadEmployees();
-    });
+    //$('#part').on('change', function () {
+    //    loadEmployees();
+    //});
 
-    $('#department').on('change', function () {
-        loadEmployees();
-    });
+    //$('#department').on('change', function () {
+    //    loadEmployees();
+    //});
 
-    $('#title').on('change', function () {
-        loadEmployees();
-    });
+    //$('#title').on('change', function () {
+    //    loadEmployees();
+    //});
 
     $('#userddl').on('change', function () {
         $('input[name="RoleUser.FullName"]').val($("#userddl option:selected").text());
@@ -78,29 +78,3 @@
         event.preventDefault();
     });
 });
-
-function loadEmployees() {
-    var tmplManagerPeople = $.templates("#employeesTmpl");
-    $.ajax({
-        url: '/api/employee-filter',
-        type: 'GET',
-        data: {
-            department: $('#department').val(),
-            part: $('#part').val()
-            //title: $('select[name="Employee.Title"]').val()
-        },
-        datatype: 'json',
-        contentType: 'application/json; charset=utf-8',
-        success: function (data) {
-            //console.log(data);
-            if (data.length !== 0) {
-                if (data.length > 0) {
-                    var htmlEmployees = tmplManagerPeople.render(data);
-                    $("#userddl").html(htmlEmployees);
-                    $("#userddl").prepend($('<option value="" selected>Chọn</option>'));
-                }
-            }
-        }
-    });
-}
-

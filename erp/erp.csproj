@@ -18,6 +18,7 @@
     <Compile Remove="Controllers\ReceiveController.cs" />
     <Compile Remove="Controllers\ReleaseController.cs" />
     <Compile Remove="Controllers\RequestController.cs" />
+    <Compile Remove="Controllers\SalarySettingController.cs" />
     <Compile Remove="Controllers\SaleController.cs" />
     <Compile Remove="Controllers\StoreController.cs" />
     <Compile Remove="Controllers\TruckController.cs" />
@@ -28,6 +29,7 @@
     <Content Remove="Views\KeHoachTongHop\DuLieuDuAnCong.cshtml" />
     <Content Remove="Views\SalaryProduction\CongTong.cshtml" />
     <Content Remove="Views\SalaryProduction\CongTongUpdate.cshtml" />
+    <Content Remove="Views\Salary\BangLuongUpdate.cshtml" />
     <Content Remove="Views\TimeKeeper\BangChamCong - Copy.cshtml" />
   </ItemGroup>
 
@@ -51,6 +53,15 @@
     <None Include="Views\Employee\Index.cshtml" />
     <None Include="Views\File\Index.cshtml" />
     <None Include="Views\File\NhanVien.cshtml" />
+    <None Include="Views\Salary\BangLuong.cshtml" />
+    <None Include="Views\Salary\LogisticEmployeeCong.cshtml" />
+    <None Include="Views\Salary\LogisticEmployeeCongUpdate.cshtml" />
+    <None Include="Views\Salary\LogisticGiaChuyenXeUpdate.cshtml" />
+    <None Include="Views\Salary\SaleKPIEmployee.cshtml" />
+    <None Include="Views\Salary\SaleKPIEmployeeUpdate.cshtml" />
+    <None Include="Views\Salary\SaleKPIUpdate.cshtml" />
+    <None Include="Views\Salary\ThangLuong.cshtml" />
+    <None Include="Views\Salary\ThangLuongUpdate.cshtml" />
     <None Include="Views\Setting\Index.cshtml" />
     <None Include="wwwroot\hr\DANH SACH NHAN SU 2017.xlsx" />
     <None Include="wwwroot\hr\DANH SACH NHAN SU 2018_X.xlsx" />
@@ -758,9 +769,6 @@
     <Content Update="Views\Employee\Edit.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
-    <Content Update="Views\Employee\Index - Copy.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
     <Content Update="Views\Factory\DinhMucXCG.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
@@ -818,34 +826,7 @@
     <Content Update="Views\Role\Index.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
-    <Content Update="Views\SalaryFactory\Setting.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\SalaryFactory\TheLuong.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\SalaryProduction\Setting.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\SalaryProduction\BocHangNgoaiGio.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\SalaryProduction\PhuCap.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\SalaryProduction\TheLuong.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\SalaryProduction\BocHangTrongGio.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
     <Content Update="Views\SalaryProduction\DinhMuc.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\SalaryProduction\DongGoiNgoaiGio.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\SalaryProduction\DongGoiTrongGio.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
     <Content Update="Views\SalaryProduction\TongHopNgoaiGio.cshtml">
@@ -861,25 +842,9 @@
       <Pack>$(IncludeRazorContentInPack)</Pack>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-    <Content Update="Views\SalaryProduction\BangLuongUpdate.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
-    <Content Update="Views\SalarySetting\NhanVienKhoiNhaMay.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\SalarySetting\ThangLuongVP.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\SalarySetting\NhanVienKhoiSanXuat.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
     <Content Update="Views\SalaryThangLuong\ThangLuongTaiLieu.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
-    <Content Update="Views\SalaryFactory\BangLuongUpdate.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
     <Content Update="Views\SalaryFactory\BangLuong.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
@@ -890,22 +855,7 @@
     <Content Update="Views\SalaryFactory\CongTongUpdate.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
-    <Content Update="Views\Salary\BangLuongUpdate.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Salary\BangLuong.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
     <Content Update="Views\Credit\Credit.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Salary\LogisticEmployeeCong.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Salary\SaleKPIUpdate.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\SalarySetting\Setting.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
     <Content Update="Views\Credit\CreditUpdate.cshtml">
@@ -914,16 +864,10 @@
     <Content Update="Views\SalaryLaw\ThangLuong.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
-    <Content Update="Views\Salary\SaleKPIEmployee.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
     <Content Update="Views\Shared\_LayoutNotification.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
     <Content Update="Views\TimeKeeper\BangChamCong.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Salary\ThangLuongUpdate.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
     <Content Update="Views\Shared\_LayoutData.cshtml">

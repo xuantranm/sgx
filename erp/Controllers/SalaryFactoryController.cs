@@ -51,7 +51,7 @@ namespace erp.Controllers
         }
 
         [Route(Constants.LinkSalary.BangLuong)]
-        public async Task<IActionResult> BangLuong(string thang, string id, string phongban)
+        public async Task<IActionResult> BangLuong(string Thang, string Id, string KhoiChucNang, string PhongBan, string BoPhan)
         {
             #region Authorization
             var login = User.Identity.Name;
@@ -75,236 +75,76 @@ namespace erp.Controllers
             #endregion
 
             #region DDL
+            var congtychinhanhs = dbContext.CongTyChiNhanhs.Find(m => m.Enable.Equals(true)).ToList();
+            var ctcnvp = congtychinhanhs.First(x => x.Code.Equals("CT1"));
+            var ctcnnm = congtychinhanhs.First(x => x.Code.Equals("CT2"));
+
             var sortTimes = Utility.DllMonths();
-
-            var departments = await dbContext.Departments.Find(m => m.Enable.Equals(true)).SortBy(m=>m.Order).ToListAsync();
-
-            var employeeDdl = await dbContext.Employees.Find(m => m.Enable.Equals(true) && m.SalaryType.Equals((int)EKhoiLamViec.NM) && !m.UserName.Equals(Constants.System.account)).SortBy(m => m.FullName).ToListAsync();
+            var employees = await dbContext.Employees.Find(m => m.Enable.Equals(true) && m.CongTyChiNhanh.Equals(ctcnnm.Id) 
+                        && !m.ChucVu.Equals("5c88d09bd59d56225c4324de") && !m.UserName.Equals(Constants.System.account))
+                        .SortBy(m => m.FullName).ToListAsync();
             #endregion
 
             #region Times
-            var toDate = Utility.GetToDate(thang);
+            var toDate = Utility.GetSalaryToDate(Thang);
             var fromDate = toDate.AddMonths(-1).AddDays(1);
             var year = toDate.Year;
             var month = toDate.Month;
-            thang = string.IsNullOrEmpty(thang) ? month + "-" + year : thang;
-
-            int yearSale = new DateTime(year, month, 01).AddMonths(-2).Year;
-            int monthSale = new DateTime(year, month, 01).AddMonths(-2).Month;
-            var saleTimes = monthSale + "-" + yearSale;
+            Thang = string.IsNullOrEmpty(Thang) ? month + "-" + year : Thang;
             #endregion
 
-            #region Setting
-            var thamsoEntity = dbContext.SalarySettings.Find(m => m.Enable.Equals(true)).ToList();
-            var mauSo = Convert.ToDouble(thamsoEntity.Find(m => m.Key.Equals("mau-so-lam-viec")).Value);
-            var mauSoBaoVe = Convert.ToDouble(thamsoEntity.Find(m => m.Key.Equals("mau-so-bao-ve")).Value);
-            var tyledongbh = Convert.ToDouble(thamsoEntity.Find(m => m.Key.Equals("ty-le-dong-bh")).Value);
-            var mauSoChuyenCan = Convert.ToDecimal(thamsoEntity.Find(m => m.Key.Equals("mau-so-chuyen-can")).Value);
-            var mauSoTienCom = Convert.ToDecimal(thamsoEntity.Find(m => m.Key.Equals("mau-so-tien-com")).Value);
-            #endregion
+            // MOI THANG SE CO 1 DANH SACH TAI THOI DIEM DO
+            // TRANH NGUOI MOI CO TRONG BANG LUONG CU
+            Utility.AutoInitSalary((int)ESalaryType.NM, month, year);
 
             #region Filter
-            var builder = Builders<Employee>.Filter;
-            var filter = builder.Eq(m => m.Enable, true) & builder.Eq(m=>m.SalaryType, (int)EKhoiLamViec.NM) & !builder.Eq(m=>m.UserName, Constants.System.account);
-            if (!string.IsNullOrEmpty(id))
+            var builder = Builders<SalaryEmployeeMonth>.Filter;
+            var filter = builder.Eq(m => m.Year, year) & builder.Eq(m => m.Month, month)
+                        & builder.Eq(m => m.CongTyChiNhanhId, ctcnnm.Id)
+                        & !builder.Eq(m => m.ChucVuId, "5c88d09bd59d56225c4324de");
+            if (!string.IsNullOrEmpty(KhoiChucNang))
             {
-                filter = filter & builder.Eq(x => x.Id, id.Trim());
+                filter = filter & builder.Eq(x => x.KhoiChucNangId, KhoiChucNang);
             }
-            if (!string.IsNullOrEmpty(phongban))
+            if (!string.IsNullOrEmpty(PhongBan))
             {
-                filter = filter & builder.Eq(m => m.DepartmentAlias, phongban.Trim());
+                filter = filter & builder.Eq(x => x.PhongBanId, PhongBan);
+            }
+            if (!string.IsNullOrEmpty(BoPhan))
+            {
+                filter = filter & builder.Eq(x => x.BoPhanId, BoPhan);
+            }
+            if (!string.IsNullOrEmpty(Id))
+            {
+                filter = filter & builder.Eq(x => x.Id, Id.Trim());
             }
             #endregion
 
-            #region Sort
-            var sortBuilder = Builders<Employee>.Sort.Ascending(m => m.Code);
+            var salaryEmployeeMonths = dbContext.SalaryEmployeeMonths.Find(filter).ToList();
+
+            #region FILL DATA
+            var results = new List<SalaryEmployeeMonth>();
+            foreach (var salary in salaryEmployeeMonths)
+            {
+                var salaryFull = Utility.SalaryEmployeeMonthFillData(salary);
+                results.Add(salaryFull);
+            }
             #endregion
 
-            var employees = await dbContext.Employees.Find(filter).Sort(sortBuilder).ToListAsync();
+            #region SORT: do later
 
-            var salaryEmployeeMonths = new List<SalaryEmployeeMonth>();
-            foreach (var employee in employees)
-            {
-                mauSo = employee.SalaryMauSo != 26 ? 30 : mauSo;
-                var salary = GetSalaryEmployeeMonth(year, month, employee.Id, employee.Joinday, employee.NgachLuong, employee.SalaryLevel, (int)mauSo, mauSoChuyenCan, mauSoTienCom, employee.LuongBHXH, tyledongbh, null, true);
-                salary.Year = year;
-                salary.Month = month;
-                salary.Bac = employee.SalaryLevel;
-                salary.ThamNienLamViec = employee.Joinday;
-                salary.EmployeeId = employee.Id;
-                salary.MaNhanVien = employee.Code + "-(" + employee.CodeOld + ")";
-                salary.FullName = employee.FullName;
-                salary.NoiLamViec = Constants.Location(employee.SalaryType);
-                salary.NoiLamViecOrder = employee.SalaryNoiLamViecOrder;
-                salary.PhongBan = employee.Department;
-                salary.PhongBanOrder = employee.SalaryPhongBanOrder;
-                salary.ChucVu = employee.Title;
-                salary.ChucVuOrder = employee.SalaryChucVuOrder;
-                salary.ViTriCode = employee.SalaryChucVuViTriCode;
-                salary.SalaryMaSoChucDanhCongViec = employee.NgachLuong;
-                salaryEmployeeMonths.Add(salary);
-            }
+            #endregion
 
             var viewModel = new BangLuongViewModel
             {
                 SalaryEmployeeMonths = salaryEmployeeMonths,
                 MonthYears = sortTimes,
-                Thang = thang,
-                SaleTimes = saleTimes,
-                Departments = departments,
-                EmployeesDdl= employeeDdl,
-                Id = id,
-                Phongban = phongban
-            };
-
-            return View(viewModel);
-        }
-
-        [Route(Constants.LinkSalary.BangLuong +"/"+ Constants.ActionLink.Update)]
-        public async Task<IActionResult> BangLuongUpdate(string thang, string id, string phongban)
-        {
-            #region Authorization
-            var login = User.Identity.Name;
-            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
-            ViewData["LoginUserName"] = loginUserName;
-
-            var loginInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
-            if (loginInformation == null)
-            {
-                #region snippet1
-                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                #endregion
-                return RedirectToAction("login", "account");
-            }
-
-            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.LuongNM, (int)ERights.View)))
-            {
-                return RedirectToAction("AccessDenied", "Account");
-            }
-
-            #endregion
-
-            #region DDL
-            var monthYears = new List<MonthYear>();
-            var date = new DateTime(2018, 02, 01);
-            var endDate = DateTime.Now;
-            while (date.Year < endDate.Year || (date.Year == endDate.Year && date.Month <= endDate.Month))
-            {
-                monthYears.Add(new MonthYear
-                {
-                    Month = date.Month,
-                    Year = date.Year
-                });
-                date = date.AddMonths(1);
-            }
-            if (endDate.Day > 25)
-            {
-                monthYears.Add(new MonthYear
-                {
-                    Month = endDate.AddMonths(1).Month,
-                    Year = endDate.AddMonths(1).Year
-                });
-            }
-            var sortTimes = monthYears.OrderByDescending(x => x.Month).OrderByDescending(x => x.Year).ToList();
-
-            var departments = await dbContext.Departments.Find(m => m.Enable.Equals(true)).SortBy(m => m.Order).ToListAsync();
-
-            var employeeDdl = await dbContext.Employees.Find(m => m.Enable.Equals(true) && m.SalaryType.Equals((int)EKhoiLamViec.NM) && !m.UserName.Equals(Constants.System.account)).SortBy(m => m.FullName).ToListAsync();
-            #endregion
-
-            #region Times
-            var toDate = Utility.WorkingMonthToDate(thang);
-            var fromDate = toDate.AddMonths(-1).AddDays(1);
-            if (string.IsNullOrEmpty(thang))
-            {
-                toDate = DateTime.Now;
-                fromDate = toDate.Day > 25 ? new DateTime(toDate.Year, toDate.Month, 26) : new DateTime(toDate.AddMonths(-1).Year, toDate.AddMonths(-1).Month, 26);
-            }
-            var year = toDate.Day > 25 ? toDate.AddMonths(1).Year : toDate.Year;
-            var month = toDate.Day > 25 ? toDate.AddMonths(1).Month : toDate.Month;
-            thang = string.IsNullOrEmpty(thang) ? month + "-" + year : thang;
-
-            int yearSale = new DateTime(year, month, 01).AddMonths(-2).Year;
-            int monthSale = new DateTime(year, month, 01).AddMonths(-2).Month;
-            var saleTimes = monthSale + "-" + yearSale;
-            #endregion
-
-            #region Setting
-            var thamsoEntity = dbContext.SalarySettings.Find(m => m.Enable.Equals(true)).ToList();
-            var mauSo = Convert.ToDouble(thamsoEntity.Find(m => m.Key.Equals("mau-so-lam-viec")).Value);
-            var mauSoBaoVe = Convert.ToDouble(thamsoEntity.Find(m => m.Key.Equals("mau-so-bao-ve")).Value);
-            var tyledongbh = Convert.ToDouble(thamsoEntity.Find(m => m.Key.Equals("ty-le-dong-bh")).Value);
-            var mauSoChuyenCan = Convert.ToDecimal(thamsoEntity.Find(m => m.Key.Equals("mau-so-chuyen-can")).Value);
-            var mauSoTienCom = Convert.ToDecimal(thamsoEntity.Find(m => m.Key.Equals("mau-so-tien-com")).Value);
-            #endregion
-
-            #region Filter
-            var builder = Builders<Employee>.Filter;
-            var filter = builder.Eq(m => m.Enable, true) & builder.Eq(m => m.SalaryType, (int)EKhoiLamViec.NM) & !builder.Eq(m => m.UserName, Constants.System.account);
-            if (!string.IsNullOrEmpty(id))
-            {
-                filter = filter & builder.Eq(x => x.Id, id.Trim());
-            }
-            if (!string.IsNullOrEmpty(phongban))
-            {
-                filter = filter & builder.Eq(m => m.DepartmentAlias, phongban.Trim());
-            }
-            #endregion
-
-            #region Sort
-            var sortBuilder = Builders<Employee>.Sort.Ascending(m => m.Code);
-            #endregion
-
-            var employees = await dbContext.Employees.Find(filter).Sort(sortBuilder).ToListAsync();
-
-            var salaryEmployeeMonths = new List<SalaryEmployeeMonth>();
-            foreach (var employee in employees)
-            {
-                mauSo = employee.SalaryMauSo != 26 ? 30 : mauSo;
-                var salary = GetSalaryEmployeeMonth(year, month, employee.Id, employee.Joinday, employee.NgachLuong, employee.SalaryLevel, (int)mauSo, mauSoChuyenCan, mauSoTienCom, employee.LuongBHXH, tyledongbh, null, true);
-                salary.Year = year;
-                salary.Month = month;
-                salary.Bac = employee.SalaryLevel;
-                salary.ThamNienLamViec = employee.Joinday;
-                salary.EmployeeId = employee.Id;
-                salary.MaNhanVien = employee.Code + "-(" + employee.CodeOld + ")";
-                salary.FullName = employee.FullName;
-                salary.NoiLamViec = Constants.Location(employee.SalaryType);
-                salary.NoiLamViecOrder = employee.SalaryNoiLamViecOrder;
-                salary.PhongBan = employee.Department;
-                salary.PhongBanOrder = employee.SalaryPhongBanOrder;
-                salary.ChucVu = employee.Title;
-                salary.ChucVuOrder = employee.SalaryChucVuOrder;
-                salary.ViTriCode = employee.SalaryChucVuViTriCode;
-                salary.SalaryMaSoChucDanhCongViec = employee.NgachLuong;
-                salaryEmployeeMonths.Add(salary);
-            }
-
-            var mucluongvung = await dbContext.SalaryMucLuongVungs.Find(m => m.Enable.Equals(true) & m.Month.Equals(month) & m.Year.Equals(year)).FirstOrDefaultAsync();
-            if (mucluongvung == null)
-            {
-                var lastItemVung = await dbContext.SalaryMucLuongVungs.Find(m => m.Enable.Equals(true)).SortByDescending(m => m.Year).SortByDescending(m => m.Month).FirstOrDefaultAsync();
-                var lastMonthVung = lastItemVung.Month;
-                var lastYearVung = lastItemVung.Year;
-
-                lastItemVung.Id = null;
-                lastItemVung.Month = month;
-                lastItemVung.Year = year;
-                dbContext.SalaryMucLuongVungs.InsertOne(lastItemVung);
-                mucluongvung = await dbContext.SalaryMucLuongVungs.Find(m => m.Enable.Equals(true) & m.Month.Equals(month) & m.Year.Equals(year)).FirstOrDefaultAsync();
-            }
-
-            var viewModel = new BangLuongViewModel
-            {
-                SalaryEmployeeMonths = salaryEmployeeMonths,
-                SalaryMucLuongVung = mucluongvung,
-                MonthYears = sortTimes,
-                Thang = thang,
-                SaleTimes = saleTimes,
-                Departments = departments,
-                EmployeesDdl = employeeDdl,
-                Id = id,
-                Phongban = phongban
+                Thang = Thang,
+                Employees = employees,
+                Id = Id,
+                KhoiChucNang = KhoiChucNang,
+                Phongban = PhongBan,
+                BoPhan = BoPhan
             };
 
             return View(viewModel);
@@ -360,8 +200,7 @@ namespace erp.Controllers
                     var builder = Builders<SalaryEmployeeMonth>.Filter;
                     var filter = builder.Eq(m => m.Id, item.Id);
                     var update = Builders<SalaryEmployeeMonth>.Update
-                        .Set(m => m.SalaryMaSoChucDanhCongViec, item.SalaryMaSoChucDanhCongViec)
-                        .Set(m => m.Bac, item.Bac)
+                        .Set(m => m.NgachLuongLevel, item.NgachLuongLevel)
                         .Set(m => m.PhuCapKhac, item.PhuCapKhac)
                         .Set(m => m.ThuongLeTet, item.ThuongLeTet)
                         .Set(m => m.LuongThamGiaBHXH, item.LuongThamGiaBHXH)
@@ -1500,10 +1339,7 @@ namespace erp.Controllers
                     Month = month,
                     Year = year,
                     EmployeeId = existEmployee.Id,
-                    MaNhanVien = existEmployee.CodeOld,
-                    PhongBan = existEmployee.Department,
-                    ChucVu = existEmployee.Title,
-                    SalaryMaSoChucDanhCongViec = "B.05",
+                    EmployeeCode = existEmployee.CodeOld,
                     NgayCongLamViec = ngaylamviec,
                     NgayNghiPhepNam = phepnam,
                     NgayNghiLeTetHuongLuong = letet,
@@ -1531,9 +1367,6 @@ namespace erp.Controllers
                     Month = month,
                     EmployeeId = existEmployee.Id,
                     EmployeeName = existEmployee.FullName,
-                    Title = existEmployee.TitleId,
-                    Department = existEmployee.DepartmentId,
-                    Part = existEmployee.PartId,
                     NgayLamViecChinhTay = ngaylamviec,
                     LeTetChinhTay = letet,
                     PhepNamChinhTay = phepnam
@@ -1561,10 +1394,8 @@ namespace erp.Controllers
                     Month = month,
                     Year = year,
                     EmployeeId = existEmployee.Id,
-                    MaNhanVien = existEmployee.CodeOld,
-                    PhongBan = existEmployee.Department,
-                    ChucVu = existEmployee.Title,
-                    SalaryMaSoChucDanhCongViec = "B.05",
+                    EmployeeCode = existEmployee.CodeOld,
+                    NgachLuongCode = "B.05",
                     TamUng = tamung
                 });
             }
@@ -1589,9 +1420,6 @@ namespace erp.Controllers
                         EmployeeId = existEmployee.Id,
                         EmployeeCode = existEmployee.CodeOld,
                         FullName = existEmployee.FullName,
-                        EmployeeTitle = existEmployee.TitleId,
-                        EmployeeDepartment = existEmployee.DepartmentId,
-                        EmployeePart = existEmployee.PartId,
                         Type = (int)ECredit.UngLuong,
                         Money = tamung,
                         DateCredit = new DateTime(year, month, 1),
@@ -1610,9 +1438,6 @@ namespace erp.Controllers
             {
                 FullName = fullname,
                 CodeOld = oldcode,
-                Department = "NHÀ MÁY",
-                Part = "SẢN XUÂT",
-                Title = chucvu,
                 SalaryType = (int)EKhoiLamViec.SX,
                 Joinday = joinday
             };
@@ -1853,7 +1678,6 @@ namespace erp.Controllers
                                 var update = Builders<EmployeeCong>.Update
                                     .Set(m => m.EmployeeCode, employee.Code)
                                     .Set(m => m.EmployeeName, employee.FullName)
-                                    .Set(m => m.EmployeeChucVu, employee.Title)
                                     .Set(m => m.CongTong, congtong)
                                     .Set(m => m.ComKD, comkd)
                                     .Set(m => m.ComSX, comsx)
@@ -1870,7 +1694,6 @@ namespace erp.Controllers
                                     EmployeeId = employee.Id,
                                     EmployeeCode = employee.Code,
                                     EmployeeName = employee.FullName,
-                                    EmployeeChucVu = employee.Title,
                                     CongTong = congtong,
                                     ComKD = comkd,
                                     ComSX = comsx
@@ -1939,7 +1762,7 @@ namespace erp.Controllers
 
             if (newSalary != null)
             {
-                currentSalary.Bac = newSalary.Bac;
+                currentSalary.NgachLuongLevel = newSalary.NgachLuongLevel;
                 currentSalary.LuongKhac = newSalary.LuongKhac;
                 currentSalary.HoTroNgoaiLuong = newSalary.HoTroNgoaiLuong;
                 currentSalary.ThuongLeTet = newSalary.ThuongLeTet;
@@ -2101,7 +1924,7 @@ namespace erp.Controllers
                     var builder = Builders<SalaryEmployeeMonth>.Filter;
                     var filter = builder.Eq(m => m.Id, currentSalary.Id);
                     var update = Builders<SalaryEmployeeMonth>.Update
-                        .Set(m => m.Bac, currentSalary.Bac)
+                        .Set(m => m.NgachLuongLevel, currentSalary.NgachLuongLevel)
                         .Set(m => m.LuongCanBan, currentSalary.LuongCanBan)
                         .Set(m => m.NangNhocDocHai, currentSalary.NangNhocDocHai)
                         .Set(m => m.TrachNhiem, currentSalary.TrachNhiem)

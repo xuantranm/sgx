@@ -9,7 +9,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Models
 {
     /// <summary>
-    /// FactoryProductCongTheoThang
+    /// FactoryProductCongTheoThang: TONG HOP NGOAI GIO/TRONG GIO
     /// + Dùng tạm (tính lương theo tháng) - Collection dung tong hop tu [FactoryProductCongTheoNgay]
     /// + Quản lý chính theo từng ngày [FactoryProductCongTheoNgay]
     /// + 

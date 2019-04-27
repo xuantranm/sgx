@@ -33,12 +33,10 @@
                         <li class="breadcrumb-item">
                             <a href="/hr/nhan-su">Nhân sự</a>
                         </li>
-                        <li class="breadcrumb-item active" aria-current="page">Thông tin @Model.EmployeeDetail.Employee.FullName</li>
+                        <li class="breadcrumb-item active" aria-current="page">Thông tin @Model.Employee.FullName</li>
                     </ol>
                 </div>
-                <!--end of col-->
             </div>
-            <!--end of row-->
         </div>
     </nav>
 
@@ -49,7 +47,7 @@
                     <h1 class="h2">Thông tin</h1>
                 </div>
                 <div class="col-auto text-right">
-                    <a href="/hr/nhan-su/cap-nhat/@Model.EmployeeDetail.Employee.Id" class="btn btn-success" data-toggle="tooltip" title="Bấm thay đổi thông tin tài khoản."><i class="icon icon-edit"></i>Chỉnh sửa</a>
+                    <a href="/hr/nhan-su/cap-nhat/@Model.Employee.Id" class="btn btn-success" data-toggle="tooltip" title="Bấm thay đổi thông tin tài khoản."><i class="icon icon-edit"></i>Chỉnh sửa</a>
                 </div>
             </div>
         </div>
@@ -59,8 +57,8 @@
             @{
                 var avatarDisplay = Constants.System.domain + "/images/placeholder/120x120.png";
                 var coverDisplay = string.Empty;
-                var avatar = Model.EmployeeDetail.Employee.Avatar;
-                var cover = Model.EmployeeDetail.Employee.Cover;
+                var avatar = Model.Employee.Avatar;
+                var cover = Model.Employee.Cover;
 
                 if (Model.StatusChange)
                 {
@@ -104,7 +102,7 @@
             }
             <div class="col-12" id="cover" style="@coverDisplay">
                 <div class="media flex-wrap mb-0 align-items-center" id="avatar-upload">
-                    <img id="avatarShow" alt="@Model.EmployeeDetail.Employee.FullName" src="@avatarDisplay" class="avatar avatar-lg mb-3 mb-md-0" />
+                    <img id="avatarShow" alt="@Model.Employee.FullName" src="@avatarDisplay" class="avatar avatar-lg mb-3 mb-md-0" />
                     <div class="media-body d-none">
                         <label class="custom-file mb-2" for="file2">
                             <input type="file" id="avatar-input" name="avatar" class="custom-file-input height-0">
@@ -142,7 +140,7 @@
                         <div class="form-group">
                             <i class="icon icon-text"></i>
                             <label class="control-label">Tên</label>
-                            <p>@Model.EmployeeDetail.Employee.FullName</p>
+                            <p>@Model.Employee.FullName</p>
                             <small>Thông tin này hiển thị trên hồ sơ công khai của bạn</small>
                         </div>
                     </div>
@@ -150,7 +148,7 @@
                         <div class="form-group">
                             <i class="icon icon-login"></i>
                             <label class="control-label">Tên đăng nhập</label>
-                            <p>@Model.EmployeeDetail.Employee.UserName  | @Model.EmployeeDetail.Employee.Email</p>
+                            <p>@Model.Employee.UserName  | @Model.Employee.Email</p>
                             <small>Thông tin này hiển thị trên hồ sơ công khai của bạn</small>
                         </div>
                     </div>
@@ -158,9 +156,9 @@
                         <div class="form-group">
                             <i class="far fa-envelope"></i>
                             <label class="control-label">Email</label>
-                            @if (!string.IsNullOrEmpty(Model.EmployeeDetail.Employee.Email))
+                            @if (!string.IsNullOrEmpty(Model.Employee.Email))
                             {
-                                <p><a href="mailto:@Model.EmployeeDetail.Employee.Email" target="_top">@Model.EmployeeDetail.Employee.Email</a></p>
+                                <p><a href="mailto:@Model.Employee.Email" target="_top">@Model.Employee.Email</a></p>
                             }
                             else
                             {
@@ -171,15 +169,15 @@
                     <div class="col-6">
                         <div class="form-group">
                             <i class="icon icon-phone"></i> <label class="control-label">Điện thoại bàn</label>
-                            @if (!string.IsNullOrEmpty(Model.EmployeeDetail.Employee.Tel))
+                            @if (!string.IsNullOrEmpty(Model.Employee.Tel))
                             {
-                                <p><a href="tel:@Model.EmployeeDetail.Employee.Tel">@Model.EmployeeDetail.Employee.Tel</a></p>
+                                <p><a href="tel:@Model.Employee.Tel">@Model.Employee.Tel</a></p>
                             }
                             else
                             {
                                 <small>@Constants.MissTitle</small>
                             }
-                            @if (Model.StatusChange && Model.EmployeeDetail.Employee.Tel != Model.EmployeeChance.Tel)
+                            @if (Model.StatusChange && Model.Employee.Tel != Model.EmployeeChance.Tel)
                             {
                                 <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> <a href="tel:@Model.EmployeeChance.Tel">@Model.EmployeeChance.Tel</a></p>
                             }
@@ -187,11 +185,11 @@
                     </div>
 
                     @{
-                        if (Model.EmployeeDetail.Employee.Mobiles != null && Model.EmployeeDetail.Employee.Mobiles.Count > 0)
+                        if (Model.Employee.Mobiles != null && Model.Employee.Mobiles.Count > 0)
                         {
                             int iChangeMobile = 0;
                             var iMobile = 1;
-                            foreach (var mobile in Model.EmployeeDetail.Employee.Mobiles)
+                            foreach (var mobile in Model.Employee.Mobiles)
                             {
                                 <div class="col-6 nodeMobile node">
                                     <div class="form-group">
@@ -221,7 +219,7 @@
                             <i class="icon icon-cake"></i>
                             <label class="control-label">Ngày sinh</label>
                             @{
-                                var birthday = Model.EmployeeDetail.Employee.Birthday.Year > 1900 ? Model.EmployeeDetail.Employee.Birthday.ToString("dd/MM/yyyy") : string.Empty;
+                                var birthday = Model.Employee.Birthday.Year > 1900 ? Model.Employee.Birthday.ToString("dd/MM/yyyy") : string.Empty;
                             }
                             <p>@birthday</p>
                         </div>
@@ -230,7 +228,7 @@
                         <div class="form-group">
                             <i class="icon icon-select-arrows"></i>
                             <label class="control-label">Giới tính</label>
-                            <p>@Model.EmployeeDetail.Employee.Gender</p>
+                            <p>@Model.Employee.Gender</p>
                         </div>
                     </div>
                     <div class="col-6">
@@ -238,7 +236,7 @@
                             <i class="icon icon-select-arrows"></i>
                             <label class="control-label">Nơi quản lý</label>
                             <p>
-                                @Model.EmployeeDetail.CongTyChiNhanh
+                                @Model.Employee.CongTyChiNhanhName
                             </p>
                         </div>
                     </div>
@@ -247,7 +245,7 @@
                             <i class="icon icon-select-arrows"></i>
                             <label class="control-label">Khối chức năng</label>
                             <p>
-                                @Model.EmployeeDetail.KhoiChucNang
+                                @Model.Employee.KhoiChucNangName
                             </p>
                         </div>
                     </div>
@@ -256,7 +254,7 @@
                             <i class="icon icon-select-arrows"></i>
                             <label class="control-label">Phòng/ban</label>
                             <p>
-                                @Model.EmployeeDetail.PhongBan
+                                @Model.Employee.PhongBanName
                             </p>
                         </div>
                     </div>
@@ -266,7 +264,7 @@
                             <i class="icon icon-select-arrows"></i>
                             <label class="control-label">Bộ phận</label>
                             <p>
-                                @Model.EmployeeDetail.BoPhan
+                                @Model.Employee.BoPhanName
                             </p>
                         </div>
                     </div>
@@ -275,7 +273,7 @@
                             <i class="icon icon-select-arrows"></i>
                             <label class="control-label">Bộ phận (thuộc bộ phận trên)</label>
                             <p>
-                                @Model.EmployeeDetail.BoPhanCon
+                                @Model.Employee.BoPhanConName
                             </p>
                         </div>
                     </div>
@@ -284,7 +282,7 @@
                             <i class="icon icon-select-arrows"></i>
                             <label class="control-label">Chức vụ</label>
                             <p>
-                                @Model.EmployeeDetail.ChucVu
+                                @Model.Employee.ChucVuName
                             </p>
                         </div>
                     </div>
@@ -293,7 +291,7 @@
                             <i class="icon icon-select-arrows"></i>
                             <label class="control-label">Người quản lý</label>
                             <p>
-                                @Model.EmployeeDetail.NguoiQuanLy
+                                @Model.Employee.ManagerInformation
                             </p>
                         </div>
                     </div>
@@ -303,7 +301,7 @@
                             <i class="icon icon-time-slot"></i>
                             <label class="control-label">Ngày vào làm</label>
                             @{
-                                var joinday = Model.EmployeeDetail.Employee.Joinday.Year > 1900 ? Model.EmployeeDetail.Employee.Joinday.ToString("dd/MM/yyyy") : string.Empty;
+                                var joinday = Model.Employee.Joinday.Year > 1900 ? Model.Employee.Joinday.ToString("dd/MM/yyyy") : string.Empty;
                             }
                             <p>@joinday</p>
                         </div>
@@ -312,7 +310,7 @@
                         <div class="form-group">
                             <i class="icon icon-archive"></i>
                             <label class="control-label">Mức phép năm</label>
-                            <p>@Model.EmployeeDetail.Employee.LeaveLevelYear ngày</p>
+                            <p>@Model.Employee.LeaveLevelYear ngày</p>
                         </div>
                     </div>
 
@@ -323,17 +321,17 @@
                         </div>
                     </div>
                     <div class="col-6">
-                        @if (Model.EmployeeDetail.Employee.IsTimeKeeper)
+                        @if (Model.Employee.IsTimeKeeper)
                         {
                             <p>Không tính thời gian làm việc</p>
                         }
                     </div>
 
-                    @if (!Model.EmployeeDetail.Employee.IsTimeKeeper)
+                    @if (!Model.Employee.IsTimeKeeper)
                     {
-                        if (Model.EmployeeDetail.Employee.Workplaces != null && Model.EmployeeDetail.Employee.Workplaces.Count > 0)
+                        if (Model.Employee.Workplaces != null && Model.Employee.Workplaces.Count > 0)
                         {
-                            foreach (var workplace in Model.EmployeeDetail.Employee.Workplaces)
+                            foreach (var workplace in Model.Employee.Workplaces)
                             {
                                 <div class="col-6 nodeWorkplace node">
                                     <div class="form-group">
@@ -388,7 +386,7 @@
                     @{
                         var enableStatus = string.Empty;
                         var displayLeave = "d-none";
-                        if (!Model.EmployeeDetail.Employee.Enable)
+                        if (!Model.Employee.Enable)
                         {
                             enableStatus = "checked";
                             displayLeave = "";
@@ -408,7 +406,7 @@
                         <div class="form-group">
                             <label class="control-label">Ngày nghỉ việc</label>
                             @{
-                                var leaveDay = Model.EmployeeDetail.Employee.Leaveday.HasValue ? Model.EmployeeDetail.Employee.Leaveday.Value.ToString("dd/MM/yyyy") : string.Empty;
+                                var leaveDay = Model.Employee.Leaveday.HasValue ? Model.Employee.Leaveday.Value.ToString("dd/MM/yyyy") : string.Empty;
                             }
                             <p>@leaveDay</p>
                         </div>
@@ -416,22 +414,22 @@
                     <div class="col-12 leave-extend @displayLeave">
                         <div class="form-group">
                             <label class="control-label">Lý do</label>
-                            <p>@Model.EmployeeDetail.Employee.LeaveReason</p>
+                            <p>@Model.Employee.LeaveReason</p>
                         </div>
                     </div>
 
                     <div class="col-12">
                         <div class="form-group">
                             <label class="control-label">Nguyên quán</label>
-                            @if (!string.IsNullOrEmpty(Model.EmployeeDetail.Employee.Bornplace))
+                            @if (!string.IsNullOrEmpty(Model.Employee.Bornplace))
                             {
-                                <p>@Model.EmployeeDetail.Employee.Bornplace</p>
+                                <p>@Model.Employee.Bornplace</p>
                             }
                             else
                             {
                                 <small>@Constants.MissTitle</small>
                             }
-                            @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.Bornplace) && Model.EmployeeDetail.Employee.Bornplace != Model.EmployeeChance.Bornplace)
+                            @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.Bornplace) && Model.Employee.Bornplace != Model.EmployeeChance.Bornplace)
                             {
                                 <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @Model.EmployeeChance.Bornplace</p>
                             }
@@ -440,15 +438,15 @@
                     <div class="col-12">
                         <div class="form-group">
                             <label class="control-label">Thường trú</label>
-                            @if (!string.IsNullOrEmpty(Model.EmployeeDetail.Employee.AddressResident))
+                            @if (!string.IsNullOrEmpty(Model.Employee.AddressResident))
                             {
-                                <p><a target="_blank" href="https://www.google.com/maps/search/?api=1&query=@Model.EmployeeDetail.Employee.AddressResident" data-toggle="tooltip" title="Bấm để đi đến bản đồ">@Model.EmployeeDetail.Employee.AddressResident</a></p>
+                                <p><a target="_blank" href="https://www.google.com/maps/search/?api=1&query=@Model.Employee.AddressResident" data-toggle="tooltip" title="Bấm để đi đến bản đồ">@Model.Employee.AddressResident</a></p>
                             }
                             else
                             {
                                 <small>@Constants.MissTitle</small>
                             }
-                            @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.AddressResident) && Model.EmployeeDetail.Employee.AddressResident != Model.EmployeeChance.AddressResident)
+                            @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.AddressResident) && Model.Employee.AddressResident != Model.EmployeeChance.AddressResident)
                             {
                                 <p class="change-data">
                                     <small class="badge badge-info">Chờ xác nhận</small>
@@ -460,15 +458,15 @@
                     <div class="col-12">
                         <div class="form-group">
                             <label class="control-label">Tạm trú</label>
-                            @if (!string.IsNullOrEmpty(Model.EmployeeDetail.Employee.AddressTemporary))
+                            @if (!string.IsNullOrEmpty(Model.Employee.AddressTemporary))
                             {
-                                <p><a target="_blank" href="https://www.google.com/maps/search/?api=1&query=@Model.EmployeeDetail.Employee.AddressTemporary" data-toggle="tooltip" title="Bấm để đi đến bản đồ">@Model.EmployeeDetail.Employee.AddressTemporary</a></p>
+                                <p><a target="_blank" href="https://www.google.com/maps/search/?api=1&query=@Model.Employee.AddressTemporary" data-toggle="tooltip" title="Bấm để đi đến bản đồ">@Model.Employee.AddressTemporary</a></p>
                             }
                             else
                             {
                                 <small>@Constants.MissTitle</small>
                             }
-                            @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.AddressTemporary) && Model.EmployeeDetail.Employee.AddressTemporary != Model.EmployeeChance.AddressTemporary)
+                            @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.AddressTemporary) && Model.Employee.AddressTemporary != Model.EmployeeChance.AddressTemporary)
                             {
                                 <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @Model.EmployeeChance.AddressTemporary</p>
                             }
@@ -478,15 +476,15 @@
                         <div class="form-group">
                             <i class="icon icon-email"></i>
                             <label class="control-label">Email cá nhân</label>
-                            @if (!string.IsNullOrEmpty(Model.EmployeeDetail.Employee.EmailPersonal))
+                            @if (!string.IsNullOrEmpty(Model.Employee.EmailPersonal))
                             {
-                                <p><a href="mailto:@Model.EmployeeDetail.Employee.EmailPersonal" target="_top">@Model.EmployeeDetail.Employee.EmailPersonal</a></p>
+                                <p><a href="mailto:@Model.Employee.EmailPersonal" target="_top">@Model.Employee.EmailPersonal</a></p>
                             }
                             else
                             {
                                 <small>@Constants.MissTitle</small>
                             }
-                            @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.EmailPersonal) && Model.EmployeeDetail.Employee.EmailPersonal != Model.EmployeeChance.EmailPersonal)
+                            @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.EmailPersonal) && Model.Employee.EmailPersonal != Model.EmployeeChance.EmailPersonal)
                             {
                                 <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> <a href="mailto:@Model.EmployeeChance.EmailPersonal" target="_top">@Model.EmployeeChance.EmailPersonal</a></p>
                             }
@@ -495,15 +493,15 @@
                     <div class="col-sm-6 col-xs-12">
                         <div class="form-group">
                             <label class="control-label">Tình trạng hôn nhân</label>
-                            @if (!string.IsNullOrEmpty(Model.EmployeeDetail.Employee.StatusMarital))
+                            @if (!string.IsNullOrEmpty(Model.Employee.StatusMarital))
                             {
-                                <p>@Constants.Married(Model.EmployeeDetail.Employee.StatusMarital)</p>
+                                <p>@Constants.Married(Model.Employee.StatusMarital)</p>
                             }
                             else
                             {
                                 <small>@Constants.MissTitle</small>
                             }
-                            @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.StatusMarital) && Model.EmployeeDetail.Employee.StatusMarital != Model.EmployeeChance.StatusMarital)
+                            @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.StatusMarital) && Model.Employee.StatusMarital != Model.EmployeeChance.StatusMarital)
                             {
                                 <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @Constants.Married(Model.EmployeeChance.StatusMarital)</p>
                             }
@@ -512,15 +510,15 @@
                     <div class="col-sm-6 col-xs-12">
                         <div class="form-group">
                             <label class="control-label">Quốc tịch</label>
-                            @if (!string.IsNullOrEmpty(Model.EmployeeDetail.Employee.Nation))
+                            @if (!string.IsNullOrEmpty(Model.Employee.Nation))
                             {
-                                <p>@Model.EmployeeDetail.Employee.Nation</p>
+                                <p>@Model.Employee.Nation</p>
                             }
                             else
                             {
                                 <small>@Constants.MissTitle</small>
                             }
-                            @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.Nation) && Model.EmployeeDetail.Employee.Nation != Model.EmployeeChance.Nation)
+                            @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.Nation) && Model.Employee.Nation != Model.EmployeeChance.Nation)
                             {
                                 <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @Model.EmployeeChance.Nation</p>
                             }
@@ -529,15 +527,15 @@
                     <div class="col-sm-6 col-xs-12">
                         <div class="form-group">
                             <label class="control-label">Tôn giáo</label>
-                            @if (!string.IsNullOrEmpty(Model.EmployeeDetail.Employee.Religion))
+                            @if (!string.IsNullOrEmpty(Model.Employee.Religion))
                             {
-                                <p>@Model.EmployeeDetail.Employee.Religion</p>
+                                <p>@Model.Employee.Religion</p>
                             }
                             else
                             {
                                 <small>@Constants.MissTitle</small>
                             }
-                            @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.Religion) && Model.EmployeeDetail.Employee.Religion != Model.EmployeeChance.Religion)
+                            @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.Religion) && Model.Employee.Religion != Model.EmployeeChance.Religion)
                             {
                                 <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @Model.EmployeeChance.Religion</p>
                             }
@@ -546,15 +544,15 @@
                     <div class="col-12">
                         <div class="form-group">
                             <label class="control-label">Giới thiệu</label>
-                            @if (!string.IsNullOrEmpty(Model.EmployeeDetail.Employee.Intro))
+                            @if (!string.IsNullOrEmpty(Model.Employee.Intro))
                             {
-                                <p>@Model.EmployeeDetail.Employee.Intro</p>
+                                <p>@Model.Employee.Intro</p>
                             }
                             else
                             {
                                 <small>@Constants.MissTitle</small>
                             }
-                            @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.Intro) && Model.EmployeeDetail.Employee.Intro != Model.EmployeeChance.Intro)
+                            @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.Intro) && Model.Employee.Intro != Model.EmployeeChance.Intro)
                             {
                                 <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @Model.EmployeeChance.Intro</p>
                             }
@@ -584,20 +582,20 @@
                     <div class="col-12 col-md-8 order-md-1">
                         <div class="row">
                             <!-- CMND -->
-                            @if (!string.IsNullOrEmpty(Model.EmployeeDetail.Employee.IdentityCard))
+                            @if (!string.IsNullOrEmpty(Model.Employee.IdentityCard))
                             {
                                 <div class="col-12">
                                     <div class="form-group">
                                         <label class="control-label">CMND</label>
-                                        @if (!string.IsNullOrEmpty(Model.EmployeeDetail.Employee.IdentityCard))
+                                        @if (!string.IsNullOrEmpty(Model.Employee.IdentityCard))
                                         {
-                                            <p>@Model.EmployeeDetail.Employee.IdentityCard</p>
+                                            <p>@Model.Employee.IdentityCard</p>
                                         }
                                         else
                                         {
                                             <small>@Constants.MissTitle</small>
                                         }
-                                        @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.IdentityCard) && Model.EmployeeDetail.Employee.IdentityCard != Model.EmployeeChance.IdentityCard)
+                                        @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.IdentityCard) && Model.Employee.IdentityCard != Model.EmployeeChance.IdentityCard)
                                         {
                                             <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @Model.EmployeeChance.IdentityCard</p>
                                         }
@@ -607,7 +605,7 @@
                                     <div class="form-group">
                                         <label class="control-label">Ngày cấp</label>
                                         @{
-                                            var identityCardDate = Model.EmployeeDetail.Employee.IdentityCardDate.HasValue && Model.EmployeeDetail.Employee.IdentityCardDate.Value.Year > 1900 ? Model.EmployeeDetail.Employee.IdentityCardDate.Value.ToString("dd/MM/yyyy") : string.Empty;
+                                            var identityCardDate = Model.Employee.IdentityCardDate.HasValue && Model.Employee.IdentityCardDate.Value.Year > 1900 ? Model.Employee.IdentityCardDate.Value.ToString("dd/MM/yyyy") : string.Empty;
                                             var identityCardDateChange = string.Empty;
                                             if (Model.StatusChange && Model.EmployeeChance != null)
                                             {
@@ -622,7 +620,7 @@
                                         {
                                             <small>@Constants.MissTitle</small>
                                         }
-                                        @if (Model.StatusChange && !string.IsNullOrEmpty(identityCardDateChange) && Model.EmployeeDetail.Employee.IdentityCardDate != Model.EmployeeChance.IdentityCardDate)
+                                        @if (Model.StatusChange && !string.IsNullOrEmpty(identityCardDateChange) && Model.Employee.IdentityCardDate != Model.EmployeeChance.IdentityCardDate)
                                         {
                                             <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @identityCardDateChange</p>
                                         }
@@ -632,15 +630,15 @@
                                 <div class="col-6">
                                     <div class="form-group">
                                         <label class="control-label">Nơi cấp</label>
-                                        @if (!string.IsNullOrEmpty(Model.EmployeeDetail.Employee.IdentityCardPlace))
+                                        @if (!string.IsNullOrEmpty(Model.Employee.IdentityCardPlace))
                                         {
-                                            <p>@Model.EmployeeDetail.Employee.IdentityCardPlace</p>
+                                            <p>@Model.Employee.IdentityCardPlace</p>
                                         }
                                         else
                                         {
                                             <small>@Constants.MissTitle</small>
                                         }
-                                        @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.IdentityCardPlace) && Model.EmployeeDetail.Employee.IdentityCardPlace != Model.EmployeeChance.IdentityCardPlace)
+                                        @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.IdentityCardPlace) && Model.Employee.IdentityCardPlace != Model.EmployeeChance.IdentityCardPlace)
                                         {
                                             <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @Model.EmployeeChance.IdentityCardPlace</p>
                                         }
@@ -652,15 +650,15 @@
                             <div class="col-12">
                                 <div class="form-group">
                                     <label class="control-label">Hộ khẩu</label>
-                                    @if (!string.IsNullOrEmpty(Model.EmployeeDetail.Employee.HouseHold))
+                                    @if (!string.IsNullOrEmpty(Model.Employee.HouseHold))
                                     {
-                                        <p>@Model.EmployeeDetail.Employee.HouseHold</p>
+                                        <p>@Model.Employee.HouseHold</p>
                                     }
                                     else
                                     {
                                         <small>@Constants.MissTitle</small>
                                     }
-                                    @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.HouseHold) && Model.EmployeeDetail.Employee.HouseHold != Model.EmployeeChance.HouseHold)
+                                    @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.HouseHold) && Model.Employee.HouseHold != Model.EmployeeChance.HouseHold)
                                     {
                                         <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @Model.EmployeeChance.HouseHold</p>
                                     }
@@ -669,37 +667,37 @@
                             <div class="col-12">
                                 <div class="form-group">
                                     <label class="control-label">Chủ hộ</label>
-                                    @if (!string.IsNullOrEmpty(Model.EmployeeDetail.Employee.HouseHoldOwner))
+                                    @if (!string.IsNullOrEmpty(Model.Employee.HouseHoldOwner))
                                     {
-                                        <p>@Model.EmployeeDetail.Employee.HouseHoldOwner</p>
+                                        <p>@Model.Employee.HouseHoldOwner</p>
                                     }
                                     else
                                     {
                                         <small>@Constants.MissTitle</small>
                                     }
-                                    @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.HouseHoldOwner) && Model.EmployeeDetail.Employee.HouseHoldOwner != Model.EmployeeChance.HouseHoldOwner)
+                                    @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.HouseHoldOwner) && Model.Employee.HouseHoldOwner != Model.EmployeeChance.HouseHoldOwner)
                                     {
                                         <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @Model.EmployeeChance.HouseHoldOwner</p>
                                     }
                                 </div>
                             </div>
 
-                            @if (!string.IsNullOrEmpty(Model.EmployeeDetail.Employee.Passport))
+                            @if (!string.IsNullOrEmpty(Model.Employee.Passport))
                             {
                                 <!-- PASSPORT -->
                                 <hr />
                                 <div class="col-12">
                                     <div class="form-group">
                                         <label class="control-label">Hộ chiếu</label>
-                                        @if (!string.IsNullOrEmpty(Model.EmployeeDetail.Employee.Passport))
+                                        @if (!string.IsNullOrEmpty(Model.Employee.Passport))
                                         {
-                                            <p>@Model.EmployeeDetail.Employee.Passport</p>
+                                            <p>@Model.Employee.Passport</p>
                                         }
                                         else
                                         {
                                             <small>@Constants.MissTitle</small>
                                         }
-                                        @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.Passport) && Model.EmployeeDetail.Employee.Passport != Model.EmployeeChance.Passport)
+                                        @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.Passport) && Model.Employee.Passport != Model.EmployeeChance.Passport)
                                         {
                                             <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @Model.EmployeeChance.Passport</p>
                                         }
@@ -708,15 +706,15 @@
                                 <div class="col-6">
                                     <div class="form-group">
                                         <label class="control-label">Loại</label>
-                                        @if (!string.IsNullOrEmpty(Model.EmployeeDetail.Employee.PassportType))
+                                        @if (!string.IsNullOrEmpty(Model.Employee.PassportType))
                                         {
-                                            <p>@Model.EmployeeDetail.Employee.PassportType</p>
+                                            <p>@Model.Employee.PassportType</p>
                                         }
                                         else
                                         {
                                             <small>@Constants.MissTitle</small>
                                         }
-                                        @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.PassportType) && Model.EmployeeDetail.Employee.PassportType != Model.EmployeeChance.PassportType)
+                                        @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.PassportType) && Model.Employee.PassportType != Model.EmployeeChance.PassportType)
                                         {
                                             <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @Model.EmployeeChance.PassportType</p>
                                         }
@@ -725,15 +723,15 @@
                                 <div class="col-6">
                                     <div class="form-group">
                                         <label class="control-label">Mã số</label>
-                                        @if (!string.IsNullOrEmpty(Model.EmployeeDetail.Employee.PassportCode))
+                                        @if (!string.IsNullOrEmpty(Model.Employee.PassportCode))
                                         {
-                                            <p>@Model.EmployeeDetail.Employee.PassportCode</p>
+                                            <p>@Model.Employee.PassportCode</p>
                                         }
                                         else
                                         {
                                             <small>@Constants.MissTitle</small>
                                         }
-                                        @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.PassportCode) && Model.EmployeeDetail.Employee.PassportCode != Model.EmployeeChance.PassportCode)
+                                        @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.PassportCode) && Model.Employee.PassportCode != Model.EmployeeChance.PassportCode)
                                         {
                                             <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @Model.EmployeeChance.PassportCode</p>
                                         }
@@ -743,7 +741,7 @@
                                     <div class="form-group">
                                         <label class="control-label">Ngày cấp</label>
                                         @{
-                                            var passportDate = Model.EmployeeDetail.Employee.PassportDate.HasValue && Model.EmployeeDetail.Employee.PassportDate.Value.Year > 1900 ? Model.EmployeeDetail.Employee.PassportDate.Value.ToString("dd/MM/yyyy") : string.Empty;
+                                            var passportDate = Model.Employee.PassportDate.HasValue && Model.Employee.PassportDate.Value.Year > 1900 ? Model.Employee.PassportDate.Value.ToString("dd/MM/yyyy") : string.Empty;
                                             var passportDateChange = string.Empty;
                                             if (Model.StatusChange && Model.EmployeeChance != null)
                                             {
@@ -758,7 +756,7 @@
                                         {
                                             <small>@Constants.MissTitle</small>
                                         }
-                                        @if (Model.StatusChange && !string.IsNullOrEmpty(passportDateChange) && Model.EmployeeDetail.Employee.PassportDate != Model.EmployeeChance.PassportDate)
+                                        @if (Model.StatusChange && !string.IsNullOrEmpty(passportDateChange) && Model.Employee.PassportDate != Model.EmployeeChance.PassportDate)
                                         {
                                             <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @passportDateChange</p>
                                         }
@@ -768,7 +766,7 @@
                                     <div class="form-group">
                                         <label class="control-label">Ngày hết hạn</label>
                                         @{
-                                            var passportExpireDate = Model.EmployeeDetail.Employee.PassportExpireDate.HasValue && Model.EmployeeDetail.Employee.PassportExpireDate.Value.Year > 1900 ? Model.EmployeeDetail.Employee.PassportExpireDate.Value.ToString("dd/MM/yyyy") : string.Empty;
+                                            var passportExpireDate = Model.Employee.PassportExpireDate.HasValue && Model.Employee.PassportExpireDate.Value.Year > 1900 ? Model.Employee.PassportExpireDate.Value.ToString("dd/MM/yyyy") : string.Empty;
                                             var passportExpireDateChange = string.Empty;
                                             if (Model.StatusChange && Model.EmployeeChance != null)
                                             {
@@ -783,7 +781,7 @@
                                         {
                                             <small>@Constants.MissTitle</small>
                                         }
-                                        @if (Model.StatusChange && !string.IsNullOrEmpty(passportDateChange) && Model.EmployeeDetail.Employee.PassportExpireDate != Model.EmployeeChance.PassportExpireDate)
+                                        @if (Model.StatusChange && !string.IsNullOrEmpty(passportDateChange) && Model.Employee.PassportExpireDate != Model.EmployeeChance.PassportExpireDate)
                                         {
                                             <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @passportDateChange</p>
                                         }
@@ -792,15 +790,15 @@
                                 <div class="col-12">
                                     <div class="form-group">
                                         <label class="control-label">Nơi cấp</label>
-                                        @if (!string.IsNullOrEmpty(Model.EmployeeDetail.Employee.PassportPlace))
+                                        @if (!string.IsNullOrEmpty(Model.Employee.PassportPlace))
                                         {
-                                            <p>@Model.EmployeeDetail.Employee.PassportPlace</p>
+                                            <p>@Model.Employee.PassportPlace</p>
                                         }
                                         else
                                         {
                                             <small>@Constants.MissTitle</small>
                                         }
-                                        @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.PassportPlace) && Model.EmployeeDetail.Employee.PassportPlace != Model.EmployeeChance.PassportPlace)
+                                        @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.PassportPlace) && Model.Employee.PassportPlace != Model.EmployeeChance.PassportPlace)
                                         {
                                             <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @Model.EmployeeChance.PassportPlace</p>
                                         }
@@ -817,8 +815,8 @@
                     <div class="col-12">
                         <div class="form-group">
                             @{
-                                var check = Model.EmployeeDetail.Employee.BhxhEnable ? "checked" : "";
-                                var dnone = Model.EmployeeDetail.Employee.BhxhEnable ? "" : "d-none";
+                                var check = Model.Employee.BhxhEnable ? "checked" : "";
+                                var dnone = Model.Employee.BhxhEnable ? "" : "d-none";
                             }
                             <div class="custom-control custom-checkbox custom-checkbox-switch">
                                 <input type="checkbox" class="custom-control-input" id="public" @check disabled />
@@ -831,9 +829,9 @@
                             <div class="col-12">
                                 <div class="form-group">
                                     <label class="control-label">Số sổ BHXH</label>
-                                    @if (!string.IsNullOrEmpty(Model.EmployeeDetail.Employee.BhxhBookNo))
+                                    @if (!string.IsNullOrEmpty(Model.Employee.BhxhBookNo))
                                     {
-                                        <p>@Model.EmployeeDetail.Employee.BhxhBookNo</p>
+                                        <p>@Model.Employee.BhxhBookNo</p>
                                     }
                                     else
                                     {
@@ -844,9 +842,9 @@
                             <div class="col-12">
                                 <div class="form-group">
                                     <label class="control-label">Số BHXH</label>
-                                    @if (!string.IsNullOrEmpty(Model.EmployeeDetail.Employee.BhxhCode))
+                                    @if (!string.IsNullOrEmpty(Model.Employee.BhxhCode))
                                     {
-                                        <p>@Model.EmployeeDetail.Employee.BhxhCode</p>
+                                        <p>@Model.Employee.BhxhCode</p>
                                     }
                                     else
                                     {
@@ -858,7 +856,7 @@
                                 <div class="form-group">
                                     <label class="control-label">Ngày bắt đầu</label>
                                     @{
-                                        var bhxhStart = Model.EmployeeDetail.Employee.BhxhStart.HasValue ? Model.EmployeeDetail.Employee.BhxhStart.Value.ToString("dd/MM/yyyy") : string.Empty;
+                                        var bhxhStart = Model.Employee.BhxhStart.HasValue ? Model.Employee.BhxhStart.Value.ToString("dd/MM/yyyy") : string.Empty;
                                     }
                                     @if (!string.IsNullOrEmpty(bhxhStart))
                                     {
@@ -874,7 +872,7 @@
                                 <div class="form-group">
                                     <label class="control-label">Ngày kết thúc</label>
                                     @{
-                                        var bhxhEnd = Model.EmployeeDetail.Employee.BhxhEnd.HasValue ? Model.EmployeeDetail.Employee.BhxhEnd.Value.ToString("dd/MM/yyyy") : string.Empty;
+                                        var bhxhEnd = Model.Employee.BhxhEnd.HasValue ? Model.Employee.BhxhEnd.Value.ToString("dd/MM/yyyy") : string.Empty;
                                     }
                                     @if (!string.IsNullOrEmpty(bhxhEnd))
                                     {
@@ -889,9 +887,9 @@
                             <div class="col-12">
                                 <div class="form-group">
                                     <label class="control-label">Tình trạng</label>
-                                    @if (!string.IsNullOrEmpty(Model.EmployeeDetail.Employee.BhxhStatus))
+                                    @if (!string.IsNullOrEmpty(Model.Employee.BhxhStatus))
                                     {
-                                        <p>@Model.EmployeeDetail.Employee.BhxhStatus</p>
+                                        <p>@Model.Employee.BhxhStatus</p>
                                     }
                                     else
                                     {
@@ -902,15 +900,15 @@
                             <div class="col-12">
                                 <div class="form-group">
                                     <label class="control-label">KCB ban đầu</label>
-                                    @if (!string.IsNullOrEmpty(Model.EmployeeDetail.Employee.BhxhHospital))
+                                    @if (!string.IsNullOrEmpty(Model.Employee.BhxhHospital))
                                     {
-                                        <p>@Model.EmployeeDetail.Employee.BhxhHospital</p>
+                                        <p>@Model.Employee.BhxhHospital</p>
                                     }
                                     else
                                     {
                                         <small>@Constants.MissTitle</small>
                                     }
-                                    @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.BhxhHospital) && Model.EmployeeDetail.Employee.BhxhHospital != Model.EmployeeChance.BhxhHospital)
+                                    @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.BhxhHospital) && Model.Employee.BhxhHospital != Model.EmployeeChance.BhxhHospital)
                                     {
                                         <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @Model.EmployeeChance.BhxhHospital</p>
                                     }
@@ -919,9 +917,9 @@
                             <div class="col-12">
                                 <div class="form-group">
                                     <label class="control-label">Số BHYT</label>
-                                    @if (!string.IsNullOrEmpty(Model.EmployeeDetail.Employee.BhytCode))
+                                    @if (!string.IsNullOrEmpty(Model.Employee.BhytCode))
                                     {
-                                        <p>@Model.EmployeeDetail.Employee.BhytCode</p>
+                                        <p>@Model.Employee.BhytCode</p>
                                     }
                                     else
                                     {
@@ -933,7 +931,7 @@
                                 <div class="form-group">
                                     <label class="control-label">Ngày hiệu lực</label>
                                     @{
-                                        var bhytStart = Model.EmployeeDetail.Employee.BhytStart.HasValue && Model.EmployeeDetail.Employee.BhytStart.Value.Year > 1900 ? Model.EmployeeDetail.Employee.BhytStart.Value.ToString("dd/MM/yyyy") : string.Empty;
+                                        var bhytStart = Model.Employee.BhytStart.HasValue && Model.Employee.BhytStart.Value.Year > 1900 ? Model.Employee.BhytStart.Value.ToString("dd/MM/yyyy") : string.Empty;
                                     }
                                     @if (!string.IsNullOrEmpty(bhytStart))
                                     {
@@ -949,7 +947,7 @@
                                 <div class="form-group">
                                     <label class="control-label">Ngày kết thúc</label>
                                     @{
-                                        var bhytEnd = Model.EmployeeDetail.Employee.BhytEnd.HasValue && Model.EmployeeDetail.Employee.BhytEnd.Value.Year > 1900 ? Model.EmployeeDetail.Employee.BhytEnd.Value.ToString("dd/MM/yyyy") : string.Empty;
+                                        var bhytEnd = Model.Employee.BhytEnd.HasValue && Model.Employee.BhytEnd.Value.Year > 1900 ? Model.Employee.BhytEnd.Value.ToString("dd/MM/yyyy") : string.Empty;
                                     }
                                     @if (!string.IsNullOrEmpty(bhytEnd))
                                     {
@@ -964,9 +962,9 @@
                             <div class="col-12">
                                 <div class="form-group">
                                     <label class="control-label">Nơi BHXH</label>
-                                    @if (!string.IsNullOrEmpty(Model.EmployeeDetail.Employee.BhxhLocation))
+                                    @if (!string.IsNullOrEmpty(Model.Employee.BhxhLocation))
                                     {
-                                        <p>@Model.EmployeeDetail.Employee.BhxhLocation</p>
+                                        <p>@Model.Employee.BhxhLocation</p>
                                     }
                                     else
                                     {
@@ -977,9 +975,9 @@
 
                             <span class="badge badge-info">Tác vụ BHXH</span>
                             @{
-                                if (Model.EmployeeDetail.Employee.BhxhHistories != null && Model.EmployeeDetail.Employee.BhxhHistories.Count > 0)
+                                if (Model.Employee.BhxhHistories != null && Model.Employee.BhxhHistories.Count > 0)
                                 {
-                                    foreach (var item in Model.EmployeeDetail.Employee.BhxhHistories)
+                                    foreach (var item in Model.Employee.BhxhHistories)
                                     {
                                         <div class="col-12 nodeBHXH node">
                                             <hr />
@@ -1037,7 +1035,7 @@
                 </div>
                 <div class="row">
                     @{
-                        var cer1 = Model.EmployeeDetail.Employee.Certificates;
+                        var cer1 = Model.Employee.Certificates;
                         var cer2 = Model.EmployeeChance != null ? Model.EmployeeChance.Certificates : null;
                         if (cer1 != null && cer1.Count > 0)
                         {
@@ -1163,7 +1161,7 @@
                 </div>
                 <div class="row">
                     @{
-                        var fa1 = Model.EmployeeDetail.Employee.EmployeeFamilys;
+                        var fa1 = Model.Employee.EmployeeFamilys;
                         var fa2 = Model.EmployeeChance != null ? Model.EmployeeChance.EmployeeFamilys : null;
                         if (fa1 != null && fa1.Count > 0)
                         {
@@ -1311,9 +1309,9 @@
                 </div>
                 <div class="row">
                     @{
-                        if (Model.EmployeeDetail.Employee.Contracts != null && Model.EmployeeDetail.Employee.Contracts.Count > 0)
+                        if (Model.Employee.Contracts != null && Model.Employee.Contracts.Count > 0)
                         {
-                            foreach (var contract in Model.EmployeeDetail.Employee.Contracts)
+                            foreach (var contract in Model.Employee.Contracts)
                             {
                                 if (!string.IsNullOrEmpty(contract.Code))
                                 {
@@ -1396,9 +1394,9 @@
                 </div>
                 <div class="row">
                     @{
-                        if (Model.EmployeeDetail.Employee.StorePapers != null && Model.EmployeeDetail.Employee.StorePapers.Count > 0)
+                        if (Model.Employee.StorePapers != null && Model.Employee.StorePapers.Count > 0)
                         {
-                            foreach (var item in Model.EmployeeDetail.Employee.StorePapers)
+                            foreach (var item in Model.Employee.StorePapers)
                             {
                                 if (item.Count > 0)
                                 {
@@ -1437,7 +1435,7 @@
                 </div>
                 <div class="row">
                     @{
-                        var tra1 = Model.EmployeeDetail.Employee.EmployeeEducations;
+                        var tra1 = Model.Employee.EmployeeEducations;
                         var tra2 = Model.EmployeeChance != null ? Model.EmployeeChance.EmployeeEducations : null;
                         if (tra1 != null && tra1.Count > 0)
                         {
@@ -1528,7 +1526,7 @@
 @section scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
-        <script src="~/js/employee-data.js"></script>
+        <script src="~/js/employee-data.js?@Constants.VersionJs"></script>
     }
 }
 

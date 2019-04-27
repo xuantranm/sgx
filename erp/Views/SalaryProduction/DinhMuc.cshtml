@@ -10,35 +10,12 @@
     CultureInfo culture = CultureInfo.CreateSpecificCulture("en-US");
     var login = User.Identity.Name;
     var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
-    var thang = Model.Thang;
-
     var donggois = Model.DonGiaDMFulls.Where(m => m.Type.Equals((int)EDinhMuc.DongGoi)).ToList();
     var bocvacs = Model.DonGiaDMFulls.Where(m => m.Type.Equals((int)EDinhMuc.BocVac)).ToList();
     var tiledonggois = Model.TiLeDMs.Where(m => m.Type.Equals((int)EDinhMuc.DongGoi)).ToList();
     var tilebocvacs = Model.TiLeDMs.Where(m => m.Type.Equals((int)EDinhMuc.BocVac)).ToList();
 
 }
-<link href="~/assets/wingman/css/big-screen.css" rel="stylesheet" />
-<style>
-    .table-dinh-muc-dong-goi tbody th:nth-child(1), .table-dinh-muc-dong-goi tbody td:nth-child(1) {
-        position: sticky;
-        left: 0px;
-    }
-
-    .table-dinh-muc-dong-goi tbody td:nth-child(1) {
-        background-color: lightgoldenrodyellow;
-    }
-
-    .table-dinh-muc-boc-vac tbody th:nth-child(1), .table-dinh-muc-boc-vac tbody td:nth-child(1) {
-        position: sticky;
-        left: 0px;
-    }
-
-    .table-dinh-muc-boc-vac tbody td:nth-child(1) {
-        background-color: lightgoldenrodyellow;
-    }
-    
-</style>
 <div class="main-container">
     <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
         <div class="container">
@@ -65,43 +42,22 @@
                                 <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.BangLuong">BẢNG LƯƠNG</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.TheLuong">THẺ LƯƠNG</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" target="_blank" href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Timer?thang=@thang&khoi=@EKhoiLamViec.SX">CHẤM CÔNG</a>
-                            </li>
-                            <li class="nav-item">
                                 <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.TongHopTrongGio">TỔNG HỢP TRONG GIỜ</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.TongHopNgoaiGio">TỔNG HỢP NGOÀI GIỜ</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.PhuCap">PHỤ CẤP</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" target="_blank" href="/@Constants.LinkCredit.Main/@Constants.LinkCredit.Credits?thang=@thang&khoi=@EKhoiLamViec.SX">ỨNG LƯƠNG</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.DongGoiTrongGio">ĐÓNG GÓI TRONG GIỜ</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.DongGoiNgoaiGio">ĐÓNG GÓI NGOÀI GIỜ</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.BocHangTrongGio">BÓC HÀNG TRONG GIỜ</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.BocHangNgoaiGio">BÓC HÀNG NGOÀI GIỜ</a>
-                            </li>
-                            <li class="nav-item">
                                 <a class="nav-link active" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.DinhMuc">ĐỊNH MỨC</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" target="_blank" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.ThangLuongTrue/@Constants.LinkSalary.ThangLuong">THANG LƯƠNG</a>
+                                <a class="nav-link" target="_blank" href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Timer?thang=@Model.Thang&khoi=@EKhoiLamViec.SX">CHẤM CÔNG</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" target="_blank" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.Setting">THAM SỐ</a>
+                                <a class="nav-link" target="_blank" href="/@Constants.LinkCredit.Main/@Constants.LinkCredit.Credits?thang=@Model.Thang&khoi=@EKhoiLamViec.SX">ỨNG LƯƠNG</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" target="_blank" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.ThangLuongTrue/@Constants.LinkSalary.ThangLuong">THANG LƯƠNG</a>
                             </li>
                         </ul>
                     </div>
@@ -145,7 +101,7 @@
                                         }
                                     }
                                 </select>
-                                <a href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.SanXuatTongHopTrongGioTemplate?thang=@thang" class="btn btn-success btn-list btn-link-import" data-toggle="tooltip" title="Bấm tải về mẫu tài liệu.">
+                                <a href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Production/@Constants.LinkSalary.SanXuatTongHopTrongGioTemplate?thang=@Model.Thang" class="btn btn-success btn-list btn-link-import" data-toggle="tooltip" title="Bấm tải về mẫu tài liệu.">
                                     <i class="icon icon-back"></i>Tải mẫu dữ liệu
                                 </a>
                             </div>
@@ -487,7 +443,7 @@
 </div>
 
 @section scripts {
-    <script type="text/javascript" src="~/js/luong-san-xuat-dinh-muc.js?v-@DateTime.Now.Ticks"></script>
+    <script type="text/javascript" src="~/js/luong-san-xuat-dinh-muc.js?@Constants.VersionJs"></script>
 }
 
 

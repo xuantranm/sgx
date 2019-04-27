@@ -202,92 +202,13 @@ namespace erp.Controllers
 
             var employees = dbContext.Employees.Find(filter).ToList();
 
-            var results = new List<EmployeeDisplay>();
-            foreach (var item in employees)
-            {
-                try
-                {
-                    var congtychinhanhName = string.Empty;
-                    var khoichucnangName = string.Empty;
-                    var phongbanName = string.Empty;
-                    var bophanName = string.Empty;
-                    var bophanConName = string.Empty;
-                    var chucvuName = string.Empty;
-
-                    if (!string.IsNullOrEmpty(item.CongTyChiNhanh))
-                    {
-                        var ctcnE = congtychinhanhs.Where(m => m.Id.Equals(item.CongTyChiNhanh)).FirstOrDefault();
-                        if (ctcnE != null)
-                        {
-                            congtychinhanhName = ctcnE.Name;
-                        }
-                    }
-                    if (!string.IsNullOrEmpty(item.KhoiChucNang))
-                    {
-                        var kcnE = khoichucnangs.Where(m => m.Id.Equals(item.KhoiChucNang)).FirstOrDefault();
-                        if (kcnE != null)
-                        {
-                            khoichucnangName = kcnE.Name;
-                        }
-                    }
-                    if (!string.IsNullOrEmpty(item.PhongBan))
-                    {
-                        var pbE = phongbans.Where(m => m.Id.Equals(item.PhongBan)).FirstOrDefault();
-                        if (pbE != null)
-                        {
-                            phongbanName = pbE.Name;
-                        }
-                    }
-                    if (!string.IsNullOrEmpty(item.BoPhan))
-                    {
-                        var bpE = bophans.Where(m => m.Id.Equals(item.BoPhan)).FirstOrDefault();
-                        if (bpE != null)
-                        {
-                            bophanName = bpE.Name;
-                        }
-                    }
-                    if (!string.IsNullOrEmpty(item.BoPhanCon))
-                    {
-                        var bpcE = bophans.Where(m => m.Id.Equals(item.BoPhanCon)).FirstOrDefault();
-                        if (bpcE != null)
-                        {
-                            bophanConName = bpcE.Name;
-                        }
-                    }
-                    if (!string.IsNullOrEmpty(item.ChucVu))
-                    {
-                        var cvE = chucvus.Where(m => m.Id.Equals(item.ChucVu)).FirstOrDefault();
-                        if (cvE != null)
-                        {
-                            chucvuName = cvE.Name;
-                        }
-                    }
-
-                    var employeeDisplay = new EmployeeDisplay()
-                    {
-                        Employee = item,
-                        CongTyChiNhanh = congtychinhanhName,
-                        KhoiChucNang = khoichucnangName,
-                        PhongBan = phongbanName,
-                        BoPhan = bophanName,
-                        BoPhanCon = bophanConName,
-                        ChucVu = chucvuName
-                    };
-                    results.Add(employeeDisplay);
-                }
-                catch (Exception ex)
-                {
-
-                }
-            }
-
             filter = filter & builder.Eq(m => m.Leave, false);
             var recordCurrent = await dbContext.Employees.CountDocumentsAsync(filter);
 
             linkCurrent = !string.IsNullOrEmpty(linkCurrent) ? "?" + linkCurrent : linkCurrent;
             var viewModel = new EmployeeViewModel
             {
-                Employees = results,
+                Employees = employees,
                 Records = (int)records,
                 RecordCurrent = (int)recordCurrent,
                 RecordLeave = (int)records - (int)recordCurrent,
@@ -410,85 +331,6 @@ namespace erp.Controllers
 
             var employees = dbContext.Employees.Find(filter).Sort(sortBuilder).ToList();
 
-            var results = new List<EmployeeDisplay>();
-            foreach (var item in employees)
-            {
-                try
-                {
-                    var congtychinhanhName = string.Empty;
-                    var khoichucnangName = string.Empty;
-                    var phongbanName = string.Empty;
-                    var bophanName = string.Empty;
-                    var bophanConName = string.Empty;
-                    var chucvuName = string.Empty;
-
-                    if (!string.IsNullOrEmpty(item.CongTyChiNhanh))
-                    {
-                        var ctcnE = congtychinhanhs.Where(m => m.Id.Equals(item.CongTyChiNhanh)).FirstOrDefault();
-                        if (ctcnE != null)
-                        {
-                            congtychinhanhName = ctcnE.Name;
-                        }
-                    }
-                    if (!string.IsNullOrEmpty(item.KhoiChucNang))
-                    {
-                        var kcnE = khoichucnangs.Where(m => m.Id.Equals(item.KhoiChucNang)).FirstOrDefault();
-                        if (kcnE != null)
-                        {
-                            khoichucnangName = kcnE.Name;
-                        }
-                    }
-                    if (!string.IsNullOrEmpty(item.PhongBan))
-                    {
-                        var pbE = phongbans.Where(m => m.Id.Equals(item.PhongBan)).FirstOrDefault();
-                        if (pbE != null)
-                        {
-                            phongbanName = pbE.Name;
-                        }
-                    }
-                    if (!string.IsNullOrEmpty(item.BoPhan))
-                    {
-                        var bpE = bophans.Where(m => m.Id.Equals(item.BoPhan)).FirstOrDefault();
-                        if (bpE != null)
-                        {
-                            bophanName = bpE.Name;
-                        }
-                    }
-                    if (!string.IsNullOrEmpty(item.BoPhanCon))
-                    {
-                        var bpcE = bophans.Where(m => m.Id.Equals(item.BoPhanCon)).FirstOrDefault();
-                        if (bpcE != null)
-                        {
-                            bophanConName = bpcE.Name;
-                        }
-                    }
-                    if (!string.IsNullOrEmpty(item.ChucVu))
-                    {
-                        var cvE = chucvus.Where(m => m.Id.Equals(item.ChucVu)).FirstOrDefault();
-                        if (cvE != null)
-                        {
-                            chucvuName = cvE.Name;
-                        }
-                    }
-
-                    var employeeDisplay = new EmployeeDisplay()
-                    {
-                        Employee = item,
-                        CongTyChiNhanh = congtychinhanhName,
-                        KhoiChucNang = khoichucnangName,
-                        PhongBan = phongbanName,
-                        BoPhan = bophanName,
-                        BoPhanCon = bophanConName,
-                        ChucVu = chucvuName
-                    };
-                    results.Add(employeeDisplay);
-                }
-                catch (Exception ex)
-                {
-
-                }
-            }
-
             filter = filter & builder.Eq(m => m.Leave, false);
             var recordCurrent = await dbContext.Employees.CountDocumentsAsync(filter);
 
@@ -512,15 +354,12 @@ namespace erp.Controllers
                 cellStyleBorder.VerticalAlignment = VerticalAlignment.Center;
 
                 var cellStyleHeader = workbook.CreateCellStyle();
-                //cellStyleHeader.CloneStyleFrom(cellStyleBorder);
-                //cellStyleHeader.FillForegroundColor = HSSFColor.Blue.Index2;
                 cellStyleHeader.FillForegroundColor = HSSFColor.Grey25Percent.Index;
                 cellStyleHeader.FillPattern = FillPattern.SolidForeground;
                 #endregion
 
                 ISheet sheet1 = workbook.CreateSheet("Danh-sach-nhan-su");
 
-                //sheet1.AddMergedRegion(new CellRangeAddress(0, 0, 0, 10));
                 var rowIndex = 0;
                 IRow row = sheet1.CreateRow(rowIndex);
                 row.CreateCell(0, CellType.String).SetCellValue("STT");
@@ -567,18 +406,18 @@ namespace erp.Controllers
                 }
                 rowIndex++;
 
-                foreach (var data in results)
+                foreach (var data in employees)
                 {
                     row = sheet1.CreateRow(rowIndex);
                     row.CreateCell(0, CellType.Numeric).SetCellValue(rowIndex);
-                    row.CreateCell(1, CellType.String).SetCellValue(data.Employee.CodeOld + " (" + data.Employee.Code + ")");
-                    row.CreateCell(2, CellType.String).SetCellValue(data.Employee.FullName);
-                    row.CreateCell(3, CellType.String).SetCellValue(data.Employee.Email);
-                    row.CreateCell(4, CellType.String).SetCellValue(data.Employee.Tel);
+                    row.CreateCell(1, CellType.String).SetCellValue(data.CodeOld + " (" + data.Code + ")");
+                    row.CreateCell(2, CellType.String).SetCellValue(data.FullName);
+                    row.CreateCell(3, CellType.String).SetCellValue(data.Email);
+                    row.CreateCell(4, CellType.String).SetCellValue(data.Tel);
                     var mobiles = string.Empty;
-                    if (data.Employee.Mobiles != null && data.Employee.Mobiles.Count > 0)
+                    if (data.Mobiles != null && data.Mobiles.Count > 0)
                     {
-                        foreach (var mobile in data.Employee.Mobiles)
+                        foreach (var mobile in data.Mobiles)
                         {
                             if (!string.IsNullOrEmpty(mobiles))
                             {
@@ -592,9 +431,9 @@ namespace erp.Controllers
                     var workplaces = string.Empty;
                     var chamcongs = string.Empty;
                     var thoigianlamviec = string.Empty;
-                    if (data.Employee.Workplaces != null && data.Employee.Workplaces.Count > 0)
+                    if (data.Workplaces != null && data.Workplaces.Count > 0)
                     {
-                        foreach (var workplace in data.Employee.Workplaces)
+                        foreach (var workplace in data.Workplaces)
                         {
                             if (!string.IsNullOrEmpty(workplace.Name))
                             {
@@ -622,55 +461,45 @@ namespace erp.Controllers
                             }
                         }
                     }
-                    //row.CreateCell(6, CellType.String).SetCellValue(workplaces);
-                    row.CreateCell(6, CellType.String).SetCellValue(data.Employee.IsTimeKeeper ? "Không" : "Có");
+                    row.CreateCell(6, CellType.String).SetCellValue(data.IsTimeKeeper ? "Không" : "Có");
                     row.CreateCell(7, CellType.String).SetCellValue(chamcongs);
                     row.CreateCell(8, CellType.String).SetCellValue(thoigianlamviec);
-                    row.CreateCell(9, CellType.String).SetCellValue(data.Employee.LeaveLevelYear.ToString());
-                    row.CreateCell(10, CellType.String).SetCellValue(data.Employee.Birthday.ToString("dd/MM/yyyy"));
-                    row.CreateCell(11, CellType.String).SetCellValue(data.Employee.Gender);
-                    row.CreateCell(12, CellType.String).SetCellValue(data.Employee.Joinday.ToString("dd/MM/yyyy"));
-                    row.CreateCell(13, CellType.String).SetCellValue(data.Employee.Bornplace);
-                    row.CreateCell(14, CellType.String).SetCellValue(data.Employee.AddressResident);
-                    row.CreateCell(15, CellType.String).SetCellValue(data.Employee.AddressTemporary);
-                    //row.CreateCell(16, CellType.String).SetCellValue("Công ty/Chi nhánh");
-                    //row.CreateCell(17, CellType.String).SetCellValue("Khối chức năng");
-                    //row.CreateCell(18, CellType.String).SetCellValue("Phòng ban");
-                    //row.CreateCell(19, CellType.String).SetCellValue("Bộ phận");
-                    //row.CreateCell(20, CellType.String).SetCellValue("Bộ phận con");
-                    //row.CreateCell(21, CellType.String).SetCellValue("Chức vụ");
-                    //row.CreateCell(22, CellType.String).SetCellValue("CMND");
-                    row.CreateCell(16, CellType.String).SetCellValue(data.CongTyChiNhanh);
-                    row.CreateCell(17, CellType.String).SetCellValue(data.KhoiChucNang);
-                    row.CreateCell(18, CellType.String).SetCellValue(data.PhongBan);
-                    row.CreateCell(19, CellType.String).SetCellValue(data.BoPhan);
-                    row.CreateCell(20, CellType.String).SetCellValue(data.BoPhanCon);
-                    row.CreateCell(21, CellType.String).SetCellValue(data.ChucVu);
-
-                    row.CreateCell(22, CellType.String).SetCellValue(data.Employee.IdentityCard);
-                    row.CreateCell(23, CellType.String).SetCellValue(data.Employee.IdentityCardDate.HasValue ? data.Employee.IdentityCardDate.Value.ToString("dd/MM/yyyy") : string.Empty);
-                    row.CreateCell(24, CellType.String).SetCellValue(data.Employee.IdentityCardPlace);
-                    row.CreateCell(25, CellType.String).SetCellValue(data.Employee.HouseHold);
-                    row.CreateCell(26, CellType.String).SetCellValue(data.Employee.HouseHoldOwner);
-                    row.CreateCell(27, CellType.String).SetCellValue(data.Employee.Nation);
-                    row.CreateCell(28, CellType.String).SetCellValue(data.Employee.Religion);
-                    row.CreateCell(29, CellType.String).SetCellValue(data.Employee.BhxhBookNo);
-                    row.CreateCell(30, CellType.String).SetCellValue(data.Employee.BhxhCode);
-                    row.CreateCell(31, CellType.String).SetCellValue(data.Employee.BhxhHospital);
-                    row.CreateCell(32, CellType.String).SetCellValue(data.Employee.BhxhLocation);
-                    row.CreateCell(33, CellType.String).SetCellValue(data.Employee.BhytCode);
+                    row.CreateCell(9, CellType.String).SetCellValue(data.LeaveLevelYear.ToString());
+                    row.CreateCell(10, CellType.String).SetCellValue(data.Birthday.ToString("dd/MM/yyyy"));
+                    row.CreateCell(11, CellType.String).SetCellValue(data.Gender);
+                    row.CreateCell(12, CellType.String).SetCellValue(data.Joinday.ToString("dd/MM/yyyy"));
+                    row.CreateCell(13, CellType.String).SetCellValue(data.Bornplace);
+                    row.CreateCell(14, CellType.String).SetCellValue(data.AddressResident);
+                    row.CreateCell(15, CellType.String).SetCellValue(data.AddressTemporary);
+                    row.CreateCell(16, CellType.String).SetCellValue(data.CongTyChiNhanhName);
+                    row.CreateCell(17, CellType.String).SetCellValue(data.KhoiChucNangName);
+                    row.CreateCell(18, CellType.String).SetCellValue(data.PhongBanName);
+                    row.CreateCell(19, CellType.String).SetCellValue(data.BoPhanName);
+                    row.CreateCell(20, CellType.String).SetCellValue(data.BoPhanConName);
+                    row.CreateCell(21, CellType.String).SetCellValue(data.ChucVuName);
+                    row.CreateCell(22, CellType.String).SetCellValue(data.IdentityCard);
+                    row.CreateCell(23, CellType.String).SetCellValue(data.IdentityCardDate.HasValue ? data.IdentityCardDate.Value.ToString("dd/MM/yyyy") : string.Empty);
+                    row.CreateCell(24, CellType.String).SetCellValue(data.IdentityCardPlace);
+                    row.CreateCell(25, CellType.String).SetCellValue(data.HouseHold);
+                    row.CreateCell(26, CellType.String).SetCellValue(data.HouseHoldOwner);
+                    row.CreateCell(27, CellType.String).SetCellValue(data.Nation);
+                    row.CreateCell(28, CellType.String).SetCellValue(data.Religion);
+                    row.CreateCell(29, CellType.String).SetCellValue(data.BhxhBookNo);
+                    row.CreateCell(30, CellType.String).SetCellValue(data.BhxhCode);
+                    row.CreateCell(31, CellType.String).SetCellValue(data.BhxhHospital);
+                    row.CreateCell(32, CellType.String).SetCellValue(data.BhxhLocation);
+                    row.CreateCell(33, CellType.String).SetCellValue(data.BhytCode);
                     var manage = string.Empty;
-                    if (!string.IsNullOrEmpty(data.Employee.ManagerId))
+                    if (!string.IsNullOrEmpty(data.ManagerId))
                     {
-                        var managerEntity = dbContext.Employees.Find(m => m.Id.Equals(data.Employee.ManagerId)).FirstOrDefault();
+                        var managerEntity = dbContext.Employees.Find(m => m.Id.Equals(data.ManagerId)).FirstOrDefault();
                         if (managerEntity != null)
                         {
                             manage = managerEntity.FullName;
                         }
                     }
                     row.CreateCell(34, CellType.String).SetCellValue(manage);
-                    row.CreateCell(35, CellType.String).SetCellValue(data.Employee.Leaveday.HasValue ? data.Employee.Leaveday.Value.ToString("dd/MM/yyyy") : string.Empty);
-                    //sheet1.AutoSizeColumn(0);
+                    row.CreateCell(35, CellType.String).SetCellValue(data.Leaveday.HasValue ? data.Leaveday.Value.ToString("dd/MM/yyyy") : string.Empty);
                     rowIndex++;
                 }
 
@@ -735,10 +564,10 @@ namespace erp.Controllers
                 {
                     var claims = new List<Claim>
                     {
-                        new Claim("UserName", result.UserName),
+                        new Claim("UserName", string.IsNullOrEmpty(result.UserName) ? string.Empty : result.UserName),
                         new Claim(ClaimTypes.Name, result.Id),
-                        new Claim(ClaimTypes.Email, string.IsNullOrEmpty(result.Email)? string.Empty : result.Email),
-                        new Claim("FullName", result.FullName),
+                        new Claim(ClaimTypes.Email, string.IsNullOrEmpty(result.Email) ? string.Empty : result.Email),
+                        new Claim("FullName", string.IsNullOrEmpty(result.FullName) ? string.Empty : result.FullName),
                         new Claim(ClaimTypes.AuthenticationMethod, "sys")
                     };
 
@@ -848,84 +677,18 @@ namespace erp.Controllers
             {
                 return NotFound();
             }
-            var congtychinhanhName = string.Empty;
-            var khoichucnangName = string.Empty;
-            var phongbanName = string.Empty;
-            var bophanName = string.Empty;
-            var bophanConName = string.Empty;
-            var chucvuName = string.Empty;
+
             var nguoiquanly = string.Empty;
             var nguoiquanlychucvu = string.Empty;
-            if (!string.IsNullOrEmpty(entity.CongTyChiNhanh))
-            {
-                var ctcnE = dbContext.CongTyChiNhanhs.Find(m => m.Id.Equals(entity.CongTyChiNhanh)).FirstOrDefault();
-                if (ctcnE != null)
-                {
-                    congtychinhanhName = ctcnE.Name;
-                }
-            }
-            if (!string.IsNullOrEmpty(entity.KhoiChucNang))
-            {
-                var kcnE = dbContext.KhoiChucNangs.Find(m => m.Id.Equals(entity.KhoiChucNang)).FirstOrDefault();
-                if (kcnE != null)
-                {
-                    khoichucnangName = kcnE.Name;
-                }
-            }
-            if (!string.IsNullOrEmpty(entity.PhongBan))
-            {
-                var pbE = dbContext.PhongBans.Find(m => m.Id.Equals(entity.PhongBan)).FirstOrDefault();
-                if (pbE != null)
-                {
-                    phongbanName = pbE.Name;
-                }
-            }
-            if (!string.IsNullOrEmpty(entity.BoPhan))
-            {
-                var bpE = dbContext.BoPhans.Find(m => m.Id.Equals(entity.BoPhan)).FirstOrDefault();
-                if (bpE != null)
-                {
-                    bophanName = bpE.Name;
-                }
-            }
-            if (!string.IsNullOrEmpty(entity.BoPhanCon))
-            {
-                var bpcE = dbContext.BoPhans.Find(m => m.Id.Equals(entity.BoPhanCon)).FirstOrDefault();
-                if (bpcE != null)
-                {
-                    bophanConName = bpcE.Name;
-                }
-            }
-            if (!string.IsNullOrEmpty(entity.ChucVu))
-            {
-                var cvE = dbContext.ChucVus.Find(m => m.Id.Equals(entity.ChucVu)).FirstOrDefault();
-                if (cvE != null)
-                {
-                    chucvuName = cvE.Name;
-                }
-            }
             if (!string.IsNullOrEmpty(entity.ManagerId))
             {
                 var manager = dbContext.Employees.Find(m => m.Id.Equals(entity.ManagerId)).FirstOrDefault();
                 if (manager != null)
                 {
                     nguoiquanly = manager.FullName;
-                    nguoiquanlychucvu = manager.ChucVu;
+                    nguoiquanlychucvu = manager.ChucVuName;
                 }
             }
-
-            var employeeDisplay = new EmployeeDisplay()
-            {
-                Employee = entity,
-                CongTyChiNhanh = congtychinhanhName,
-                KhoiChucNang = khoichucnangName,
-                PhongBan = phongbanName,
-                BoPhan = bophanName,
-                BoPhanCon = bophanConName,
-                ChucVu = chucvuName,
-                NguoiQuanLy = nguoiquanly,
-                NguoiQuanLyChucVu = nguoiquanlychucvu
-            };
 
             var employeeChanged = await dbContext.EmployeeHistories.Find(m => m.EmployeeId.Equals(id)).SortByDescending(m => m.UpdatedOn).Limit(1).FirstOrDefaultAsync();
             var statusChange = false;
@@ -945,7 +708,7 @@ namespace erp.Controllers
 
             var viewModel = new EmployeeViewModel()
             {
-                EmployeeDetail = employeeDisplay,
+                Employee = entity,
                 EmployeeChance = employeeChanged,
                 StatusChange = statusChange
             };
@@ -1007,6 +770,8 @@ namespace erp.Controllers
             var contracts = dbContext.ContractTypes.Find(m => m.Enable.Equals(true)).ToList();
             var workTimeTypes = dbContext.WorkTimeTypes.Find(m => m.Enable.Equals(true)).ToList();
             var banks = dbContext.Banks.Find(m => m.Enable.Equals(true)).ToList();
+
+            var ngachluongs = dbContext.NgachLuongs.Find(m => m.Enable.Equals(true) && m.Bac.Equals(1)).ToList();
             #endregion
 
             var employee = new Employee
@@ -1017,7 +782,7 @@ namespace erp.Controllers
             var sortEmployee = Builders<Employee>.Sort.Ascending(m => m.FullName);
             var employees = dbContext.Employees.Find(m => m.Enable.Equals(true)).Sort(sortEmployee).ToList();
 
-            var viewModel = new EmployeeDataViewModel()
+            var viewModel = new EmployeeViewModel()
             {
                 Employee = employee,
                 Employees = employees,
@@ -1029,7 +794,8 @@ namespace erp.Controllers
                 ChucVus = chucvus,
                 WorkTimeTypes = workTimeTypes,
                 Hospitals = hospitals,
-                Contracts = contracts
+                Contracts = contracts,
+                NgachLuongs = ngachluongs
             };
             return View(viewModel);
         }
@@ -1037,7 +803,7 @@ namespace erp.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Route("nhan-su/tao-moi")]
-        public async Task<ActionResult> CreateAsync(EmployeeDataViewModel viewModel, string checkUserName, string checkEmail)
+        public async Task<ActionResult> CreateAsync(EmployeeViewModel viewModel, string checkUserName, string checkEmail)
         {
             #region Authorization
             var login = User.Identity.Name;
@@ -1080,13 +846,6 @@ namespace erp.Controllers
             }
 
             #region Update missing field
-            entity.CongTyChiNhanh = string.IsNullOrEmpty(entity.CongTyChiNhanh) ? string.Empty : entity.CongTyChiNhanh;
-            entity.KhoiChucNang = string.IsNullOrEmpty(entity.KhoiChucNang) ? string.Empty : entity.KhoiChucNang;
-            entity.PhongBan = string.IsNullOrEmpty(entity.PhongBan) ? string.Empty : entity.PhongBan;
-            entity.BoPhan = string.IsNullOrEmpty(entity.BoPhan) ? string.Empty : entity.BoPhan;
-            entity.BoPhanCon = string.IsNullOrEmpty(entity.BoPhanCon) ? string.Empty : entity.BoPhanCon;
-            entity.ChucVu = string.IsNullOrEmpty(entity.ChucVu) ? string.Empty : entity.ChucVu;
-
             if (entity.Contracts != null)
             {
                 if (entity.Contracts.Count > 0)
@@ -1100,6 +859,11 @@ namespace erp.Controllers
                     }
                 }
                 entity.Contracts = entity.Contracts.Count == 0 ? null : entity.Contracts;
+            }
+
+            if (entity.IsTimeKeeper)
+            {
+                entity.Workplaces = null;
             }
             #endregion
 
@@ -1363,6 +1127,8 @@ namespace erp.Controllers
             var contracts = dbContext.ContractTypes.Find(m => m.Enable.Equals(true)).ToList();
             var workTimeTypes = dbContext.WorkTimeTypes.Find(m => m.Enable.Equals(true)).ToList();
             var banks = dbContext.Banks.Find(m => m.Enable.Equals(true)).ToList();
+
+            var ngachluongs = dbContext.NgachLuongs.Find(m => m.Enable.Equals(true) && m.Bac.Equals(1)).ToList();
             #endregion
 
             var sortEmployee = Builders<Employee>.Sort.Ascending(m => m.FullName);
@@ -1393,7 +1159,7 @@ namespace erp.Controllers
                 }
             }
 
-            var viewModel = new EmployeeDataViewModel()
+            var viewModel = new EmployeeViewModel()
             {
                 Employee = entity,
                 EmployeeChance = employeeChanged,
@@ -1408,7 +1174,8 @@ namespace erp.Controllers
                 ChucVus = chucvus,
                 WorkTimeTypes = workTimeTypes,
                 Hospitals = hospitals,
-                Contracts = contracts
+                Contracts = contracts,
+                NgachLuongs = ngachluongs
             };
 
             #region EmailGroup
@@ -1436,7 +1203,7 @@ namespace erp.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Route("nhan-su/cap-nhat/{id}")]
-        public async Task<ActionResult> EditAsync(EmployeeDataViewModel viewModel)
+        public async Task<ActionResult> EditAsync(EmployeeViewModel viewModel)
         {
             var entity = viewModel.Employee;
 
@@ -1446,8 +1213,8 @@ namespace erp.Controllers
             #region Authorization
             var login = User.Identity.Name;
             var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
-            var loginInformation = dbContext.Employees.Find(m => m.Id.Equals(login)).FirstOrDefault();
-            if (loginInformation == null)
+            var loginE = dbContext.Employees.Find(m => m.Id.Equals(login)).FirstOrDefault();
+            if (loginE == null)
             {
                 #region snippet1
                 await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
@@ -1455,7 +1222,12 @@ namespace erp.Controllers
 
                 return RedirectToAction("login", "account");
             }
-
+            var loginInformation = new EmployeeDisplay
+            {
+                Employee = loginE
+            };
+            var chucvuLoginE = dbContext.ChucVus.Find(m => m.Id.Equals(loginE.ChucVu)).FirstOrDefault();
+            loginE.ChucVu = chucvuLoginE != null ? chucvuLoginE.Name: string.Empty;
             // Check owner
             if (entity.Id != login)
             {
@@ -1495,8 +1267,12 @@ namespace erp.Controllers
                 {
                     entity.Email = Utility.EmailConvert(entity.FullName);
                 }
-
                 entity.UserName = entity.Email.Replace(Constants.MailExtension, string.Empty);
+            }
+
+            if (entity.IsTimeKeeper)
+            {
+                entity.Workplaces = null;
             }
 
             if (entity.Contracts != null)
@@ -1512,34 +1288,6 @@ namespace erp.Controllers
                     }
                 }
                 entity.Contracts = entity.Contracts.Count == 0 ? null : entity.Contracts;
-            }
-            if (string.IsNullOrEmpty(entity.Department))
-            {
-                entity.Department = string.Empty;
-            }
-            if (string.IsNullOrEmpty(entity.Part))
-            {
-                entity.Part = string.Empty;
-            }
-            if (string.IsNullOrEmpty(entity.Title))
-            {
-                entity.Title = string.Empty;
-            }
-            if (string.IsNullOrEmpty(entity.CongTyChiNhanh))
-            {
-                entity.CongTyChiNhanh = string.Empty;
-            }
-            if (string.IsNullOrEmpty(entity.KhoiChucNang))
-            {
-                entity.KhoiChucNang = string.Empty;
-            }
-            if (string.IsNullOrEmpty(entity.PhongBan))
-            {
-                entity.PhongBan = string.Empty;
-            }
-            if (string.IsNullOrEmpty(entity.BoPhan))
-            {
-                entity.BoPhan = string.Empty;
             }
             #endregion
 
@@ -1648,12 +1396,11 @@ namespace erp.Controllers
                 var linkInformation = Constants.LinkHr.Main + "/" + Constants.LinkHr.Human + "/" + Constants.LinkHr.Information + "/" + entity.Id;
                 if (rightHr)
                 {
-                    if (!string.IsNullOrEmpty(entity.SalaryChucVuViTriCode))
+                    if (!string.IsNullOrEmpty(entity.NgachLuongCode))
                     {
-                        var viTriE = dbContext.SalaryThangBangLuongs.Find(m => m.ViTriCode.Equals(entity.SalaryChucVuViTriCode)).SortByDescending(m => m.UpdatedOn).FirstOrDefault();
+                        var viTriE = dbContext.SalaryThangBangLuongs.Find(m => m.ViTriCode.Equals(entity.NgachLuongCode)).SortByDescending(m => m.UpdatedOn).FirstOrDefault();
                         if (viTriE != null)
                         {
-                            entity.Title = viTriE.ViTri;
                             entity.SalaryChucVu = viTriE.ViTri;
                         }
                     }
@@ -1679,6 +1426,7 @@ namespace erp.Controllers
                         .Set(m => m.Bornplace, entity.Bornplace)
                         .Set(m => m.Gender, entity.Gender)
                         .Set(m => m.Joinday, entity.Joinday)
+                        .Set(m => m.Official, entity.Official)
                         .Set(m => m.Contractday, entity.Contractday)
                         .Set(m => m.Leave, entity.Leave)
                         .Set(m => m.Leaveday, entity.Leaveday)
@@ -1688,16 +1436,20 @@ namespace erp.Controllers
                         .Set(m => m.AddressTemporary, entity.AddressTemporary)
                         .Set(m => m.EmailPersonal, entity.EmailPersonal)
                         .Set(m => m.Intro, entity.Intro)
-
                         .Set(m => m.CongTyChiNhanh, entity.CongTyChiNhanh)
                         .Set(m => m.KhoiChucNang, entity.KhoiChucNang)
                         .Set(m => m.PhongBan, entity.PhongBan)
                         .Set(m => m.BoPhan, entity.BoPhan)
                         .Set(m => m.BoPhanCon, entity.BoPhanCon)
                         .Set(m => m.ChucVu, entity.ChucVu)
-
+                        .Set(m => m.CongTyChiNhanhName, entity.CongTyChiNhanhName)
+                        .Set(m => m.KhoiChucNangName, entity.KhoiChucNangName)
+                        .Set(m => m.PhongBanName, entity.PhongBanName)
+                        .Set(m => m.BoPhanName, entity.BoPhanName)
+                        .Set(m => m.BoPhanConName, entity.BoPhanConName)
+                        .Set(m => m.ChucVuName, entity.ChucVuName)
                         .Set(m => m.ManagerId, entity.ManagerId)
-                        .Set(m => m.Title, entity.Title)
+                        .Set(m => m.ManagerInformation, entity.ManagerInformation)
                         .Set(m => m.Tel, entity.Tel)
                         .Set(m => m.Mobiles, entity.Mobiles)
                         .Set(m => m.IsOnline, entity.IsOnline)
@@ -1737,8 +1489,11 @@ namespace erp.Controllers
                         .Set(m => m.EmployeeEducations, entity.EmployeeEducations)
                         .Set(m => m.SalaryType, entity.SalaryType)
                         .Set(m => m.SalaryPayMethod, entity.SalaryPayMethod)
-                        .Set(m => m.NgachLuong, entity.NgachLuong)
-                        .Set(m => m.SalaryChucVuViTriCode, entity.SalaryChucVuViTriCode);
+                        .Set(m => m.NgachLuongCode, entity.NgachLuongCode)
+                        .Set(m => m.NgachLuongLevel, entity.NgachLuongLevel)
+                        .Set(m => m.SalaryChucVuViTriCode, entity.SalaryChucVuViTriCode)
+                        .Set(m => m.SaleChucVu, entity.SaleChucVu)
+                        .Set(m => m.LogisticChucVu, entity.LogisticChucVu);
 
                     if (entity.Avatar != null && !string.IsNullOrEmpty(entity.Avatar.FileName))
                     {
@@ -1780,14 +1535,14 @@ namespace erp.Controllers
                                     + "HrChangeInformation.html";
                             var subject = "Thay đổi thông tin nhân sự.";
                             var requester = entity.FullName;
-                            var hrChanged = loginInformation.FullName;
-                            if (!string.IsNullOrEmpty(loginInformation.Title))
+                            var hrChanged = loginInformation.Employee.FullName;
+                            if (!string.IsNullOrEmpty(loginInformation.ChucVu))
                             {
-                                hrChanged += " - " + loginInformation.Title;
+                                hrChanged += " - " + loginInformation.ChucVu;
                             }
-                            if (!string.IsNullOrEmpty(loginInformation.Email))
+                            if (!string.IsNullOrEmpty(loginInformation.Employee.Email))
                             {
-                                hrChanged += " - email: " + loginInformation.Email;
+                                hrChanged += " - email: " + loginInformation.Employee.Email;
                             }
                             var linkDomain = Constants.System.domain;
                             var fullLinkInformation = linkDomain + "/" + linkInformation;
@@ -1898,7 +1653,7 @@ namespace erp.Controllers
                                 else if (item.Action >= 4)
                                 {
                                     var fields = Builders<Employee>.Projection.Include(p => p.Email).Include(p => p.FullName);
-                                    var emailEntity = dbContext.Employees.Find(m => m.Id.Equals(item.User) && !m.NgachLuong.Equals("C.01")).Project<Employee>(fields).FirstOrDefault();
+                                    var emailEntity = dbContext.Employees.Find(m => m.Id.Equals(item.User) && !m.NgachLuongCode.Equals("C.01")).Project<Employee>(fields).FirstOrDefault();
                                     if (emailEntity != null)
                                     {
                                         ccs.Add(new EmailAddress { Name = emailEntity.FullName, Address = emailEntity.Email });
@@ -1918,9 +1673,14 @@ namespace erp.Controllers
                         var subject = "Thay đổi thông tin nhân sự.";
                         var requester = "Bộ phận nhân sự.";
                         var userTitle = entity.FullName;
-                        if (!string.IsNullOrEmpty(entity.Title))
+                        if (!string.IsNullOrEmpty(entity.ChucVu))
                         {
-                            userTitle += " - " + entity.Title;
+                            var entityChucVuE = dbContext.ChucVus.Find(m => m.Id.Equals(entity.ChucVu)).FirstOrDefault();
+                            var entityChucVu = entityChucVuE != null ? entityChucVuE.Name : string.Empty;
+                            if (!string.IsNullOrEmpty(entityChucVu))
+                            {
+                                userTitle += " - " + entityChucVu;
+                            }
                         }
                         var linkDomain = Constants.System.domain;
                         var fullLinkInformation = linkDomain + "/" + linkInformation;
@@ -1974,7 +1734,7 @@ namespace erp.Controllers
                     Images = notificationImages.Count > 0 ? notificationImages : null,
                     UserId = userId,
                     CreatedBy = login,
-                    CreatedByName = loginInformation.FullName
+                    CreatedByName = loginInformation.Employee.FullName
                 };
                 dbContext.Notifications.InsertOne(notification);
                 #endregion
@@ -2054,7 +1814,7 @@ namespace erp.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Route("nhan-su/xoa/{id}")]
-        public IActionResult Delete(EmployeeDataViewModel viewModel, string id)
+        public IActionResult Delete(EmployeeViewModel viewModel, string id)
         {
             var userId = User.Identity.Name;
             var entity = viewModel.Employee;
@@ -2135,11 +1895,95 @@ namespace erp.Controllers
         [Route(Constants.LinkHr.ChildrenReport + "/" + Constants.LinkHr.Export)]
         public async Task<IActionResult> ChildrenReportExport(string fileName)
         {
+            var congtychinhanhs = dbContext.CongTyChiNhanhs.Find(m => m.Enable.Equals(true)).ToList();
+            var khoichucnangs = dbContext.KhoiChucNangs.Find(m => m.Enable.Equals(true)).ToList();
+            var phongbans = dbContext.PhongBans.Find(m => m.Enable.Equals(true)).ToList();
+            var bophans = dbContext.BoPhans.Find(m => m.Enable.Equals(true) && string.IsNullOrEmpty(m.Parent)).ToList();
+            var chucvus = dbContext.ChucVus.Find(m => m.Enable.Equals(true)).ToList();
+
             var builder = Builders<Employee>.Filter;
             var filter = builder.Eq(m => m.Enable, true);
             filter = filter & !builder.Eq(i => i.UserName, Constants.System.account);
             filter = filter & builder.Eq("EmployeeFamilys.Relation", 3);
-            var results = await dbContext.Employees.Find(filter).ToListAsync();
+            var employees = await dbContext.Employees.Find(filter).ToListAsync();
+            var results = new List<EmployeeDisplay>();
+            foreach (var item in employees)
+            {
+                try
+                {
+                    var congtychinhanhName = string.Empty;
+                    var khoichucnangName = string.Empty;
+                    var phongbanName = string.Empty;
+                    var bophanName = string.Empty;
+                    var bophanConName = string.Empty;
+                    var chucvuName = string.Empty;
+
+                    if (!string.IsNullOrEmpty(item.CongTyChiNhanh))
+                    {
+                        var ctcnE = congtychinhanhs.Where(m => m.Id.Equals(item.CongTyChiNhanh)).FirstOrDefault();
+                        if (ctcnE != null)
+                        {
+                            congtychinhanhName = ctcnE.Name;
+                        }
+                    }
+                    if (!string.IsNullOrEmpty(item.KhoiChucNang))
+                    {
+                        var kcnE = khoichucnangs.Where(m => m.Id.Equals(item.KhoiChucNang)).FirstOrDefault();
+                        if (kcnE != null)
+                        {
+                            khoichucnangName = kcnE.Name;
+                        }
+                    }
+                    if (!string.IsNullOrEmpty(item.PhongBan))
+                    {
+                        var pbE = phongbans.Where(m => m.Id.Equals(item.PhongBan)).FirstOrDefault();
+                        if (pbE != null)
+                        {
+                            phongbanName = pbE.Name;
+                        }
+                    }
+                    if (!string.IsNullOrEmpty(item.BoPhan))
+                    {
+                        var bpE = bophans.Where(m => m.Id.Equals(item.BoPhan)).FirstOrDefault();
+                        if (bpE != null)
+                        {
+                            bophanName = bpE.Name;
+                        }
+                    }
+                    if (!string.IsNullOrEmpty(item.BoPhanCon))
+                    {
+                        var bpcE = bophans.Where(m => m.Id.Equals(item.BoPhanCon)).FirstOrDefault();
+                        if (bpcE != null)
+                        {
+                            bophanConName = bpcE.Name;
+                        }
+                    }
+                    if (!string.IsNullOrEmpty(item.ChucVu))
+                    {
+                        var cvE = chucvus.Where(m => m.Id.Equals(item.ChucVu)).FirstOrDefault();
+                        if (cvE != null)
+                        {
+                            chucvuName = cvE.Name;
+                        }
+                    }
+
+                    var employeeDisplay = new EmployeeDisplay()
+                    {
+                        Employee = item,
+                        CongTyChiNhanh = congtychinhanhName,
+                        KhoiChucNang = khoichucnangName,
+                        PhongBan = phongbanName,
+                        BoPhan = bophanName,
+                        BoPhanCon = bophanConName,
+                        ChucVu = chucvuName
+                    };
+                    results.Add(employeeDisplay);
+                }
+                catch (Exception ex)
+                {
+
+                }
+            }
 
             string exportFolder = Path.Combine(_env.WebRootPath, "exports");
             string sFileName = @"danh-sach-con-" + DateTime.Now.ToString("ddMMyyyyhhmm") + ".xlsx";
@@ -2159,8 +2003,6 @@ namespace erp.Controllers
                 cellStyleBorder.VerticalAlignment = VerticalAlignment.Center;
 
                 var cellStyleHeader = workbook.CreateCellStyle();
-                //cellStyleHeader.CloneStyleFrom(cellStyleBorder);
-                //cellStyleHeader.FillForegroundColor = HSSFColor.Blue.Index2;
                 cellStyleHeader.FillForegroundColor = HSSFColor.Grey25Percent.Index;
                 cellStyleHeader.FillPattern = FillPattern.SolidForeground;
                 #endregion
@@ -2176,12 +2018,13 @@ namespace erp.Controllers
                 row.CreateCell(3, CellType.String).SetCellValue("Email");
                 row.CreateCell(4, CellType.String).SetCellValue("Điện thoại bàn");
                 row.CreateCell(5, CellType.String).SetCellValue("Điện thoại");
-                row.CreateCell(6, CellType.String).SetCellValue("Nơi làm việc");
-                row.CreateCell(7, CellType.String).SetCellValue("Bộ phận");
+                row.CreateCell(6, CellType.String).SetCellValue("Nơi công tác");
+                row.CreateCell(7, CellType.String).SetCellValue("Khối chức năng");
                 row.CreateCell(8, CellType.String).SetCellValue("Phòng ban");
-                row.CreateCell(9, CellType.String).SetCellValue("Chức vụ");
-                row.CreateCell(10, CellType.String).SetCellValue("Thông tin con");
-                row.CreateCell(11, CellType.String).SetCellValue("Tổng số");
+                row.CreateCell(9, CellType.String).SetCellValue("Bộ phận");
+                row.CreateCell(10, CellType.String).SetCellValue("Chức vụ");
+                row.CreateCell(11, CellType.String).SetCellValue("Thông tin con");
+                row.CreateCell(12, CellType.String).SetCellValue("Tổng số");
                 // Set style
                 for (int i = 0; i <= 11; i++)
                 {
@@ -2193,14 +2036,14 @@ namespace erp.Controllers
                 {
                     row = sheet1.CreateRow(rowIndex);
                     row.CreateCell(0, CellType.Numeric).SetCellValue(rowIndex);
-                    row.CreateCell(1, CellType.String).SetCellValue(data.CodeOld + " (" + data.Code + ")");
-                    row.CreateCell(2, CellType.String).SetCellValue(data.FullName);
-                    row.CreateCell(3, CellType.String).SetCellValue(data.Email);
-                    row.CreateCell(4, CellType.String).SetCellValue(data.Tel);
+                    row.CreateCell(1, CellType.String).SetCellValue(data.Employee.CodeOld + " (" + data.Employee.Code + ")");
+                    row.CreateCell(2, CellType.String).SetCellValue(data.Employee.FullName);
+                    row.CreateCell(3, CellType.String).SetCellValue(data.Employee.Email);
+                    row.CreateCell(4, CellType.String).SetCellValue(data.Employee.Tel);
                     var mobiles = string.Empty;
-                    if (data.Mobiles != null && data.Mobiles.Count > 0)
+                    if (data.Employee.Mobiles != null && data.Employee.Mobiles.Count > 0)
                     {
-                        foreach (var mobile in data.Mobiles)
+                        foreach (var mobile in data.Employee.Mobiles)
                         {
                             if (!string.IsNullOrEmpty(mobiles))
                             {
@@ -2210,29 +2053,14 @@ namespace erp.Controllers
                         }
                     }
                     row.CreateCell(5, CellType.String).SetCellValue(mobiles);
-                    var workplaces = string.Empty;
-                    if (data.Workplaces != null && data.Workplaces.Count > 0)
-                    {
-                        foreach (var workplace in data.Workplaces)
-                        {
-                            if (!string.IsNullOrEmpty(workplaces))
-                            {
-                                workplaces += " - ";
-                            }
-                            workplaces += workplace.Name;
-                            if (!string.IsNullOrEmpty(workplace.Fingerprint))
-                            {
-                                workplaces += "(" + workplace.Fingerprint + " - " + workplace.WorkingScheduleTime + ")";
-                            }
-                        }
-                    }
-                    row.CreateCell(6, CellType.String).SetCellValue(workplaces);
-                    row.CreateCell(7, CellType.String).SetCellValue(data.Part);
-                    row.CreateCell(8, CellType.String).SetCellValue(data.Department);
-                    row.CreateCell(9, CellType.String).SetCellValue(data.Title);
+                    row.CreateCell(6, CellType.String).SetCellValue(data.CongTyChiNhanh);
+                    row.CreateCell(7, CellType.String).SetCellValue(data.KhoiChucNang);
+                    row.CreateCell(8, CellType.String).SetCellValue(data.PhongBan);
+                    row.CreateCell(9, CellType.String).SetCellValue(data.BoPhan);
+                    row.CreateCell(10, CellType.String).SetCellValue(data.ChucVu);
                     var thongtincon = string.Empty;
                     int socon = 0;
-                    foreach (var children in data.EmployeeFamilys)
+                    foreach (var children in data.Employee.EmployeeFamilys)
                     {
                         if (children.Relation == 3)
                         {
@@ -2248,29 +2076,10 @@ namespace erp.Controllers
                             socon++;
                         }
                     }
-                    row.CreateCell(10, CellType.String).SetCellValue(thongtincon);
-                    row.CreateCell(11, CellType.Numeric).SetCellValue(socon);
-                    //sheet1.AutoSizeColumn(0);
+                    row.CreateCell(11, CellType.String).SetCellValue(thongtincon);
+                    row.CreateCell(12, CellType.Numeric).SetCellValue(socon);
                     rowIndex++;
                 }
-
-                var sheet2 = workbook.CreateSheet("Phong-ban");
-                var style1 = workbook.CreateCellStyle();
-                style1.FillForegroundColor = HSSFColor.Blue.Index2;
-                style1.FillPattern = FillPattern.SolidForeground;
-
-                var style2 = workbook.CreateCellStyle();
-                style2.FillForegroundColor = HSSFColor.Yellow.Index2;
-                style2.FillPattern = FillPattern.SolidForeground;
-
-                var cell2 = sheet2.CreateRow(0).CreateCell(0);
-                cell2.CellStyle = style1;
-                cell2.SetCellValue(0);
-
-                cell2 = sheet2.CreateRow(1).CreateCell(0);
-                cell2.CellStyle = style2;
-                cell2.SetCellValue(1);
-
                 workbook.Write(fs);
             }
             using (var stream = new FileStream(Path.Combine(exportFolder, sFileName), FileMode.Open))
@@ -2329,84 +2138,19 @@ namespace erp.Controllers
                 var i = 1;
                 foreach (var employee in list)
                 {
-                    var congtychinhanhName = string.Empty;
-                    var khoichucnangName = string.Empty;
-                    var phongbanName = string.Empty;
-                    var bophanName = string.Empty;
-                    var bophanConName = string.Empty;
-                    var chucvuName = string.Empty;
-
-                    if (!string.IsNullOrEmpty(employee.CongTyChiNhanh))
-                    {
-                        var ctcnE = dbContext.CongTyChiNhanhs.Find(m => m.Id.Equals(employee.CongTyChiNhanh)).FirstOrDefault();
-                        if (ctcnE != null)
-                        {
-                            congtychinhanhName = ctcnE.Name;
-                        }
-                    }
-                    if (!string.IsNullOrEmpty(employee.KhoiChucNang))
-                    {
-                        var kcnE = dbContext.KhoiChucNangs.Find(m => m.Id.Equals(employee.KhoiChucNang)).FirstOrDefault();
-                        if (kcnE != null)
-                        {
-                            khoichucnangName = kcnE.Name;
-                        }
-                    }
-                    if (!string.IsNullOrEmpty(employee.PhongBan))
-                    {
-                        var pbE = dbContext.PhongBans.Find(m => m.Id.Equals(employee.PhongBan)).FirstOrDefault();
-                        if (pbE != null)
-                        {
-                            phongbanName = pbE.Name;
-                        }
-                    }
-                    if (!string.IsNullOrEmpty(employee.BoPhan))
-                    {
-                        var bpE = dbContext.BoPhans.Find(m => m.Id.Equals(employee.BoPhan)).FirstOrDefault();
-                        if (bpE != null)
-                        {
-                            bophanName = bpE.Name;
-                        }
-                    }
-                    if (!string.IsNullOrEmpty(employee.BoPhanCon))
-                    {
-                        var bpcE = dbContext.BoPhans.Find(m => m.Id.Equals(employee.BoPhanCon)).FirstOrDefault();
-                        if (bpcE != null)
-                        {
-                            bophanConName = bpcE.Name;
-                        }
-                    }
-                    if (!string.IsNullOrEmpty(employee.ChucVu))
-                    {
-                        var cvE = dbContext.ChucVus.Find(m => m.Id.Equals(employee.ChucVu)).FirstOrDefault();
-                        if (cvE != null)
-                        {
-                            chucvuName = cvE.Name;
-                        }
-                    }
-                    var entity = new EmployeeDisplay()
-                    {
-                        Employee = employee,
-                        CongTyChiNhanh = congtychinhanhName,
-                        KhoiChucNang = khoichucnangName,
-                        PhongBan = phongbanName,
-                        BoPhan = bophanName,
-                        BoPhanCon = bophanConName,
-                        ChucVu = chucvuName
-                    };
                     var contact = string.Empty;
-                    if (entity.Employee.Mobiles != null && entity.Employee.Mobiles.Count > 0)
+                    if (employee.Mobiles != null && employee.Mobiles.Count > 0)
                     {
-                        contact = entity.Employee.Mobiles[0].Number;
+                        contact = employee.Mobiles[0].Number;
                     }
                     nhansumoi += "<tr style='height: 12.75pt'>";
                     nhansumoi += "<td nowrap='nowrap' style='border: solid windowtext 1.0pt; border-top: none; padding: 0cm 5.4pt 0cm 5.4pt;'>" + i.ToString("00") + "</td>";
-                    nhansumoi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + entity.Employee.FullName + "</td>";
-                    nhansumoi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + entity.ChucVu + "</td>";
-                    nhansumoi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + entity.PhongBan + "</td>";
+                    nhansumoi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + employee.FullName + "</td>";
+                    nhansumoi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + employee.ChucVuName + "</td>";
+                    nhansumoi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + employee.PhongBanName + "</td>";
                     nhansumoi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'><a href='tel:" + contact + "'>" + contact + "</a></td>";
-                    nhansumoi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + entity.Employee.Email + "</td>";
-                    nhansumoi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + entity.Employee.Joinday.ToString("dd/MM/yyyy") + "</td>";
+                    nhansumoi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + employee.Email + "</td>";
+                    nhansumoi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + employee.Joinday.ToString("dd/MM/yyyy") + "</td>";
                     nhansumoi += "</tr>";
                     i++;
 
@@ -2427,10 +2171,10 @@ namespace erp.Controllers
                     "C.01",
                     "C.02"
                 };
-                var employees = dbContext.Employees.Find(m => m.Enable.Equals(true) && !string.IsNullOrEmpty(m.Email) && !m.UserName.Equals(Constants.System.account)).ToList();
+                var employees = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && !string.IsNullOrEmpty(m.Email) && !m.UserName.Equals(Constants.System.account)).ToList();
                 foreach (var employee in employees)
                 {
-                    if (!string.IsNullOrEmpty(employee.NgachLuong) && listboss.Any(str => str.Contains(employee.NgachLuong)))
+                    if (!string.IsNullOrEmpty(employee.NgachLuongCode) && listboss.Any(str => str.Contains(employee.NgachLuongCode)))
                     {
                         ccs.Add(new EmailAddress
                         {
@@ -2529,88 +2273,21 @@ namespace erp.Controllers
                 var i = 1;
                 foreach (var employee in list)
                 {
-                    var congtychinhanhName = string.Empty;
-                    var khoichucnangName = string.Empty;
-                    var phongbanName = string.Empty;
-                    var bophanName = string.Empty;
-                    var bophanConName = string.Empty;
-                    var chucvuName = string.Empty;
-
-                    if (!string.IsNullOrEmpty(employee.CongTyChiNhanh))
-                    {
-                        var ctcnE = dbContext.CongTyChiNhanhs.Find(m => m.Id.Equals(employee.CongTyChiNhanh)).FirstOrDefault();
-                        if (ctcnE != null)
-                        {
-                            congtychinhanhName = ctcnE.Name;
-                        }
-                    }
-                    if (!string.IsNullOrEmpty(employee.KhoiChucNang))
-                    {
-                        var kcnE = dbContext.KhoiChucNangs.Find(m => m.Id.Equals(employee.KhoiChucNang)).FirstOrDefault();
-                        if (kcnE != null)
-                        {
-                            khoichucnangName = kcnE.Name;
-                        }
-                    }
-                    if (!string.IsNullOrEmpty(employee.PhongBan))
-                    {
-                        var pbE = dbContext.PhongBans.Find(m => m.Id.Equals(employee.PhongBan)).FirstOrDefault();
-                        if (pbE != null)
-                        {
-                            phongbanName = pbE.Name;
-                        }
-                    }
-                    if (!string.IsNullOrEmpty(employee.BoPhan))
-                    {
-                        var bpE = dbContext.BoPhans.Find(m => m.Id.Equals(employee.BoPhan)).FirstOrDefault();
-                        if (bpE != null)
-                        {
-                            bophanName = bpE.Name;
-                        }
-                    }
-                    if (!string.IsNullOrEmpty(employee.BoPhanCon))
-                    {
-                        var bpcE = dbContext.BoPhans.Find(m => m.Id.Equals(employee.BoPhanCon)).FirstOrDefault();
-                        if (bpcE != null)
-                        {
-                            bophanConName = bpcE.Name;
-                        }
-                    }
-                    if (!string.IsNullOrEmpty(employee.ChucVu))
-                    {
-                        var cvE = dbContext.ChucVus.Find(m => m.Id.Equals(employee.ChucVu)).FirstOrDefault();
-                        if (cvE != null)
-                        {
-                            chucvuName = cvE.Name;
-                        }
-                    }
-
-                    var entity = new EmployeeDisplay()
-                    {
-                        Employee = employee,
-                        CongTyChiNhanh = congtychinhanhName,
-                        KhoiChucNang = khoichucnangName,
-                        PhongBan = phongbanName,
-                        BoPhan = bophanName,
-                        BoPhanCon = bophanConName,
-                        ChucVu = chucvuName
-                    };
-
                     var contact = string.Empty;
-                    if (entity.Employee.Mobiles != null && entity.Employee.Mobiles.Count > 0)
+                    if (employee.Mobiles != null && employee.Mobiles.Count > 0)
                     {
-                        contact = entity.Employee.Mobiles[0].Number;
+                        contact = employee.Mobiles[0].Number;
                     }
-                    if (!string.IsNullOrEmpty(entity.Employee.LeaveHandover))
+                    if (!string.IsNullOrEmpty(employee.LeaveHandover))
                     {
-                        noidungbangiao = "<br><span>" + entity.Employee.LeaveHandover + "</span>";
+                        noidungbangiao = "<br><span>" + employee.LeaveHandover + "</span>";
                     }
                     nhansunghi += "<tr style='height: 12.75pt'>";
                     nhansunghi += "<td nowrap='nowrap' style='border: solid windowtext 1.0pt; border-top: none; padding: 0cm 5.4pt 0cm 5.4pt;'>" + "01" + "</td>";
-                    nhansunghi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + entity.Employee.FullName + "</td>";
-                    nhansunghi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + entity.ChucVu + "</td>";
-                    nhansunghi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + entity.PhongBan + "</td>";
-                    nhansunghi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + entity.Employee.Leaveday.Value.ToString("dd/MM/yyyy") + "</td>";
+                    nhansunghi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + employee.FullName + "</td>";
+                    nhansunghi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + employee.ChucVuName + "</td>";
+                    nhansunghi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + employee.PhongBanName + "</td>";
+                    nhansunghi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + employee.Leaveday.Value.ToString("dd/MM/yyyy") + "</td>";
                     nhansunghi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'><a href='tel:" + contact + "'>" + contact + "</a></td>";
                     nhansunghi += "</tr>";
                     i++;
@@ -2633,10 +2310,10 @@ namespace erp.Controllers
                 "C.01",
                 "C.02"
             };
-                var employees = dbContext.Employees.Find(m => m.Enable.Equals(true) && !string.IsNullOrEmpty(m.Email) && !m.UserName.Equals(Constants.System.account)).ToList();
+                var employees = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && !string.IsNullOrEmpty(m.Email) && !m.UserName.Equals(Constants.System.account)).ToList();
                 foreach (var employee in employees)
                 {
-                    if (!string.IsNullOrEmpty(employee.NgachLuong) && listboss.Any(str => str.Contains(employee.NgachLuong)))
+                    if (!string.IsNullOrEmpty(employee.NgachLuongCode) && listboss.Any(str => str.Contains(employee.NgachLuongCode)))
                     {
                         ccs.Add(new EmailAddress
                         {
@@ -2759,7 +2436,6 @@ namespace erp.Controllers
                 Content = emailMessage.BodyContent
             };
             dbContext.ScheduleEmails.InsertOne(scheduleEmail);
-            //_emailSender.SendEmail(emailMessage);
         }
 
         private bool EntityExists(string id)

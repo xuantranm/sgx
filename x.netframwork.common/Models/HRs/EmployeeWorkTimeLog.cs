@@ -16,23 +16,31 @@ namespace Models
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
 
+        #region Employee
         public string EmployeeId { get; set; }
-        // NO USE
+
         public string EmployeeName { get; set; }
-
-        public string Part { get; set; }
-
+        
         public string Department { get; set; }
 
         public string DepartmentId { get; set; }
 
         public string DepartmentAlias { get; set; }
 
+        public string Part { get; set; }
+
+        public string PartId { get; set; }
+
+        public string PartAlias { get; set; }
+
+        public string EmployeeTitleId { get; set; }
+
         public string EmployeeTitle { get; set; }
 
-        // END NO USE
+        public string EmployeeTitleAlias { get; set; }
 
         public string EnrollNumber { get; set; }
+        #endregion
 
         public int Year { get; set; } = DateTime.Now.Year;
 
@@ -97,7 +105,7 @@ namespace Models
         public double SoNgayNghi { get; set; } = 0;
         #endregion
 
-        // use define salary loction
+        // use define salary location
         // base luong [SalaryType] : VP, NM, SX
         public int Workcode { get; set; }
 

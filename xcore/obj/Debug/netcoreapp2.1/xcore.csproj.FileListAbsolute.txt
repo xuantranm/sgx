@@ -7,3 +7,12 @@ C:\Projects\Tribat\sourcecode\xcore\obj\Debug\netcoreapp2.1\xcore.AssemblyInfo.c
 C:\Projects\Tribat\sourcecode\xcore\obj\Debug\netcoreapp2.1\xcore.dll
 C:\Projects\Tribat\sourcecode\xcore\obj\Debug\netcoreapp2.1\xcore.pdb
 C:\Projects\Tribat\sourcecode\xcore\obj\Debug\netcoreapp2.1\xcore.csprojAssemblyReference.cache
+D:\Projects\Sgx\sourcecode\sgx\xcore\bin\Debug\netcoreapp2.1\xcore.deps.json
+D:\Projects\Sgx\sourcecode\sgx\xcore\bin\Debug\netcoreapp2.1\xcore.dll
+D:\Projects\Sgx\sourcecode\sgx\xcore\bin\Debug\netcoreapp2.1\xcore.pdb
+D:\Projects\Sgx\sourcecode\sgx\xcore\obj\Debug\netcoreapp2.1\xcore.csproj.CoreCompileInputs.cache
+D:\Projects\Sgx\sourcecode\sgx\xcore\obj\Debug\netcoreapp2.1\xcore.AssemblyInfoInputs.cache
+D:\Projects\Sgx\sourcecode\sgx\xcore\obj\Debug\netcoreapp2.1\xcore.AssemblyInfo.cs
+D:\Projects\Sgx\sourcecode\sgx\xcore\obj\Debug\netcoreapp2.1\xcore.dll
+D:\Projects\Sgx\sourcecode\sgx\xcore\obj\Debug\netcoreapp2.1\xcore.pdb
+D:\Projects\Sgx\sourcecode\sgx\xcore\obj\Debug\netcoreapp2.1\xcore.csprojAssemblyReference.cache

@@ -907,12 +907,11 @@ namespace erp.Controllers
 
         public void UpdateLeave()
         {
-            var list = dbContext.Employees.Find(m => m.Function.Equals("Nghỉ việc")).ToList();
+            var list = dbContext.Employees.Find(m => m.Enable.Equals(true)).ToList();
             foreach (var item in list)
             {
                 var filter = Builders<Employee>.Filter.Eq(m => m.Id, item.Id);
                 var update = Builders<Employee>.Update
-                    //.Set(m => m.Leave, true)
                     .Set(m => m.Enable, false)
                     .Set(m => m.UpdatedOn, DateTime.Now)
                     .Set(m => m.UpdatedBy, Constants.System.account);
@@ -941,63 +940,6 @@ namespace erp.Controllers
             update = Builders<Employee>.Update
                 .Set(m => m.Password, "hOBU+oQGIY3LzYCRGVVLu5hCtP/K5DR0ydfe+x7zUYE=");
             dbContext.Employees.UpdateOne(filter, update);
-        }
-
-        public void InitParts()
-        {
-            dbContext.Parts.DeleteMany(new BsonDocument());
-            var list = dbContext.Employees.Distinct<string>("Part", "{}").ToList();
-            var i = 1;
-            foreach (var item in list)
-            {
-                if (!string.IsNullOrEmpty(item))
-                {
-                    dbContext.Parts.InsertOne(new Part()
-                    {
-                        Name = item,
-                        Alias = Utility.AliasConvert(item),
-                        Order = i
-                    });
-                    i++;
-                }
-            }
-            //_cache.SetString(Constants.Collection.Parts, JsonConvert.SerializeObject(dbContext.Parts.Find(m => true).ToList()));
-        }
-
-        public void InitDepartments()
-        {
-            dbContext.Departments.DeleteMany(new BsonDocument());
-            var list = dbContext.Employees.Distinct<string>("Department", "{}").ToList();
-            var i = 1;
-            foreach (var item in list)
-            {
-                if (!string.IsNullOrEmpty(item))
-                {
-                    dbContext.Departments.InsertOne(new Department()
-                    {
-                        Name = item,
-                        Alias = Utility.AliasConvert(item),
-                        Order = i
-                    });
-                }
-            }
-        }
-
-        public void InitTitles()
-        {
-            dbContext.Titles.DeleteMany(new BsonDocument());
-            var list = dbContext.Employees.Distinct<string>("Title", "{}").ToList();
-            foreach (var item in list)
-            {
-                if (!string.IsNullOrEmpty(item))
-                {
-                    dbContext.Titles.InsertOne(new Title()
-                    {
-                        Name = item
-                    });
-                }
-            }
-            //_cache.SetString(Constants.Collection.Parts, JsonConvert.SerializeObject(dbContext.Parts.Find(m => true).ToList()));
         }
 
         public void SendMailRegister(Employee entity, string pwd)
@@ -1064,7 +1006,6 @@ namespace erp.Controllers
 
             _logger.LogInformation(3, "User created a new account with password.");
         }
-
 
         #endregion
 

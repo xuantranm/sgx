@@ -96,10 +96,10 @@ namespace erp.Controllers
             {
                 var claims = new List<Claim>
                     {
-                        new Claim("UserName", result.UserName),
+                        new Claim("UserName", string.IsNullOrEmpty(result.UserName) ? string.Empty : result.UserName),
                         new Claim(ClaimTypes.Name, result.Id),
                         new Claim(ClaimTypes.Email, string.IsNullOrEmpty(result.Email) ? string.Empty : result.Email),
-                        new Claim("FullName", result.FullName)
+                        new Claim("FullName", string.IsNullOrEmpty(result.FullName) ? string.Empty : result.FullName)
                     };
 
                 var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -234,7 +234,7 @@ namespace erp.Controllers
 
             var password = Guid.NewGuid().ToString("N").Substring(0, 12);
             var sysPassword = Helper.HashedPassword(password);
-
+            //var userName = 
             var filterUpdate = Builders<Employee>.Filter.Eq(m => m.Id, user.Id);
             var update = Builders<Employee>.Update
                 .Set(m => m.Password, sysPassword);

@@ -200,6 +200,13 @@ namespace Data
         #region HRs
 
         #region SALARIES
+        public IMongoCollection<SalaryMucLuongVung> SalaryMucLuongVungs
+        {
+            get
+            {
+                return _database.GetCollection<SalaryMucLuongVung>("SalaryMucLuongVungs");
+            }
+        }
 
         public IMongoCollection<NgachLuong> NgachLuongs
         {
@@ -209,14 +216,12 @@ namespace Data
             }
         }
 
-        /// <summary>
-        /// Bang cai dat: mau so,...
-        /// </summary>
-        public IMongoCollection<SalarySetting> SalarySettings
+        // VP
+        public IMongoCollection<SalaryThangBangLuong> SalaryThangBangLuongs
         {
             get
             {
-                return _database.GetCollection<SalarySetting>("SalarySettings");
+                return _database.GetCollection<SalaryThangBangLuong>("SalaryThangBangLuongs");
             }
         }
 
@@ -252,37 +257,11 @@ namespace Data
             }
         }
 
-        public IMongoCollection<SalaryMucLuongVung> SalaryMucLuongVungs
-        {
-            get
-            {
-                return _database.GetCollection<SalaryMucLuongVung>("SalaryMucLuongVungs");
-            }
-        }
-
         public IMongoCollection<SalaryFeeLaw> SalaryFeeLaws
         {
             get
             {
                 return _database.GetCollection<SalaryFeeLaw>("SalaryFeeLaws");
-            }
-        }
-
-        public IMongoCollection<SalaryThangBangLuong> SalaryThangBangLuongs
-        {
-            get
-            {
-                return _database.GetCollection<SalaryThangBangLuong>("SalaryThangBangLuongs");
-            }
-        }
-
-        // No use. Use direct to SalaryThangBangLuong base ViTriCode of employee vs heso
-        // Thang Bac Luong của nhân viên
-        public IMongoCollection<SalaryThangBacLuongEmployee> SalaryThangBacLuongEmployees
-        {
-            get
-            {
-                return _database.GetCollection<SalaryThangBacLuongEmployee>("SalaryThangBacLuongEmployees");
             }
         }
 
@@ -310,14 +289,6 @@ namespace Data
             get
             {
                 return _database.GetCollection<SalaryThangBangPhuCapPhucLoi>("SalaryThangBangPhuCapPhucLois");
-            }
-        }
-
-        public IMongoCollection<ChucDanhCongViec> ChucDanhCongViecs
-        {
-            get
-            {
-                return _database.GetCollection<ChucDanhCongViec>("ChucDanhCongViecs");
             }
         }
         #endregion
@@ -887,14 +858,6 @@ namespace Data
             }
         }
 
-        public IMongoCollection<Department> Departments
-        {
-            get
-            {
-                return _database.GetCollection<Department>("Departments");
-            }
-        }
-
         public IMongoCollection<RoleUser> RoleUsers
         {
             get
@@ -948,14 +911,6 @@ namespace Data
             get
             {
                 return _database.GetCollection<TrackingQuantity>("TrackingQuantitys");
-            }
-        }
-
-        public IMongoCollection<Title> Titles
-        {
-            get
-            {
-                return _database.GetCollection<Title>("Titles");
             }
         }
 
@@ -1174,5 +1129,9 @@ namespace Data
                 return _database.GetCollection<Holiday>("Holidays");
             }
         }
+
+
+        // NO USE, DELETE LATER
+        
     }
 }

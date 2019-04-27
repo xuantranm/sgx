@@ -1,5 +1,67 @@
 ﻿namespace Common.Enums
 {
+    public enum ESetting
+    {
+        System = 1,
+        Hcns = 2,
+        Salary = 3
+    }
+
+    public enum ESalaryType
+    {
+        VP = 1,
+        NM = 2,
+        SX = 3
+    }
+
+    public enum EBun
+    {
+        DAC = 1,
+        DAT = 2
+    }
+
+    public enum ECustomer
+    {
+        Supplier = 1,
+        Client = 2,
+        Bun = 3,
+        ChuDauTu = 4,
+        ThiCong = 5,
+        GiamSat = 6,
+    }
+
+    public enum ETrangThai
+    {
+        Kho = 1
+    }
+
+    public enum ETiepNhanXuLy
+    {
+        Nhap = 1,
+        Xuat = 2
+    }
+
+    public enum EKho
+    {
+        NguyenVatLieu = 1,
+        ThanhPham = 2,
+        Bun = 3,
+        HangTraVe = 4,
+        TramCan = 5, // Tram Can
+        DuAnCong = 6 // Tram Can
+    }
+
+    public enum EFile
+    {
+        Image = 1,
+        Document = 2
+    }
+
+    public enum EProductStatus
+    {
+        New = 1
+    }
+
     public enum ECreditStatus
     {
         New = 0,

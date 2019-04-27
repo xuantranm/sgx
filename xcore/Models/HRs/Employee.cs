@@ -65,6 +65,9 @@ namespace Models
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime Joinday { get; set; }
 
+        [Display(Name = "Chính thức")]
+        public bool Official { get; set; } = true;
+
         // Last contract date
         [Display(Name = "Ngày hợp đồng")]
         [DataType(DataType.Date)]
@@ -114,7 +117,7 @@ namespace Models
         [Display(Name = "Nước")]
         public string CountryTemporary { get; set; }
 
-        #region New 08.03.2019. Store Id. Search alias convert to id | Query convert to viewModel, future thay the Deparment, part,...
+        #region New 08.03.2019. Store Id. Search alias convert to id | Query convert to viewModel
         public string CongTyChiNhanh { get; set; }
 
         public string KhoiChucNang { get; set; }
@@ -127,22 +130,24 @@ namespace Models
 
         public string ChucVu { get; set; }
 
+        public string CongTyChiNhanhName { get; set; }
+
+        public string KhoiChucNangName { get; set; }
+
+        public string PhongBanName { get; set; }
+
+        public string BoPhanName { get; set; }
+
+        public string BoPhanConName { get; set; }
+
+        public string ChucVuName { get; set; }
+
         public string GhiChu { get; set; }
         #endregion
 
-        public string Department { get; set; }
-
-        public string DepartmentId { get; set; }
-
-        public string DepartmentAlias { get; set; }
-
-        public string Part { get; set; }
-
-        public string PartId { get; set; }
-
-        public string PartAlias { get; set; }
-
         public string ManagerId { get; set; }
+
+        public string ManagerInformation { get; set; }
 
         [Display(Name = "ĐT bàn")]
         [DataType(DataType.PhoneNumber)]
@@ -164,18 +169,6 @@ namespace Models
         [Display(Name = "Ngày phép sẵn có")]
         [BsonRepresentation(BsonType.Decimal128)]
         public decimal LeaveDayAvailable { get; set; } = 0;
-
-        // Text Chuc Vu
-        [Display(Name = "Công việc")]
-        public string Title { get; set; }
-
-        public string TitleId { get; set; }
-
-        public string TitleAlias { get; set; }
-
-        // No use now. use title
-        [Display(Name = "Chức vụ")]
-        public string Function { get; set; }
 
         // Checked - Approved
         [Display(Name = "Trạng thái")]
@@ -341,44 +334,31 @@ namespace Models
         public bool IsLeaveEmail { get; set; } = false;
 
         #region SALARIES
-        /// <summary>
-        /// Because chance employee. Manager here.
-        /// Base [SalaryType]
-        /// </summary>
         public int SalaryType { get; set; } = (int)EKhoiLamViec.VP;
 
-        // Update on future: 0: hand, 1: bank
-        public int SalaryPayMethod { get; set; } = 0;
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal LuongBHXH { get; set; } = 0;
+
+        public int NgachLuongLevel { get; set; } = 1; // bậc lương thang bang luong
+
+        public string NgachLuongCode { get; set; } // Ma so
+
+        public double ThamSoTinhLuong { get; set; } = 26; // bv:27
 
         // Get newest from [SalaryEmployeeMonth]
         [BsonRepresentation(BsonType.Decimal128)]
         public decimal Salary { get; set; } = 0;
 
-        [BsonRepresentation(BsonType.Decimal128)]
-        public decimal LuongBHXH { get; set; } = 0;
-
         // Tổng dư nợ hiện tại.
         [BsonRepresentation(BsonType.Decimal128)]
         public decimal Credit { get; set; } = 0;
 
-        // Use Title.
+        // Update on future: 0: hand, 1: bank
+        public int SalaryPayMethod { get; set; } = 0;
+
         public string SalaryChucVu { get; set; }
 
         public string SalaryChucVuViTriCode { get; set; }
-
-        public int SalaryNoiLamViecOrder { get; set; } = 0;
-
-        public int SalaryPhongBanOrder { get; set; } = 0;
-
-        public int SalaryChucVuOrder { get; set; } = 0;
-
-        // nhóm vào chức vụ
-        public string NgachLuong { get; set; }
-
-        // Faster get data. base newest from [SalaryEmployeeMonth]
-        public int SalaryLevel { get; set; } = 1;
-
-        public double SalaryMauSo { get; set; } = 26;
         #endregion
 
         #region SALES

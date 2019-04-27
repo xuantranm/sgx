@@ -29,7 +29,7 @@ namespace erp.Controllers
     {
         MongoDBContext dbContext = new MongoDBContext();
         private readonly IDistributedCache _cache;
-        IHostingEnvironment _hostingEnvironment;
+        readonly IHostingEnvironment _env;
 
         private readonly ILogger _logger;
 
@@ -39,7 +39,7 @@ namespace erp.Controllers
         {
             _cache = cache;
             Configuration = configuration;
-            _hostingEnvironment = env;
+            _env = env;
             _logger = logger;
         }
 
@@ -47,20 +47,26 @@ namespace erp.Controllers
         public ActionResult Index(string name)
         {
             #region Dropdownlist
-            var parts = dbContext.Parts.Find(m => m.Enable.Equals(true)).ToList();
-            ViewData["Parts"] = parts;
-            var departments = dbContext.Departments.Find(m => m.Enable.Equals(true) && !m.Name.Equals(Constants.System.department)).ToList();
-            ViewData["Departments"] = departments;
-            var titles = dbContext.Titles.Find(m => m.Enable.Equals(true)).ToList();
-            ViewData["Titles"] = titles;
+            var congtychinhanhs = dbContext.CongTyChiNhanhs.Find(m => m.Enable.Equals(true)).ToList();
+            var khoichucnangs = dbContext.KhoiChucNangs.Find(m => m.Enable.Equals(true)).ToList();
+            var phongbans = dbContext.PhongBans.Find(m => m.Enable.Equals(true)).ToList();
+            var bophans = dbContext.BoPhans.Find(m => m.Enable.Equals(true)).ToList();
+            var chucvus = dbContext.ChucVus.Find(m => m.Enable.Equals(true)).ToList();
             #endregion
 
             var sort = Builders<RoleUser>.Sort.Ascending(m => m.User).Descending(m => m.UpdatedOn);
             var RoleUsers = dbContext.RoleUsers.Find(m => m.Enable.Equals(true)).Sort(sort).ToList();
+            var employees = dbContext.Employees.Find(m => m.Enable.Equals(true) && !m.UserName.Equals(Constants.System.account)).ToList();
 
             var viewModel = new RoleUserViewModel
             {
-                RoleUsers = RoleUsers
+                RoleUsers = RoleUsers,
+                Employees = employees,
+                CongTyChiNhanhs = congtychinhanhs,
+                KhoiChucNangs = khoichucnangs,
+                PhongBans = phongbans,
+                BoPhans = bophans,
+                ChucVus = chucvus
             };
             return View(viewModel);
         }
@@ -77,21 +83,25 @@ namespace erp.Controllers
         public ActionResult Create()
         {
             #region Dropdownlist
-            var parts = dbContext.Parts.Find(m => m.Enable.Equals(true)).ToList();
-            ViewData["Parts"] = parts;
-            var departments = dbContext.Departments.Find(m => m.Enable.Equals(true) && !m.Name.Equals(Constants.System.department)).ToList();
-            ViewData["Departments"] = departments;
-            var titles = dbContext.Titles.Find(m => m.Enable.Equals(true)).ToList();
-            ViewData["Titles"] = titles;
+            var congtychinhanhs = dbContext.CongTyChiNhanhs.Find(m => m.Enable.Equals(true)).ToList();
+            var khoichucnangs = dbContext.KhoiChucNangs.Find(m => m.Enable.Equals(true)).ToList();
+            var phongbans = dbContext.PhongBans.Find(m => m.Enable.Equals(true)).ToList();
+            var bophans = dbContext.BoPhans.Find(m => m.Enable.Equals(true)).ToList();
+            var chucvus = dbContext.ChucVus.Find(m => m.Enable.Equals(true)).ToList();
             #endregion
 
             var roles = dbContext.Roles.Find(m => m.Enable.Equals(true)).ToList();
             var employees = dbContext.Employees.Find(m => m.Enable.Equals(true) && !m.UserName.Equals(Constants.System.account)).ToList();
 
-            var viewModel = new RoleUserDataViewModel()
+            var viewModel = new RoleUserViewModel()
             {
+                Roles = roles,
                 Employees = employees,
-                Roles = roles
+                CongTyChiNhanhs = congtychinhanhs,
+                KhoiChucNangs = khoichucnangs,
+                PhongBans = phongbans,
+                BoPhans = bophans,
+                ChucVus = chucvus
             };
             return View(viewModel);
         }

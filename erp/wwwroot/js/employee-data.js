@@ -125,9 +125,6 @@
 
     $('#newChucVuModal').on('show.bs.modal', function (event) {
         var modal = $(this);
-        //modal.find('.CongTyChiNhanhIdModal').val($('select[name="Employee.CongTyChiNhanh"]').val());
-        //modal.find('.KhoiChucNangIdModal').val($('select[name="Employee.KhoiChucNang"]').val());
-        //modal.find('.PhongBanIdModal').val($('select[name="Employee.PhongBan"]').val());
         eventModal(modal, "chucvu");
     });
 
@@ -185,6 +182,14 @@
         } else {
             $('input[name="Employee.IsTimeKeeper"]').val(false);
             $('.time-working').removeClass('d-none');
+        }
+    });
+
+    $('.chkOfficial').on('change', function () {
+        if ($(this).is(':checked')) {
+            $('#Employee_Official').val(true);
+        } else {
+            $('#Employee_Official').val(false);
         }
     });
 
@@ -446,22 +451,39 @@
     enableRemove();
 
     $(".data-form").on("submit", function (event) {
-        event.preventDefault();
-        //grab all form data  
-        var formData = new FormData($(this)[0]);
+        if (!confirm("Bạn chắc chắn thông tin đã được kiểm tra và muốn cập nhật!")) {
+            return false;
+        }
 
-        // loading button
+        if ($('#EmailSend').val() === "true") {
+            if (!confirm("Bạn đã chọn <Gửi email thông báo nhân sự mới> !! Hệ thống sẽ gửi email thông báo tới tất cả nhân viên công ty, cc cho các cấp lãnh đạo. Chọn hủy/cancel và bỏ dấu <Gửi email thông báo nhân sự mới> nếu không muốn gửi email.")) {
+                return false;
+            }
+            else {
+                // Load content email:...
+                // Do later...
+            }
+        }
+
+        if ($('#EmailLeave').val() === "true") {
+            if (!confirm("Bạn đã chọn <Gửi email thông báo nhân sự nghỉ việc> !! Hệ thống sẽ gửi email thông báo tới tất cả nhân viên công ty, cc cho các cấp lãnh đạo. Chọn hủy/cancel và bỏ dấu <Gửi email thông báo nhân sự nghỉ việc> nếu không muốn gửi email.")) {
+                return false;
+            }
+            else {
+                // Load content email:...
+                // Do later...
+            }
+        }
+
+        event.preventDefault();
+        var formData = new FormData($(this)[0]);
         $('#btn-save-submit').prop('disabled', true);
         $('input', $('.data-form')).prop('disabled', true);
         $('select', $('.data-form')).prop('disabled', true);
         $('textarea', $('.data-form')).prop('disabled', true);
-
         var loadingText = '<i class="fas fa-spinner"></i> đang xử lý...';
         $('#btn-save-submit').html(loadingText);
-
-        //console.log(formData);
         var $this = $(this);
-        //var frmValues = $this.serialize();
         $.ajax({
             type: $this.attr('method'),
             url: $this.attr('action'),
@@ -489,7 +511,6 @@
                 }
             }
         });
-        //event.preventDefault();
     });
 
     function changeByCongTyChiNhanh(congtychinhanh) {

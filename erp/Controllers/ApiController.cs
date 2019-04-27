@@ -398,6 +398,7 @@ namespace erp.Controllers
             return Json(new { result = false, source = "create", entity, message = Constants.DataDuplicate });
         }
         #endregion
+
         //[HttpGet("employees/{type}/{term}")]
         [HttpGet("employees")]
         public JsonResult Get(string type, string term)
@@ -421,7 +422,7 @@ namespace erp.Controllers
             var sort = Builders<Employee>.Sort.Ascending(m => m.Code);
             #endregion
 
-            var fields = Builders<Employee>.Projection.Include(p => p.Code).Include(p => p.FullName).Include(p => p.AliasFullName).Include(p => p.Email).Include(p => p.Title);
+            var fields = Builders<Employee>.Projection.Include(p => p.Code).Include(p => p.FullName).Include(p => p.AliasFullName).Include(p => p.Email).Include(p => p.ChucVu);
 
             var outputs = dbContext.Employees.Find(filter).Project<Employee>(fields).Sort(sort).Limit(20).ToList();
             watch.Stop();
@@ -446,27 +447,14 @@ namespace erp.Controllers
         public ActionResult<List<Employee>> GetEmployeesFilter(string part, string department, string title)
         {
             // Add a Thao, a Pari
-
             var builder = Builders<Employee>.Filter;
             var filter = builder.Eq(m => m.Enable, true) & !builder.Eq(m => m.UserName, Constants.System.account);
-            if (!string.IsNullOrEmpty(part))
-            {
-                filter = filter & builder.Eq(m => m.Part, part);
-            }
-            if (!string.IsNullOrEmpty(department))
-            {
-                filter = filter & builder.Eq(m => m.Department, department);
-            }
-            if (!string.IsNullOrEmpty(title))
-            {
-                filter = filter & builder.Eq(m => m.Title, title);
-            }
             var employees = dbContext.Employees.Find(filter).ToList();
-            var hdtvs = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Part.Equals("HĐTV")).ToList();
-            foreach (var hdtv in hdtvs)
-            {
-                employees.Add(hdtv);
-            }
+            //var hdtvs = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Part.Equals("HĐTV")).ToList();
+            //foreach (var hdtv in hdtvs)
+            //{
+            //    employees.Add(hdtv);
+            //}
             return employees;
         }
 

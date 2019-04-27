@@ -1,6 +1,20 @@
 ﻿
 namespace Common.Enums
 {
+    public enum ESetting
+    {
+        System = 1,
+        Hcns = 2,
+        Salary = 3
+    }
+
+    public enum ESalaryType
+    {
+        VP = 1,
+        NM = 2,
+        SX = 3
+    }
+
     public enum EBun
     {
         DAC = 1,
