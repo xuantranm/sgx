@@ -8,7 +8,7 @@ using ViewModels;
 
 namespace ViewModels
 {
-    public class BangLuongViewModel : ExtensionViewModel
+    public class BangLuongViewModel : CommonViewModel
     {
         public IList<SalaryEmployeeMonth> SalaryEmployeeMonths { get; set; }
 
@@ -86,9 +86,5 @@ namespace ViewModels
         #endregion
 
         public int ThamSoTinhLuong { get; set; }
-
-        public int Records { get; set; }
-
-        public int Pages { get; set; }
     }
 }

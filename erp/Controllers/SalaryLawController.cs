@@ -51,7 +51,7 @@ namespace erp.Controllers
         }
 
         [Route(Constants.LinkSalary.BangLuong)]
-        public async Task<IActionResult> BangLuong(string Thang, string Id)
+        public async Task<IActionResult> BangLuong(string Thang, string Id, string SapXep, string ThuTu)
         {
             #region Authorization
             var login = User.Identity.Name;
@@ -74,6 +74,8 @@ namespace erp.Controllers
 
             #endregion
 
+            var linkCurrent = string.Empty;
+
             #region DDL
             var sortTimes = Utility.DllMonths();
             var employees = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false)
@@ -86,33 +88,62 @@ namespace erp.Controllers
             var year = toDate.Year;
             var month = toDate.Month;
             Thang = string.IsNullOrEmpty(Thang) ? month + "-" + year : Thang;
+
+            linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "?";
+            linkCurrent += "Thang=" + Thang;
             #endregion
 
-            var mucluongvung = await dbContext.SalaryMucLuongVungs.Find(m => m.Enable.Equals(true) && m.Month.Equals(month) && m.Year.Equals(year)).FirstOrDefaultAsync();
-            if (mucluongvung == null)
-            {
-                var lastItemVung = await dbContext.SalaryMucLuongVungs.Find(m => m.Enable.Equals(true)).SortByDescending(m => m.Year).SortByDescending(m => m.Month).FirstOrDefaultAsync();
-                var lastMonthVung = lastItemVung.Month;
-                var lastYearVung = lastItemVung.Year;
+            var mucluongvung = GetSalaryMucLuongVung(month, year);
 
-                lastItemVung.Id = null;
-                lastItemVung.Month = month;
-                lastItemVung.Year = year;
-                dbContext.SalaryMucLuongVungs.InsertOne(lastItemVung);
-                mucluongvung = await dbContext.SalaryMucLuongVungs.Find(m => m.Enable.Equals(true) && m.Month.Equals(month) && m.Year.Equals(year)).FirstOrDefaultAsync();
+            #region Filter
+            var builder = Builders<SalaryEmployeeMonth>.Filter;
+            var filter = builder.Eq(m => m.Enable, true)
+                        & builder.Eq(m => m.Month, month)
+                        & builder.Eq(m => m.Year, year)
+                        & builder.Gt(m => m.LuongThamGiaBHXH, 0);
+            if (!string.IsNullOrEmpty(Id))
+            {
+                filter = filter & builder.Eq(m => m.EmployeeId, Id);
+                linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "?";
+                linkCurrent += "Id=" + Id;
             }
+            #endregion
 
-            var salaryEmployeeMonths = await dbContext.SalaryEmployeeMonths.Find(m => m.Enable.Equals(true) 
-                                        && m.Month.Equals(month) && m.Year.Equals(year) & m.LuongThamGiaBHXH > 0).ToListAsync();
-            
-            var viewModel = new BangLuongViewModel
+            #region Sort
+            var sortBuilder = Builders<SalaryEmployeeMonth>.Sort.Ascending(m => m.EmployeeCode);
+            SapXep = string.IsNullOrEmpty(SapXep) ? "code" : SapXep;
+            ThuTu = string.IsNullOrEmpty(ThuTu) ? "asc" : ThuTu;
+            switch (SapXep)
             {
-                SalaryEmployeeMonths = salaryEmployeeMonths,
+                case "ten":
+                    sortBuilder = ThuTu == "asc" ? Builders<SalaryEmployeeMonth>.Sort.Ascending(m => m.EmployeeFullName) : Builders<SalaryEmployeeMonth>.Sort.Descending(m => m.EmployeeFullName);
+                    break;
+                case "luong":
+                    sortBuilder = ThuTu == "asc" ? Builders<SalaryEmployeeMonth>.Sort.Ascending(m => m.LuongThamGiaBHXH) : Builders<SalaryEmployeeMonth>.Sort.Descending(m => m.LuongThamGiaBHXH);
+                    break;
+                default:
+                    sortBuilder = ThuTu == "asc" ? Builders<SalaryEmployeeMonth>.Sort.Ascending(m => m.EmployeeCode) : Builders<SalaryEmployeeMonth>.Sort.Descending(m => m.EmployeeCode);
+                    break;
+            }
+            #endregion
+
+            var records = dbContext.SalaryEmployeeMonths.CountDocuments(filter);
+            var list = new List<SalaryEmployeeMonth>();
+            list = dbContext.SalaryEmployeeMonths.Find(filter).Sort(sortBuilder).ToList();
+
+            var viewModel = new BangLuongViewModel()
+            {
+                SalaryEmployeeMonths = list,
+                Employees = employees,
                 SalaryMucLuongVung = mucluongvung,
                 MonthYears = sortTimes,
-                Thang = Thang
+                Id = Id,
+                Thang = Thang,
+                LinkCurrent = linkCurrent,
+                ThuTu = ThuTu,
+                SapXep = SapXep,
+                Records = (int)records
             };
-
             return View(viewModel);
         }
 
@@ -245,5 +276,26 @@ namespace erp.Controllers
 
             return Json(new { result = true, list });
         }
+
+        #region Sub
+        private SalaryMucLuongVung GetSalaryMucLuongVung(int month, int year)
+        {
+            var result = new SalaryMucLuongVung();
+            result = dbContext.SalaryMucLuongVungs.Find(m => m.Enable.Equals(true) && m.Month.Equals(month) && m.Year.Equals(year)).FirstOrDefault();
+            if (result == null)
+            {
+                var lastItemVung = dbContext.SalaryMucLuongVungs.Find(m => m.Enable.Equals(true)).SortByDescending(m => m.Year).SortByDescending(m => m.Month).FirstOrDefault();
+                var lastMonthVung = lastItemVung.Month;
+                var lastYearVung = lastItemVung.Year;
+                lastItemVung.Id = null;
+                lastItemVung.Month = month;
+                lastItemVung.Year = year;
+                dbContext.SalaryMucLuongVungs.InsertOne(lastItemVung);
+                result = dbContext.SalaryMucLuongVungs.Find(m => m.Enable.Equals(true) && m.Month.Equals(month) && m.Year.Equals(year)).FirstOrDefault();
+            }
+            return result;
+        }
+        #endregion
+
     }
 }

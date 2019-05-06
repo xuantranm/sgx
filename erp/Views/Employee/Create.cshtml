@@ -325,10 +325,35 @@
                             </div>
                         </div>
                         <div class="col-6">
+                            <div class="row">
+                                <div class="col-sm-9 col-xs-8">
+                                    <div class="form-group">
+                                        <label class="control-label">TG.thử việc</label>
+                                        <select asp-for="Employee.ProbationMonth" class="form-control form-control-lg">
+                                            <option value="0">Không</option>
+                                            <option value="2">2 tháng</option>
+                                            <option value="6">6 tháng</option>
+                                            <option value="8">8 tháng</option>
+                                            <option value="12">12 tháng</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-sm-3 col-xs-4">
+                                    <div class="form-group">
+                                        <label class="control-label">NV chính thức</label>
+                                        <input type="checkbox" class="form-control form-control-lg big-checkbox chkOfficial">
+                                        <input asp-for="Employee.Official" type="hidden" value="false" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
                             <div class="form-group">
-                                <label class="control-label">Nhân viên chính thức</label>
-                                <input type="checkbox" class="form-control form-control-lg big-checkbox chkOfficial">
-                                <input asp-for="Employee.Official" type="hidden" />
+                                <i class="icon icon-time-slot"></i>
+                                <label class="control-label">Ngày LV chính thức</label>
+                                <input class="form-control form-control-lg datepicker datepicker-lg" value="@DateTime.Now.AddMonths(2).ToString("dd/MM/yyyy")" />
+                                <span asp-validation-for="Employee.Contractday" class="text-danger"></span>
+                                <input type="hidden" name="Employee.Contractday" class="form-control form-control-lg hidedatepicker datepicker-lg" />
                             </div>
                         </div>
                         <div class="col-6">
@@ -345,7 +370,7 @@
                         <div class="col-6">
                             <div class="form-group">
                                 <label class="control-label">
-                                    Không tính thời gian làm việc
+                                    Không tính TG làm việc
                                 </label>
                                 <input type="checkbox" class="form-control form-control-lg big-checkbox chkOfficial" id="check-timekeeper">
                                 <input type="hidden" name="Employee.IsTimeKeeper" value="false" />

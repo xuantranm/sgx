@@ -200,10 +200,11 @@ namespace erp.Controllers
            // return Json(new { elapsedMs = elapsedMs + "ms", result = true, khoichucnangs, phongbans, bophans, bophancons });
         }
 
-        public JsonResult GetByKhoiChucNang(string khoichucnang)
+        public JsonResult GetByKhoiChucNang(string khoichucnang, string removes)
         {
             var watch = System.Diagnostics.Stopwatch.StartNew();
             var elapsedMs = watch.ElapsedMilliseconds;
+
             var khoichucnangEntity = dbContext.KhoiChucNangs.Find(m => m.Id.Equals(khoichucnang)).FirstOrDefault();
             if (khoichucnangEntity == null)
             {
@@ -211,8 +212,8 @@ namespace erp.Controllers
                 elapsedMs = watch.ElapsedMilliseconds;
                 return Json(new { elapsedMs = elapsedMs + "ms", result = false });
             }
-            
-            var phongbans = dbContext.PhongBans.Find(m => m.Enable.Equals(true) && m.KhoiChucNangId.Equals(khoichucnang)).ToList();
+            var listPBRemove = string.IsNullOrEmpty(removes) ? new List<string>() : removes.Split(",").ToList();
+            var phongbans = dbContext.PhongBans.Find(m => m.Enable.Equals(true) && m.KhoiChucNangId.Equals(khoichucnang) && !listPBRemove.Contains(m.Id)).ToList();
 
             watch.Stop();
             elapsedMs = watch.ElapsedMilliseconds;

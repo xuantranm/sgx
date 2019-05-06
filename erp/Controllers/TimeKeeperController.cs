@@ -967,18 +967,25 @@ namespace erp.Controllers
 
             #region DDL
             var sortTimes = Utility.DllMonths();
-            var employees = await dbContext.Employees.Find(m => m.Enable.Equals(true) && !m.UserName.Equals(Constants.System.account)).SortBy(m => m.FullName).ToListAsync();
+            var employees = await dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) 
+                            && m.IsTimeKeeper.Equals(false) && !m.UserName.Equals(Constants.System.account)).SortBy(m => m.FullName).ToListAsync();
+
             var congtychinhanhs = dbContext.CongTyChiNhanhs.Find(m => m.Enable.Equals(true)).ToList();
             Nl = string.IsNullOrEmpty(Nl) ? congtychinhanhs.First().Id : Nl;
 
             var khoichucnangs = dbContext.KhoiChucNangs.Find(m => m.Enable.Equals(true)).ToList();
             Kcn = string.IsNullOrEmpty(Kcn) ? khoichucnangs.Where(m => m.CongTyChiNhanhId.Equals(Nl)).First().Id : Kcn;
 
-            var phongbans = dbContext.PhongBans.Find(m => m.Enable.Equals(true) && m.KhoiChucNangId.Equals(Kcn)).ToList();
+            var listPBRemove = new List<string>
+            {
+                "5c88d094d59d56225c43240f", // CHU TICH
+                "5c88d094d59d56225c432412" // GIAM DOC
+            };
+            var phongbans = dbContext.PhongBans.Find(m => m.Enable.Equals(true) && m.KhoiChucNangId.Equals(Kcn) && !listPBRemove.Contains(m.Id)).ToList();
             Pb = string.IsNullOrEmpty(Pb) ? phongbans.Where(m => m.KhoiChucNangId.Equals(Kcn)).First().Id : Pb;
 
             var bophans = dbContext.BoPhans.Find(m => m.Enable.Equals(true) && m.PhongBanId.Equals(Pb) && string.IsNullOrEmpty(m.Parent)).ToList();
-            var chucvus = dbContext.ChucVus.Find(m => m.Enable.Equals(true)).ToList();
+            //var chucvus = dbContext.ChucVus.Find(m => m.Enable.Equals(true)).ToList();
             #endregion
 
             #region Times
@@ -1128,6 +1135,7 @@ namespace erp.Controllers
                 Id = Id,
                 Fg = Fg,
                 Nl = Nl,
+                Kcn = Kcn,
                 Pb = Pb,
                 Bp = Bp,
                 LinkCurrent = linkCurrent
@@ -1309,8 +1317,8 @@ namespace erp.Controllers
 
             string URL = string.Format("{0}://{1}/{2}", Request.Scheme, Request.Host, sFileName);
             FileInfo file = new FileInfo(Path.Combine(exportFolder, sFileName));
-            file.Directory.Create(); // If the directory already exists, this method does nothing.
             var memory = new MemoryStream();
+            file.Directory.Create(); // If the directory already exists, this method does nothing.
             using (var fs = new FileStream(Path.Combine(exportFolder, sFileName), FileMode.Create, FileAccess.Write))
             {
                 IWorkbook workbook = new XSSFWorkbook();
@@ -1411,7 +1419,7 @@ namespace erp.Controllers
                 styleSmall.SetFont(fontSmall);
                 #endregion
 
-                ISheet sheet1 = workbook.CreateSheet("Cong-" + duration);
+                ISheet sheet1 = workbook.CreateSheet("Cong");
 
                 #region Introduce
                 var rowIndex = 0;
@@ -1537,7 +1545,7 @@ namespace erp.Controllers
                 cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex, columnIndex, columnIndex + 2);
                 sheet1.AddMergedRegion(cellRangeAddress);
                 cell = row.CreateCell(columnIndex, CellType.String);
-                cell.SetCellValue("Tăng ca");
+                cell.SetCellValue("Tăng ca (giờ)");
                 cell.CellStyle = styleHeader;
                 RegionUtil.SetBorderTop((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
                 RegionUtil.SetBorderLeft((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
@@ -1568,14 +1576,21 @@ namespace erp.Controllers
                     columnIndex++;
                 }
 
-                cell = row.CreateCell(columnIndex);
-                cell.SetCellValue("NT");
-                cell.CellStyle = styleHeader;
+                cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex, columnIndex, columnIndex + 1);
+                sheet1.AddMergedRegion(cellRangeAddress);
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("");
+                columnIndex = columnIndex + 1;
                 columnIndex++;
-                cell = row.CreateCell(columnIndex);
-                cell.SetCellValue("CT");
-                cell.CellStyle = styleHeader;
-                columnIndex++;
+
+                //cell = row.CreateCell(columnIndex);
+                //cell.SetCellValue("NT");
+                //cell.CellStyle = styleHeader;
+                //columnIndex++;
+                //cell = row.CreateCell(columnIndex);
+                //cell.SetCellValue("CT");
+                //cell.CellStyle = styleHeader;
+                //columnIndex++;
 
                 cell = row.CreateCell(columnIndex);
                 cell.SetCellValue("Lần");
@@ -1594,16 +1609,16 @@ namespace erp.Controllers
                 cell.CellStyle = styleHeader;
                 columnIndex++;
                 cell = row.CreateCell(columnIndex);
-                cell.SetCellValue("TC1");
+                cell.SetCellValue("Ngày thường");
                 cell.CellStyle = styleHeader;
                 columnIndex++;
                 cell = row.CreateCell(columnIndex);
-                cell.SetCellValue("TC2");
+                cell.SetCellValue("Chủ nhật");
                 cell.CellStyle = styleHeader;
                 columnIndex++;
 
                 cell = row.CreateCell(columnIndex);
-                cell.SetCellValue("TC3");
+                cell.SetCellValue("Lễ tết");
                 cell.CellStyle = styleHeader;
                 columnIndex++;
 
@@ -1620,28 +1635,24 @@ namespace erp.Controllers
                 rowIndex++;
                 #endregion
 
-                int order = 1;
+                var order = 1;
                 foreach (var employee in results)
                 {
-                    var timers = employee.EmployeeWorkTimeLogs;
-                    var timesSort = timers.OrderBy(m => m.Date).ToList();
-
                     double ngayCongNT = 0;
                     double ngayCongCT = 0;
-                    double gioCongNT = 0;
-                    double gioCongCT = 0;
-                    int vaoTreLan = 0;
+                    var vaoTreLan = 0;
                     double vaoTrePhut = 0;
-                    int raSomLan = 0;
+                    var raSomLan = 0;
                     double raSomPhut = 0;
-                    double TC1 = 0;
-                    double TC2 = 0;
-                    double TC3 = 0;
+                    double tangCaNgayThuong = 0;
+                    double tangCaChuNhat = 0;
+                    double tangCaLeTet = 0;
                     double vangKP = 0;
                     double ngayNghiP = 0;
                     double ngayNghiOM = 0;
                     double ngayNghiTS = 0;
                     double ngayNghiR = 0;
+                    var timesSort = employee.EmployeeWorkTimeLogs.OrderBy(m => m.Date).ToList();
 
                     var rowEF = rowIndex;
                     var rowET = rowIndex + 4;
@@ -1710,14 +1721,13 @@ namespace erp.Controllers
                     cell.CellStyle = styleDedault;
                     columnIndex++;
 
-
                     for (DateTime date = Tu; date <= Den; date = date.AddDays(1.0))
                     {
                         var item = timesSort.Where(m => m.Date.Equals(date)).FirstOrDefault();
                         if (item != null)
                         {
                             var modeMiss = false;
-                            if (item.Mode == (int)ETimeWork.Normal)
+                            if (item.Mode < (int)ETimeWork.Sunday)
                             {
                                 switch (item.Status)
                                 {
@@ -1772,14 +1782,14 @@ namespace erp.Controllers
                                     ngayCongNT += item.WorkDay;
                                 }
                             }
-
-                            if (item.Mode == (int)ETimeWork.LeavePhep)
+                            
+                            if (item.Mode < (int)ETimeWork.Sunday && item.Logs == null)
                             {
-                                ngayNghiP += item.SoNgayNghi;
-                            }
+                                if (item.Mode == (int)ETimeWork.LeavePhep)
+                                {
+                                    ngayNghiP += item.SoNgayNghi;
+                                }
 
-                            if (item.Mode > (int)ETimeWork.Normal && item.Logs == null)
-                            {
                                 cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
                                 sheet1.AddMergedRegion(cellRangeAddress);
                                 cell = row.CreateCell(columnIndex, CellType.String);
@@ -1791,7 +1801,6 @@ namespace erp.Controllers
                                 RegionUtil.SetBorderLeft((int)BorderStyle.Thin, rowCellRangeAddress, sheet1, workbook);
                                 RegionUtil.SetBorderRight((int)BorderStyle.Thin, rowCellRangeAddress, sheet1, workbook);
                                 RegionUtil.SetBorderBottom((int)BorderStyle.Thin, rowCellRangeAddress, sheet1, workbook);
-
                             }
                             else
                             {
@@ -1833,10 +1842,41 @@ namespace erp.Controllers
 
                                 cell = rowreason.CreateCell(columnIndex, CellType.String);
                                 var detail = string.Empty;
+
+                                if (item.Mode < (int)ETimeWork.Sunday)
+                                {
+                                    detail += item.WorkDay + " ngày";
+                                    tangCaNgayThuong += item.TangCaDaXacNhan.TotalHours;
+                                    if (item.TangCaDaXacNhan.TotalHours > 0)
+                                    {
+                                        detail += ", TC:" + Math.Round(item.TangCaDaXacNhan.TotalHours, 2) + " giờ";
+                                    }
+                                }
+                                else
+                                {
+                                    if (item.WorkTime.TotalHours > 0)
+                                    {
+                                        detail += Math.Round(item.WorkTime.TotalHours, 2) + " giờ";
+                                        if (item.Mode == (int)ETimeWork.Sunday)
+                                        {
+                                            tangCaChuNhat += item.WorkTime.TotalHours;
+                                        }
+                                        else
+                                        {
+                                            tangCaLeTet += item.WorkTime.TotalHours;
+                                        }
+                                    }
+                                }
+                                // NOI LAM VIEC
                                 if (item.Logs != null && !string.IsNullOrEmpty(item.WorkplaceCode))
                                 {
+                                    if (!string.IsNullOrEmpty(detail))
+                                    {
+                                        detail += ";";
+                                    }
                                     detail += item.WorkplaceCode;
                                 }
+                                // LY DO
                                 if (!string.IsNullOrEmpty(item.Reason))
                                 {
                                     if (!string.IsNullOrEmpty(detail))
@@ -1914,21 +1954,21 @@ namespace erp.Controllers
                     cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
                     sheet1.AddMergedRegion(cellRangeAddress);
                     cell = row.CreateCell(columnIndex, CellType.Numeric);
-                    cell.SetCellValue(TC1);
+                    cell.SetCellValue(Math.Round(tangCaNgayThuong, 2));
                     cell.CellStyle = styleDedaultMerge;
                     columnIndex++;
 
                     cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
                     sheet1.AddMergedRegion(cellRangeAddress);
                     cell = row.CreateCell(columnIndex, CellType.Numeric);
-                    cell.SetCellValue(TC2);
+                    cell.SetCellValue(Math.Round(tangCaChuNhat, 2));
                     cell.CellStyle = styleDedaultMerge;
                     columnIndex++;
 
                     cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
                     sheet1.AddMergedRegion(cellRangeAddress);
                     cell = row.CreateCell(columnIndex, CellType.Numeric);
-                    cell.SetCellValue(TC3);
+                    cell.SetCellValue(Math.Round(tangCaLeTet, 2));
                     cell.CellStyle = styleDedaultMerge;
                     columnIndex++;
 
@@ -1986,7 +2026,6 @@ namespace erp.Controllers
                     RegionUtil.SetBorderBottom((int)BorderStyle.Thin, rowCellRangeAddress, sheet1, workbook);
                 }
                 #endregion
-
 
                 workbook.Write(fs);
             }

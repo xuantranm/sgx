@@ -82,10 +82,6 @@ namespace Models
         [BsonRepresentation(BsonType.Decimal128)]
         public decimal TongPhuCap { get; set; } = 0;
 
-        //Nha May: =ROUND(ThuLanh,-3)+LuongKhac+ComKD+ComSX
-        [BsonRepresentation(BsonType.Decimal128)]
-        public decimal ThucLanhTronSo { get; set; } = 0;
-
         #region Phu Cap
         [BsonRepresentation(BsonType.Decimal128)]
         public decimal NangNhocDocHai { get; set; } = 0;
@@ -227,6 +223,10 @@ namespace Models
 
         [BsonRepresentation(BsonType.Decimal128)]
         public decimal ThucLanh { get; set; } = 0;
+
+        //Nha May: =ROUND(ThuLanh,-3)+LuongKhac+ComKD+ComSX
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal ThucLanhTronSo { get; set; } = 0;
         #endregion
 
         public bool Law { get; set; } = true;

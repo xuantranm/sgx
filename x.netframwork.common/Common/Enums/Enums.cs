@@ -154,13 +154,14 @@
     {
         None = 0,
         Normal = 1,
-        Sunday = 2,
         LeavePhep = 3,
         LeaveHuongLuong = 4,
-        LeaveKhongHuongLuong = 5,
-        Holiday = 6,
+        LeaveKhongHuongLuong = 5,// tinh cong ngày thường nếu có
         Other = 7,
-        Wait = 8
+        Wait = 8,
+
+        Sunday = 20,
+        Holiday = 60,
     }
 
     public enum ETexts

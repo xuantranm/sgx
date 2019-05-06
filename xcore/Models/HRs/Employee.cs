@@ -65,12 +65,15 @@ namespace Models
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime Joinday { get; set; }
 
+        public int ProbationMonth { get; set; } = 2;
+
         [Display(Name = "Chính thức")]
         public bool Official { get; set; } = true;
 
         // Last contract date
         [Display(Name = "Ngày hợp đồng")]
         [DataType(DataType.Date)]
+        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime Contractday { get; set; }
 
         [Display(Name = "Nghỉ việc")]

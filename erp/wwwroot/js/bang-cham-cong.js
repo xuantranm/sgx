@@ -223,7 +223,10 @@
             type: "GET",
             url: "/api/GetByKhoiChucNang",
             contentType: "application/json; charset=utf-8",
-            data: { khoichucnang: khoichucnang },
+            data: {
+                khoichucnang: khoichucnang,
+                removes: "5c88d094d59d56225c43240f,5c88d094d59d56225c432412"
+            },
             dataType: "json",
             success: function (data) {
                 if (data.result === true) {
@@ -248,31 +251,11 @@
         });
     }
 
-    function changeByPhongBan(phongban) {
-        $.ajax({
-            type: "GET",
-            url: "/api/GetByPhongBan",
-            contentType: "application/json; charset=utf-8",
-            data: { phongban: phongban },
-            dataType: "json",
-            success: function (data) {
-                if (data.result === true) {
-                    var $bp = $(".ddlBp");
-                    $bp.empty();
-                    if (data.bophans.length > 1) {
-                        $bp.append($("<option></option>")
-                            .attr("value", "").text("Chọn"));
-                    }
-                    $.each(data.bophans, function (key, bophan) {
-                        $bp.append($("<option></option>")
-                            .attr("value", bophan.id).text(bophan.name));
-                    });
-                }
-            }
-        });
+    function changeByPhongBan() {
+        formSubmit();
     }
 
-    function changeByBoPhan(bophan) {
+    function changeByBoPhan() {
         formSubmit();
     }
 });

@@ -457,5 +457,12 @@ db.SalaryEmployeeMonths.drop()
 // Run Fix Data : FixEmployeeNewStructure, FixEmployeeNewStructure and FixEmployeeOldCode
 (done)
 
-// 24.04.2019
-
+// 01.05.2019
+db.Employees.update({},
+{$set : {"ProbationMonth": 2}},
+{upsert:false,
+multi:true})
+db.EmployeeHistories.update({},
+{$set : {"ProbationMonth": 2}},
+{upsert:false,
+multi:true})

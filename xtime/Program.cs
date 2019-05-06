@@ -430,11 +430,6 @@ namespace xtime
                             {
                                 employeeWorkTimeLog.StatusTangCa = (int)ETangCa.GuiXacNhan;
                             }
-                            if (employeeWorkTimeLog.Mode != (int)ETimeWork.Normal)
-                            {
-                                employeeWorkTimeLog.StatusTangCa = (int)ETangCa.GuiXacNhan;
-                            }
-
                             employeeWorkTimeLog.VerifyMode = records[0].VerifyMode;
                             employeeWorkTimeLog.InOutMode = records[0].InOutMode;
                             employeeWorkTimeLog.In = inLogTime;
@@ -445,6 +440,15 @@ namespace xtime
                             employeeWorkTimeLog.Late = late;
                             employeeWorkTimeLog.Early = early;
                             employeeWorkTimeLog.Logs = records;
+
+                            if (employeeWorkTimeLog.Mode != (int)ETimeWork.Normal)
+                            {
+                                employeeWorkTimeLog.Status = (int)EStatusWork.DuCong;
+                                employeeWorkTimeLog.StatusEarly = (int)EStatusWork.DuCong;
+                                employeeWorkTimeLog.StatusLate = (int)EStatusWork.DuCong;
+
+                                employeeWorkTimeLog.StatusTangCa = (int)ETangCa.GuiXacNhan;
+                            }
                             #endregion
                         }
 
@@ -664,19 +668,22 @@ namespace xtime
             #region Declare
             double Workday = 0;
             double WorkTime = 0; // store miliseconds
-            double CongCNGio = 0;
-            double CongTangCaNgayThuongGio = 0;
-            double CongLeTet = 0;
             double Late = 0;
             double Early = 0;
+            double CongTangCaNgayThuongGio = 0;
+            double KhongChamCong = 0;
+            double ChuNhat = 0;
+
+            double CongCNGio = 0;
+            double CongLeTet = 0;
+            
             double NghiPhepNam = 0;
             double NghiViecRieng = 0;
             double NghiBenh = 0;
             double NghiKhongPhep = 0;
             double NghiHuongLuong = 0;
             double NghiLe = 0;
-            double KhongChamCong = 0;
-            double ChuNhat = 0;
+            
             #endregion
             foreach (var time in times)
             {
@@ -691,39 +698,41 @@ namespace xtime
                             Early += time.Early.TotalMilliseconds;
                             break;
                         }
-                    case (int)ETimeWork.Sunday:
-                        {
-                            ChuNhat++;
-                            CongCNGio += time.TangCaDaXacNhan.TotalMilliseconds;
-                            break;
-                        }
                     case (int)ETimeWork.LeavePhep:
                         {
                             NghiPhepNam++;
+                            Workday += time.WorkDay;
+                            WorkTime += time.WorkTime.TotalMilliseconds;
                             break;
                         }
                     case (int)ETimeWork.LeaveHuongLuong:
                         {
                             NghiHuongLuong++;
+                            Workday += time.WorkDay;
+                            WorkTime += time.WorkTime.TotalMilliseconds;
                             break;
                         }
                     case (int)ETimeWork.LeaveKhongHuongLuong:
                         {
                             NghiViecRieng++;
+                            Workday += time.WorkDay;
+                            WorkTime += time.WorkTime.TotalMilliseconds;
+                            break;
+                        }
+                    case (int)ETimeWork.Sunday:
+                        {
+                            ChuNhat++;
+                            //CongCNGio += time.TangCaDaXacNhan.TotalMilliseconds;
+                            CongCNGio += time.TangCaThucTe.TotalMilliseconds;
                             break;
                         }
                     case (int)ETimeWork.Holiday:
                         {
                             NghiLe++;
-                            CongLeTet += time.TangCaDaXacNhan.TotalMilliseconds;
+                            //CongLeTet += time.TangCaDaXacNhan.TotalMilliseconds;
+                            CongLeTet += time.TangCaThucTe.TotalMilliseconds;
                             break;
                         }
-                    case (int)ETimeWork.Other:
-                        Console.WriteLine((int)ETimeWork.Other);
-                        break;
-                    case (int)ETimeWork.Wait:
-                        Console.WriteLine((int)ETimeWork.Wait);
-                        break;
                     default:
                         {
                             KhongChamCong++;

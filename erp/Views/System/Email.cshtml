@@ -18,6 +18,16 @@
     </div>
 </div>
 
+<div class="row">
+    <div class="col-12">PKD</div>
+    <div class="col-12">
+        @foreach (var employee in Model.KinhDoanhs)
+        {
+            <span>@employee.Email</span><span>;</span>
+        }
+    </div>
+</div>
+
 <form method="get" action="/@Constants.LinkSystem.Main/@Constants.LinkSystem.Mail" id="form-main">
     <div class="form-row mb-3">
         <div class="col-md-4 col-sm-6 col-xs-12">

@@ -51,8 +51,10 @@ namespace Models
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime Joinday { get; set; }
 
+        public int ProbationMonth { get; set; } = 2;
+
         public bool Official { get; set; } = true;
-        
+
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime Contractday { get; set; }
 
@@ -62,6 +64,16 @@ namespace Models
             {
                 DateTime today = DateTime.Today;
                 DateTime next = Joinday.AddMonths(6);
+                return (next - today).Days;
+            }
+        }
+
+        public int ProbationAlert
+        {
+            get
+            {
+                DateTime today = DateTime.Today;
+                DateTime next = Joinday.AddMonths(ProbationMonth);
                 return (next - today).Days;
             }
         }

@@ -7,6 +7,8 @@ namespace ViewModels
 {
     public class MailViewModel
     {
+        public IList<Employee> KinhDoanhs { get; set; }
+
         public IList<Employee> Employees { get; set; }
 
         public IList<ScheduleEmail> ScheduleEmails { get; set; }

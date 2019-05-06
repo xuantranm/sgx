@@ -1178,7 +1178,9 @@ namespace erp.Controllers
                 NgachLuongs = ngachluongs
             };
 
-            #region EmailGroup
+            #region EmailGroup & Flag
+            viewModel.EmailLeave = entity.IsLeaveEmail ? true : false;
+            viewModel.EmailSend = entity.IsWelcomeEmail ? true : false;
             var emailGroups = dbContext.EmailGroups.Find(m => m.Status.Equals(false) && m.Object.Equals(entity.UserName)).ToList();
             if (emailGroups != null && emailGroups.Count > 0)
             {
@@ -2117,8 +2119,8 @@ namespace erp.Controllers
             {
                 // Send mail
                 // 1. Notication
-                //      cc: cấp cao
-                //      to: employee have email
+                //      to: Ke toan, phong ban cua nv do, phong ban lien quan (xac dinh sau)
+                //      cc: nhan su
                 // 2. Send to IT setup email,...
                 var url = Constants.System.domain;
                 var subject = "THÔNG BÁO NHÂN SỰ MỚI.";
@@ -2171,26 +2173,41 @@ namespace erp.Controllers
                     "C.01",
                     "C.02"
                 };
-                var employees = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && !string.IsNullOrEmpty(m.Email) && !m.UserName.Equals(Constants.System.account)).ToList();
-                foreach (var employee in employees)
+                var ketoans = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false)
+                            && !string.IsNullOrEmpty(m.Email) && m.PhongBan.Equals("5c88d094d59d56225c432422") && !m.UserName.Equals(Constants.System.account)).ToList();
+
+                foreach(var item in ketoans)
                 {
-                    if (!string.IsNullOrEmpty(employee.NgachLuongCode) && listboss.Any(str => str.Contains(employee.NgachLuongCode)))
+                    tos.Add(new EmailAddress
                     {
-                        ccs.Add(new EmailAddress
-                        {
-                            Name = employee.FullName,
-                            Address = employee.Email,
-                        });
-                    }
-                    else
-                    {
-                        tos.Add(new EmailAddress
-                        {
-                            Name = employee.FullName,
-                            Address = employee.Email,
-                        });
-                    }
+                        Name = item.FullName,
+                        Address = item.Email,
+                    });
                 }
+
+                //var relations = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false)
+                //           && !string.IsNullOrEmpty(m.Email) && !m.Id.Equals(employee) && m.PhongBan.Equals() && !m.UserName.Equals(Constants.System.account)).ToList();
+                //var employees = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) 
+                //                && !string.IsNullOrEmpty(m.Email) && !m.UserName.Equals(Constants.System.account)).ToList();
+                //foreach (var employee in employees)
+                //{
+                //    if (!string.IsNullOrEmpty(employee.NgachLuongCode) && listboss.Any(str => str.Contains(employee.NgachLuongCode)))
+                //    {
+                //        //ccs.Add(new EmailAddress
+                //        //{
+                //        //    Name = employee.FullName,
+                //        //    Address = employee.Email,
+                //        //});
+                //    }
+                //    else
+                //    {
+                //        tos.Add(new EmailAddress
+                //        {
+                //            Name = employee.FullName,
+                //            Address = employee.Email,
+                //        });
+                //    }
+                //}
 
                 var pathToFile = _env.WebRootPath
                         + Path.DirectorySeparatorChar.ToString()

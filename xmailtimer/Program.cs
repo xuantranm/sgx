@@ -451,26 +451,8 @@ namespace xmailtimer
 
         static ExcelViewModel RenderExcel(DateTime Tu, DateTime Den, DateTime ngaychot, string sFileName, int mode, List<TimeKeeperDisplay> list)
         {
-            #region Declare
             double ngayCongNT = 0;
-            double ngayCongCT = 0;
-            double gioCongNT = 0;
-            double gioCongCT = 0;
-            int vaoTreLan = 0;
-            double vaoTrePhut = 0;
-            int raSomLan = 0;
-            double raSomPhut = 0;
-            double TC1 = 0;
-            double TC2 = 0;
-            double TC3 = 0;
-            double vangKP = 0;
             double ngayNghiP = 0;
-            double ngayNghiOM = 0;
-            double ngayNghiTS = 0;
-            double ngayNghiR = 0;
-            #endregion
-
-            #region RENDER EXCEL FILE
             var root = @"C:\Projects\App.Schedule";
             string exportFolder = Path.Combine(root, "exports", "timers", ngaychot.ToString("yyyyMMdd"));
             FileInfo file = new FileInfo(Path.Combine(exportFolder, sFileName));
@@ -701,7 +683,7 @@ namespace xmailtimer
                 cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex, columnIndex, columnIndex + 2);
                 sheet1.AddMergedRegion(cellRangeAddress);
                 cell = row.CreateCell(columnIndex, CellType.String);
-                cell.SetCellValue("Tăng ca");
+                cell.SetCellValue("Tăng ca (giờ)");
                 cell.CellStyle = styleHeader;
                 RegionUtil.SetBorderTop((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
                 RegionUtil.SetBorderLeft((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
@@ -732,14 +714,21 @@ namespace xmailtimer
                     columnIndex++;
                 }
 
-                cell = row.CreateCell(columnIndex);
-                cell.SetCellValue("NT");
-                cell.CellStyle = styleHeader;
+                cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex, columnIndex, columnIndex + 1);
+                sheet1.AddMergedRegion(cellRangeAddress);
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("");
+                columnIndex = columnIndex + 1;
                 columnIndex++;
-                cell = row.CreateCell(columnIndex);
-                cell.SetCellValue("CT");
-                cell.CellStyle = styleHeader;
-                columnIndex++;
+
+                //cell = row.CreateCell(columnIndex);
+                //cell.SetCellValue("NT");
+                //cell.CellStyle = styleHeader;
+                //columnIndex++;
+                //cell = row.CreateCell(columnIndex);
+                //cell.SetCellValue("CT");
+                //cell.CellStyle = styleHeader;
+                //columnIndex++;
 
                 cell = row.CreateCell(columnIndex);
                 cell.SetCellValue("Lần");
@@ -758,16 +747,16 @@ namespace xmailtimer
                 cell.CellStyle = styleHeader;
                 columnIndex++;
                 cell = row.CreateCell(columnIndex);
-                cell.SetCellValue("TC1");
+                cell.SetCellValue("Ngày thường");
                 cell.CellStyle = styleHeader;
                 columnIndex++;
                 cell = row.CreateCell(columnIndex);
-                cell.SetCellValue("TC2");
+                cell.SetCellValue("Chủ nhật");
                 cell.CellStyle = styleHeader;
                 columnIndex++;
 
                 cell = row.CreateCell(columnIndex);
-                cell.SetCellValue("TC3");
+                cell.SetCellValue("Lễ tết");
                 cell.CellStyle = styleHeader;
                 columnIndex++;
 
@@ -791,21 +780,19 @@ namespace xmailtimer
                     var timesSort = timers.OrderBy(m => m.Date).ToList();
 
                     ngayCongNT = 0;
-                    ngayCongCT = 0;
-                    gioCongNT = 0;
-                    gioCongCT = 0;
-                    vaoTreLan = 0;
-                    vaoTrePhut = 0;
-                    raSomLan = 0;
-                    raSomPhut = 0;
-                    TC1 = 0;
-                    TC2 = 0;
-                    TC3 = 0;
-                    vangKP = 0;
                     ngayNghiP = 0;
-                    ngayNghiOM = 0;
-                    ngayNghiTS = 0;
-                    ngayNghiR = 0;
+                    double ngayCongCT = 0;
+                    var vaoTreLan = 0;
+                    double vaoTrePhut = 0;
+                    var raSomLan = 0;
+                    double raSomPhut = 0;
+                    double tangCaNgayThuong = 0;
+                    double tangCaChuNhat = 0;
+                    double tangCaLeTet = 0;
+                    double vangKP = 0;
+                    double ngayNghiOM = 0;
+                    double ngayNghiTS = 0;
+                    double ngayNghiR = 0;
 
                     var rowEF = rowIndex;
                     var rowET = rowIndex + 4;
@@ -880,7 +867,7 @@ namespace xmailtimer
                         if (item != null)
                         {
                             var modeMiss = false;
-                            if (item.Mode == (int)ETimeWork.Normal)
+                            if (item.Mode < (int)ETimeWork.Sunday)
                             {
                                 switch (item.Status)
                                 {
@@ -958,6 +945,7 @@ namespace xmailtimer
                             }
                             else
                             {
+
                                 var displayIn1 = string.Empty;
                                 var displayIn2 = string.Empty;
                                 var displayOut1 = string.Empty;
@@ -996,10 +984,41 @@ namespace xmailtimer
 
                                 cell = rowreason.CreateCell(columnIndex, CellType.String);
                                 var detail = string.Empty;
+                                
+                                if (item.Mode < (int)ETimeWork.Sunday)
+                                {
+                                    detail += item.WorkDay + " ngày";
+                                    tangCaNgayThuong += item.TangCaDaXacNhan.TotalHours;
+                                    if (item.TangCaDaXacNhan.TotalHours > 0)
+                                    {
+                                        detail += ", TC:" + Math.Round(item.TangCaDaXacNhan.TotalHours, 2) + " giờ";
+                                    }
+                                }
+                                else
+                                {
+                                    if (item.WorkTime.TotalHours > 0)
+                                    {
+                                        detail += Math.Round(item.WorkTime.TotalHours, 2) + " giờ";
+                                        if (item.Mode == (int)ETimeWork.Sunday)
+                                        {
+                                            tangCaChuNhat += item.WorkTime.TotalHours;
+                                        }
+                                        else
+                                        {
+                                            tangCaLeTet += item.WorkTime.TotalHours;
+                                        }
+                                    }
+                                }
+                                // NOI LAM VIEC
                                 if (item.Logs != null && !string.IsNullOrEmpty(item.WorkplaceCode))
                                 {
+                                    if (!string.IsNullOrEmpty(detail))
+                                    {
+                                        detail += ";";
+                                    }
                                     detail += item.WorkplaceCode;
                                 }
+                                // LY DO
                                 if (!string.IsNullOrEmpty(item.Reason))
                                 {
                                     if (!string.IsNullOrEmpty(detail))
@@ -1077,21 +1096,21 @@ namespace xmailtimer
                     cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
                     sheet1.AddMergedRegion(cellRangeAddress);
                     cell = row.CreateCell(columnIndex, CellType.Numeric);
-                    cell.SetCellValue(TC1);
+                    cell.SetCellValue(Math.Round(tangCaNgayThuong, 2));
                     cell.CellStyle = styleDedaultMerge;
                     columnIndex++;
 
                     cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
                     sheet1.AddMergedRegion(cellRangeAddress);
                     cell = row.CreateCell(columnIndex, CellType.Numeric);
-                    cell.SetCellValue(TC2);
+                    cell.SetCellValue(Math.Round(tangCaChuNhat, 2));
                     cell.CellStyle = styleDedaultMerge;
                     columnIndex++;
 
                     cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
                     sheet1.AddMergedRegion(cellRangeAddress);
                     cell = row.CreateCell(columnIndex, CellType.Numeric);
-                    cell.SetCellValue(TC3);
+                    cell.SetCellValue(Math.Round(tangCaLeTet, 2));
                     cell.CellStyle = styleDedaultMerge;
                     columnIndex++;
 
@@ -1152,7 +1171,6 @@ namespace xmailtimer
 
                 workbook.Write(fs);
             }
-            #endregion
 
             return new ExcelViewModel()
             {

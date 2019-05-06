@@ -72,9 +72,8 @@ namespace xbhxh
             {
                 foreach (var item in bhxhs)
                 {
-                    if (item != null && !string.IsNullOrEmpty(item.Email))
+                    if (item != null)
                     {
-                        Console.WriteLine(item.Email);
                         var subject = "THÔNG BÁO ĐÓNG BHXH NHÂN VIÊN LÀM VIỆC 6 THÁNG !!!";
                         var title = string.Empty;
                         if (!string.IsNullOrEmpty(item.Gender))
@@ -94,29 +93,24 @@ namespace xbhxh
                         var phone = string.Empty;
                         if (item.Mobiles != null && item.Mobiles.Count > 0)
                         {
-                            phone = "<a href='tel:"+ item.Mobiles.First().Number + "'>"+ item.Mobiles.First().Number + "</a>";
-                        }
-                        
-                        var email = string.Empty;
-                        if (!string.IsNullOrEmpty(item.Email))
-                        {
-                            email = item.Email;
-                        }
-                        if (string.IsNullOrEmpty(email))
-                        {
-                            if (!string.IsNullOrEmpty(item.EmailPersonal))
+                            foreach (var mobile in item.Mobiles)
                             {
-                                email = item.EmailPersonal;
+                                if (!string.IsNullOrEmpty(mobile.Number))
+                                {
+                                    phone += "<a href='tel:" + mobile.Number + "'>" + mobile.Number + "</a>";
+                                }
                             }
                         }
 
+                        var email = string.IsNullOrEmpty(item.Email) ? string.Empty : item.Email;
+
                         var linkInformation = Constants.LinkHr.Main + "/" + Constants.LinkHr.Human + "/" + Constants.LinkHr.Information + "/" + item.Id;
 
-                        var ccs = new List<EmailAddress>();
-                        if (!string.IsNullOrEmpty(item.Email) && Utility.IsValidEmail(item.Email))
-                        {
-                            ccs.Add(new EmailAddress { Name = item.FullName, Address = item.Email });
-                        }
+                        //var ccs = new List<EmailAddress>();
+                        //if (!string.IsNullOrEmpty(item.Email) && Utility.IsValidEmail(item.Email))
+                        //{
+                        //    ccs.Add(new EmailAddress { Name = item.FullName, Address = item.Email });
+                        //}
                         
                         var pathToFile = @"C:\Projects\App.Schedule\Templates\AlertBhxh.html";
                         var bodyBuilder = new BodyBuilder();
@@ -146,7 +140,6 @@ namespace xbhxh
                             EmployeeId = item.Id
                         };
 
-                        // For faster update.
                         var scheduleEmail = new ScheduleEmail
                         {
                             Status = (int)EEmailStatus.Schedule,
@@ -159,7 +152,6 @@ namespace xbhxh
                             EmployeeId = emailMessage.EmployeeId
                         };
                         dbContext.ScheduleEmails.InsertOne(scheduleEmail);
-                        //new AuthMessageSender().SendEmail(emailMessage);
                     }
                 }
             }

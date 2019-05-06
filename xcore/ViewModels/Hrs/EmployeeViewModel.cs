@@ -73,9 +73,10 @@ namespace ViewModels
 
         public string EmailLeaveGroup { get; set; }
 
-        public bool EmailSend { get; set; }
+        // Welcome
+        public bool EmailSend { get; set; } = false;
 
-        public bool EmailLeave { get; set; }
+        public bool EmailLeave { get; set; } = false;
 
         public int RecordCurrent { get; set; }
 

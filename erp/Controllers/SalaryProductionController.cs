@@ -51,7 +51,7 @@ namespace erp.Controllers
         }
 
         [Route(Constants.LinkSalary.BangLuong)]
-        public async Task<IActionResult> BangLuong(string Thang, string Id)
+        public async Task<IActionResult> BangLuong(string Thang, string Id, string SapXep, string ThuTu)
         {
             #region Authorization
             var login = User.Identity.Name;
@@ -74,6 +74,8 @@ namespace erp.Controllers
 
             #endregion
 
+            var linkCurrent = string.Empty;
+
             #region DDL
             var sortTimes = Utility.DllMonths();
             var employees = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false)
@@ -86,6 +88,9 @@ namespace erp.Controllers
             var year = toDate.Year;
             var month = toDate.Month;
             Thang = string.IsNullOrEmpty(Thang) ? month + "-" + year : Thang;
+
+            linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "?";
+            linkCurrent += "Thang=" + Thang;
             #endregion
 
             // MOI THANG SE CO 1 DANH SACH TAI THOI DIEM DO
@@ -94,23 +99,43 @@ namespace erp.Controllers
 
             #region Filter
             var builder = Builders<SalaryEmployeeMonth>.Filter;
-            var filter = builder.Eq(m => m.Year, year) & builder.Eq(m => m.Month, month)
+            var filter = builder.Eq(m => m.Enable, true)
+                        & builder.Eq(m => m.Year, year) 
+                        & builder.Eq(m => m.Month, month)
                         & builder.Eq(m => m.ChucVuId, "5c88d09bd59d56225c4324de");
             if (!string.IsNullOrEmpty(Id))
             {
                 filter = filter & builder.Eq(x => x.Id, Id.Trim());
+                linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "?";
+                linkCurrent += "Id=" + Id;
             }
             #endregion
 
             #region Sort
             var sortBuilder = Builders<SalaryEmployeeMonth>.Sort.Ascending(m => m.EmployeeCode);
+            SapXep = string.IsNullOrEmpty(SapXep) ? "code" : SapXep;
+            ThuTu = string.IsNullOrEmpty(ThuTu) ? "asc" : ThuTu;
+            switch (SapXep)
+            {
+                case "ten":
+                    sortBuilder = ThuTu == "asc" ? Builders<SalaryEmployeeMonth>.Sort.Ascending(m => m.EmployeeFullName) : Builders<SalaryEmployeeMonth>.Sort.Descending(m => m.EmployeeFullName);
+                    break;
+                case "luong":
+                    sortBuilder = ThuTu == "asc" ? Builders<SalaryEmployeeMonth>.Sort.Ascending(m => m.LuongThamGiaBHXH) : Builders<SalaryEmployeeMonth>.Sort.Descending(m => m.LuongThamGiaBHXH);
+                    break;
+                default:
+                    sortBuilder = ThuTu == "asc" ? Builders<SalaryEmployeeMonth>.Sort.Ascending(m => m.EmployeeCode) : Builders<SalaryEmployeeMonth>.Sort.Descending(m => m.EmployeeCode);
+                    break;
+            }
             #endregion
 
-            var salaryEmployeeMonths = dbContext.SalaryEmployeeMonths.Find(filter).Sort(sortBuilder).ToList();
+            var records = dbContext.SalaryEmployeeMonths.CountDocuments(filter);
+            var list = new List<SalaryEmployeeMonth>();
+            list = dbContext.SalaryEmployeeMonths.Find(filter).Sort(sortBuilder).ToList();
 
             #region FILL DATA
             var results = new List<SalaryEmployeeMonth>();
-            foreach (var salary in salaryEmployeeMonths)
+            foreach (var salary in list)
             {
                 var salaryFull = Utility.SalaryEmployeeMonthFillData(salary);
                 results.Add(salaryFull);
@@ -120,10 +145,14 @@ namespace erp.Controllers
             var viewModel = new BangLuongViewModel
             {
                 SalaryEmployeeMonths = results,
-                MonthYears = sortTimes,
-                Thang = Thang,
                 Employees = employees,
+                MonthYears = sortTimes,
                 Id = Id,
+                Thang = Thang,
+                LinkCurrent = linkCurrent,
+                ThuTu = ThuTu,
+                SapXep = SapXep,
+                Records = (int)records,
                 ThamSoTinhLuong = Utility.BusinessDaysUntil(fromDate, toDate)
             };
 
@@ -1636,6 +1665,12 @@ namespace erp.Controllers
                     PhepNamChinhTay = phepnam
                 });
             }
+
+            // Employee
+            var filterEmp = Builders<Employee>.Filter.Eq(m => m.Id, existEmployee.Id);
+            var updateEmp = Builders<Employee>.Update
+                .Set(m => m.LuongBHXH, bhxh);
+            dbContext.Employees.UpdateOne(filterEmp, updateEmp);
         }
 
         private void TamUngSanXuat(int month, int year, decimal tamung, Employee existEmployee)

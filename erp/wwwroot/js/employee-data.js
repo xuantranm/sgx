@@ -101,19 +101,27 @@
     });
 
     $('#Employee_CongTyChiNhanh').on('change', function () {
+        $('#Employee_CongTyChiNhanhName').val($('#Employee_CongTyChiNhanh option:selected').text);
         changeByCongTyChiNhanh($(this).val());
     });
 
     $('#Employee_KhoiChucNang').on('change', function () {
+        $('#Employee_KhoiChucNangName').val($('#Employee_KhoiChucNang option:selected').text);
         changeByKhoiChucNang($(this).val());
     });
 
     $('#Employee_PhongBan').on('change', function () {
+        $('#Employee_PhongBanName').val($('#Employee_PhongBan option:selected').text);
         changeByPhongBan($(this).val());
     });
 
     $('#Employee_BoPhan').on('change', function () {
+        $('#Employee_BoPhanName').val($('#Employee_BoPhan option:selected').text);
         changeByBoPhan($(this).val());
+    });
+
+    $('#Employee_BoPhanCon').on('change', function () {
+        $('#Employee_BoPhanConName').val($('#Employee_BoPhanCon option:selected').text);
     });
 
     $('#newPhongBanModal').on('show.bs.modal', function (event) {
@@ -164,6 +172,7 @@
                     toastr.info(data.message);
                     $('select[name="Employee.ChucVu"] option:first').after('<option value="' + data.entity.id + '">' + data.entity.name + '</option>');
                     $('select[name="Employee.ChucVu"]').val(data.entity.id);
+                    $('select[name="Employee.ChucVuName"]').val(data.entity.name);
                     $('input', form).val('');
                     $('textarea', form).val('');
                     $('#newChucVuModal').modal('hide');

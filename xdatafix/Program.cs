@@ -27,6 +27,9 @@ namespace xdatafix
             var database = "tribat";
             #endregion
 
+            FixEmployeeTimeKeeper(connection, database);
+            FixEmployeeContractDay(connection, database);
+
             //FixEmployeeNewStructure(connection, database);
             //FixEmployeeOldCode(connection, database);
             //FixEmployeeTimer(connection, database);
@@ -56,11 +59,11 @@ namespace xdatafix
 
             #region Factories: Init data
 
-            InitFactoryProductDinhMucTangCa(connection, database);
-            InitFactoryProductDinhMucTiLe(connection, database);
-            InitFactoryProductDonGiaM3(connection, database);
-            InitFactoryProductDinhMuc(connection, database);
-            InitFactoryCongViec(connection, database);
+            //InitFactoryProductDinhMucTangCa(connection, database);
+            //InitFactoryProductDinhMucTiLe(connection, database);
+            //InitFactoryProductDonGiaM3(connection, database);
+            //InitFactoryProductDinhMuc(connection, database);
+            //InitFactoryCongViec(connection, database);
             #endregion
 
             #region Factories: Update data
@@ -73,6 +76,46 @@ namespace xdatafix
         }
 
         #region ERP
+
+        static void FixEmployeeTimeKeeper(string connection, string database)
+        {
+            #region Connection, Setting & Filter
+            MongoDBContext.ConnectionString = connection;
+            MongoDBContext.DatabaseName = database;
+            MongoDBContext.IsSSL = true;
+            MongoDBContext dbContext = new MongoDBContext();
+            #endregion
+
+            var filter = Builders<EmployeeWorkTimeLog>.Filter.Eq(m => m.Mode, 2);
+            var update = Builders<EmployeeWorkTimeLog>.Update
+                .Set(m => m.Mode, 20);
+            dbContext.EmployeeWorkTimeLogs.UpdateMany(filter, update);
+
+            var filter2 = Builders<EmployeeWorkTimeLog>.Filter.Eq(m => m.Mode, 6);
+            var update2 = Builders<EmployeeWorkTimeLog>.Update
+                .Set(m => m.Mode, 60);
+            dbContext.EmployeeWorkTimeLogs.UpdateMany(filter2, update2);
+        }
+
+        static void FixEmployeeContractDay(string connection, string database)
+        {
+            #region Connection, Setting & Filter
+            MongoDBContext.ConnectionString = connection;
+            MongoDBContext.DatabaseName = database;
+            MongoDBContext.IsSSL = true;
+            MongoDBContext dbContext = new MongoDBContext();
+            #endregion
+
+            var employees = dbContext.Employees.Find(m => true).ToList();
+            foreach (var item in employees)
+            {
+                var filter = Builders<Employee>.Filter.Eq(m => m.Id, item.Id);
+                var update = Builders<Employee>.Update
+                    .Set(m => m.Contractday, item.Joinday.AddMonths(2));
+                dbContext.Employees.UpdateOne(filter, update);
+            }
+        }
+
         static void FixEmployeeNewStructure(string connection, string database)
         {
             #region Connection, Setting & Filter
