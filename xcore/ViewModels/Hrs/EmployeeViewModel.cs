@@ -78,6 +78,10 @@ namespace ViewModels
 
         public bool EmailLeave { get; set; } = false;
 
+        public string OtherWelcomeEmail { get; set; } // Customer email send.
+
+        public string OtherLeaveEmail { get; set; } // Customer email send.
+
         public int RecordCurrent { get; set; }
 
         public int RecordLeave { get; set; }

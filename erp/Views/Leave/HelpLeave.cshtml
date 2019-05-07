@@ -221,7 +221,7 @@
                         </a>
                     </th>
                     <td>@leave.ApproverName</td>
-                    <td>@leave.From - @leave.To <span class="badge badge-light">@leave.Number</span> ngày</td>
+                    <td>@leave.From.ToString("dd/MM/yyyy HH:mm") - @leave.To.ToString("dd/MM/yyyy HH:mm") <span class="badge badge-light">@leave.Number</span> ngày</td>
                     <td>
                         <span class="badge badge-success">@Constants.StatusLeave(leave.Status)</span>
                     </td>

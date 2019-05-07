@@ -101,27 +101,27 @@
     });
 
     $('#Employee_CongTyChiNhanh').on('change', function () {
-        $('#Employee_CongTyChiNhanhName').val($('#Employee_CongTyChiNhanh option:selected').text);
+        $('#Employee_CongTyChiNhanhName').val($('#Employee_CongTyChiNhanh option:selected').text());
         changeByCongTyChiNhanh($(this).val());
     });
 
     $('#Employee_KhoiChucNang').on('change', function () {
-        $('#Employee_KhoiChucNangName').val($('#Employee_KhoiChucNang option:selected').text);
+        $('#Employee_KhoiChucNangName').val($('#Employee_KhoiChucNang option:selected').text());
         changeByKhoiChucNang($(this).val());
     });
 
     $('#Employee_PhongBan').on('change', function () {
-        $('#Employee_PhongBanName').val($('#Employee_PhongBan option:selected').text);
+        $('#Employee_PhongBanName').val($('#Employee_PhongBan option:selected').text());
         changeByPhongBan($(this).val());
     });
 
     $('#Employee_BoPhan').on('change', function () {
-        $('#Employee_BoPhanName').val($('#Employee_BoPhan option:selected').text);
+        $('#Employee_BoPhanName').val($('#Employee_BoPhan option:selected').text());
         changeByBoPhan($(this).val());
     });
 
     $('#Employee_BoPhanCon').on('change', function () {
-        $('#Employee_BoPhanConName').val($('#Employee_BoPhanCon option:selected').text);
+        $('#Employee_BoPhanConName').val($('#Employee_BoPhanCon option:selected').text());
     });
 
     $('#newPhongBanModal').on('show.bs.modal', function (event) {
@@ -205,16 +205,59 @@
     $('.chkEmailSend').on('change', function () {
         if ($(this).is(':checked')) {
             $('#EmailSend').val(true);
+            $('.welcomeEmail').removeClass('d-none');
+            var phongban = $('#Employee_PhongBan').val();
+            if (phongban === "") {
+                $('.welcomeToEmailList').text("Chưa chọn phòng ban! Danh sách email này dựa vào phòng ban.");
+            }
+            else {
+                $.ajax({
+                    type: "GET",
+                    url: "/api/GetWelcomeToEmails",
+                    contentType: "application/json; charset=utf-8",
+                    data: { PhongBan: $('#Employee_PhongBan').val() },
+                    dataType: "json",
+                    success: function (data) {
+                        if (data.result === true) {
+                            $('.welcomeToEmailList').text("TO: " + data.tohtml);
+                            $('.welcomeCCEmailList').text("CC: " + data.cchtml);
+                        }
+                    }
+                });
+            }
+           
         } else {
             $('#EmailSend').val(false);
+            $('.welcomeEmail').addClass('d-none');
         }
     });
 
     $('.chkEmailLeaveSend').on('change', function () {
         if ($(this).is(':checked')) {
             $('#EmailLeave').val(true);
+            $('.leaveEmail').removeClass('d-none');
+            var phongban = $('#Employee_PhongBan').val();
+            if (phongban === "") {
+                $('.welcomeToEmailList').text("Chưa chọn phòng ban! Danh sách email này dựa vào phòng ban.");
+            }
+            else {
+                $.ajax({
+                    type: "GET",
+                    url: "/api/GetWelcomeToEmails", // dung chung
+                    contentType: "application/json; charset=utf-8",
+                    data: { PhongBan: $('#Employee_PhongBan').val() },
+                    dataType: "json",
+                    success: function (data) {
+                        if (data.result === true) {
+                            $('.leaveToEmailList').text("TO: " + data.tohtml);
+                            $('.leaveCCEmailList').text("CC: " + data.cchtml);
+                        }
+                    }
+                });
+            }
         } else {
             $('#EmailLeave').val(false);
+            $('.leaveEmail').addClass('d-none');
         }
     });
 

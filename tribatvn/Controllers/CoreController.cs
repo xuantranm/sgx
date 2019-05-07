@@ -696,7 +696,7 @@ namespace tribatvn.Controllers
             var categories = dbContext.JobCategories.Find(m => m.Language.Equals(cultureInfo.Name));
             ViewData["Categories"] = categories.ToList();
 
-            var departments = dbContext.Departments.Find(m => m.Language.Equals(cultureInfo.Name));
+            var departments = dbContext.PhongBans.Find(m => m.Language.Equals(cultureInfo.Name));
             ViewData["Departments"] = departments.ToList();
             #endregion
 
@@ -717,7 +717,7 @@ namespace tribatvn.Controllers
             var categories = dbContext.JobCategories.Find(m => m.Language.Equals(cultureInfo.Name));
             ViewData["Categories"] = categories.ToList();
 
-            var departments = dbContext.Departments.Find(m => m.Language.Equals(cultureInfo.Name));
+            var departments = dbContext.PhongBans.Find(m => m.Language.Equals(cultureInfo.Name));
             ViewData["Departments"] = departments.ToList();
             #endregion
 
@@ -805,7 +805,7 @@ namespace tribatvn.Controllers
             var categories = dbContext.JobCategories.Find(m => m.Language.Equals(cultureInfo.Name));
             ViewData["Categories"] = categories.ToList();
 
-            var departments = dbContext.Departments.Find(m => m.Language.Equals(cultureInfo.Name));
+            var departments = dbContext.PhongBans.Find(m => m.Language.Equals(cultureInfo.Name));
             ViewData["Departments"] = departments.ToList();
             #endregion
 

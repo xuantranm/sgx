@@ -849,15 +849,6 @@
 
                             @if (!Model.Employee.IsLeaveEmail)
                             {
-                                <div class="col-12 col-md-6 leave-extend @displayLeave">
-                                    <div class="form-group">
-                                        <label class="control-label">Nhóm gửi email</label>
-                                        <input asp-for="EmailLeaveGroup" class="form-control form-control-lg" />
-                                        <small><span class="badge badge-info">1</span> Đặt tên nhóm theo ngày, theo ký tự nào đó. Vd: 20122018.</small>
-                                        <small><span class="badge badge-info">2</span> Sau khi hoàn tất muốn gửi mail theo nhóm thì đánh dấu bên dưới. Muốn tạo thêm thông tin theo nhóm thì bỏ chọn bên dưới.</small>
-                                        <small>*** Hệ thống sẽ gửi email thông báo theo tên nhóm. Sau khi lên lịch gửi tên nhóm sẽ hủy.</small>
-                                    </div>
-                                </div>
                                 <div class="col-12 leave-extend @displayLeave">
                                     <div class="form-group">
                                         <div class="float-left">
@@ -876,6 +867,26 @@
                                         <div class="float-left" style="margin-left:8px"><b>Gửi email thông báo nhân sự nghỉ việc</b></div>
                                     </div>
                                 </div>
+                                <div class="col-12 d-none leaveEmail">Danh sách email gửi:</div>
+                                <div class="col-12 d-none leaveEmail leaveToEmailList" style="font-weight:bold"></div>
+                                <div class="col-12 d-none leaveEmail leaveCCEmailList" style="font-weight:bold"></div>
+                                <div class="col-12 d-none leaveEmail col-md-6">
+                                    <div class="form-group">
+                                        <label class="control-label">Email khác</label>
+                                        <input asp-for="OtherWelcomeEmail" class="form-control form-control-lg" />
+                                        <small><span class="badge badge-info">1</span> Các email phân tách bằng ký tự <code>;</code>. vd: a@tribat.vn; b@tribat.vn</small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6 d-none leaveEmail leave-extend @displayLeave">
+                                    <div class="form-group">
+                                        <label class="control-label">Nhóm gửi email</label>
+                                        <input asp-for="EmailLeaveGroup" class="form-control form-control-lg" />
+                                        <small><span class="badge badge-info">1</span> Đặt tên nhóm theo ngày, theo ký tự nào đó. Vd: 20122018.</small>
+                                        <small><span class="badge badge-info">2</span> Sau khi hoàn tất muốn gửi mail theo nhóm thì đánh dấu bên dưới. Muốn tạo thêm thông tin theo nhóm thì bỏ chọn bên dưới.</small>
+                                        <small>*** Hệ thống sẽ gửi email thông báo theo tên nhóm. Sau khi lên lịch gửi tên nhóm sẽ hủy.</small>
+                                    </div>
+                                </div>
+                                <div class="col-12 d-none leaveEmail leaveGroupInfo"></div>
                             }
                         }
                         <div class="col-6">
@@ -3225,16 +3236,6 @@
             {
                 <hr />
                 <div class="row">
-                    <!-- Autocomplete -->
-                    <div class="col-12 col-md-6">
-                        <div class="form-group">
-                            <label class="control-label">Nhóm gửi email</label>
-                            <input asp-for="EmailGroup" class="form-control form-control-lg" />
-                            <small><span class="badge badge-info">1</span> Đặt tên nhóm theo ngày, theo ký tự nào đó. Vd: 20122018.</small>
-                            <small><span class="badge badge-info">2</span> Sau khi hoàn tất muốn gửi mail theo nhóm thì đánh dấu bên dưới. Muốn tạo thêm thông tin theo nhóm thì bỏ chọn bên dưới.</small>
-                            <small>*** Hệ thống sẽ gửi email thông báo theo tên nhóm. Sau khi lên lịch gửi tên nhóm sẽ hủy.</small>
-                        </div>
-                    </div>
                     <div class="col-12">
                         <div class="form-group">
                             <div class="float-left">
@@ -3253,6 +3254,28 @@
                             <div class="float-left" style="margin-left:8px"><b>Gửi email thông báo nhân sự mới</b></div>
                         </div>
                     </div>
+                    <div class="col-12 d-none welcomeEmail">Danh sách email gửi:</div>
+                    <div class="col-12 d-none welcomeEmail welcomeToEmailList" style="font-weight:bold"></div>
+                    <div class="col-12 d-none welcomeEmail welcomeCCEmailList" style="font-weight:bold"></div>
+                    <div class="col-12 col-md-6 d-none welcomeEmail">
+                        <div class="form-group">
+                            <label class="control-label">Email khác (TO)</label>
+                            <input asp-for="OtherWelcomeEmail" class="form-control form-control-lg" />
+                            <small><span class="badge badge-info">1</span> Các email phân tách bằng ký tự <code>;</code>. vd: a@tribat.vn; b@tribat.vn</small>
+                        </div>
+                    </div>
+
+                    <!-- Autocomplete -->
+                    <div class="col-12">
+                        <div class="form-group">
+                            <label class="control-label">Gửi thông báo theo nhóm nhân viên</label>
+                            <input asp-for="EmailGroup" class="form-control form-control-lg" />
+                            <small><span class="badge badge-info">1</span> Đặt tên nhóm. Vd: 20122018.</small>
+                            <small><span class="badge badge-info">2</span> Thêm thành viên theo nhóm thì không chọn "Gửi email thông báo nhân sự mới".</small>
+                            <small>* Sau khi gửi email, thông tin nhóm được xóa.</small>
+                        </div>
+                    </div>
+                    <div class="col-12 d-none welcomeEmail welcomeGroupInfo"></div>
                 </div>
             }
 

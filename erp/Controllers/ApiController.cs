@@ -170,6 +170,72 @@ namespace erp.Controllers
         #endregion
 
         #region EMPLOYEE
+        public JsonResult GetWelcomeToEmails(string PhongBan)
+        {
+            var watch = System.Diagnostics.Stopwatch.StartNew();
+            var elapsedMs = watch.ElapsedMilliseconds;
+
+            var tos = new List<EmailAddress>();
+            var ccs = new List<EmailAddress>();
+
+            var ketoans = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false)
+                            && !string.IsNullOrEmpty(m.Email) && m.PhongBan.Equals("5c88d094d59d56225c432422") && !m.UserName.Equals(Constants.System.account)).ToList();
+
+            #region CC: HR
+            var hrs = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false)
+                            && !m.UserName.Equals(Constants.System.account)
+                            && m.PhongBan.Equals("5c88d094d59d56225c432414")
+                            && !string.IsNullOrEmpty(m.Email)).ToList();
+            // get ids right nhan su
+            var builderR = Builders<RoleUser>.Filter;
+            var filterR = builderR.Eq(m => m.Enable, true)
+                        & builderR.Eq(m => m.Role, Constants.Rights.HR)
+                        & builderR.Eq(m => m.Action, Convert.ToInt32(Constants.Action.Edit));
+            var fieldR = Builders<RoleUser>.Projection.Include(p => p.User);
+            var idsR = dbContext.RoleUsers.Find(filterR).Project<RoleUser>(fieldR).ToList().Select(m => m.User).ToList();
+            foreach (var hr in hrs)
+            {
+                if (idsR.Contains(hr.Id))
+                {
+                    ccs.Add(new EmailAddress
+                    {
+                        Name = hr.FullName,
+                        Address = hr.Email
+                    });
+                }
+            }
+            #endregion
+
+            var relations = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false)
+                              && !string.IsNullOrEmpty(m.Email) && m.PhongBan.Equals(PhongBan) && !m.UserName.Equals(Constants.System.account)).ToList();
+            foreach (var item in relations)
+            {
+                tos.Add(new EmailAddress
+                {
+                    Name = item.FullName,
+                    Address = item.Email,
+                });
+            }
+
+            var tohtml = string.Empty;
+            foreach(var to in tos)
+            {
+                tohtml += string.IsNullOrEmpty(tohtml) ? to.Address : "; " + to.Address;
+            }
+            var cchtml = string.Empty;
+            foreach (var cc in ccs)
+            {
+                cchtml += string.IsNullOrEmpty(cchtml) ? cc.Address : "; " + cc.Address;
+            }
+            if (tos.Count == 0)
+            {
+                tohtml = "Dữ liệu không tìm thấy. Xem lại phòng ban.";
+            }
+            watch.Stop();
+            elapsedMs = watch.ElapsedMilliseconds;
+            return Json(new { elapsedMs = elapsedMs + "ms", result = true, tos, ccs, tohtml, cchtml });
+        }
+
         public ActionResult EmployeeDisable(string Id)
         {
             var login = User.Identity.Name;
