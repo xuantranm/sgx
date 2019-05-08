@@ -7,6 +7,8 @@ namespace Common.Utilities
     {
         public static string VersionJs = "v-" + DateTime.Now.Ticks;
 
+        public static string NgachLuongBoss = "C.01; C.02; C.03";
+
         public static string PhanLoaiDuAnBun(this int input)
         {
             if (input == (int)EBun.DAC)

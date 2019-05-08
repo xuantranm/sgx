@@ -63,7 +63,7 @@ namespace Models
             get
             {
                 DateTime today = DateTime.Today;
-                DateTime next = Joinday.AddMonths(6);
+                DateTime next = Contractday.AddMonths(6);
                 return (next - today).Days;
             }
         }

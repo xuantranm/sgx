@@ -170,7 +170,7 @@ namespace erp.Controllers
         #endregion
 
         #region EMPLOYEE
-        public JsonResult GetWelcomeToEmails(string PhongBan)
+        public JsonResult GetWelcomeToEmails(string PhongBan, bool All)
         {
             var watch = System.Diagnostics.Stopwatch.StartNew();
             var elapsedMs = watch.ElapsedMilliseconds;
@@ -178,19 +178,43 @@ namespace erp.Controllers
             var tos = new List<EmailAddress>();
             var ccs = new List<EmailAddress>();
 
-            var ketoans = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false)
-                            && !string.IsNullOrEmpty(m.Email) && m.PhongBan.Equals("5c88d094d59d56225c432422") && !m.UserName.Equals(Constants.System.account)).ToList();
+            #region CC: HR & Boss (if All)
+            var idsBoss = new List<string>();
+            if (All)
+            {
+                var ngachLuongBoss = Constants.NgachLuongBoss.Split(';').Select(p => p.Trim()).ToList();
+                var builderBoss = Builders<Employee>.Filter;
+                var filterBoss = builderBoss.Eq(m => m.Enable, true)
+                            & builderBoss.Eq(m => m.Leave, false)
+                            & !builderBoss.Eq(m => m.UserName, Constants.System.account)
+                            & builderBoss.In(c => c.NgachLuongCode, ngachLuongBoss)
+                            & !builderBoss.Eq(m => m.Email, null)
+                            & !builderBoss.Eq(m => m.Email, string.Empty);
 
-            #region CC: HR
+                var fieldBoss = Builders<Employee>.Projection.Include(p => p.Id).Include(p => p.FullName).Include(p => p.Email);
+                var boss = dbContext.Employees.Find(filterBoss).Project<Employee>(fieldBoss).ToList();
+                foreach (var item in boss)
+                {
+                    ccs.Add(new EmailAddress
+                    {
+                        Name = item.FullName,
+                        Address = item.Email
+                    });
+                }
+                idsBoss = boss.Select(m => m.Id).ToList();
+            }
+
             var hrs = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false)
                             && !m.UserName.Equals(Constants.System.account)
                             && m.PhongBan.Equals("5c88d094d59d56225c432414")
                             && !string.IsNullOrEmpty(m.Email)).ToList();
-            // get ids right nhan su
+            // get ids right nhan su && (m.Expired.Equals(null) || m.Expired > DateTime.Now)
             var builderR = Builders<RoleUser>.Filter;
             var filterR = builderR.Eq(m => m.Enable, true)
                         & builderR.Eq(m => m.Role, Constants.Rights.HR)
-                        & builderR.Eq(m => m.Action, Convert.ToInt32(Constants.Action.Edit));
+                        & builderR.Eq(m => m.Action, Convert.ToInt32(Constants.Action.Edit))
+                        & builderR.Eq(m => m.Expired, null)
+                        | builderR.Gt(m => m.Expired, DateTime.Now);
             var fieldR = Builders<RoleUser>.Projection.Include(p => p.User);
             var idsR = dbContext.RoleUsers.Find(filterR).Project<RoleUser>(fieldR).ToList().Select(m => m.User).ToList();
             foreach (var hr in hrs)
@@ -204,19 +228,56 @@ namespace erp.Controllers
                     });
                 }
             }
+
+            idsR.AddRange(idsBoss);
             #endregion
 
-            var relations = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false)
-                              && !string.IsNullOrEmpty(m.Email) && m.PhongBan.Equals(PhongBan) && !m.UserName.Equals(Constants.System.account)).ToList();
-            foreach (var item in relations)
+            if (!All)
             {
-                tos.Add(new EmailAddress
-                {
-                    Name = item.FullName,
-                    Address = item.Email,
-                });
-            }
+                var ketoans = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false)
+                            && !string.IsNullOrEmpty(m.Email) && m.PhongBan.Equals("5c88d094d59d56225c432422") && !m.UserName.Equals(Constants.System.account)).ToList();
 
+                foreach (var item in ketoans)
+                {
+                    tos.Add(new EmailAddress
+                    {
+                        Name = item.FullName,
+                        Address = item.Email,
+                    });
+                }
+
+                var relations = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false)
+                              && !string.IsNullOrEmpty(m.Email) && m.PhongBan.Equals(PhongBan) && !m.UserName.Equals(Constants.System.account)).ToList();
+                foreach (var item in relations)
+                {
+                    tos.Add(new EmailAddress
+                    {
+                        Name = item.FullName,
+                        Address = item.Email,
+                    });
+                }
+            }
+            else
+            {
+                var builderAll = Builders<Employee>.Filter;
+                var filterAll = builderAll.Eq(m => m.Enable, true)
+                            & builderAll.Eq(m => m.Leave, false)
+                            & !builderAll.Eq(m => m.UserName, Constants.System.account)
+                            & !builderAll.Eq(m => m.Email, null)
+                            & !builderAll.Eq(m => m.Email, string.Empty)
+                            & !builderAll.In(c => c.Id, idsR);
+                var fieldAll = Builders<Employee>.Projection.Include(p => p.FullName).Include(p => p.Email);
+                var allEmail = dbContext.Employees.Find(filterAll).Project<Employee>(fieldAll).ToList();
+                foreach (var item in allEmail)
+                {
+                    tos.Add(new EmailAddress
+                    {
+                        Name = item.FullName,
+                        Address = item.Email,
+                    });
+                }
+            }
+            
             var tohtml = string.Empty;
             foreach(var to in tos)
             {

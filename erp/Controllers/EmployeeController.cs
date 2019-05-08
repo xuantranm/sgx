@@ -1030,11 +1030,11 @@ namespace erp.Controllers
                 #endregion
 
                 #region GroupEmail
-                if (!string.IsNullOrEmpty(viewModel.EmailGroup))
+                if (!string.IsNullOrEmpty(viewModel.WelcomeEmailGroup))
                 {
                     dbContext.EmailGroups.InsertOne(new EmailGroup
                     {
-                        Name = viewModel.EmailGroup.Trim().ToUpper(),
+                        Name = viewModel.WelcomeEmailGroup.Trim().ToUpper(),
                         Object = entity.UserName,
                         Type = (int)EEmailGroup.New
                     });
@@ -1048,19 +1048,19 @@ namespace erp.Controllers
                 {
                     sendMail = emailEntity.Value == "true" ? true : false;
                 }
-                if (!viewModel.EmailSend)
+                if (!viewModel.IsWelcomeEmail)
                 {
                     sendMail = false;
                 }
                 if (sendMail)
                 {
-                    if (string.IsNullOrEmpty(viewModel.EmailGroup))
+                    if (string.IsNullOrEmpty(viewModel.WelcomeEmailGroup))
                     {
-                        SendMailNewUser(string.Empty, entity.UserName, viewModel.OtherWelcomeEmail);
+                        SendMailNewUser(string.Empty, entity.UserName, viewModel.WelcomeOtherEmail, viewModel.WelcomeEmailAll);
                     }
                     else
                     {
-                        SendMailNewUser(viewModel.EmailGroup.Trim().ToUpper(), string.Empty, viewModel.OtherWelcomeEmail);
+                        SendMailNewUser(viewModel.WelcomeEmailGroup.Trim().ToUpper(), string.Empty, viewModel.WelcomeOtherEmail, viewModel.WelcomeEmailAll);
                     }
 
                 }
@@ -1179,20 +1179,18 @@ namespace erp.Controllers
             };
 
             #region EmailGroup & Flag
-            viewModel.EmailLeave = entity.IsLeaveEmail ? true : false;
-            viewModel.EmailSend = entity.IsWelcomeEmail ? true : false;
             var emailGroups = dbContext.EmailGroups.Find(m => m.Status.Equals(false) && m.Object.Equals(entity.UserName)).ToList();
             if (emailGroups != null && emailGroups.Count > 0)
             {
                 var emailGroupNew = emailGroups.Find(m => m.Type.Equals((int)EEmailGroup.New));
                 if (emailGroupNew != null)
                 {
-                    viewModel.EmailGroup = emailGroupNew.Name;
+                    viewModel.WelcomeEmailGroup = emailGroupNew.Name;
                 }
                 var emailGroupLeave = emailGroups.Find(m => m.Type.Equals((int)EEmailGroup.Leave));
                 if (emailGroupLeave != null)
                 {
-                    viewModel.EmailLeaveGroup = emailGroupLeave.Name;
+                    viewModel.LeaveEmailGroup = emailGroupLeave.Name;
                 }
             }
             #endregion
@@ -1229,7 +1227,7 @@ namespace erp.Controllers
                 Employee = loginE
             };
             var chucvuLoginE = dbContext.ChucVus.Find(m => m.Id.Equals(loginE.ChucVu)).FirstOrDefault();
-            loginE.ChucVu = chucvuLoginE != null ? chucvuLoginE.Name: string.Empty;
+            loginE.ChucVu = chucvuLoginE != null ? chucvuLoginE.Name : string.Empty;
             // Check owner
             if (entity.Id != login)
             {
@@ -1249,16 +1247,10 @@ namespace erp.Controllers
             #region Setting
             var settings = dbContext.Settings.Find(m => true).ToList();
             var sendMail = true;
-            var sendMailLeave = true;
             var emailEntitySetting = settings.Where(m => m.Key.Equals("email-cap-nhat-nhan-vien")).FirstOrDefault();
             if (emailEntitySetting != null)
             {
                 sendMail = emailEntitySetting.Value == "true" ? true : false;
-            }
-            var emailLeaveEntitySetting = settings.Where(m => m.Key.Equals("email-nhan-vien-nghi")).FirstOrDefault();
-            if (emailLeaveEntitySetting != null)
-            {
-                sendMailLeave = emailLeaveEntitySetting.Value == "true" ? true : false;
             }
             #endregion
 
@@ -1407,10 +1399,13 @@ namespace erp.Controllers
                         }
                     }
 
-                    if (entity.Leaveday.HasValue)
+                    if (!entity.Leave)
                     {
-                        entity.Leave = true;
+                        entity.Leaveday = null;
+                        entity.LeaveReason = string.Empty;
+                        entity.LeaveHandover = string.Empty;
                     }
+
                     var filter = Builders<Employee>.Filter.Eq(m => m.Id, entity.Id);
                     var update = Builders<Employee>.Update
                         .Set(m => m.UpdatedBy, login)
@@ -1584,11 +1579,12 @@ namespace erp.Controllers
                     #endregion
 
                     #region Send email leave
-                    if (entity.Leave && !entity.IsLeaveEmail)
+                    if (entity.Leave && viewModel.IsLeaveEmail)
                     {
-                        if (!string.IsNullOrEmpty(viewModel.EmailLeaveGroup))
+                        #region Group Leave
+                        if (!string.IsNullOrEmpty(viewModel.LeaveEmailGroup))
                         {
-                            var emailLeaveGroup = viewModel.EmailLeaveGroup.Trim().ToUpper();
+                            var emailLeaveGroup = viewModel.LeaveEmailGroup.Trim().ToUpper();
                             var checkLeaveGroup = dbContext.EmailGroups.Find(m => m.Type.Equals((int)EEmailGroup.Leave) && m.Name.Equals(emailLeaveGroup) && m.Object.Equals(entity.UserName) && m.Status.Equals(false)).FirstOrDefault();
                             if (checkLeaveGroup == null)
                             {
@@ -1607,20 +1603,26 @@ namespace erp.Controllers
                                 dbContext.EmailGroups.UpdateMany(filterLeaveEmail, updateLeaveEmail);
                             }
                         }
+                        #endregion
 
-                        if (!viewModel.EmailLeave)
+                        if (!entity.IsLeaveEmail)
                         {
-                            sendMailLeave = false;
-                        }
-                        if (sendMailLeave)
-                        {
-                            if (string.IsNullOrEmpty(viewModel.EmailLeaveGroup))
+                            var sendMailLeave = true;
+                            var emailLeaveEntitySetting = settings.Where(m => m.Key.Equals("email-nhan-vien-nghi")).FirstOrDefault();
+                            if (emailLeaveEntitySetting != null)
                             {
-                                SendMailLeaveUser(string.Empty, entity.UserName, viewModel.OtherLeaveEmail);
+                                sendMailLeave = emailLeaveEntitySetting.Value == "true" ? true : false;
                             }
-                            else
+                            if (sendMailLeave)
                             {
-                                SendMailLeaveUser(viewModel.EmailLeaveGroup.Trim().ToUpper(), string.Empty, viewModel.OtherLeaveEmail);
+                                if (string.IsNullOrEmpty(viewModel.LeaveEmailGroup))
+                                {
+                                    SendMailLeaveUser(string.Empty, entity.UserName, viewModel.LeaveOtherEmail, viewModel.LeaveEmailAll);
+                                }
+                                else
+                                {
+                                    SendMailLeaveUser(viewModel.LeaveEmailGroup.Trim().ToUpper(), string.Empty, viewModel.LeaveOtherEmail, viewModel.LeaveEmailAll);
+                                }
                             }
                         }
                     }
@@ -1754,9 +1756,9 @@ namespace erp.Controllers
                 #endregion
 
                 #region GroupEmail
-                if (!string.IsNullOrEmpty(viewModel.EmailGroup))
+                if (!string.IsNullOrEmpty(viewModel.WelcomeEmailGroup))
                 {
-                    var emailNewGroup = viewModel.EmailGroup.Trim().ToUpper();
+                    var emailNewGroup = viewModel.WelcomeEmailGroup.Trim().ToUpper();
                     var checkEmailNewGroup = dbContext.EmailGroups.Find(m => m.Type.Equals((int)EEmailGroup.New) && m.Name.Equals(emailNewGroup) && m.Object.Equals(entity.UserName) && m.Status.Equals(false)).FirstOrDefault();
                     if (checkEmailNewGroup == null)
                     {
@@ -1778,27 +1780,27 @@ namespace erp.Controllers
                 #endregion
 
                 #region SEND MAIL WELCOME
-                if (!entity.IsWelcomeEmail)
+                if (viewModel.IsWelcomeEmail)
                 {
-                    var sendMailWelcome = false;
+                    var sendMailWelcome = true;
                     var emailSettingWelcome = settings.Where(m => m.Key.Equals("email-tao-nhan-vien")).FirstOrDefault();
                     if (emailSettingWelcome != null)
                     {
                         sendMailWelcome = emailSettingWelcome.Value == "true" ? true : false;
                     }
-                    if (!viewModel.EmailSend)
+                    if (entity.IsWelcomeEmail)
                     {
                         sendMailWelcome = false;
                     }
                     if (sendMailWelcome)
                     {
-                        if (string.IsNullOrEmpty(viewModel.EmailGroup))
+                        if (string.IsNullOrEmpty(viewModel.WelcomeEmailGroup))
                         {
-                            SendMailNewUser(string.Empty, entity.UserName, viewModel.OtherWelcomeEmail);
+                            SendMailNewUser(string.Empty, entity.UserName, viewModel.WelcomeOtherEmail, viewModel.WelcomeEmailAll);
                         }
                         else
                         {
-                            SendMailNewUser(viewModel.EmailGroup.Trim().ToUpper(), string.Empty, viewModel.OtherWelcomeEmail);
+                            SendMailNewUser(viewModel.WelcomeEmailGroup.Trim().ToUpper(), string.Empty, viewModel.WelcomeOtherEmail, viewModel.WelcomeEmailAll);
                         }
                     }
                 }
@@ -2097,7 +2099,7 @@ namespace erp.Controllers
             return Utility.EmailConvert(input);
         }
 
-        public void SendMailNewUser(string group, string userName, string otherEmail)
+        public void SendMailNewUser(string group, string userName, string otherEmail, bool all)
         {
             var arrs = new List<string>();
             if (string.IsNullOrEmpty(group))
@@ -2121,14 +2123,37 @@ namespace erp.Controllers
                 // 1. Notication
                 //      to: Ke toan, phong ban cua nv do, phong ban lien quan (xac dinh sau)
                 //      cc: nhan su
+                // Or all
                 // 2. Send to IT setup email,...
                 var tos = new List<EmailAddress>();
                 var ccs = new List<EmailAddress>();
 
-                var ketoans = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false)
-                            && !string.IsNullOrEmpty(m.Email) && m.PhongBan.Equals("5c88d094d59d56225c432422") && !m.UserName.Equals(Constants.System.account)).ToList();
+                #region CC: HR & Boss (if All)
+                var idsBoss = new List<string>();
+                if (all)
+                {
+                    var ngachLuongBoss = Constants.NgachLuongBoss.Split(';').Select(p => p.Trim()).ToList();
+                    var builderBoss = Builders<Employee>.Filter;
+                    var filterBoss = builderBoss.Eq(m => m.Enable, true)
+                                & builderBoss.Eq(m => m.Leave, false)
+                                & !builderBoss.Eq(m => m.UserName, Constants.System.account)
+                                & builderBoss.In(c => c.NgachLuongCode, ngachLuongBoss)
+                                & !builderBoss.Eq(m => m.Email, null)
+                                & !builderBoss.Eq(m => m.Email, string.Empty);
 
-                #region CC: HR
+                    var fieldBoss = Builders<Employee>.Projection.Include(p => p.Id).Include(p => p.FullName).Include(p => p.Email);
+                    var boss = dbContext.Employees.Find(filterBoss).Project<Employee>(fieldBoss).ToList();
+                    foreach (var item in boss)
+                    {
+                        ccs.Add(new EmailAddress
+                        {
+                            Name = item.FullName,
+                            Address = item.Email
+                        });
+                    }
+                    idsBoss = boss.Select(m => m.Id).ToList();
+                }
+
                 var hrs = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false)
                                 && !m.UserName.Equals(Constants.System.account)
                                 && m.PhongBan.Equals("5c88d094d59d56225c432414")
@@ -2137,7 +2162,9 @@ namespace erp.Controllers
                 var builderR = Builders<RoleUser>.Filter;
                 var filterR = builderR.Eq(m => m.Enable, true)
                             & builderR.Eq(m => m.Role, Constants.Rights.HR)
-                            & builderR.Eq(m => m.Action, Convert.ToInt32(Constants.Action.Edit));
+                            & builderR.Eq(m => m.Action, Convert.ToInt32(Constants.Action.Edit))
+                            & builderR.Eq(m => m.Expired, null)
+                            | builderR.Gt(m => m.Expired, DateTime.Now);
                 var fieldR = Builders<RoleUser>.Projection.Include(p => p.User);
                 var idsR = dbContext.RoleUsers.Find(filterR).Project<RoleUser>(fieldR).ToList().Select(m => m.User).ToList();
                 foreach (var hr in hrs)
@@ -2151,6 +2178,8 @@ namespace erp.Controllers
                         });
                     }
                 }
+
+                idsR.AddRange(idsBoss);
                 #endregion
 
                 var url = Constants.System.domain;
@@ -2164,16 +2193,16 @@ namespace erp.Controllers
                         + "NhanSuMoi.html";
                 var nhansumoi = string.Empty;
                 var groupsPb = (from s in list
-                                         group s by new
-                                         {
-                                             s.PhongBan
-                                         }
+                                group s by new
+                                {
+                                    s.PhongBan
+                                }
                                                                         into l
-                                         select new
-                                         {
-                                             l.Key.PhongBan,
-                                             Items = l.ToList(),
-                                         }).ToList();
+                                select new
+                                {
+                                    l.Key.PhongBan,
+                                    Items = l.ToList(),
+                                }).ToList();
 
                 foreach (var groupPb in groupsPb)
                 {
@@ -2190,7 +2219,7 @@ namespace erp.Controllers
                     nhansumoi += "<td nowrap='nowrap' style='border: solid windowtext 1.0pt; border-left: none; background: #76923C; padding: 0cm 5.4pt 0cm 5.4pt;'><b>NGÀY NHẬN VIỆC</b></td>";
                     nhansumoi += "</tr>";
                     var i = 1;
-                    foreach(var employee in groupPb.Items)
+                    foreach (var employee in groupPb.Items)
                     {
                         var contact = string.Empty;
                         if (employee.Mobiles != null && employee.Mobiles.Count > 0)
@@ -2199,9 +2228,9 @@ namespace erp.Controllers
                         }
                         nhansumoi += "<tr style='height: 12.75pt'>";
                         nhansumoi += "<td nowrap='nowrap' style='border: solid windowtext 1.0pt; border-top: none; padding: 0cm 5.4pt 0cm 5.4pt;'>" + i.ToString("00") + "</td>";
-                        nhansumoi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + employee.FullName + "</td>";
-                        nhansumoi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + employee.ChucVuName + "</td>";
-                        nhansumoi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + employee.PhongBanName + "</td>";
+                        nhansumoi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + employee.FullName.ToUpper() + "</td>";
+                        nhansumoi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + employee.ChucVuName.ToUpper() + "</td>";
+                        nhansumoi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + employee.PhongBanName.ToUpper() + "</td>";
                         nhansumoi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'><a href='tel:" + contact + "'>" + contact + "</a></td>";
                         nhansumoi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + employee.Email + "</td>";
                         nhansumoi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + employee.Joinday.ToString("dd/MM/yyyy") + "</td>";
@@ -2220,29 +2249,55 @@ namespace erp.Controllers
                     nhansumoi += "</table>";
 
                     tos = new List<EmailAddress>();
-                    foreach (var item in ketoans)
-                    {
-                        tos.Add(new EmailAddress
-                        {
-                            Name = item.FullName,
-                            Address = item.Email,
-                        });
-                    }
 
-                    var relations = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false)
-                               && !string.IsNullOrEmpty(m.Email) && m.PhongBan.Equals(groupPb) && !m.UserName.Equals(Constants.System.account)).ToList();
-                    foreach (var item in relations)
+                    if (!all)
                     {
-                        tos.Add(new EmailAddress
+                        var ketoans = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false)
+                            && !string.IsNullOrEmpty(m.Email) && m.PhongBan.Equals("5c88d094d59d56225c432422") && !m.UserName.Equals(Constants.System.account)).ToList();
+                        foreach (var item in ketoans)
                         {
-                            Name = item.FullName,
-                            Address = item.Email,
-                        });
+                            tos.Add(new EmailAddress
+                            {
+                                Name = item.FullName,
+                                Address = item.Email,
+                            });
+                        }
+
+                        var relations = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false)
+                                   && !string.IsNullOrEmpty(m.Email) && m.PhongBan.Equals(groupPb) && !m.UserName.Equals(Constants.System.account)).ToList();
+                        foreach (var item in relations)
+                        {
+                            tos.Add(new EmailAddress
+                            {
+                                Name = item.FullName,
+                                Address = item.Email,
+                            });
+                        }
+                    }
+                    else
+                    {
+                        var builderAll = Builders<Employee>.Filter;
+                        var filterAll = builderAll.Eq(m => m.Enable, true)
+                                    & builderAll.Eq(m => m.Leave, false)
+                                    & !builderAll.Eq(m => m.UserName, Constants.System.account)
+                                    & !builderAll.Eq(m => m.Email, null)
+                                    & !builderAll.Eq(m => m.Email, string.Empty)
+                                    & !builderAll.In(c => c.Id, idsR);
+                        var fieldAll = Builders<Employee>.Projection.Include(p => p.FullName).Include(p => p.Email);
+                        var allEmail = dbContext.Employees.Find(filterAll).Project<Employee>(fieldAll).ToList();
+                        foreach (var item in allEmail)
+                        {
+                            tos.Add(new EmailAddress
+                            {
+                                Name = item.FullName,
+                                Address = item.Email,
+                            });
+                        }
                     }
 
                     if (!string.IsNullOrEmpty(otherEmail))
                     {
-                        foreach(var other in otherEmail.Split(";"))
+                        foreach (var other in otherEmail.Split(";"))
                         {
                             tos.Add(new EmailAddress
                             {
@@ -2285,7 +2340,7 @@ namespace erp.Controllers
             }
         }
 
-        public void SendMailLeaveUser(string group, string userName, string otherEmail)
+        public void SendMailLeaveUser(string group, string userName, string otherEmail, bool all)
         {
             var arrs = new List<string>();
             if (string.IsNullOrEmpty(group))
@@ -2313,10 +2368,32 @@ namespace erp.Controllers
                 var tos = new List<EmailAddress>();
                 var ccs = new List<EmailAddress>();
 
-                var ketoans = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false)
-                            && !string.IsNullOrEmpty(m.Email) && m.PhongBan.Equals("5c88d094d59d56225c432422") && !m.UserName.Equals(Constants.System.account)).ToList();
+                #region CC: HR & Boss (if All)
+                var idsBoss = new List<string>();
+                if (all)
+                {
+                    var ngachLuongBoss = Constants.NgachLuongBoss.Split(';').Select(p => p.Trim()).ToList();
+                    var builderBoss = Builders<Employee>.Filter;
+                    var filterBoss = builderBoss.Eq(m => m.Enable, true)
+                                & builderBoss.Eq(m => m.Leave, false)
+                                & !builderBoss.Eq(m => m.UserName, Constants.System.account)
+                                & builderBoss.In(c => c.NgachLuongCode, ngachLuongBoss)
+                                & !builderBoss.Eq(m => m.Email, null)
+                                & !builderBoss.Eq(m => m.Email, string.Empty);
 
-                #region CC: HR
+                    var fieldBoss = Builders<Employee>.Projection.Include(p => p.Id).Include(p => p.FullName).Include(p => p.Email);
+                    var boss = dbContext.Employees.Find(filterBoss).Project<Employee>(fieldBoss).ToList();
+                    foreach (var item in boss)
+                    {
+                        ccs.Add(new EmailAddress
+                        {
+                            Name = item.FullName,
+                            Address = item.Email
+                        });
+                    }
+                    idsBoss = boss.Select(m => m.Id).ToList();
+                }
+
                 var hrs = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false)
                                 && !m.UserName.Equals(Constants.System.account)
                                 && m.PhongBan.Equals("5c88d094d59d56225c432414")
@@ -2325,7 +2402,9 @@ namespace erp.Controllers
                 var builderR = Builders<RoleUser>.Filter;
                 var filterR = builderR.Eq(m => m.Enable, true)
                             & builderR.Eq(m => m.Role, Constants.Rights.HR)
-                            & builderR.Eq(m => m.Action, Convert.ToInt32(Constants.Action.Edit));
+                            & builderR.Eq(m => m.Action, Convert.ToInt32(Constants.Action.Edit))
+                            & builderR.Eq(m => m.Expired, null)
+                            | builderR.Gt(m => m.Expired, DateTime.Now);
                 var fieldR = Builders<RoleUser>.Projection.Include(p => p.User);
                 var idsR = dbContext.RoleUsers.Find(filterR).Project<RoleUser>(fieldR).ToList().Select(m => m.User).ToList();
                 foreach (var hr in hrs)
@@ -2339,6 +2418,8 @@ namespace erp.Controllers
                         });
                     }
                 }
+
+                idsR.AddRange(idsBoss);
                 #endregion
 
                 var url = Constants.System.domain;
@@ -2392,9 +2473,9 @@ namespace erp.Controllers
                         }
                         nhansunghi += "<tr style='height: 12.75pt'>";
                         nhansunghi += "<td nowrap='nowrap' style='border: solid windowtext 1.0pt; border-top: none; padding: 0cm 5.4pt 0cm 5.4pt;'>" + "01" + "</td>";
-                        nhansunghi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + employee.FullName + "</td>";
-                        nhansunghi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + employee.ChucVuName + "</td>";
-                        nhansunghi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + employee.PhongBanName + "</td>";
+                        nhansunghi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + employee.FullName.ToUpper() + "</td>";
+                        nhansunghi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + employee.ChucVuName.ToUpper() + "</td>";
+                        nhansunghi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + employee.PhongBanName.ToUpper() + "</td>";
                         nhansunghi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'>" + employee.Leaveday.Value.ToString("dd/MM/yyyy") + "</td>";
                         nhansunghi += "<td nowrap='nowrap' style='border-top: none; border-left: none; border-bottom: solid windowtext 1.0pt; border-right: solid windowtext 1.0pt; padding: 0cm 5.4pt 0cm 5.4pt;'><a href='tel:" + contact + "'>" + contact + "</a></td>";
                         nhansunghi += "</tr>";
@@ -2412,24 +2493,49 @@ namespace erp.Controllers
                     nhansunghi += "</table>";
 
                     tos = new List<EmailAddress>();
-                    foreach (var item in ketoans)
+                    if (!all)
                     {
-                        tos.Add(new EmailAddress
+                        var ketoans = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false)
+                            && !string.IsNullOrEmpty(m.Email) && m.PhongBan.Equals("5c88d094d59d56225c432422") && !m.UserName.Equals(Constants.System.account)).ToList();
+                        foreach (var item in ketoans)
                         {
-                            Name = item.FullName,
-                            Address = item.Email,
-                        });
-                    }
+                            tos.Add(new EmailAddress
+                            {
+                                Name = item.FullName,
+                                Address = item.Email,
+                            });
+                        }
 
-                    var relations = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false)
-                               && !string.IsNullOrEmpty(m.Email) && m.PhongBan.Equals(groupPb) && !m.UserName.Equals(Constants.System.account)).ToList();
-                    foreach (var item in relations)
-                    {
-                        tos.Add(new EmailAddress
+                        var relations = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false)
+                                   && !string.IsNullOrEmpty(m.Email) && m.PhongBan.Equals(groupPb) && !m.UserName.Equals(Constants.System.account)).ToList();
+                        foreach (var item in relations)
                         {
-                            Name = item.FullName,
-                            Address = item.Email,
-                        });
+                            tos.Add(new EmailAddress
+                            {
+                                Name = item.FullName,
+                                Address = item.Email,
+                            });
+                        }
+                    }
+                    else
+                    {
+                        var builderAll = Builders<Employee>.Filter;
+                        var filterAll = builderAll.Eq(m => m.Enable, true)
+                                    & builderAll.Eq(m => m.Leave, false)
+                                    & !builderAll.Eq(m => m.UserName, Constants.System.account)
+                                    & !builderAll.Eq(m => m.Email, null)
+                                    & !builderAll.Eq(m => m.Email, string.Empty)
+                                    & !builderAll.In(c => c.Id, idsR);
+                        var fieldAll = Builders<Employee>.Projection.Include(p => p.FullName).Include(p => p.Email);
+                        var allEmail = dbContext.Employees.Find(filterAll).Project<Employee>(fieldAll).ToList();
+                        foreach (var item in allEmail)
+                        {
+                            tos.Add(new EmailAddress
+                            {
+                                Name = item.FullName,
+                                Address = item.Email,
+                            });
+                        }
                     }
 
                     if (!string.IsNullOrEmpty(otherEmail))

@@ -202,9 +202,17 @@
         }
     });
 
-    $('.chkEmailSend').on('change', function () {
+    $('#check-enable').on('change', function () {
         if ($(this).is(':checked')) {
-            $('#EmailSend').val(true);
+            $('#Employee_Leave').val(true);
+        } else {
+            $('#Employee_Leave').val(false);
+        }
+    });
+
+    $('.chkWelcomeEmailSend').on('change', function () {
+        if ($(this).is(':checked')) {
+            $('#IsWelcomeEmail').val(true);
             $('.welcomeEmail').removeClass('d-none');
             var phongban = $('#Employee_PhongBan').val();
             if (phongban === "") {
@@ -225,16 +233,15 @@
                     }
                 });
             }
-           
         } else {
-            $('#EmailSend').val(false);
+            $('#IsWelcomeEmail').val(false);
             $('.welcomeEmail').addClass('d-none');
         }
     });
 
-    $('.chkEmailLeaveSend').on('change', function () {
+    $('.chkLeaveEmailSend').on('change', function () {
         if ($(this).is(':checked')) {
-            $('#EmailLeave').val(true);
+            $('#IsLeaveEmail').val(true);
             $('.leaveEmail').removeClass('d-none');
             var phongban = $('#Employee_PhongBan').val();
             if (phongban === "") {
@@ -256,8 +263,52 @@
                 });
             }
         } else {
-            $('#EmailLeave').val(false);
+            $('#IsLeaveEmail').val(false);
             $('.leaveEmail').addClass('d-none');
+        }
+    });
+
+    $('.chkWelcomeEmailAll').on('change', function () {
+        if ($(this).is(':checked')) {
+            $('#WelcomeEmailAll').val(true);
+            $.ajax({
+                type: "GET",
+                url: "/api/GetWelcomeToEmails",
+                contentType: "application/json; charset=utf-8",
+                data: { PhongBan: '', All: true },
+                dataType: "json",
+                success: function (data) {
+                    console.log(data.cchtml);
+                    if (data.result === true) {
+                        $('.welcomeToEmailList').text("TO: " + data.tohtml);
+                        $('.welcomeCCEmailList').text("CC: " + data.cchtml);
+                    }
+                }
+            });
+        } else {
+            $('#WelcomeEmailAll').val(false);
+        }
+    });
+
+    $('.chkLeaveEmailAll').on('change', function () {
+        if ($(this).is(':checked')) {
+            $('#LeaveEmailAll').val(true);
+            $.ajax({
+                type: "GET",
+                url: "/api/GetWelcomeToEmails",
+                contentType: "application/json; charset=utf-8",
+                data: { PhongBan: '', All: true },
+                dataType: "json",
+                success: function (data) {
+                    console.log(data.cchtml);
+                    if (data.result === true) {
+                        $('.leaveToEmailList').text("TO: " + data.tohtml);
+                        $('.leaveCCEmailList').text("CC: " + data.cchtml);
+                    }
+                }
+            });
+        } else {
+            $('#LeaveEmailAll').val(false);
         }
     });
 
@@ -507,7 +558,7 @@
             return false;
         }
 
-        if ($('#EmailSend').val() === "true") {
+        if ($('#IsWelcomeEmail').val() === "true") {
             if (!confirm("Bạn đã chọn <Gửi email thông báo nhân sự mới> !! Hệ thống sẽ gửi email thông báo tới tất cả nhân viên công ty, cc cho các cấp lãnh đạo. Chọn hủy/cancel và bỏ dấu <Gửi email thông báo nhân sự mới> nếu không muốn gửi email.")) {
                 return false;
             }
@@ -517,7 +568,7 @@
             }
         }
 
-        if ($('#EmailLeave').val() === "true") {
+        if ($('#IsLeaveEmail').val() === "true") {
             if (!confirm("Bạn đã chọn <Gửi email thông báo nhân sự nghỉ việc> !! Hệ thống sẽ gửi email thông báo tới tất cả nhân viên công ty, cc cho các cấp lãnh đạo. Chọn hủy/cancel và bỏ dấu <Gửi email thông báo nhân sự nghỉ việc> nếu không muốn gửi email.")) {
                 return false;
             }
@@ -526,6 +577,14 @@
                 // Do later...
             }
         }
+
+        // add value dropdownlist name
+        $('#Employee_CongTyChiNhanhName').val($('#Employee_CongTyChiNhanh option:selected').text());
+        $('#Employee_KhoiChucNangName').val($('#Employee_KhoiChucNang option:selected').text());
+        $('#Employee_PhongBanName').val($('#Employee_PhongBan option:selected').text());
+        $('#Employee_BoPhanName').val($('#Employee_BoPhan option:selected').text());
+        $('#Employee_BoPhanConName').val($('#Employee_BoPhanCon option:selected').text());
+        $('#Employee_ChucVuName').val($('#Employee_ChucVu option:selected').text());
 
         event.preventDefault();
         var formData = new FormData($(this)[0]);

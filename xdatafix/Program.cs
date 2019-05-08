@@ -27,10 +27,12 @@ namespace xdatafix
             var database = "tribat";
             #endregion
 
-            FixEmployeeTimeKeeper(connection, database);
-            FixEmployeeContractDay(connection, database);
+            //UpdateLeaveDay2NM(connection, database);
 
-            //FixEmployeeNewStructure(connection, database);
+            //FixEmployeeTimeKeeper(connection, database);
+            //FixEmployeeContractDay(connection, database);
+            FixEmployeeNewStructure(connection, database);
+
             //FixEmployeeOldCode(connection, database);
             //FixEmployeeTimer(connection, database);
 
@@ -76,6 +78,73 @@ namespace xdatafix
         }
 
         #region ERP
+
+        static void UpdateLeaveDay2NM(string connection, string database)
+        {
+            #region Connection, Setting & Filter
+            MongoDBContext.ConnectionString = connection;
+            MongoDBContext.DatabaseName = database;
+            MongoDBContext.IsSSL = true;
+            MongoDBContext dbContext = new MongoDBContext();
+            #endregion
+
+            Application excelApp = new Application();
+            if (excelApp == null)
+            {
+                Console.WriteLine("Excel is not installed!!");
+                return;
+            }
+            //C:\Projects\Files
+            Workbook excelBook = excelApp.Workbooks.Open(@"C:\Projects\Files\phep-nm.xlsx");
+            _Worksheet excelSheet = excelBook.Sheets[1];
+            Range excelRange = excelSheet.UsedRange;
+
+            int rows = excelRange.Rows.Count;
+            int cols = excelRange.Columns.Count;
+
+            for (int i = 1; i <= rows; i++)
+            {
+                int columnIndex = 1;
+                var ma = string.Empty;
+                var ten = string.Empty;
+                if (excelRange.Cells[i, columnIndex] != null && excelRange.Cells[i, columnIndex].Value2 != null)
+                {
+                    ma = excelRange.Cells[i, columnIndex].Value2.ToString();
+                }
+                columnIndex++;
+                if (excelRange.Cells[i, columnIndex] != null && excelRange.Cells[i, columnIndex].Value2 != null)
+                {
+                    ten = excelRange.Cells[i, columnIndex].Value2.ToString();
+                }
+                if (string.IsNullOrEmpty(ten))
+                {
+                    continue;
+                }
+                Console.Write("Update: " + ma + "\t");
+                var filter = Builders<Employee>.Filter.Eq(m => m.FullName, ten);
+                var update = Builders<Employee>.Update
+                    .Set(m => m.NgachLuongCode, "B.05")
+                    .Set(m => m.NgachLuongLevel, 1)
+                    .Set(m => m.CodeOld, ma);
+                dbContext.Employees.UpdateOne(filter, update);
+            }
+            excelApp.Quit();
+            System.Runtime.InteropServices.Marshal.ReleaseComObject(excelApp);
+
+            dbContext.LeaveEmployees.InsertOne(new LeaveEmployee()
+            {
+                LeaveTypeId = "5bbdb5a97caedd0c7411c89d",
+                EmployeeId = "5c3e90b5566d7c0a345e5488",
+                LeaveTypeName = "Phép năm",
+                EmployeeName = "Vòng Thị Thúy Phượng",
+                Number = 0,
+                Department = "PHÒNG HCNS - NS",
+                Part = "HCNS",
+                Title = "NV HÀNH CHÍNH",
+                LeaveLevel = 12,
+                NumberUsed = 1
+            });
+        }
 
         static void FixEmployeeTimeKeeper(string connection, string database)
         {

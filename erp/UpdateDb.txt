@@ -457,7 +457,7 @@ db.SalaryEmployeeMonths.drop()
 // Run Fix Data : FixEmployeeNewStructure, FixEmployeeNewStructure and FixEmployeeOldCode
 (done)
 
-// 01.05.2019
+// 01.05.2019 (done)
 db.Employees.update({},
 {$set : {"ProbationMonth": 2}},
 {upsert:false,
@@ -466,3 +466,13 @@ db.EmployeeHistories.update({},
 {$set : {"ProbationMonth": 2}},
 {upsert:false,
 multi:true})
+
+// 08.05.2019
+db.Employees.updateMany(
+        { "NgachLuongCode": '5bfe0bf827be4d168c3dffeb' }, 
+        { "$set": { "NgachLuongCode": 'C.02' } }
+    );
+db.Employees.updateMany(
+        { "NgachLuongCode": '5bfe0bf827be4d168c3dffe1' }, 
+        { "$set": { "NgachLuongCode": 'C.03' } }
+    );

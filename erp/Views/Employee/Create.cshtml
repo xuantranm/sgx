@@ -1107,9 +1107,10 @@
                             <div class="form-group">
                                 <label class="control-label">Ngạch lương</label>
                                 <select asp-for="Employee.NgachLuongCode" class="form-control form-control-lg">
+                                    <option value="">Chọn</option>
                                     @foreach (var item in Model.NgachLuongs)
                                     {
-                                        <option value="@item.Id">@item.MaSo - @item.ChucDanhCongViec</option>
+                                        <option value="@item.MaSo">@item.MaSo - @item.ChucDanhCongViec</option>
                                     }
                                 </select>
                             </div>
@@ -1118,6 +1119,7 @@
                             <div class="form-group">
                                 <label class="control-label">Bậc lương</label>
                                 <select asp-for="Employee.NgachLuongCode" class="form-control form-control-lg">
+                                    <option value="">Chọn</option>
                                     @for (var bac = 1; bac <= 10; bac++)
                                     {
                                         <option value="@bac">Bậc @bac</option>
@@ -1134,10 +1136,19 @@
                 <div class="col-12">
                     <div class="form-group">
                         <div class="float-left">
-                            <input type="checkbox" class="big-checkbox chkEmailSend">
-                            <input asp-for="EmailSend" type="hidden" value="false" />
+                            <input type="checkbox" class="big-checkbox chkWelcomeEmailSend">
+                            <input asp-for="IsWelcomeEmail" type="hidden" value="false" />
                         </div>
                         <div class="float-left" style="margin-left:8px"><b>Gửi email thông báo nhân sự mới</b></div>
+                    </div>
+                </div>
+                <div class="col-12 d-none welcomeEmail">
+                    <div class="form-group">
+                        <div class="float-left">
+                            <input type="checkbox" class="big-checkbox chkWelcomeEmailAll">
+                            <input asp-for="WelcomeEmailAll" type="hidden" value="false" />
+                        </div>
+                        <div class="float-left" style="margin-left:8px"><b>Gửi tất cả nhân viên</b></div>
                     </div>
                 </div>
                 <div class="col-12 d-none welcomeEmail">Danh sách email gửi:</div>
@@ -1146,7 +1157,7 @@
                 <div class="col-12 col-md-6 d-none welcomeEmail">
                     <div class="form-group">
                         <label class="control-label">Email khác</label>
-                        <input asp-for="OtherWelcomeEmail" class="form-control form-control-lg" />
+                        <input asp-for="WelcomeOtherEmail" class="form-control form-control-lg" />
                         <small>Các email phân tách bằng ký tự <code>;</code>. vd: a@tribat.vn; b@tribat.vn</small>
                     </div>
                 </div>
@@ -1155,7 +1166,7 @@
                 <div class="col-12 col-md-6">
                     <div class="form-group">
                         <label class="control-label">Nhóm gửi email</label>
-                        <input asp-for="EmailGroup" class="form-control form-control-lg" />
+                        <input asp-for="WelcomeEmailGroup" class="form-control form-control-lg" />
                         <small><span class="badge badge-info">1</span> Đặt tên nhóm. Vd: 20122018.</small>
                         <small><span class="badge badge-info">2</span> Thêm thành viên theo nhóm thì không chọn "Gửi email thông báo nhân sự mới".</small>
                         <small>* Sau khi gửi email, thông tin nhóm được xóa.</small>

@@ -351,6 +351,7 @@
                                                     <option value="@item.Id">@item.Name</option>
                                                 }
                                             </select>
+                                            <input type="hidden" asp-for="Employee.CongTyChiNhanhName" />
                                         </div>
                                     </div>
                                 }
@@ -374,6 +375,7 @@
                                                     <option value="@item.Id">@item.Name</option>
                                                 }
                                             </select>
+                                            <input type="hidden" asp-for="Employee.KhoiChucNangName" />
                                         </div>
                                     }
                                 </div>
@@ -398,6 +400,7 @@
                                                     <option value="@item.Id">@item.Name</option>
                                                 }
                                             </select>
+                                            <input type="hidden" asp-for="Employee.PhongBanName" />
                                         </div>
                                     }
                                 </div>
@@ -422,6 +425,7 @@
                                                     <option value="@item.Id">@item.Name</option>
                                                 }
                                             </select>
+                                            <input type="hidden" asp-for="Employee.BoPhanName" />
                                         </div>
                                     }
                                 </div>
@@ -446,6 +450,7 @@
                                                     <option value="@item.Id">@item.Name</option>
                                                 }
                                             </select>
+                                            <input type="hidden" asp-for="Employee.BoPhanConName" />
                                         </div>
                                     }
                                 </div>
@@ -471,6 +476,7 @@
                                                     <option value="@item.Id">@item.Name</option>
                                                 }
                                             </select>
+                                            <input type="hidden" asp-for="Employee.ChucVuName" />
                                         </div>
                                         <div class="col-2 align-middle">
                                             <button class="btn btn-sm btn-add-cv" type="button" data-toggle="modal" data-target="#newChucVuModal" title="Tạo mới Chức vụ">+</button>
@@ -801,20 +807,21 @@
                                 <div>
                                     <div class="custom-control custom-checkbox">
                                         @{
-                                            var enableStatus = string.Empty;
                                             var displayLeave = "d-none";
-                                            if (!Model.Employee.Enable)
+                                            if (Model.Employee.Leave)
                                             {
-                                                enableStatus = "checked";
-                                                displayLeave = "";
+                                                displayLeave = string.Empty;
+                                                <input type="checkbox" class="custom-control-input" id="check-enable" checked />
+                                            }
+                                            else
+                                            {
+                                                <input type="checkbox" class="custom-control-input" id="check-enable" />
                                             }
                                         }
-
-                                        <input type="checkbox" class="custom-control-input" @enableStatus id="check-enable">
                                         <label class="custom-control-label text-small" for="check-enable">
                                             Nghỉ việc
                                         </label>
-                                        <input type="hidden" asp-for="Employee.Enable" />
+                                        <input type="hidden" asp-for="Employee.Leave" />
                                     </div>
                                 </div>
                             </div>
@@ -853,18 +860,27 @@
                                     <div class="form-group">
                                         <div class="float-left">
                                             @{
-                                                if (Model.EmailLeave)
+                                                if (Model.Employee.IsLeaveEmail)
                                                 {
-                                                    <input type="checkbox" checked class="big-checkbox chkEmailLeaveSend">
+                                                    <input type="checkbox" checked class="big-checkbox chkLeaveEmailSend">
                                                 }
                                                 else
                                                 {
-                                                    <input type="checkbox" class="big-checkbox chkEmailLeaveSend">
+                                                    <input type="checkbox" class="big-checkbox chkLeaveEmailSend">
                                                 }
                                             }
-                                            <input asp-for="EmailLeave" type="hidden" />
+                                            <input asp-for="IsLeaveEmail" type="hidden" />
                                         </div>
                                         <div class="float-left" style="margin-left:8px"><b>Gửi email thông báo nhân sự nghỉ việc</b></div>
+                                    </div>
+                                </div>
+                                <div class="col-12 d-none leaveEmail">
+                                    <div class="form-group">
+                                        <div class="float-left">
+                                            <input type="checkbox" class="big-checkbox chkLeaveEmailAll">
+                                            <input asp-for="LeaveEmailAll" type="hidden" value="false" />
+                                        </div>
+                                        <div class="float-left" style="margin-left:8px"><b>Gửi tất cả nhân viên</b></div>
                                     </div>
                                 </div>
                                 <div class="col-12 d-none leaveEmail">Danh sách email gửi:</div>
@@ -873,14 +889,14 @@
                                 <div class="col-12 d-none leaveEmail col-md-6">
                                     <div class="form-group">
                                         <label class="control-label">Email khác</label>
-                                        <input asp-for="OtherWelcomeEmail" class="form-control form-control-lg" />
+                                        <input asp-for="WelcomeOtherEmail" class="form-control form-control-lg" />
                                         <small><span class="badge badge-info">1</span> Các email phân tách bằng ký tự <code>;</code>. vd: a@tribat.vn; b@tribat.vn</small>
                                     </div>
                                 </div>
                                 <div class="col-12 col-md-6 d-none leaveEmail leave-extend @displayLeave">
                                     <div class="form-group">
                                         <label class="control-label">Nhóm gửi email</label>
-                                        <input asp-for="EmailLeaveGroup" class="form-control form-control-lg" />
+                                        <input asp-for="LeaveEmailGroup" class="form-control form-control-lg" />
                                         <small><span class="badge badge-info">1</span> Đặt tên nhóm theo ngày, theo ký tự nào đó. Vd: 20122018.</small>
                                         <small><span class="badge badge-info">2</span> Sau khi hoàn tất muốn gửi mail theo nhóm thì đánh dấu bên dưới. Muốn tạo thêm thông tin theo nhóm thì bỏ chọn bên dưới.</small>
                                         <small>*** Hệ thống sẽ gửi email thông báo theo tên nhóm. Sau khi lên lịch gửi tên nhóm sẽ hủy.</small>
@@ -3210,9 +3226,10 @@
                             <div class="form-group">
                                 <label class="control-label">Ngạch lương</label>
                                 <select asp-for="Employee.NgachLuongCode" class="form-control form-control-lg">
+                                    <option value="">Chọn</option>
                                     @foreach (var item in Model.NgachLuongs)
                                     {
-                                        <option value="@item.Id">@item.MaSo - @item.ChucDanhCongViec</option>
+                                        <option value="@item.MaSo">@item.MaSo - @item.ChucDanhCongViec</option>
                                     }
                                 </select>
                             </div>
@@ -3221,6 +3238,7 @@
                             <div class="form-group">
                                 <label class="control-label">Bậc lương</label>
                                 <select asp-for="Employee.NgachLuongCode" class="form-control form-control-lg">
+                                    <option value="">Chọn</option>
                                     @for (var bac = 1; bac <= 10; bac++)
                                     {
                                         <option value="@bac">Bậc @bac</option>
@@ -3239,19 +3257,19 @@
                     <div class="col-12">
                         <div class="form-group">
                             <div class="float-left">
-                                @{
-                                    if (Model.EmailSend)
-                                    {
-                                        <input type="checkbox" checked class="big-checkbox chkEmailSend">
-                                    }
-                                    else
-                                    {
-                                        <input type="checkbox" class="big-checkbox chkEmailSend">
-                                    }
-                                }
-                                <input asp-for="EmailSend" type="hidden" />
+                                <input type="checkbox" class="big-checkbox chkWelcomeEmailSend" />
+                                <input asp-for="IsWelcomeEmail" type="hidden" value="false" />
                             </div>
                             <div class="float-left" style="margin-left:8px"><b>Gửi email thông báo nhân sự mới</b></div>
+                        </div>
+                    </div>
+                    <div class="col-12 d-none welcomeEmail">
+                        <div class="form-group">
+                            <div class="float-left">
+                                <input type="checkbox" class="big-checkbox chkWelcomeEmailAll">
+                                <input asp-for="WelcomeEmailAll" type="hidden" value="false" />
+                            </div>
+                            <div class="float-left" style="margin-left:8px"><b>Gửi tất cả nhân viên</b></div>
                         </div>
                     </div>
                     <div class="col-12 d-none welcomeEmail">Danh sách email gửi:</div>
@@ -3260,7 +3278,7 @@
                     <div class="col-12 col-md-6 d-none welcomeEmail">
                         <div class="form-group">
                             <label class="control-label">Email khác (TO)</label>
-                            <input asp-for="OtherWelcomeEmail" class="form-control form-control-lg" />
+                            <input asp-for="WelcomeOtherEmail" class="form-control form-control-lg" />
                             <small><span class="badge badge-info">1</span> Các email phân tách bằng ký tự <code>;</code>. vd: a@tribat.vn; b@tribat.vn</small>
                         </div>
                     </div>
@@ -3269,7 +3287,7 @@
                     <div class="col-12">
                         <div class="form-group">
                             <label class="control-label">Gửi thông báo theo nhóm nhân viên</label>
-                            <input asp-for="EmailGroup" class="form-control form-control-lg" />
+                            <input asp-for="WelcomeEmailGroup" class="form-control form-control-lg" />
                             <small><span class="badge badge-info">1</span> Đặt tên nhóm. Vd: 20122018.</small>
                             <small><span class="badge badge-info">2</span> Thêm thành viên theo nhóm thì không chọn "Gửi email thông báo nhân sự mới".</small>
                             <small>* Sau khi gửi email, thông tin nhóm được xóa.</small>

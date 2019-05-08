@@ -39,5 +39,8 @@ namespace Models
         // Define probation. Probation no use leave phep-nam.
         // UseFlag = false if probation
         public bool UseFlag { get; set; } = true;
+
+        // Rule: phép của năm trước xài tới tháng 6 năm hiện tại. Sau ngày này reset về 0.
+        public int Year { get; set; } = DateTime.Now.Year;
     }
 }

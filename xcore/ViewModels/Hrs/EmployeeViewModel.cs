@@ -69,18 +69,23 @@ namespace ViewModels
 
         public Employee Manager { get; set; }
 
-        public string EmailGroup { get; set; }
+        // Flag
+        public bool IsWelcomeEmail { get; set; } = false;
 
-        public string EmailLeaveGroup { get; set; }
+        public bool IsLeaveEmail { get; set; } = false;
+
+        public string WelcomeEmailGroup { get; set; }
+
+        public string LeaveEmailGroup { get; set; }
 
         // Welcome
-        public bool EmailSend { get; set; } = false;
+        public string WelcomeOtherEmail { get; set; } // Customer email send.
 
-        public bool EmailLeave { get; set; } = false;
+        public string LeaveOtherEmail { get; set; } // Customer email send.
 
-        public string OtherWelcomeEmail { get; set; } // Customer email send.
+        public bool WelcomeEmailAll { get; set; }
 
-        public string OtherLeaveEmail { get; set; } // Customer email send.
+        public bool LeaveEmailAll { get; set; }
 
         public int RecordCurrent { get; set; }
 
