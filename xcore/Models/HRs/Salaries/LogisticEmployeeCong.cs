@@ -180,6 +180,5 @@ namespace Models
 
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime UpdatedOn { get; set; } = DateTime.Now;
-
     }
 }

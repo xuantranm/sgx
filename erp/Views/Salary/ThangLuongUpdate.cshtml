@@ -45,7 +45,7 @@
                                 <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.SaleKPIEmployee/@Constants.LinkSalary.Update">KINH DOANH</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.LogisticEmployeeCong/@Constants.LinkSalary.Update">LOGISTICS</a>
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.LogisticCong/@Constants.LinkSalary.Update">LOGISTICS</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Credits/@Constants.LinkSalary.Update">VAY & TẠM ỨNG</a>
@@ -122,101 +122,6 @@
                                                 }
                                             </tr>
                                         </thead>
-
-                                        <tbody class="font-14">
-                                            @{
-                                                var sTTReal = 1;
-                                                int editCode = 0;
-                                                var groupsReal = (from s in Model.SalaryThangBangLuongs
-                                                                  group s by new
-                                                                  {
-                                                                      s.ViTri,
-                                                                      s.ViTriCode
-                                                                  }
-                                            into l
-                                                                  select new
-                                                                  {
-                                                                      ViTri = l.Key.ViTri,
-                                                                      ViTriCode = l.Key.ViTriCode,
-                                                                      Salaries = l.ToList(),
-                                                                  }).ToList();
-                                                // base VI TRI
-                                                foreach (var group in groupsReal)
-                                                {
-                                                    <tr>
-                                                        <td style="background-color:white">
-                                                            @sTTReal
-                                                        </td>
-                                                        <td nowrap>@group.ViTri</td>
-                                                        <td>
-                                                            <input type="hidden" value="@editCode" class="editCode" />
-                                                            <!-- Update base VITRICODE He So vs Money from bac 1; from bac 1 => calculator up to 10 -->
-                                                            <input value="@group.Salaries[0].HeSo" name="SalaryThangBangLuongs[@editCode].HeSo" class="form-control heso-@editCode" style="width:70px;" />
-                                                            <input type="hidden" class="codeHeSo" value="@editCode" />
-                                                            <input type="hidden" name="SalaryThangBangLuongs[@editCode].ViTriCode" value="@group.Salaries[0].ViTriCode" class="vitricode-@editCode" />
-                                                            <input type="hidden" name="SalaryThangBangLuongs[@editCode].Id" value="@group.Salaries[0].Id" class="id-@editCode" />
-                                                        </td>
-                                                        <td>
-                                                            <input value="@(Math.Round((double)group.Salaries[0].MucLuong / 1000d, 0) )" name="SalaryThangBangLuongs[@editCode].MucLuong" class="form-control mucluong-@editCode mucluongthamkhao" />
-                                                            <input type="hidden" class="codeMucLuong" value="@editCode" />
-                                                        </td>
-                                                        @{
-                                                            if (group.Salaries.Count >= levelMaxReal)
-                                                            {
-                                                                foreach (var item in group.Salaries.Where(m => m.Bac != 0).OrderBy(m => m.Bac))
-                                                                {
-                                                                    <td class="mucluongresult-@item.Id" style="vertical-align:middle">@String.Format("{0:#,###,###}", Math.Round((double)item.MucLuong / 1000d, 0))</td>
-                                                                }
-                                                            }
-                                                            else
-                                                            {
-                                                                var iMissing = 1;
-                                                                foreach (var item in group.Salaries.Where(m => m.Bac != 0).OrderBy(m => m.Bac))
-                                                                {
-                                                                    if (item.Bac == iMissing)
-                                                                    {
-                                                                        <td class="mucluongresult-@item.Id" style="vertical-align:middle">@String.Format("{0:#,###,###}", Math.Round((double)item.MucLuong / 1000d, 0))</td>
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        <td>0</td>
-                                                                    }
-                                                                    iMissing++;
-                                                                }
-                                                            }
-                                                        }
-                                                    </tr>
-                                                    sTTReal++;
-                                                    editCode++;
-                                                }
-                                                <tr>
-                                                    <td style="background-color:white">
-                                                        @sTTReal
-                                                    </td>
-                                                    <td nowrap>
-                                                        <input name="SalaryThangBangLuongs[@editCode].ViTri" class="form-control" />
-                                                    </td>
-                                                    <td>
-                                                        <input type="hidden" value="@editCode" class="editCode" />
-                                                        <input value="1" name="SalaryThangBangLuongs[@editCode].HeSo" class="form-control heso-@editCode" style="width:70px;" />
-                                                        <input type="hidden" value="new" class="id-@editCode" />
-                                                        <input type="hidden" class="codeHeSo" value="@editCode" />
-                                                    </td>
-                                                    <td>
-                                                        <input value="@(Math.Round((double)Model.SalaryMucLuongVung.ToiThieuVungDoanhNghiepApDung / 1000d, 0) )" name="SalaryThangBangLuongs[@editCode].MucLuong" class="form-control mucluong-@editCode mucluongthamkhao" />
-                                                        <input type="hidden" class="codeMucLuong" value="@editCode" />
-                                                    </td>
-                                                    @{
-                                                        decimal value = Model.SalaryMucLuongVung.ToiThieuVungDoanhNghiepApDung;
-                                                        for (var ibac = 1; ibac <= levelMaxReal; ibac++)
-                                                        {
-                                                            value = value * 1;
-                                                            <td class="mucluongresult-new-@ibac" style="vertical-align:middle">@String.Format("{0:#,###,###}", value)</td>
-                                                        }
-                                                    }
-                                                </tr>
-                                            }
-                                        </tbody>
                                     </table>
                                 </div>
                             }
@@ -238,7 +143,7 @@
 </div>
 
 @section scripts {
-    <script type="text/javascript" src="~/js/thang-bang-luong-real-update.js?@DateTime.Now.Ticks"></script>
+    <script type="text/javascript" src="~/js/thang-bang-luong-real-update.js?@Constants.VersionJs"></script>
 }
 
 

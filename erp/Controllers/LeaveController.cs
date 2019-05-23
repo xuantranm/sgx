@@ -520,7 +520,7 @@ namespace erp.Controllers
 
             var types = dbContext.LeaveTypes.Find(m => m.Display.Equals(true) && m.SalaryPay.Equals(true)).ToList();
 
-            decimal numberDay = 0;
+            double numberDay = 0;
             foreach (var employee in employees)
             {
                 foreach (var type in types)
@@ -564,7 +564,7 @@ namespace erp.Controllers
             }
             #endregion
 
-            decimal phepcon = 0;
+            double phepcon = 0;
             var entity = viewModel.Leave;
             // Tự yêu cầu
             var employee = userInformation;
@@ -940,7 +940,7 @@ namespace erp.Controllers
         [Route(Constants.LinkLeave.CalculatorDate)]
         public IActionResult CalculatorDate(string from, string to, string scheduleWorkingTime, string type)
         {
-            decimal date = 0;
+            double date = 0;
             var fromDate = DateTime.ParseExact(from, "yyyy/MM/dd HH:mm", CultureInfo.InvariantCulture);
             var toDate = DateTime.ParseExact(to, "yyyy/MM/dd HH:mm", CultureInfo.InvariantCulture);
 

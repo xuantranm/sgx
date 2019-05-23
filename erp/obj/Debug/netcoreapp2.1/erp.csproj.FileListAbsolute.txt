@@ -353,8 +353,6 @@ D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Leave\Man
 D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Module\BirthdayAlert.g.cshtml.cs
 D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Notification\Create.g.cshtml.cs
 D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Notification\Index.g.cshtml.cs
-D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Notification\Index2.g.cshtml.cs
-D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Notification\Index3.g.cshtml.cs
 D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\PhanQuyen\Create.g.cshtml.cs
 D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\PhanQuyen\Index.g.cshtml.cs
 D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Recruitment\Index.g.cshtml.cs
@@ -410,11 +408,13 @@ D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\erp.dll
 D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\erp.pdb
 D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\SalaryLaw\BangLuong.g.cshtml.cs
 D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Salary\BangLuong.g.cshtml.cs
-D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Salary\LogisticEmployeeCong.g.cshtml.cs
-D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Salary\LogisticEmployeeCongUpdate.g.cshtml.cs
-D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Salary\LogisticGiaChuyenXeUpdate.g.cshtml.cs
 D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Salary\SaleKPIEmployee.g.cshtml.cs
 D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Salary\SaleKPIEmployeeUpdate.g.cshtml.cs
 D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Salary\SaleKPIUpdate.g.cshtml.cs
 D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Salary\ThangLuong.g.cshtml.cs
 D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Salary\ThangLuongUpdate.g.cshtml.cs
+D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Salary\LogisticCong.g.cshtml.cs
+D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Salary\LogisticCongUpdate.g.cshtml.cs
+D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Salary\LogisticPrice.g.cshtml.cs
+D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Salary\LogisticPriceUpdate.g.cshtml.cs
+D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Salary\SaleKPI.g.cshtml.cs

@@ -1,4 +1,5 @@
-﻿using MongoDB.Bson;
+﻿using Common.Enums;
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System;
 using System.ComponentModel.DataAnnotations;
@@ -54,6 +55,8 @@ namespace Models
         public DateTime JoinDate { get; set; }
 
         public double MauSo { get; set; } = 26;
+
+        public int Type { get; set; } = (int)ESalaryType.VP;
         #endregion
 
         #region THONG TIN LUONG

@@ -17,14 +17,11 @@ namespace Models
 
         public string Description { get; set; }
 
-        [BsonRepresentation(BsonType.Decimal128)]
-        public decimal YearMax { get; set; } = 0;
+        public double YearMax { get; set; } = 0;
+ 
+        public double? MonthMax { get; set; } = 0;
 
-        [BsonRepresentation(BsonType.Decimal128)] 
-        public decimal? MonthMax { get; set; } = 0;
-
-        [BsonRepresentation(BsonType.Decimal128)]
-        public decimal? MaxOnce { get; set; } = 0;
+        public double? MaxOnce { get; set; } = 0;
 
         public bool SalaryPay { get; set; } = true;
 

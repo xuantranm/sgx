@@ -32,12 +32,12 @@ using Helpers;
 namespace erp.Controllers
 {
     //[Authorize]
-    [Route(Constants.LinkNotication.Main)]
+    [Route(Constants.LinkNotification.Main)]
     public class NotificationController : Controller
     {
         readonly MongoDBContext dbContext = new MongoDBContext();
         private readonly IDistributedCache _cache;
-        IHostingEnvironment _env;
+        readonly IHostingEnvironment _env;
 
         private readonly ILogger _logger;
 
@@ -56,22 +56,41 @@ namespace erp.Controllers
             _logger = logger;
         }
 
-        [Route(Constants.LinkNotication.Index + "/nghi-tet-nguyen-dan-ky-hoi")]
+        [Route(Constants.LinkNotification.Index + "/" + "{name}")]
         public ActionResult Index(string name)
         {
             return View();
         }
 
-        [Route(Constants.LinkNotication.Index + "/cac-chuong-trinh-cuoi-nam-mau-tuat")]
-        public ActionResult Index2(string name)
+        [Route(Constants.LinkNotification.Index + "/" + Constants.LinkNotification.List)]
+        public ActionResult List(string name)
         {
             return View();
         }
 
-        [Route(Constants.LinkNotication.Index + "/2019-04-10-cv-122-tb-nghi-le-gio-to-hung-vuong-GPMN-thong nhat-dat-nuoc-30-04-QTLD-01-05-nam-2019")]
-        public ActionResult Index3(string name)
+        [Route(Constants.LinkNotification.Index + "/tao-moi")]
+        public ActionResult Create()
         {
+
             return View();
         }
+
+        //[Route(Constants.LinkNotication.Index + "/nghi-tet-nguyen-dan-ky-hoi")]
+        //public ActionResult Index(string name)
+        //{
+        //    return View();
+        //}
+
+        //[Route(Constants.LinkNotication.Index + "/cac-chuong-trinh-cuoi-nam-mau-tuat")]
+        //public ActionResult Index2(string name)
+        //{
+        //    return View();
+        //}
+
+        //[Route(Constants.LinkNotication.Index + "/2019-04-10-cv-122-tb-nghi-le-gio-to-hung-vuong-GPMN-thong nhat-dat-nuoc-30-04-QTLD-01-05-nam-2019")]
+        //public ActionResult Index3(string name)
+        //{
+        //    return View();
+        //}
     }
 }

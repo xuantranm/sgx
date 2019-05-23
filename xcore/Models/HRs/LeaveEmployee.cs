@@ -29,8 +29,7 @@ namespace Models
 
         // So ngay phep hien tai
         [Display(Name = "Số ngày")]
-        [BsonRepresentation(BsonType.Decimal128)]
-        public decimal Number { get; set; } = 0;
+        public double Number { get; set; } = 0;
 
         public string Department { get; set; }
 
@@ -38,11 +37,9 @@ namespace Models
 
         public string Title { get; set; }
 
-        [BsonRepresentation(BsonType.Decimal128)]
-        public decimal LeaveLevel { get; set; } = 12;
+        public double LeaveLevel { get; set; } = 12;
 
-        [BsonRepresentation(BsonType.Decimal128)]
-        public decimal NumberUsed { get; set; } = 0;
+        public double NumberUsed { get; set; } = 0;
 
         // Define probation. Probation no use leave phep-nam.
         // UseFlag = false if probation

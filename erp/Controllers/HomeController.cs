@@ -187,7 +187,7 @@ namespace erp.Controllers
             var filterHr = filterNotication & builderNotication.Eq(m => m.Type, 2);
             if (!rightHr)
             {
-                filterHr = filterHr & builderNotication.Eq(m => m.UserId, login) & builderNotication.Ne(m => m.CreatedBy, login);
+                filterHr = filterHr & builderNotication.Eq(m => m.User, login) & builderNotication.Ne(m => m.CreatedBy, login);
             }
             var notificationHRs = await dbContext.Notifications.Find(filterHr).Sort(sortNotification).Limit(getItems).ToListAsync();
             #endregion
@@ -219,7 +219,7 @@ namespace erp.Controllers
             #endregion
 
             #region Extends (trainning, recruit, news....)
-            var sortNews = Builders<News>.Sort.Descending(m => m.CreatedDate);
+            var sortNews = Builders<News>.Sort.Descending(m => m.ModifiedOn);
             var news = dbContext.News.Find(m => m.Enable.Equals(true)).Sort(sortNews).Limit(getItems).ToList();
 
             var listTrainningTypes = await dbContext.TrainningTypes.Find(m => m.Enable.Equals(true)).ToListAsync();
@@ -338,7 +338,7 @@ namespace erp.Controllers
             var owner = isOwner ? userInformation : dbContext.Employees.Find(m => m.Id.Equals(ownerId)).First();
             // notification
             var sortNotification = Builders<Notification>.Sort.Ascending(m => m.CreatedOn);
-            var notifications = dbContext.Notifications.Find(m => m.Enable.Equals(true) && m.UserId.Equals(ownerId)).Sort(sortNotification).ToList();
+            var notifications = dbContext.Notifications.Find(m => m.Enable.Equals(true) && m.User.Equals(ownerId)).Sort(sortNotification).ToList();
 
             //var ownerViewModel = new OwnerViewModel
             //{

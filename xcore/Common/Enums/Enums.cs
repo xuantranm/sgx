@@ -1,6 +1,16 @@
 ﻿
 namespace Common.Enums
 {
+    public enum ENotification
+    {
+        None = 0,
+        System = 1,
+        HrChange = 2,
+        ExpireDocument = 3,
+        TaskBHXH = 4,
+        Company = 5
+    }
+
     public enum ESetting
     {
         System = 1,
@@ -209,12 +219,6 @@ namespace Common.Enums
     {
         Other = 0,
         Performance = 1
-    }
-
-    public enum ENotification
-    {
-        Other = 0,
-        HR = 1
     }
 
     public enum EMonths

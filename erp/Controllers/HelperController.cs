@@ -43,7 +43,7 @@ namespace erp.Controllers
             var userInformation = dbContext.Employees.Find(m => m.Id.Equals(user)).FirstOrDefault();
             var workdayStartTime = new TimeSpan(8, 0, 0);
             var workdayEndTime = new TimeSpan(16, 0, 0);
-            var leaveDayAvailable = Convert.ToDecimal(0);
+            double leaveDayAvailable = 0;
             // Get working day later
             if (userInformation != null)
             {
@@ -139,7 +139,7 @@ namespace erp.Controllers
             }
             // notification
             var sortNotification = Builders<Notification>.Sort.Ascending(m => m.CreatedOn);
-            var notifications = dbContext.Notifications.Find(m => m.Enable.Equals(true) && m.UserId.Equals(ownerId)).Sort(sortNotification).ToList();
+            var notifications = dbContext.Notifications.Find(m => m.Enable.Equals(true) && m.User.Equals(ownerId)).Sort(sortNotification).ToList();
 
             #region Fix no data
             if (string.IsNullOrEmpty(userInformation.AddressResident))

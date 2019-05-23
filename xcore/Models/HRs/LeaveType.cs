@@ -22,17 +22,14 @@ namespace Models
 
         // Tối đa trong năm/ Số ngày phép
         [Display(Name = "Số ngày phép trong năm")]
-        [BsonRepresentation(BsonType.Decimal128)]
-        public decimal YearMax { get; set; } = 0;
+        public double YearMax { get; set; } = 0;
 
         // Tối đa trong tháng
         [Display(Name = "Số ngày phép trong tháng")]
-        [BsonRepresentation(BsonType.Decimal128)] 
-        public decimal? MonthMax { get; set; } = 0;
+        public double? MonthMax { get; set; } = 0;
 
         [Display(Name = "Số ngày phép tối đa 1 lần")]
-        [BsonRepresentation(BsonType.Decimal128)]
-        public decimal? MaxOnce { get; set; } = 0;
+        public double? MaxOnce { get; set; } = 0;
 
         [Display(Name = "Trả lương")]
         public bool SalaryPay { get; set; } = true;

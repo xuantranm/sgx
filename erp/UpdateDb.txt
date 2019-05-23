@@ -467,7 +467,7 @@ db.EmployeeHistories.update({},
 {upsert:false,
 multi:true})
 
-// 08.05.2019
+// 08.05.2019 (done)
 db.Employees.updateMany(
         { "NgachLuongCode": '5bfe0bf827be4d168c3dffeb' }, 
         { "$set": { "NgachLuongCode": 'C.02' } }
@@ -476,3 +476,5 @@ db.Employees.updateMany(
         { "NgachLuongCode": '5bfe0bf827be4d168c3dffe1' }, 
         { "$set": { "NgachLuongCode": 'C.03' } }
     );
+db.Notifications.update({}, {$rename:{"UserId":"User"}}, false, true);
+db.Notifications.update({}, {$rename:{"CreatedByName":"CreatedBy"}}, false, true);

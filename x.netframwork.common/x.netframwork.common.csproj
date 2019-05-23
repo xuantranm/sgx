@@ -111,6 +111,7 @@
     <Compile Include="Models\CreditEmployee.cs" />
     <Compile Include="Models\Salaries\SalaryEmployeeMonth.cs" />
     <Compile Include="Models\Salaries\EmployeeCong.cs" />
+    <Compile Include="Models\Salaries\SalaryThangBangLuong.cs" />
     <Compile Include="Models\Sys\Setting.cs" />
     <Compile Include="Models\Sys\Text.cs" />
     <Compile Include="Models\TimeKeeper\AttLog.cs" />

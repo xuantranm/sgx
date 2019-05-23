@@ -1,7 +1,6 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System;
-using System.ComponentModel.DataAnnotations;
 
 namespace Models
 {
@@ -27,32 +26,32 @@ namespace Models
         // Ngach Luong
         public string Name { get; set; }
 
-        public string ViTri { get; set; }
+        public string NameAlias { get; set; }
 
-        public string TypeRole { get; set; }
-
-        public int Bac { get; set; }
-
-        [BsonRepresentation(BsonType.Decimal128)]
-        public decimal TiLe { get; set; } = 0;
-
-        [BsonRepresentation(BsonType.Decimal128)]
-        public decimal HeSo { get; set; }
-
-        [BsonRepresentation(BsonType.Decimal128)]
-        public decimal MucLuong { get; set; }
+        public string ViTriId { get; set; }
 
         public string ViTriCode { get; set; }
 
+        public string ViTriName { get; set; }
+
         public string ViTriAlias { get; set; }
 
-        public string NameAlias { get; set; }
+        public string TypeRole { get; set; }
 
         public string TypeRoleAlias { get; set; }
 
         public string TypeRoleCode { get; set; }
 
-        public bool Law { get; set; } = true;
+        public int Bac { get; set; }
+
+        public double TiLe { get; set; } = 0;
+
+        public double HeSo { get; set; }
+
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal MucLuong { get; set; } // ĐIỂM THAM KHẢO: Get tròn 1 số
+
+        public bool Law { get; set; } = false;
 
         public bool Enable { get; set; } = true;
 

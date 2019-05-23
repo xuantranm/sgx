@@ -1,0 +1,187 @@
+﻿@using Common.Utilities;
+@using Common.Enums;
+@using ViewModels;
+@model BangLuongViewModel
+@{
+    Layout = "~/Views/Shared/_LayoutSocialFbFS.cshtml";
+    var login = User.Identity.Name;
+    var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+
+    var priceHOCHIMINHN = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("HOCHIMINH") && m.LoaiXeCode.Equals("XN"));
+    var priceHOCHIMINHL = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("HOCHIMINH") && m.LoaiXeCode.Equals("XL"));
+    var priceBINHDUONGN = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("BINHDUONG") && m.LoaiXeCode.Equals("XN"));
+    var priceBINHDUONGL = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("BINHDUONG") && m.LoaiXeCode.Equals("XL"));
+    var priceBIENHOAN = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("BIENHOA") && m.LoaiXeCode.Equals("XN"));
+    var priceBIENHOAL = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("BIENHOA") && m.LoaiXeCode.Equals("XL"));
+    var priceVUNGTAUN = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("VUNGTAU") && m.LoaiXeCode.Equals("XN"));
+    var priceVUNGTAUL = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("VUNGTAU") && m.LoaiXeCode.Equals("XL"));
+    var priceBINHTHUANN = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("BINHTHUAN") && m.LoaiXeCode.Equals("XN"));
+    var priceBINHTHUANL = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("BINHTHUAN") && m.LoaiXeCode.Equals("XL"));
+    var priceCANTHON = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("CANTHO") && m.LoaiXeCode.Equals("XN"));
+    var priceCANTHOL = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("CANTHO") && m.LoaiXeCode.Equals("XL"));
+    var priceVINHLONGN = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("VINHLONG") && m.LoaiXeCode.Equals("XN"));
+    var priceVINHLONGL = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("VINHLONG") && m.LoaiXeCode.Equals("XL"));
+    var priceLONGANN = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("LONGAN") && m.LoaiXeCode.Equals("XN"));
+    var priceLONGANL = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("LONGAN") && m.LoaiXeCode.Equals("XL"));
+    var priceTIENGIANGN = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("TIENGIANG") && m.LoaiXeCode.Equals("XN"));
+    var priceTIENGIANGL = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("TIENGIANG") && m.LoaiXeCode.Equals("XL"));
+    var priceDONGNAIN = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("DONGNAI") && m.LoaiXeCode.Equals("XN"));
+    var priceDONGNAIL = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("DONGNAI") && m.LoaiXeCode.Equals("XL"));
+}
+
+<div class="main-container">
+    <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="/">Trang chủ</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.LogisticCong">Công</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">Bảng giá chuyến xe</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="flush-with-above space-0">
+        <div class="bg-white">
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <ul class="nav nav-tabs" id="myTab" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.VanPhong/@Constants.LinkSalary.ThangLuong">THANG LƯƠNG</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.VanPhong/@Constants.LinkSalary.BangLuong">BẢNG LƯƠNG</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Timer">CHẤM CÔNG</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.SaleKPIEmployee">KINH DOANH</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link active" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.LogisticCong">LOGISTICS</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkCredit.Main/@Constants.LinkCredit.Credits?thang=@Model.Thang&khoi=@EKhoiLamViec.VP">VAY & TẠM ỨNG</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="flush-with-above height-80 d-block">
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="sale" role="tabpanel" aria-labelledby="sale-tab">
+                <div class="container">
+                    <div class="card card-sm">
+                        <div class="card-header bg-secondary d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6>BẢNG GIÁ CHUYẾN XE</h6>(ĐVT: đồng)
+                            </div>
+                            <form class="d-flex align-items-center" method="get" action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.LogisticPrice" id="form-main">
+                                <span class="mr-2 text-muted text-small text-nowrap">Tháng:</span>
+                                <select asp-for="Thang" class="custom-select ddl-times">
+                                    @{
+                                        foreach (var item in Model.MonthYears)
+                                        {
+                                            <option value="@item.Month-@item.Year">@item.Month/@item.Year</option>
+                                        }
+                                    }
+                                </select>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-12">Tìm thấy <span class="badge badge-info">@Model.Records</span> kết quả.</div>
+                        <div class="col-12 table-responsive mb-1">
+                            <table class="table table-sm table-striped table-bordered table-hover">
+                                <thead>
+                                    <tr>
+                                        <th scope="col" nowrap>#</th>
+                                        <th scope="col" nowrap>Tuyến</th>
+                                        <th scope="col" nowrap>Loại xe</th>
+                                        <th scope="col" nowrap>
+                                            Lương năng suất chuyến + cơm
+                                        </th>
+                                        <th scope="col" nowrap>
+                                            Hỗ trợ tiền cơm tỉnh
+                                        </th>
+                                        <th scope="col" nowrap>
+                                            Lương năng suất chuyến
+                                        </th>
+                                        <th scope="col" nowrap>Chuyến 1</th>
+                                        <th scope="col" nowrap>Chuyến 2</th>
+                                        <th scope="col" nowrap>Chuyến 3</th>
+                                        <th scope="col" nowrap>Chuyến 4</th>
+                                        <th scope="col" nowrap>Chuyến 5</th>
+                                        <th scope="col" nowrap>Hỗ trợ chuyến đêm (*)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        int iS = 1;
+                                        foreach (var item in Model.LogisticGiaChuyenXes)
+                                        {
+                                            <tr class="tr-@item.Id" data-id="@item.Id">
+                                                <td>
+                                                    @iS
+                                                </td>
+                                                <td>@item.Tuyen</td>
+                                                <td>@item.LoaiXe</td>
+                                                <td>@String.Format("{0:#,###,###}", item.LuongNangSuatChuyenCom)</td>
+                                                <td>@String.Format("{0:#,###,###}", item.HoTroTienComTinh)</td>
+                                                <td>@String.Format("{0:#,###,###}", item.LuongNangSuatChuyen)</td>
+                                                <td>
+                                                    @String.Format("{0:#,###,###}", item.Chuyen1)
+                                                </td>
+                                                <td>
+                                                    @String.Format("{0:#,###,###}", item.Chuyen2)
+                                                </td>
+                                                <td>
+                                                    @String.Format("{0:#,###,###}", item.Chuyen3)
+                                                </td>
+                                                <td>
+                                                    @String.Format("{0:#,###,###}", item.Chuyen4)
+                                                </td>
+                                                <td>
+                                                    @String.Format("{0:#,###,###}", item.Chuyen5)
+                                                </td>
+                                                <td>@String.Format("{0:#,###,###}", item.HoTroChuyenDem)</td>
+                                            </tr>
+                                            iS++;
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-3 col-md-6">
+                            <a class="btn btn-lg btn-block btn-info" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.LogisticPrice/@Constants.ActionLink.Export" data-toggle="tooltip" title="Xuất ra tài liệu file excel.">
+                                <i class="fas fa-download"></i> Xuất excel
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+@section scripts {
+    <script type="text/javascript" src="~/js/logistics/price.js?@Constants.VersionJs"></script>
+}
+
+
+

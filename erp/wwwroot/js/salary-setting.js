@@ -1,5 +1,5 @@
 ﻿$(function () {
-    //$('.left-menu').addClass('d-none');
+    
     $('.btn-edit').on('click', function () {
         $('.btn-edit').addClass('d-none');
         $('.btn-submit').removeClass('d-none');

@@ -36,6 +36,8 @@ namespace ViewModels
 
         public IList<SaleKPIEmployee> SaleKPIEmployees { get; set; }
 
+        public SaleKPIEmployee SaleKPIEmployee { get; set; }
+
         public IList<CreditEmployee> Credits { get; set; }
 
         public IList<LogisticGiaChuyenXe> LogisticGiaChuyenXes { get; set; }
@@ -44,6 +46,8 @@ namespace ViewModels
         public decimal DonGiaBun { get; set; }
 
         public IList<LogisticEmployeeCong> LogisticEmployeeCongs { get; set; }
+
+        public LogisticEmployeeCong LogisticEmployeeCong { get; set; }
 
         public IList<EmployeeWorkTimeLog> EmployeeWorkTimeLogs { get; set; }
 
@@ -55,7 +59,9 @@ namespace ViewModels
 
         public string KhoiChucNang { get; set; }
 
-        public string Phongban { get; set; }
+        public string PhongBan { get; set; }
+
+        public IList<PhongBan> PhongBans { get; set; }
 
         public string BoPhan { get; set; }
 

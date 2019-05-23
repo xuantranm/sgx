@@ -8,6 +8,6 @@ namespace Models
     {
         public string Id { get; set; }
         public decimal Money { get; set; }
-        public decimal Rate { get; set; }
+        public double Rate { get; set; }
     }
 }

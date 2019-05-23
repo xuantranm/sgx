@@ -1,7 +1,10 @@
 ﻿@using Common.Utilities;
+@using Common.Enums;
+@using ViewModels;
+@model NotificationViewModel;
 
 @{
-    ViewData["Title"] = "Nghỉ Tết Nguyên đán Kỷ Hợi";
+    ViewData["Title"] = Model.Notification.Title;
     Layout = "~/Views/Shared/_LayoutNotification.cshtml";
 }
 
@@ -9,20 +12,27 @@
     <div class="container">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="/">Trang chủ</a></li>
-            <li class="breadcrumb-item active" aria-current="page">Nghỉ Tết Nguyên đán Kỷ Hợi</li>
+            <li class="breadcrumb-item active" aria-current="page">@Model.Notification.Title</li>
         </ol>
     </div>
 </nav>
 
 <div class="container">
-    <a href="/@Constants.LinkNotication.Main/@Constants.LinkNotication.Index/cac-chuong-trinh-cuoi-nam-mau-tuat" class="card-link">Các chương trình cuối năm Mậu Tuất ›</a>
-</div>
-<p></p>
-<div class="container">
     <div class="row">
         <div class="col-12">
-            <iframe src="~/documents/2019-01-15-CV113-TB-NghiTetNguyendanKyHoi.pdf" style="width:100%; height:900px;" frameborder="0"></iframe>
+            @Html.Raw(Model.Notification.Content)
         </div>
     </div>
+    @if (Model.Notification.Documents != null && Model.Notification.Documents.Count > 0)
+    {
+        foreach (var item in Model.Notification.Documents)
+        {
+            <div class="row mb-3">
+                <div class="col-12">
+                    <iframe src="@item.Path/@item.FileName" style="width:100%; height:900px;" frameborder="0"></iframe>
+                </div>
+            </div>
+        }
+    }
 </div>
 

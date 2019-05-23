@@ -540,7 +540,7 @@ namespace tribatvn.Controllers
             int code = lastestNews != null ? lastestNews.Code + 1 : 1;
             entity.Code = code;
             entity.Alias = Utility.AliasConvert(entity.Name);
-            var category = dbContext.ProductCategorySales.Find(m => m.Code.Equals(entity.CategoryCode) && m.Language.Equals(entity.Language)).First();
+            var category = dbContext.ProductCategorySales.Find(m => m.Code.Equals(entity.CategoryId) && m.Language.Equals(entity.Language)).First();
             #endregion
 
             #region Images, each product 1 folder.
@@ -660,7 +660,7 @@ namespace tribatvn.Controllers
             var filter = Builders<News>.Filter.Eq(m => m.Id, id);
             var update = Builders<News>.Update
                 .Set(m => m.Language, entity.Language)
-                .Set(m => m.CategoryCode, entity.CategoryCode)
+                .Set(m => m.CategoryId, entity.CategoryId)
                 .Set(m => m.HomePage, entity.HomePage)
                 .Set(m => m.Name, entity.Name)
                 .Set(m => m.Alias, Utility.AliasConvert(entity.Name))

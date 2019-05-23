@@ -284,6 +284,7 @@ namespace Data
         }
 
         // Danh sách phụ cấp - phúc lợi theo từng vị trí
+        // Quan ly nv
         public IMongoCollection<SalaryThangBangPhuCapPhucLoi> SalaryThangBangPhuCapPhucLois
         {
             get

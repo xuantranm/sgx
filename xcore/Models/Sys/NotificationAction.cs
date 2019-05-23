@@ -11,7 +11,6 @@ namespace Models
     public class NotificationAction
     {
         [BsonId]
-        // Mvc don't know how to create ObjectId from string
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
 

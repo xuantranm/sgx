@@ -60,7 +60,7 @@ namespace tribatvn.Controllers
             #region News
             var categoryNews = dbContext.NewsCategories.Find(m => m.Language.Equals(cultureInfo.Name) && m.Code.Equals(1)).First().Alias;
             ViewData["CategoryNews"] = categoryNews;
-            var news = dbContext.News.Find(m => m.Enable.Equals(true) && m.HomePage.Equals(true) && m.Language.Equals(cultureInfo.Name)).SortByDescending(m => m.ModifiedDate).Limit(3).ToList();
+            var news = dbContext.News.Find(m => m.Enable.Equals(true) && m.HomePage.Equals(true) && m.Language.Equals(cultureInfo.Name)).SortByDescending(m => m.ModifiedOn).Limit(3).ToList();
             #endregion
 
             #region Products
@@ -333,7 +333,7 @@ namespace tribatvn.Controllers
             }
             #endregion
 
-            var entities = dbContext.News.Find(m => m.Enable.Equals(true) && m.CategoryCode.Equals(parentCode) && m.Language.Equals(cultureInfo.Name)).ToList();
+            var entities = dbContext.News.Find(m => m.Enable.Equals(true) && m.CategoryId.Equals(parentCode) && m.Language.Equals(cultureInfo.Name)).ToList();
 
             // Paging later, no more products now.
             var viewModel = new NewsViewModel()
@@ -409,7 +409,7 @@ namespace tribatvn.Controllers
             var links = new List<Link>();
             foreach (var item in dbContext.News.Find(m => m.Code.Equals(entity.Code)).ToList())
             {
-                var categoryLanguage = dbContext.NewsCategories.Find(m => m.Language.Equals(item.Language) && m.Code.Equals(item.CategoryCode)).FirstOrDefault();
+                var categoryLanguage = dbContext.NewsCategories.Find(m => m.Language.Equals(item.Language) && m.Code.Equals(item.CategoryId)).FirstOrDefault();
                 var categoryAlias = category;
                 if (categoryLanguage != null)
                 {
@@ -436,7 +436,7 @@ namespace tribatvn.Controllers
             #endregion
 
             #region Relations
-            var relations = dbContext.News.Find(m => m.Enable.Equals(true) && m.Language.Equals(cultureInfo.Name) && !m.Code.Equals(entity.Code)).SortByDescending(m => m.CreatedDate)
+            var relations = dbContext.News.Find(m => m.Enable.Equals(true) && m.Language.Equals(cultureInfo.Name) && !m.Code.Equals(entity.Code)).SortByDescending(m => m.CreatedOn)
                 .Limit(3).ToList();
             #endregion
 

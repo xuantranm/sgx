@@ -1,4 +1,5 @@
 ﻿@using Common.Utilities;
+@using Common.Enums;
 @using ViewModels;
 @model ThangBangLuongViewModel
 @{
@@ -6,7 +7,7 @@
     var login = User.Identity.Name;
     var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
 }
-<link href="~/assets/wingman/css/big-screen.css" rel="stylesheet" />
+
 <div class="main-container">
     <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
         <div class="container">
@@ -39,16 +40,13 @@
                                 <a class="nav-link" href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Timer">CHẤM CÔNG</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Setting">THAM SỐ</a>
-                            </li>
-                            <li class="nav-item">
                                 <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.SaleKPIEmployee">KINH DOANH</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.LogisticEmployeeCong">LOGISTICS</a>
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.LogisticCong">LOGISTICS</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Credits">VAY & TẠM ỨNG</a>
+                                <a class="nav-link" href="/@Constants.LinkCredit.Main/@Constants.LinkCredit.Credits?thang=@Model.Thang&khoi=@EKhoiLamViec.VP">VAY & TẠM ỨNG</a>
                             </li>
                         </ul>
                     </div>
@@ -63,23 +61,11 @@
             <div class="tab-pane fade show active" id="real" role="tabpanel" aria-labelledby="real-tab">
                 <div class="container">
                     <div class="row mb-3">
-                        <div class="col-lg-3 col-sm-6">
-                            <a class="btn btn-lg btn-block btn-success btn-edit-real" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.VanPhong/@Constants.LinkSalary.ThangLuong/@Constants.LinkSalary.Update" data-toggle="tooltip" title="Bấm thay đổi thang bảng lương.">
-                                <i class="icon icon-edit"></i>Chỉnh sửa
-                            </a>
-                        </div>
-                        <div class="col-lg-3 col-sm-6">
-                            <a class="btn btn-lg btn-block btn-info" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.VanPhong/@Constants.LinkSalary.ThangLuong/@Constants.LinkSalary.Export" data-toggle="tooltip" title="Xuất ra tài liệu file excel.">
-                                <i class="fas fa-download"></i> Xuất excel
-                            </a>
-                        </div>
-                    </div>
-                    <div class="row mb-3">
                         <div class="col-12">
-                            <b>I/ MỨC LƯƠNG TỐI THIỂU VÙNG:</b> <b>@String.Format("{0:#,###,###}", Math.Round((double)Model.SalaryMucLuongVung.ToiThieuVungQuiDinh / 1000d, 0))</b> đồng/tháng
+                            <b>I/ MỨC LƯƠNG TỐI THIỂU VÙNG:</b> <b>@String.Format("{0:#,###,###}", Math.Round(Model.SalaryMucLuongVung.ToiThieuVungQuiDinh))</b> đồng/tháng
                         </div>
                         <div class="col-12">
-                            Mức lương tối thiểu mà doanh nghiệp đang áp dụng: <b>@String.Format("{0:#,###,###}", Math.Round((double)Model.SalaryMucLuongVung.ToiThieuVungDoanhNghiepApDung / 1000d, 0))</b> đồng/tháng
+                            Mức lương tối thiểu mà doanh nghiệp đang áp dụng: <b>@String.Format("{0:#,###,###}", Math.Round(Model.SalaryMucLuongVung.ToiThieuVungDoanhNghiepApDung))</b> đồng/tháng
                         </div>
                     </div>
                     <div class="card card-sm">
@@ -103,13 +89,12 @@
                     <div class="row">
                         @{
                             var levelMaxReal = 10;
-                            <div class="col-12 table-responsive-sm">
-                                <table class="table table-responsive-sm table-bordered table-striped table-hover floating-header">
-                                    <thead style="background-color:lightgrey">
+                            <div class="col-12 table-responsive mb-1">
+                                <table class="table table-sm table-striped table-bordered table-hover">
+                                    <thead>
                                         <tr>
                                             <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>#</th>
                                             <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>VỊ TRÍ</th>
-                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>MÃ</th>
                                             <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>HỆ SỐ</th>
                                             <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>ĐIỂM THAM KHẢO</th>
                                             <td colspan="@levelMaxReal" style="text-align:center;font-weight:bold">BẬC LƯƠNG</td>
@@ -124,57 +109,30 @@
 
                                     <tbody class="font-14">
                                         @{
-                                            var sTTReal = 1;
-                                            var groupsReal = (from s in Model.SalaryThangBangLuongs
-                                                              group s by new
-                                                              {
-                                                                  s.ViTri,
-                                                                  s.ViTriCode
-                                                              }
-                                            into l
-                                                              select new
-                                                              {
-                                                                  ViTri = l.Key.ViTri,
-                                                                  ViTriCode = l.Key.ViTriCode,
-                                                                  Salaries = l.ToList(),
-                                                              }).ToList();
-                                            foreach (var group in groupsReal)
+                                            int i = 1;
+                                            foreach (var item in Model.SalaryThangBangLuongs)
                                             {
                                                 <tr>
                                                     <td style="background-color:white">
-                                                        @sTTReal
+                                                        @i
                                                     </td>
-                                                    <td nowrap>@group.ViTri</td>
-                                                    <td nowrap><small>@group.ViTriCode</small></td>
-                                                    <td>@group.Salaries[0].HeSo</td>
-                                                    <td>@String.Format("{0:#,###,###}", Math.Round((double)group.Salaries[0].MucLuong / 1000d, 0))</td>
+                                                    <td nowrap>@item.ViTriName</td>
+                                                    <td>@item.TiLe</td>
+                                                    <td>@String.Format("{0:#,###,###}", Math.Round(item.MucLuong, 0))</td>
                                                     @{
-                                                        if (group.Salaries.Count >= levelMaxReal)
+                                                        decimal level = Constants.RoundOff(item.MucLuong);
+                                                        double tile = item.TiLe;
+                                                        for (var iNo = 1; iNo <= levelMaxReal; iNo++)
                                                         {
-                                                            foreach (var item in group.Salaries.Where(m => m.Bac != 0).OrderBy(m => m.Bac))
+                                                            if (iNo != 1)
                                                             {
-                                                                <td>@String.Format("{0:#,###,###}", Math.Round((double)item.MucLuong / 1000d, 0))</td>
+                                                                level = Convert.ToDecimal((double)level * tile);
                                                             }
-                                                        }
-                                                        else
-                                                        {
-                                                            var iMissing = 1;
-                                                            foreach (var item in group.Salaries.Where(m => m.Bac != 0).OrderBy(m => m.Bac))
-                                                            {
-                                                                if (item.Bac == iMissing)
-                                                                {
-                                                                    <td>@String.Format("{0:#,###,###}", Math.Round((double)item.MucLuong / 1000d, 0))</td>
-                                                                }
-                                                                else
-                                                                {
-                                                                    <td></td>
-                                                                }
-                                                                iMissing++;
-                                                            }
+                                                            <td>@String.Format("{0:#,###,###}", Constants.RoundOff(level)) </td>
                                                         }
                                                     }
                                                 </tr>
-                                                sTTReal++;
+                                                i++;
                                             }
                                         }
                                     </tbody>
@@ -189,7 +147,7 @@
 </div>
 
 @section scripts {
-    <script type="text/javascript" src="~/js/thang-bang-luong-real.js?@DateTime.Now.Ticks"></script>
+    <script type="text/javascript" src="~/js/thang-bang-luong-real.js?@Constants.VersionJs"></script>
 }
 
 

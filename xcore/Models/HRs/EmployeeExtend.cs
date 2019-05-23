@@ -9,6 +9,32 @@ using System.Globalization;
 
 namespace Models
 {
+    public class PhuCapPhucLoi
+    {
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal NangNhocDocHai { get; set; } = 0;
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal TrachNhiem { get; set; } = 0;
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal ThuHut { get; set; } = 0;
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal Xang { get; set; } = 0;
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal DienThoai { get; set; } = 0;
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal Com { get; set; } = 0;
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal NhaO { get; set; } = 0;
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal KiemNhiem { get; set; } = 0;
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal BhytDacBiet { get; set; } = 0;
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal ViTriCanKnNhieuNam { get; set; } = 0;
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal ViTriDacThu { get; set; } = 0;
+    }
+
     public class EmployeeBank
     {
         [Display(Name="Số tài khoản")]

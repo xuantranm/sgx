@@ -61,8 +61,7 @@ namespace Models
 
         public TimeSpan End { get; set; }
 
-        [BsonRepresentation(BsonType.Decimal128)]
-        public decimal Number { get; set; }
+        public double Number { get; set; }
 
         public string Reason { get; set; }
 

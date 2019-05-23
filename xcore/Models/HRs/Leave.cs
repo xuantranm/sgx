@@ -13,7 +13,6 @@ namespace Models
     public class Leave : Common
     {
         [BsonId]
-        // Mvc don't know how to create ObjectId from string
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
 
@@ -79,8 +78,7 @@ namespace Models
         public TimeSpan End { get; set; }
 
         [Display(Name = "Số ngày")]
-        [BsonRepresentation(BsonType.Decimal128)]
-        public decimal Number { get; set; }
+        public double Number { get; set; }
 
         [Display(Name = "Lý do")]
         public string Reason { get; set; }

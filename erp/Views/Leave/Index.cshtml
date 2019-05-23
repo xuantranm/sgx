@@ -28,7 +28,7 @@
 <h5 class="mb-4">Tổng quan</h5>
 
 @{
-    decimal totalLeaveAvailable = 0;
+    double totalLeaveAvailable = 0;
     if (Model.LeaveEmployees != null & Model.LeaveEmployees.Count > 0)
     {
         foreach (var leaveEmployee in Model.LeaveEmployees)
@@ -59,7 +59,7 @@
                     {
                         <div class="col-12">
                             @{
-                                decimal number = 0;
+                                double number = 0;
                                 var leaveEmployee = Model.LeaveEmployees.Where(m => m.LeaveTypeId.Equals(type.Id)).FirstOrDefault();
                                 @if (leaveEmployee != null)
                                 {
@@ -100,7 +100,7 @@
                             {
                                 if (type.SalaryPay == true)
                                 {
-                                    decimal number = 0;
+                                    double number = 0;
                                     var leaveEmployee = Model.LeaveEmployees.Where(m => m.LeaveTypeId.Equals(type.Id)).FirstOrDefault();
                                     @if (leaveEmployee != null)
                                     {
@@ -266,7 +266,7 @@ else
 @section scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
-        <script type="text/javascript" src="~/js/leave.js?@DateTime.Now.Ticks"></script>
+        <script type="text/javascript" src="~/js/leave.js?@Constants.VersionJs"></script>
     }
 }
 

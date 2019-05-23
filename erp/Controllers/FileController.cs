@@ -783,7 +783,7 @@ namespace erp.Controllers
                                 var filter = Builders<LeaveEmployee>.Filter.Eq(m => m.EmployeeId, employee.Id);
                                 filter = filter & Builders<LeaveEmployee>.Filter.Eq(m => m.LeaveTypeId, typeLeave.Id);
                                 var update = Builders<LeaveEmployee>.Update
-                                    .Set(m => m.Number, (decimal)phepcon);
+                                    .Set(m => m.Number, phepcon);
                                 dbContext.LeaveEmployees.UpdateOne(filter, update);
                             }
                             else
@@ -794,7 +794,7 @@ namespace erp.Controllers
                                     EmployeeId = employee.Id,
                                     LeaveTypeName = typeLeave.Name,
                                     EmployeeName = employee.FullName,
-                                    Number = (decimal)phepcon
+                                    Number = phepcon
                                 });
                             }
                         }

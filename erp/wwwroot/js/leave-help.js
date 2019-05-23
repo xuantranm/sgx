@@ -73,6 +73,8 @@
 
     function registerTimePicker() {
         var dateNow = new Date();
+        //var numberOfDaysToAdd = -30;
+        //dateNow.setDate(dateNow.getDate() + numberOfDaysToAdd); 
         $("#from_date").datepicker({
             language: "vi",
             format: 'dd/mm/yyyy',

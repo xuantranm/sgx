@@ -31,13 +31,14 @@ using Helpers;
 
 namespace erp.Controllers
 {
+    // 
     //[Authorize]
     [Route(Constants.NewsLink.Main)]
     public class NewsController : Controller
     {
         readonly MongoDBContext dbContext = new MongoDBContext();
         private readonly IDistributedCache _cache;
-        IHostingEnvironment _env;
+        readonly IHostingEnvironment _env;
 
         private readonly ILogger _logger;
 

@@ -4,6 +4,11 @@ namespace Common.Utilities
 {
     public static class Constants
     {
+        public static decimal RoundOff(this decimal i)
+        {
+            return Convert.ToDecimal((Math.Round((double)i / 10.0)) * 10);
+        }
+
         public static string Truncate(this string value, int maxChars)
         {
             if (!string.IsNullOrEmpty(value))

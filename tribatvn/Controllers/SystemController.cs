@@ -20,7 +20,7 @@ namespace tribatvn.Controllers
     public class SystemController : Controller
     {
         MongoDBContext dbContext = new MongoDBContext();
-        IHostingEnvironment _hostingEnvironment;
+        readonly IHostingEnvironment _hostingEnvironment;
 
         private readonly ILogger _logger;
 
@@ -2957,126 +2957,6 @@ namespace tribatvn.Controllers
                 Language = Constants.Languages.English
             });
             #endregion
-        }
-
-        public void InitNewsCategory()
-        {
-            dbContext.NewsCategories.DeleteMany(new BsonDocument());
-
-            #region NewsCategories
-
-            dbContext.NewsCategories.InsertOne(new NewsCategory()
-            {
-                Code = 1,
-                Name = "Tin tức",
-                Alias = "tin-tuc",
-                SeoTitle = "Tribat.vn - Tin tức 24h, hình ảnh ấn tượng",
-                Description = "Cập nhật tin tức mới và nóng nhất về Tribat, Đời sống - Xã hội, Kinh tế, Thế giới, Thể thao, Giải trí, Công nghệ và nhiều lĩnh vực khác…",
-                KeyWords = "Tribat, Sài gòn xanh, Tin tức, Báo, Việt Nam, Hà Nội, Hồ Chí Minh, Đà Nẵng, Tin nội bộ, Đời sống, Phóng sự, Pháp luật, Thế giới, Khám phá, Thị trường, Chứng khoán, Kinh tế, Bất động sản, Giáo dục, Tuyển sinh, Teen, Thể thao, Ngoại hạng, Champion, La liga, Công nghệ, điện thoại, Oto, Xe Máy, Giải trí, Showbiz, Sao Việt, Âm nhạc, VPOP, KPOP, Phim ảnh, Điện ảnh, Đẹp, Thời trang, Làm đẹp, Người Đẹp, Tình yêu, Du lịch, Ẩm thực, Sách, Cười",
-                OgTitle = "Tribat.vn - Tin tức 24h, hình ảnh ấn tượng",
-                OgDescription = "Cập nhật tin tức mới và nóng nhất về Tribat, Đời sống - Xã hội, Kinh tế, Thế giới, Thể thao, Giải trí, Công nghệ và nhiều lĩnh vực khác…",
-                Language = Constants.Languages.Vietnamese
-            });
-
-            dbContext.NewsCategories.InsertOne(new NewsCategory()
-            {
-                Code = 1,
-                Name = "News",
-                Alias = "news",
-                SeoTitle = "Tribat.vn - News 24h, images awesome",
-                Description = "Get the latest and hottest news on Tribal, Life - Society, Economy, World, Sports, Entertainment, Technology and more ...",
-                KeyWords = "Tribat, Green Sai Gon, News, Newspaper, Vietnam, Hanoi, Ho Chi Minh, Da Nang, Internal News, Life, Report, Law, World, Discover, Market, Securities Real Estate, Education, Admission, Teen, Sports, Premier, Champion, La liga, Technology, Phone, Oto, Motorcycle, Entertainment, Showbiz, Sao Viet, Music, VPOP, KPOP , Movies, Movies, Beautiful, Fashion, Beauty, Beautiful, Love, Travel, Food, Books, Laugh",
-                OgTitle = "Tribat.vn - News 24h, images awesome",
-                OgDescription = "Get the latest and hottest news on Tribal, Life - Society, Economy, World, Sports, Entertainment, Technology and more ...",
-                Language = Constants.Languages.English
-            });
-
-            #endregion
-        }
-
-        public void InitNews()
-        {
-            dbContext.News.DeleteMany(new BsonDocument());
-
-            #region News
-            dbContext.News.InsertOne(new News()
-            {
-                Code = 1,
-                CategoryCode = 1,
-                Name = "Xử lý bùn thải tại TP.HCM: Đề xuất giá thấp, duyệt giá cao",
-                KeyWords = "san lấp mặt bằng, xử lý nước thải, dự án chống ngập,Tribat, Sài gòn xanh, xử lý rác",
-                OgTitle = "Xử lý bùn thải tại TP.HCM: Đề xuất giá thấp, duyệt giá cao",
-                Source = "TTO",
-                SourceLink = "https://tuoitre.vn/xu-ly-bun-thai-tai-tphcm-de-xuat-gia-thap-duyet-gia-cao-20170929081959974.htm",
-                Language = Constants.Languages.Vietnamese
-            });
-            dbContext.News.InsertOne(new News()
-            {
-                Code = 1,
-                CategoryCode = 1,
-                Name = "Sludge treatment in Ho Chi Minh City: low price proposal, high price",
-                KeyWords = "leveling, sewage treatment, flood protection projects, Tribat, Sai Gon green, waste treatment",
-                OgTitle = "Sludge treatment in Ho Chi Minh City: low price proposal, high price",
-                Source = "Tribat-Translate",
-                SourceLink = "",
-                Language = Constants.Languages.English
-            });
-
-            dbContext.News.InsertOne(new News()
-            {
-                Code = 2,
-                CategoryCode = 1,
-                Name = "Chậm xử lý bùn thải, công ty thoát nước bị phê bình",
-                KeyWords = "phê bình, khu xử lý bùn Đa Phước, dự án xử lý bùn thải,Công ty TNHH CNSH SÀI GÒN XANH",
-                OgTitle = "Chậm xử lý bùn thải, công ty thoát nước bị phê bình",
-                Source = "TTO",
-                SourceLink = "https://tuoitre.vn/cham-xu-ly-bun-thai-cong-ty-thoat-nuoc-bi-phe-binh-578248.htm",
-                Language = Constants.Languages.Vietnamese
-            });
-            dbContext.News.InsertOne(new News()
-            {
-                Code = 2,
-                CategoryCode = 1,
-                Name = "Slow disposal of sludge, wastewater company is criticized",
-                KeyWords = "Da Phuoc Sludge Treatment Plant, Sludge Treatment Plant, Green Sai Gon Biotech Company Limited",
-                OgTitle = "Slow disposal of sludge, wastewater company is criticized",
-                Source = "Tribat-Translate",
-                SourceLink = "",
-                Language = Constants.Languages.English
-            });
-
-            dbContext.News.InsertOne(new News()
-            {
-                Code = 3,
-                CategoryCode = 1,
-                Name = "TP.HCM: Gần 3000 tấn bùn thải mỗi ngày chưa được xử lý",
-                KeyWords = "",
-                OgTitle = "TP.HCM: Gần 3000 tấn bùn thải mỗi ngày chưa được xử lý",
-                Source = "TTO",
-                SourceLink = "https://tuoitre.vn/tphcm-gan-3000-tan-bun-thai-moi-ngay-chua-duoc-xu-ly-199217.htm",
-                Language = Constants.Languages.Vietnamese
-            });
-            dbContext.News.InsertOne(new News()
-            {
-                Code = 3,
-                CategoryCode = 1,
-                Name = "HCMC: Nearly 3,000 tons of sludge are not treated each day",
-                KeyWords = "",
-                OgTitle = "HCMC: Nearly 3,000 tons of sludge are not treated each day",
-                Source = "Tribat-Translate",
-                SourceLink = "",
-                Language = Constants.Languages.English
-            });
-            #endregion
-
-            // Fix alias
-            foreach (var item in dbContext.News.Find(m => true).ToList())
-            {
-                var filter = Builders<News>.Filter.Eq(m => m.Id, item.Id);
-                var update = Builders<News>.Update
-                    .Set(m => m.Alias, Utility.AliasConvert(item.Name));
-                dbContext.News.UpdateOne(filter, update);
-            }
         }
 
         #region Cookies

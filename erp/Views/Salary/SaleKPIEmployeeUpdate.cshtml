@@ -1,4 +1,5 @@
 ﻿@using Common.Utilities;
+@using Common.Enums;
 @using ViewModels;
 @model BangLuongViewModel
 @{
@@ -18,6 +19,7 @@
         height: 30px;
         background-color: green;
     }
+
     .employeekpi tbody th:nth-child(3), .employeekpi tbody td:nth-child(3) {
         position: sticky;
         left: 0px;
@@ -60,25 +62,22 @@
                     <div class="col">
                         <ul class="nav nav-tabs" id="myTab" role="tablist">
                             <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.VanPhong/@Constants.LinkSalary.ThangLuong/@Constants.LinkSalary.Update">THANG LƯƠNG</a>
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.VanPhong/@Constants.LinkSalary.ThangLuong">THANG LƯƠNG</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.VanPhong/@Constants.LinkSalary.BangLuong/@Constants.LinkSalary.Update">BẢNG LƯƠNG</a>
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.VanPhong/@Constants.LinkSalary.BangLuong">BẢNG LƯƠNG</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Timer">CHẤM CÔNG</a>
+                                <a class="nav-link" target="_blank" href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Timer?khoi=@EKhoiLamViec.VP">CHẤM CÔNG</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Setting">THAM SỐ</a>
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.LogisticCong">LOGISTICS</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link active" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.SaleKPIEmployee/@Constants.LinkSalary.Update">KINH DOANH</a>
+                                <a class="nav-link active" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.SaleKPIEmployee">SALES</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.LogisticEmployeeCong/@Constants.LinkSalary.Update">LOGISTICS</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Credits/@Constants.LinkSalary.Update">VAY & TẠM ỨNG</a>
+                                <a class="nav-link" href="/@Constants.LinkCredit.Main/@Constants.LinkCredit.Credits?thang=@Model.Thang&khoi=@EKhoiLamViec.VP">VAY & TẠM ỨNG</a>
                             </li>
                         </ul>
                     </div>
@@ -87,300 +86,8 @@
         </div>
     </section>
 
-    <section class="flush-with-above height-80 d-block">
-        <div class="tab-content">
-            <div class="tab-pane fade show active" id="sale" role="tabpanel" aria-labelledby="sale-tab">
-                <div class="container">
-                    <div class="card card-sm">
-                        <div class="card-header bg-secondary d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6>KPI</h6>(ĐVT: 1,000 đồng)
-                            </div>
-                            <form class="d-flex align-items-center" method="get" action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.SaleKPIEmployee" id="form-main">
-                                <span class="mr-2 text-muted text-small text-nowrap">Tháng:</span>
-                                <select asp-for="Thang" class="custom-select ddl-times">
-                                    @{
-                                        foreach (var item in Model.MonthYears)
-                                        {
-                                            <option value="@item.Month-@item.Year">@item.Month/@item.Year</option>
-                                        }
-                                    }
-                                </select>
-                            </form>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <a class="nav-link custom-more collapsed" data-toggle="collapse" href="#kpi" aria-expanded="false" aria-controls="more">
-                            <i class="fas fa-expand"></i> KPI Tháng
-                        </a>
-                        <div id="kpi" class="col-12 collapse">
-                            <div class="row mb-3">
-                                <div class="col-md-4 col-sm-6 col-12">
-                                    <a class="btn btn-lg btn-block btn-success btn-edit-real" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.SaleKPI/@Constants.LinkSalary.Update" data-toggle="tooltip" title="Bấm thay đổi dữ liệu kinh doanh.">
-                                        <i class="icon icon-edit"></i>Chỉnh sửa
-                                    </a>
-                                </div>
-                            </div>
-                            <div class="row mb-3">
-                                <div class="col-12 table-responsive-sm">
-                                    <table class="table table-responsive-sm table-bordered table-striped table-hover floating-header kpi">
-                                        <thead style="background-color:lightgrey">
-                                            <tr>
-                                                <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>#</th>
-                                                <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>Chức vụ</th>
-                                                <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>KH Mới</th>
-                                                <th colspan="1" style="vertical-align:middle;font-weight:bold" nowrap>Độ phủ</th>
-                                                <th colspan="1" style="vertical-align:middle;font-weight:bold" nowrap>Ngành hàng</th>
-                                                <th colspan="2" style="vertical-align:middle;font-weight:bold" nowrap>Doanh thu</th>
-                                                <th colspan="3" style="vertical-align:middle;font-weight:bold" nowrap>Doanh số</th>
-                                                <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>Tổng</th>
-                                            </tr>
-                                            <tr>
-                                                <td style="text-align:center;">Trên 80%</td>
-                                                <td style="text-align:center;">Đạt 70% 4 ngành</td>
-                                                <td style="text-align:center;">80% - 99%</td>
-                                                <td style="text-align:center;">Đạt 100%</td>
-                                                <td style="text-align:center;">80% - 99%</td>
-                                                <td style="text-align:center;">Đạt 100%</td>
-                                                <td style="text-align:center;">Trên 120%</td>
-                                            </tr>
-                                        </thead>
-
-                                        <tbody>
-                                            @{
-                                                int iS = 1;
-                                                foreach (var item in Model.SaleKPIs)
-                                                {
-                                                    <tr class="tr-@item.Id" data-id="@item.Id">
-                                                        <td>
-                                                            @iS
-                                                        </td>
-                                                        <td>@item.ChucVu</td>
-                                                        <td nowrap>
-                                                            @String.Format("{0:#,###,###}", Math.Round((double)item.KHMoi / 1000d, 0))
-                                                        </td>
-                                                        <td>
-                                                            @String.Format("{0:#,###,###}", Math.Round((double)item.DoPhuTren80 / 1000d, 0))
-                                                        </td>
-                                                        <td>
-                                                            @String.Format("{0:#,###,###}", Math.Round((double)item.NganhHangDat704Nganh / 1000d, 0))
-                                                        </td>
-                                                        <td>
-                                                            @String.Format("{0:#,###,###}", Math.Round((double)item.DoanhThuTren80 / 1000d, 0))
-                                                        </td>
-                                                        <td>
-                                                            @String.Format("{0:#,###,###}", Math.Round((double)item.DoanhThuDat100 / 1000d, 0))
-                                                        </td>
-                                                        <td>
-                                                            @String.Format("{0:#,###,###}", Math.Round((double)item.DoanhSoTren80 / 1000d, 0))
-                                                        </td>
-                                                        <td>
-                                                            @String.Format("{0:#,###,###}", Math.Round((double)item.DoanhSoDat100 / 1000d, 0))
-                                                        </td>
-                                                        <td>
-                                                            @String.Format("{0:#,###,###}", Math.Round((double)item.DoanhSoTren120 / 1000d, 0))
-                                                        </td>
-                                                        <td>
-                                                            @String.Format("{0:#,###,###}", Math.Round((double)item.Total / 1000d, 0))
-                                                        </td>
-                                                    </tr>
-                                                    iS++;
-                                                }
-                                            }
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <h5 class="mb-4">KPI NHÂN VIÊN KINH DOANH</h5>
-
-                    <div class="row mb-3">
-                        <div class="col-12">
-                            <a href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.SaleKPIEmployee" class="btn btn-default btn-list" data-toggle="tooltip" title="Bấm trở về.">
-                                <i class="icon icon-back"></i>Trở về
-                            </a>
-                            <a href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.SaleKPIEmployeeTemplate" class="btn btn-success btn-list" data-toggle="tooltip" title="Bấm trở về.">
-                                <i class="icon icon-back"></i>Tải mẫu dữ liệu
-                            </a>
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-12">
-                            <form method="post" action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.VanPhong/@Constants.LinkSalary.SaleKPIEmployeeImport" enctype="multipart/form-data">
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        <input type="file" name="files" class="form-control fUpload" />
-                                    </div>
-                                    <div class="col-md-8">
-                                        <input type="button" class="btn btn-danger btnUpload" value="Tải lên" />
-                                    </div>
-                                </div>
-                                <br />
-                                <div class="progress">
-                                    <div class="progress-bar progress-bar-striped progress-bar-animated" style="width:0%"></div>
-                                </div>
-                                <div id="dvData"></div>
-                            </form>
-                        </div>
-                    </div>
-
-                    <form action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.SaleKPIEmployee/@Constants.LinkSalary.Update" method="post" class="data-form">
-                        <input type="hidden" name="thang" value="@Model.Thang" />
-                        <input type="hidden" id="hidCalculator" value="/@Constants.LinkSalary.Main/@Constants.LinkSalary.SaleKPIEmployeeCalculator" />
-                        <div class="row mb-3">
-                            <div class="col-md-3 col-sm-6 col-12">
-                                <button type="submit" class="btn btn-lg btn-block btn-danger btn-submit" data-toggle="tooltip" title="Bấm cập nhật dữ liệu kinh doanh."><i class="icon-save"></i>&nbsp;Cập nhật</button>
-                            </div>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-12 table-responsive-sm">
-                                <table class="table table-responsive-sm table-bordered table-striped table-hover floating-header employeekpi">
-                                    <thead style="background-color:lightgrey">
-                                        <tr>
-                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>#</th>
-                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>MÃ</th>
-                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>KH VỰC</th>
-                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>CHỨC VỤ</th>
-                                            <th colspan="5" style="vertical-align:middle;font-weight:bold" nowrap>CHỈ TIÊU</th>
-                                            <th colspan="5" style="vertical-align:middle;font-weight:bold" nowrap>THỰC HIỆN</th>
-                                            <th colspan="5" style="vertical-align:middle;font-weight:bold" nowrap>CHỈ TIÊU & THỰC HIỆN</th>
-                                            <th colspan="7" style="vertical-align:middle;font-weight:bold" nowrap>Incentive KPIs</th>
-                                        </tr>
-                                        <tr>
-                                            <td style="text-align:center;">DOANH SỐ</td>
-                                            <td style="text-align:center;">DOANH THU</td>
-                                            <td style="text-align:center;">ĐỘ PHỦ</td>
-                                            <td style="text-align:center;">MỞ MỚI</td>
-                                            <td style="text-align:center;">NGÀNH HÀNG</td>
-                                            <td style="text-align:center;">DOANH SỐ</td>
-                                            <td style="text-align:center;">DOANH THU</td>
-                                            <td style="text-align:center;">ĐỘ PHỦ</td>
-                                            <td style="text-align:center;">MỞ MỚI</td>
-                                            <td style="text-align:center;">NGÀNH HÀNG</td>
-                                            <td style="text-align:center;">DOANH SỐ</td>
-                                            <td style="text-align:center;">DOANH THU</td>
-                                            <td style="text-align:center;">ĐỘ PHỦ</td>
-                                            <td style="text-align:center;">MỞ MỚI</td>
-                                            <td style="text-align:center;">NGÀNH HÀNG</td>
-                                            <td style="text-align:center;">DOANH SỐ</td>
-                                            <td style="text-align:center;">DOANH THU</td>
-                                            <td style="text-align:center;">ĐỘ PHỦ</td>
-                                            <td style="text-align:center;">MỞ MỚI</td>
-                                            <td style="text-align:center;">NGÀNH HÀNG</td>
-                                            <td style="text-align:center;">TOTAL</td>
-                                            <td style="text-align:center;">Thử  Việc</td>
-                                        </tr>
-                                    </thead>
-
-                                    <tbody>
-                                        @{
-                                            int i = 1;
-                                            int iE = 0;
-                                            foreach (var item in Model.SaleKPIEmployees)
-                                            {
-                                                <tr class="tr-@iE" data-id="@iE">
-                                                    <td>
-                                                        @i
-                                                        <input type="hidden" name="SaleKPIEmployees[@iE].Id" value="@item.Id" />
-                                                        <input type="hidden" name="SaleKPIEmployees[@iE].EmployeeId" value="@item.EmployeeId" />
-                                                        <input type="hidden" name="SaleKPIEmployees[@iE].FullName" value="@item.FullName" />
-                                                        <input type="hidden" name="SaleKPIEmployees[@iE].ChucVu" value="@item.ChucVu" />
-                                                        <input type="hidden" name="SaleKPIEmployees[@iE].Month" value="@item.Month" />
-                                                        <input type="hidden" name="SaleKPIEmployees[@iE].Year" value="@item.Year" />
-                                                    </td>
-                                                    <td>@item.MaNhanVien</td>
-                                                    <td nowrap>@item.FullName</td>
-                                                    <td nowrap>@item.ChucVu</td>
-                                                    <td>
-                                                        <input value="@item.ChiTieuDoanhSo" name="SaleKPIEmployees[@iE].ChiTieuDoanhSo" class="form-control width100 numeric chitieudoanhso-@iE" data-id="chitieudoanhso-@iE" />
-                                                    </td>
-                                                    <td>
-                                                        <input value="@item.ChiTieuDoanhThu" name="SaleKPIEmployees[@iE].ChiTieuDoanhThu" class="form-control width100 numeric chitieudoanhthu-@iE" data-id="chitieudoanhthu-@iE" />
-                                                    </td>
-                                                    <td>
-                                                        <input value="@item.ChiTieuDoPhu" name="SaleKPIEmployees[@iE].ChiTieuDoPhu" class="form-control width100 numeric chitieudophu-@iE" data-id="chitieudophu-@iE" />
-                                                    </td>
-                                                    <td>
-                                                        <input value="@item.ChiTieuMoMoi" name="SaleKPIEmployees[@iE].ChiTieuMoMoi" class="form-control width100 numeric chitieumomoi-@iE" data-id="chitieumomoi-@iE" />
-                                                    </td>
-                                                    <td>
-                                                        <input value="@item.ChiTieuNganhHang" name="SaleKPIEmployees[@iE].ChiTieuNganhHang" class="form-control width60 numeric chitieunganhhang-@iE" data-id="chitieunganhhang-@iE" />
-                                                    </td>
-                                                    <td>
-                                                        <input value="@item.ThucHienDoanhSo" name="SaleKPIEmployees[@iE].ThucHienDoanhSo" class="form-control width100 numeric thuchiendoanhso-@iE" data-id="thuchiendoanhso-@iE" />
-                                                    </td>
-                                                    <td>
-                                                        <input value="@item.ThucHienDoanhThu" name="SaleKPIEmployees[@iE].ThucHienDoanhThu" class="form-control width100 numeric thuchiendoanhthu-@iE" data-id="thuchiendoanhthu-@iE" />
-                                                    </td>
-                                                    <td>
-                                                        <input value="@item.ThucHienDoPhu" name="SaleKPIEmployees[@iE].ThucHienDoPhu" class="form-control width100 numeric thuchiendophu-@iE" data-id="thuchiendophu-@iE" />
-                                                    </td>
-                                                    <td>
-                                                        <input value="@item.ThucHienMoMoi" name="SaleKPIEmployees[@iE].ThucHienMoMoi" class="form-control width100 numeric thuchienmomoi-@iE" data-id="thuchienmomoi-@iE" />
-                                                    </td>
-                                                    <td>
-                                                        <input value="@item.ThucHienNganhHang" name="SaleKPIEmployees[@iE].ThucHienNganhHang" class="form-control width100 numeric thuchiennganhhang-@iE" data-id="thuchiennganhhang-@iE" />
-                                                    </td>
-                                                    <td nowrap>
-                                                        <span class="chitieuthuchiendoanhso-@iE">@Math.Round(item.ChiTieuThucHienDoanhSo, 0)<span>%</span></span>
-                                                    </td>
-                                                    <td nowrap>
-                                                        <span class="chitieuthuchiendoanhthu-@iE">@Math.Round(item.ChiTieuThucHienDoanhThu, 0)<span>%</span></span>
-                                                    </td>
-                                                    <td nowrap>
-                                                        <span class="chitieuthuchiendophu-@iE">@Math.Round(item.ChiTieuThucHienDoPhu, 0)<span>%</span></span>
-                                                    </td>
-                                                    <td nowrap>
-                                                        <span class="chitieuthuchienmomoi-@iE">@Math.Round(item.ChiTieuThucHienMoMoi, 0)<span>%</span></span>
-                                                    </td>
-                                                    <td nowrap>
-                                                        <span class="chitieuthuchiennganhhang-@iE">@item.ChiTieuThucHienNganhHang<span>%</span></span>
-                                                    </td>
-                                                    <td nowrap>
-                                                        <span class="thuongchitieuthuchiendoanhso-@iE">
-                                                            @String.Format("{0:#,###,###}", Math.Round((double)item.ThuongChiTieuThucHienDoanhSo / 1000d, 0))
-                                                        </span>
-                                                    </td>
-                                                    <td nowrap>
-                                                        <span class="thuongchitieuthuchiendoanhthu-@iE">@String.Format("{0:#,###,###}", Math.Round((double)item.ThuongChiTieuThucHienDoanhThu / 1000d, 0))</span>
-                                                    </td>
-                                                    <td nowrap>
-                                                        <span class="thuongchitieuthuchiendophu-@iE">@String.Format("{0:#,###,###}", Math.Round((double)item.ThuongChiTieuThucHienDoPhu / 1000d, 0))</span>
-                                                    </td>
-                                                    <td nowrap>
-                                                        <span class="thuongchitieuthuchienmomoi-@iE">@String.Format("{0:#,###,###}", Math.Round((double)item.ThuongChiTieuThucHienMoMoi / 1000d, 0))</span>
-                                                    </td>
-                                                    <td nowrap>
-                                                        <span class="thuongchitieuthuchiennganhhang-@iE">@String.Format("{0:#,###,###}", Math.Round((double)item.ThuongChiTieuThucHienNganhHang / 1000d, 0))</span>
-                                                    </td>
-                                                    <td nowrap>
-                                                        @if (item.TongThuong > 0)
-                                                        {
-                                                            <span class="tongthuong-@iE">
-                                                                @String.Format("{0:#,###,###}", Math.Round((double)item.TongThuong / 1000d, 0))
-                                                            </span>
-                                                        }
-                                                    <td nowrap>
-                                                        <input value="@Math.Round(item.ThuViec / 1000, 0)" name="SaleKPIEmployees[@iE].ThuongChiTieuThucHienNganhHang" class="form-control width100 numeric thuongchitieuthuchiennganhhang-@iE" data-id="thuongchitieuthuchiennganhhang-@iE" />
-                                                    </td>
-                                                </tr>
-                                                i++;
-                                                iE++;
-                                            }
-                                        }
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-
-            </div>
-        </div>
-    </section>
+    <h1>TÍNH NĂNG ĐANG CẬP NHẬT. VUI LÒNG QUAY LẠI SAU.</h1>
+    <h1>DÙNG TÍNH NĂNG CẬP NHẬT THEO TÀI LIỆU</h1>
 </div>
 
 @section scripts {

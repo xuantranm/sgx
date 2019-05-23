@@ -27,11 +27,16 @@ namespace xdatafix
             var database = "tribat";
             #endregion
 
+            //UpdateEMailError(connection, database);
+            UpdateThangLuongVP(connection, database);
+            //UpdateLevelVP(connection, database);
+
             //UpdateLeaveDay2NM(connection, database);
+            //UpdateLeaveDayMissing(connection, database);
 
             //FixEmployeeTimeKeeper(connection, database);
             //FixEmployeeContractDay(connection, database);
-            FixEmployeeNewStructure(connection, database);
+            //FixEmployeeNewStructure(connection, database);
 
             //FixEmployeeOldCode(connection, database);
             //FixEmployeeTimer(connection, database);
@@ -78,8 +83,516 @@ namespace xdatafix
         }
 
         #region ERP
+        static void UpdateEMailError(string connection, string database)
+        {
+            #region Connection, Setting & Filter
+            MongoDBContext.ConnectionString = connection;
+            MongoDBContext.DatabaseName = database;
+            MongoDBContext.IsSSL = true;
+            MongoDBContext dbContext = new MongoDBContext();
+            #endregion
 
-        static void UpdateLeaveDay2NM(string connection, string database)
+            var builder = Builders<ScheduleEmail>.Filter;
+            var filter = builder.Eq(m => m.Status, (int)EEmailStatus.Ok)
+                        & !builder.Eq(m => m.Type, "birthday")
+                        & builder.Gte(m => m.CreatedOn, new DateTime(2019, 5, 11));
+            var update = Builders<ScheduleEmail>.Update
+                .Set(m => m.Status, 4);
+            dbContext.ScheduleEmails.UpdateMany(filter, update);
+
+            //var builder = Builders<ScheduleEmail>.Filter;
+            //var filter = builder.Eq(m => m.Error, "Sai định dạng mail");
+            //dbContext.ScheduleEmails.DeleteMany(filter);
+        }
+
+        // NO USE
+        static void InitNgachLuong2(string connection, string database)
+        {
+            #region Connection, Setting & Filter
+            MongoDBContext.ConnectionString = connection;
+            MongoDBContext.DatabaseName = database;
+            MongoDBContext.IsSSL = true;
+            MongoDBContext dbContext = new MongoDBContext();
+            #endregion
+
+            dbContext.SalaryThangBangLuongs.DeleteMany(m => m.Enable.Equals(true));
+            // default muc luong = toi thieu, HR update later.
+            decimal salaryMin = 3980000 * (decimal)1.07; // use reset
+            decimal salaryDeclareTax = salaryMin;
+            // Company no use now. sử dụng từng vị trí đặc thù. Hi vong tương lai áp dụng.
+            decimal salaryReal = salaryDeclareTax; // First set real salary default, update later
+
+            var name = string.Empty;
+            var nameAlias = string.Empty;
+            var maso = string.Empty;
+            var typeRole = string.Empty;
+            var typeRoleAlias = string.Empty;
+            var typeRoleCode = string.Empty;
+
+            #region 1- BẢNG LƯƠNG CHỨC VỤ QUẢN LÝ DOANH NGHIỆP
+            typeRole = "CHỨC VỤ QUẢN LÝ DOANH NGHIỆP";
+            typeRoleAlias = Utility.AliasConvert(typeRole);
+            typeRoleCode = "C";
+            // 01- TỔNG GIÁM ĐỐC 
+            name = "TỔNG GIÁM ĐỐC";
+            maso = "C.01";
+            nameAlias = Utility.AliasConvert(name);
+            salaryDeclareTax = salaryMin;
+            salaryReal = salaryMin;
+            for (int i = 0; i <= 10; i++)
+            {
+                double heso = 1;
+                if (i > 1)
+                {
+                    heso = 1.05;
+                }
+                salaryDeclareTax = Convert.ToDecimal((double)salaryDeclareTax * heso);
+                salaryReal = Convert.ToDecimal((double)salaryReal * heso);
+                // Theo thuế
+                dbContext.SalaryThangBangLuongs.InsertOne(new SalaryThangBangLuong()
+                {
+                    Name = name,
+                    MaSo = maso,
+                    TypeRole = typeRole,
+                    Bac = i,
+                    HeSo = heso,
+                    MucLuong = salaryDeclareTax,
+                    NameAlias = nameAlias,
+                    TypeRoleAlias = typeRoleAlias,
+                    TypeRoleCode = typeRoleCode
+                });
+                // Thuc te
+                dbContext.SalaryThangBangLuongs.InsertOne(new SalaryThangBangLuong()
+                {
+                    Name = name,
+                    MaSo = maso,
+                    TypeRole = typeRole,
+                    Bac = i,
+                    HeSo = heso,
+                    MucLuong = salaryReal,
+                    NameAlias = nameAlias,
+                    TypeRoleAlias = typeRoleAlias,
+                    TypeRoleCode = typeRoleCode,
+                    Law = false
+                });
+            }
+
+            // 02-GIÁM ĐỐC/TRƯỞNG BAN
+            name = "GIÁM ĐỐC/TRƯỞNG BAN";
+            maso = "C.02";
+            nameAlias = Utility.AliasConvert(name);
+            salaryDeclareTax = salaryMin;
+            salaryReal = salaryMin;
+            for (int i = 0; i <= 10; i++)
+            {
+                double heso = 1;
+                if (i > 0)
+                {
+                    heso = 1.05;
+                    if (i == 1)
+                    {
+                        heso = 1.8;
+                    }
+                }
+                salaryDeclareTax = Convert.ToDecimal((double)salaryDeclareTax * heso);
+                salaryReal = Convert.ToDecimal((double)salaryReal * heso);
+                // Theo thuế
+                dbContext.SalaryThangBangLuongs.InsertOne(new SalaryThangBangLuong()
+                {
+                    Name = name,
+                    MaSo = maso,
+                    TypeRole = typeRole,
+                    Bac = i,
+                    HeSo = heso,
+                    MucLuong = salaryDeclareTax,
+                    NameAlias = nameAlias,
+                    TypeRoleAlias = typeRoleAlias,
+                    TypeRoleCode = typeRoleCode
+                });
+                // Thuc te
+                dbContext.SalaryThangBangLuongs.InsertOne(new SalaryThangBangLuong()
+                {
+                    Name = name,
+                    MaSo = maso,
+                    TypeRole = typeRole,
+                    Bac = i,
+                    HeSo = heso,
+                    MucLuong = salaryReal,
+                    NameAlias = nameAlias,
+                    TypeRoleAlias = typeRoleAlias,
+                    TypeRoleCode = typeRoleCode,
+                    Law = false
+                });
+            }
+
+            // 03- KẾ TOÁN TRƯỞNG/ PHÓ GIÁM ĐỐC
+            name = "KẾ TOÁN TRƯỞNG/ PHÓ GIÁM ĐỐC";
+            maso = "C.03";
+            nameAlias = Utility.AliasConvert(name);
+            salaryDeclareTax = salaryMin;
+            salaryReal = salaryMin;
+            for (int i = 0; i <= 10; i++)
+            {
+                double heso = 1;
+                if (i > 0)
+                {
+                    heso = (double)1.05;
+                    if (i == 1)
+                    {
+                        heso = (double)1.7;
+                    }
+                }
+                salaryDeclareTax = Convert.ToDecimal((double)salaryDeclareTax * heso);
+                salaryReal = Convert.ToDecimal((double)salaryReal * heso);
+                // Theo thuế
+                dbContext.SalaryThangBangLuongs.InsertOne(new SalaryThangBangLuong()
+                {
+                    Name = name,
+                    MaSo = maso,
+                    TypeRole = typeRole,
+                    Bac = i,
+                    HeSo = heso,
+                    MucLuong = salaryDeclareTax,
+                    NameAlias = nameAlias,
+                    TypeRoleAlias = typeRoleAlias,
+                    TypeRoleCode = typeRoleCode
+                });
+                // Thuc te
+                dbContext.SalaryThangBangLuongs.InsertOne(new SalaryThangBangLuong()
+                {
+                    Name = name,
+                    MaSo = maso,
+                    TypeRole = typeRole,
+                    Bac = i,
+                    HeSo = heso,
+                    MucLuong = salaryReal,
+                    NameAlias = nameAlias,
+                    TypeRoleAlias = typeRoleAlias,
+                    TypeRoleCode = typeRoleCode,
+                    Law = false
+                });
+            }
+            #endregion
+
+            #region 2- BẢNG LƯƠNG VIÊN CHỨC CHUYÊN MÔN, THỪA HÀNH, PHỤC VỤ
+            typeRole = "VIÊN CHỨC CHUYÊN MÔN, THỪA HÀNH, PHỤC VỤ";
+            typeRoleAlias = Utility.AliasConvert(typeRole);
+            typeRoleCode = "D";
+            // 01- TRƯỞNG BP THIẾT KẾ, TRƯỞNG BP GS KT, KẾ TOÁN TỔNG HỢP, QUẢN LÝ THUẾ…
+            name = "TRƯỞNG BP THIẾT KẾ, TRƯỞNG BP GS KT, KẾ TOÁN TỔNG HỢP, QUẢN LÝ THUẾ…";
+            maso = "D.01";
+            nameAlias = Utility.AliasConvert(name);
+            salaryDeclareTax = salaryMin;
+            salaryReal = salaryMin;
+            for (int i = 0; i <= 10; i++)
+            {
+                double heso = 1;
+                if (i > 1)
+                {
+                    heso = 1.05;
+                }
+                salaryDeclareTax = Convert.ToDecimal((double)salaryDeclareTax * heso);
+                salaryReal = Convert.ToDecimal((double)salaryReal * heso);
+                // Theo thuế
+                dbContext.SalaryThangBangLuongs.InsertOne(new SalaryThangBangLuong()
+                {
+                    Name = name,
+                    MaSo = maso,
+                    TypeRole = typeRole,
+                    Bac = i,
+                    HeSo = heso,
+                    MucLuong = salaryDeclareTax,
+                    NameAlias = nameAlias,
+                    TypeRoleAlias = typeRoleAlias,
+                    TypeRoleCode = typeRoleCode
+                });
+                // Thuc te
+                dbContext.SalaryThangBangLuongs.InsertOne(new SalaryThangBangLuong()
+                {
+                    Name = name,
+                    MaSo = maso,
+                    TypeRole = typeRole,
+                    Bac = i,
+                    HeSo = heso,
+                    MucLuong = salaryReal,
+                    NameAlias = nameAlias,
+                    TypeRoleAlias = typeRoleAlias,
+                    TypeRoleCode = typeRoleCode,
+                    Law = false
+                });
+            }
+
+            // 02- TRƯỞNG SALE, NHÂN VIÊN NHÂN SỰ, CV THU MUA, CV PHÁP CHẾ, CV KẾ HOẠCH TỔNG HỢP, CV MÔI TRƯỜNG, CV NC KHCN, CV PHÒNG TN….
+            name = "TRƯỞNG SALE, NHÂN VIÊN NHÂN SỰ, CV THU MUA, CV PHÁP CHẾ, CV KẾ HOẠCH TỔNG HỢP, CV MÔI TRƯỜNG, CV NC KHCN, CV PHÒNG TN…";
+            maso = "D.02";
+            nameAlias = Utility.AliasConvert(name);
+            salaryDeclareTax = salaryMin;
+            salaryReal = salaryMin;
+            for (int i = 0; i <= 10; i++)
+            {
+                double heso = 1;
+                if (i > 1)
+                {
+                    heso = 1.05;
+                }
+                salaryDeclareTax = Convert.ToDecimal((double)salaryDeclareTax * heso);
+                salaryReal = Convert.ToDecimal((double)salaryReal * heso);
+                // Theo thuế
+                dbContext.SalaryThangBangLuongs.InsertOne(new SalaryThangBangLuong()
+                {
+                    Name = name,
+                    MaSo = maso,
+                    TypeRole = typeRole,
+                    Bac = i,
+                    HeSo = heso,
+                    MucLuong = salaryDeclareTax,
+                    NameAlias = nameAlias,
+                    TypeRoleAlias = typeRoleAlias,
+                    TypeRoleCode = typeRoleCode
+                });
+                // Thuc te
+                dbContext.SalaryThangBangLuongs.InsertOne(new SalaryThangBangLuong()
+                {
+                    Name = name,
+                    MaSo = maso,
+                    TypeRole = typeRole,
+                    Bac = i,
+                    HeSo = heso,
+                    MucLuong = salaryReal,
+                    NameAlias = nameAlias,
+                    TypeRoleAlias = typeRoleAlias,
+                    TypeRoleCode = typeRoleCode,
+                    Law = false
+                });
+            }
+            // 03- NV KINH DOANH, SALE ADMIN, NV HÀNH CHÍNH, NV KẾ TOÁN, THỦ QUỸ, NV DỰ ÁN, NV KỸ THUẬT, …
+            name = "NV KINH DOANH, SALE ADMIN, NV HÀNH CHÍNH, NV KẾ TOÁN, THỦ QUỸ, NV DỰ ÁN, NV KỸ THUẬT,…";
+            maso = "D.03";
+            nameAlias = Utility.AliasConvert(name);
+            salaryDeclareTax = salaryMin;
+            salaryReal = salaryMin;
+            for (int i = 0; i <= 10; i++)
+            {
+                double heso = 1;
+                if (i > 1)
+                {
+                    heso = 1.05;
+                }
+                salaryDeclareTax = Convert.ToDecimal((double)salaryDeclareTax * heso);
+                salaryReal = Convert.ToDecimal((double)salaryReal * heso);
+                // Theo thuế
+                dbContext.SalaryThangBangLuongs.InsertOne(new SalaryThangBangLuong()
+                {
+                    Name = name,
+                    MaSo = maso,
+                    TypeRole = typeRole,
+                    Bac = i,
+                    HeSo = heso,
+                    MucLuong = salaryDeclareTax,
+                    NameAlias = nameAlias,
+                    TypeRoleAlias = typeRoleAlias,
+                    TypeRoleCode = typeRoleCode
+                });
+                // Thuc te
+                dbContext.SalaryThangBangLuongs.InsertOne(new SalaryThangBangLuong()
+                {
+                    Name = name,
+                    MaSo = maso,
+                    TypeRole = typeRole,
+                    Bac = i,
+                    HeSo = heso,
+                    MucLuong = salaryReal,
+                    NameAlias = nameAlias,
+                    TypeRoleAlias = typeRoleAlias,
+                    TypeRoleCode = typeRoleCode,
+                    Law = false
+                });
+            }
+            #endregion
+
+            #region 3- BẢNG LƯƠNG NHÂN VIÊN TRỰC TIẾP SẢN XUẤT KINH DOANH VÀ PHỤC VỤ
+            typeRole = "NHÂN VIÊN TRỰC TIẾP SẢN XUẤT KINH DOANH VÀ PHỤC VỤ";
+            typeRoleAlias = Utility.AliasConvert(typeRole);
+            typeRoleCode = "B";
+            // 01- TRƯỞNG BP -NM…
+            name = "TRƯỞNG BP -NM…";
+            maso = "B.01";
+            nameAlias = Utility.AliasConvert(name);
+            salaryDeclareTax = salaryMin;
+            salaryReal = salaryMin;
+            for (int i = 0; i <= 10; i++)
+            {
+                double heso = 1;
+                if (i > 1)
+                {
+                    heso = 1.05;
+                }
+                salaryDeclareTax = Convert.ToDecimal((double)salaryDeclareTax * heso);
+                salaryReal = Convert.ToDecimal((double)salaryReal * heso);
+                // Theo thuế
+                dbContext.SalaryThangBangLuongs.InsertOne(new SalaryThangBangLuong()
+                {
+                    Name = name,
+                    MaSo = maso,
+                    TypeRole = typeRole,
+                    Bac = i,
+                    HeSo = heso,
+                    MucLuong = salaryDeclareTax,
+                    NameAlias = nameAlias,
+                    TypeRoleAlias = typeRoleAlias,
+                    TypeRoleCode = typeRoleCode
+                });
+                // Thuc te
+                dbContext.SalaryThangBangLuongs.InsertOne(new SalaryThangBangLuong()
+                {
+                    Name = name,
+                    MaSo = maso,
+                    TypeRole = typeRole,
+                    Bac = i,
+                    HeSo = heso,
+                    MucLuong = salaryReal,
+                    NameAlias = nameAlias,
+                    TypeRoleAlias = typeRoleAlias,
+                    TypeRoleCode = typeRoleCode,
+                    Law = false
+                });
+            }
+
+            // 02- TỔ TRƯỞNG NM, TỔ PHÓ NM, TỔ TRƯỞNG LOGISTICS, QUẢN LÝ TRẠM CÂN…
+            name = "TỔ TRƯỞNG NM, TỔ PHÓ NM, TỔ TRƯỞNG LOGISTICS, QUẢN LÝ TRẠM CÂN…";
+            maso = "B.02";
+            nameAlias = Utility.AliasConvert(name);
+            salaryDeclareTax = salaryMin;
+            salaryReal = salaryMin;
+            for (int i = 0; i <= 10; i++)
+            {
+                double heso = 1;
+                if (i > 1)
+                {
+                    heso = 1.05;
+                }
+                salaryDeclareTax = Convert.ToDecimal((double)salaryDeclareTax * heso);
+                salaryReal = Convert.ToDecimal((double)salaryReal * heso);
+                // Theo thuế
+                dbContext.SalaryThangBangLuongs.InsertOne(new SalaryThangBangLuong()
+                {
+                    Name = name,
+                    MaSo = maso,
+                    TypeRole = typeRole,
+                    Bac = i,
+                    HeSo = heso,
+                    MucLuong = salaryDeclareTax,
+                    NameAlias = nameAlias,
+                    TypeRoleAlias = typeRoleAlias,
+                    TypeRoleCode = typeRoleCode
+                });
+                // Thuc te
+                dbContext.SalaryThangBangLuongs.InsertOne(new SalaryThangBangLuong()
+                {
+                    Name = name,
+                    MaSo = maso,
+                    TypeRole = typeRole,
+                    Bac = i,
+                    HeSo = heso,
+                    MucLuong = salaryReal,
+                    NameAlias = nameAlias,
+                    TypeRoleAlias = typeRoleAlias,
+                    TypeRoleCode = typeRoleCode,
+                    Law = false
+                });
+            }
+
+            // 03- TÀI XẾ, NV KHO, NV ĐIỀU ĐỘ, NV CẢNH QUAN, NV BẢO TRÌ, NV TRẠM CÂN…
+            name = "TÀI XẾ, NV KHO, NV ĐIỀU ĐỘ, NV CẢNH QUAN, NV BẢO TRÌ, NV TRẠM CÂN…";
+            maso = "B.03";
+            nameAlias = Utility.AliasConvert(name);
+            salaryDeclareTax = salaryMin;
+            salaryReal = salaryMin;
+            for (int i = 0; i <= 10; i++)
+            {
+                double heso = 1;
+                if (i > 1)
+                {
+                    heso = 1.05;
+                }
+                salaryDeclareTax = Convert.ToDecimal((double)salaryDeclareTax * heso);
+                salaryReal = Convert.ToDecimal((double)salaryReal * heso);
+                // Theo thuế
+                dbContext.SalaryThangBangLuongs.InsertOne(new SalaryThangBangLuong()
+                {
+                    Name = name,
+                    MaSo = maso,
+                    TypeRole = typeRole,
+                    Bac = i,
+                    HeSo = heso,
+                    MucLuong = salaryDeclareTax,
+                    NameAlias = nameAlias,
+                    TypeRoleAlias = typeRoleAlias,
+                    TypeRoleCode = typeRoleCode
+                });
+                // Thuc te
+                dbContext.SalaryThangBangLuongs.InsertOne(new SalaryThangBangLuong()
+                {
+                    Name = name,
+                    MaSo = maso,
+                    TypeRole = typeRole,
+                    Bac = i,
+                    HeSo = heso,
+                    MucLuong = salaryReal,
+                    NameAlias = nameAlias,
+                    TypeRoleAlias = typeRoleAlias,
+                    TypeRoleCode = typeRoleCode,
+                    Law = false
+                });
+            }
+
+            // 04- GIAO NHẬN, PHỤ XE, BẢO VỆ, CÔNG NHÂN…
+            name = "GIAO NHẬN, PHỤ XE, BẢO VỆ, CÔNG NHÂN…";
+            maso = "B.04";
+            nameAlias = Utility.AliasConvert(name);
+            salaryDeclareTax = salaryMin;
+            salaryReal = salaryMin;
+            for (int i = 0; i <= 10; i++)
+            {
+                double heso = 1;
+                if (i > 1)
+                {
+                    heso = 1.05;
+                }
+                salaryDeclareTax = Convert.ToDecimal((double)salaryDeclareTax * heso);
+                salaryReal = Convert.ToDecimal((double)salaryReal * heso);
+                // Theo thuế
+                dbContext.SalaryThangBangLuongs.InsertOne(new SalaryThangBangLuong()
+                {
+                    Name = name,
+                    MaSo = maso,
+                    TypeRole = typeRole,
+                    Bac = i,
+                    HeSo = heso,
+                    MucLuong = salaryDeclareTax,
+                    NameAlias = nameAlias,
+                    TypeRoleAlias = typeRoleAlias,
+                    TypeRoleCode = typeRoleCode
+                });
+                // Thuc te
+                dbContext.SalaryThangBangLuongs.InsertOne(new SalaryThangBangLuong()
+                {
+                    Name = name,
+                    MaSo = maso,
+                    TypeRole = typeRole,
+                    Bac = i,
+                    HeSo = heso,
+                    MucLuong = salaryReal,
+                    NameAlias = nameAlias,
+                    TypeRoleAlias = typeRoleAlias,
+                    TypeRoleCode = typeRoleCode,
+                    Law = false
+                });
+            }
+            #endregion
+        }
+
+        static void UpdateLevelVP(string connection, string database)
         {
             #region Connection, Setting & Filter
             MongoDBContext.ConnectionString = connection;
@@ -95,6 +608,236 @@ namespace xdatafix
                 return;
             }
             //C:\Projects\Files
+            Workbook excelBook = excelApp.Workbooks.Open(@"C:\Projects\Files\employee-level-pcpl.xlsx");
+            _Worksheet excelSheet = excelBook.Sheets[1];
+            Range excelRange = excelSheet.UsedRange;
+
+            int rows = excelRange.Rows.Count;
+            int cols = excelRange.Columns.Count;
+
+            for (int i = 3; i <= rows; i++)
+            {
+                int columnIndex = 2;
+                var ten = string.Empty;
+                var levelSt = string.Empty;
+                var diemthamkhaoSt = string.Empty;
+                var nangNhocDocHai = "0";
+                var trachNhiem = "0";
+                var thuHut = "0";
+                var xang = "0";
+                var dienThoai = "0";
+                var com = "0";
+                var nhaO = "0";
+                var kiemNhiem = "0";
+                var bhytDacBiet = "0";
+                var viTriCanKnNhieuNam = "0";
+                var viTriDacThu = "0";
+
+                if (excelRange.Cells[i, columnIndex] != null && excelRange.Cells[i, columnIndex].Value2 != null)
+                {
+                    ten = excelRange.Cells[i, columnIndex].Value2.ToString();
+                }
+                columnIndex = columnIndex + 4;
+                if (excelRange.Cells[i, columnIndex] != null && excelRange.Cells[i, columnIndex].Value2 != null)
+                {
+                    levelSt = excelRange.Cells[i, columnIndex].Value2.ToString();
+                }
+
+                #region PCPL
+                columnIndex++;
+                if (excelRange.Cells[i, columnIndex] != null && excelRange.Cells[i, columnIndex].Value2 != null)
+                {
+                    nangNhocDocHai = excelRange.Cells[i, columnIndex].Value2.ToString();
+                }
+                columnIndex++;
+                if (excelRange.Cells[i, columnIndex] != null && excelRange.Cells[i, columnIndex].Value2 != null)
+                {
+                    trachNhiem = excelRange.Cells[i, columnIndex].Value2.ToString();
+                }
+                columnIndex++;
+                if (excelRange.Cells[i, columnIndex] != null && excelRange.Cells[i, columnIndex].Value2 != null)
+                {
+                    thuHut = excelRange.Cells[i, columnIndex].Value2.ToString();
+                }
+                columnIndex++;
+                if (excelRange.Cells[i, columnIndex] != null && excelRange.Cells[i, columnIndex].Value2 != null)
+                {
+                    xang = excelRange.Cells[i, columnIndex].Value2.ToString();
+                }
+                columnIndex++;
+                if (excelRange.Cells[i, columnIndex] != null && excelRange.Cells[i, columnIndex].Value2 != null)
+                {
+                    dienThoai = excelRange.Cells[i, columnIndex].Value2.ToString();
+                }
+                columnIndex++;
+                if (excelRange.Cells[i, columnIndex] != null && excelRange.Cells[i, columnIndex].Value2 != null)
+                {
+                    com = excelRange.Cells[i, columnIndex].Value2.ToString();
+                }
+                if (excelRange.Cells[i, columnIndex] != null && excelRange.Cells[i, columnIndex].Value2 != null)
+                {
+                    nhaO = excelRange.Cells[i, columnIndex].Value2.ToString();
+                }
+                columnIndex++;
+                if (excelRange.Cells[i, columnIndex] != null && excelRange.Cells[i, columnIndex].Value2 != null)
+                {
+                    kiemNhiem = excelRange.Cells[i, columnIndex].Value2.ToString();
+                }
+                columnIndex++;
+                if (excelRange.Cells[i, columnIndex] != null && excelRange.Cells[i, columnIndex].Value2 != null)
+                {
+                    bhytDacBiet = excelRange.Cells[i, columnIndex].Value2.ToString();
+                }
+                columnIndex++;
+                if (excelRange.Cells[i, columnIndex] != null && excelRange.Cells[i, columnIndex].Value2 != null)
+                {
+                    viTriCanKnNhieuNam = excelRange.Cells[i, columnIndex].Value2.ToString();
+                }
+                columnIndex++;
+                if (excelRange.Cells[i, columnIndex] != null && excelRange.Cells[i, columnIndex].Value2 != null)
+                {
+                    viTriDacThu = excelRange.Cells[i, columnIndex].Value2.ToString();
+                }
+                #endregion
+
+                Console.Write("Ten: " + ten);
+                Console.Write("\r\n");
+                if (string.IsNullOrEmpty(ten)) continue;
+
+                int level = string.IsNullOrEmpty(levelSt) ? 1 : Convert.ToInt32(levelSt);
+                var alias = Utility.AliasConvert(ten);
+                var phucapphucloi = new PhuCapPhucLoi()
+                {
+                    NangNhocDocHai = Convert.ToDecimal(nangNhocDocHai),
+                    TrachNhiem = Convert.ToDecimal(trachNhiem),
+                    ThuHut = Convert.ToDecimal(thuHut),
+                    Xang = Convert.ToDecimal(xang),
+                    DienThoai = Convert.ToDecimal(dienThoai),
+                    Com = Convert.ToDecimal(com),
+                    NhaO = Convert.ToDecimal(nhaO),
+                    KiemNhiem = Convert.ToDecimal(kiemNhiem),
+                    BhytDacBiet = Convert.ToDecimal(bhytDacBiet),
+                    ViTriCanKnNhieuNam = Convert.ToDecimal(viTriCanKnNhieuNam),
+                    ViTriDacThu = Convert.ToDecimal(viTriDacThu),
+                };
+                var filter = Builders<Employee>.Filter.Eq(m => m.AliasFullName, alias);
+                var update = Builders<Employee>.Update
+                    .Set(m => m.NgachLuongLevel, level)
+                    .Set(m => m.PhuCapPhucLoi, phucapphucloi);
+                dbContext.Employees.UpdateOne(filter, update);
+            }
+            excelApp.Quit();
+            System.Runtime.InteropServices.Marshal.ReleaseComObject(excelApp);
+        }
+
+        static void UpdateThangLuongVP(string connection, string database)
+        {
+            #region Connection, Setting & Filter
+            MongoDBContext.ConnectionString = connection;
+            MongoDBContext.DatabaseName = database;
+            MongoDBContext.IsSSL = true;
+            MongoDBContext dbContext = new MongoDBContext();
+            #endregion
+
+            decimal minSalary = 4013;
+
+            Application excelApp = new Application();
+            if (excelApp == null)
+            {
+                Console.WriteLine("Excel is not installed!!");
+                return;
+            }
+            //C:\Projects\Files
+            Workbook excelBook = excelApp.Workbooks.Open(@"C:\Projects\Files\thang-luong-vp.xlsx");
+            _Worksheet excelSheet = excelBook.Sheets[1];
+            Range excelRange = excelSheet.UsedRange;
+
+            int rows = excelRange.Rows.Count;
+            int cols = excelRange.Columns.Count;
+
+            for (int i = 5; i <= rows; i++)
+            {
+                int columnIndex = 2;
+                var vitri = string.Empty;
+                var tileSt = string.Empty;
+                var diemthamkhaoSt = string.Empty;
+                if (excelRange.Cells[i, columnIndex] != null && excelRange.Cells[i, columnIndex].Value2 != null)
+                {
+                    vitri = excelRange.Cells[i, columnIndex].Value2.ToString();
+                }
+                columnIndex = columnIndex + 12;
+                if (excelRange.Cells[i, columnIndex] != null && excelRange.Cells[i, columnIndex].Value2 != null)
+                {
+                    tileSt = excelRange.Cells[i, columnIndex].Value2.ToString();
+                }
+                columnIndex++;
+                if (excelRange.Cells[i, columnIndex] != null && excelRange.Cells[i, columnIndex].Value2 != null)
+                {
+                    diemthamkhaoSt = excelRange.Cells[i, columnIndex].Value2.ToString();
+                }
+                if (string.IsNullOrEmpty(vitri)) continue;
+
+                var alias = Utility.AliasConvert(vitri);
+                var vitriE = dbContext.ChucVus.Find(m => m.Alias.Equals(alias)).FirstOrDefault();
+                if (vitriE == null)
+                {
+                    var lastestChucVu = dbContext.ChucVus.Find(m => m.Enable.Equals(true)).SortByDescending(m => m.Order).Limit(1).FirstOrDefault();
+                    var lastestCode = lastestChucVu != null ? lastestChucVu.Order + 1 : 1;
+                    vitriE = new ChucVu
+                    {
+                        Code = "CHUCVU" + lastestCode,
+                        Name = vitri,
+                        Alias = alias,
+                        Order = lastestCode
+                    };
+                    dbContext.ChucVus.InsertOne(vitriE);
+                }
+                double tile = 1;
+                if (!string.IsNullOrEmpty(tileSt))
+                {
+                    tile = Convert.ToDouble(tileSt) == 0 ? 1 : Convert.ToDouble(tileSt);
+                }
+                decimal diemthamkhao = minSalary;
+                if (!string.IsNullOrEmpty(diemthamkhaoSt))
+                {
+                    diemthamkhao = Convert.ToDecimal(diemthamkhaoSt) == 0 ? minSalary : Convert.ToDecimal(diemthamkhaoSt);
+                }
+                dbContext.SalaryThangBangLuongs.InsertOne(new SalaryThangBangLuong()
+                {
+                    Month = 8,
+                    Year = 2018,
+                    ViTriId = vitriE.Id,
+                    ViTriCode = vitriE.Code,
+                    ViTriName = vitriE.Name,
+                    ViTriAlias = vitriE.Alias,
+                    Bac = 1,
+                    TiLe = tile,
+                    MucLuong = diemthamkhao
+                });
+            }
+            excelApp.Quit();
+            System.Runtime.InteropServices.Marshal.ReleaseComObject(excelApp);
+        }
+
+        static void UpdateLeaveDay2NM(string connection, string database)
+        {
+            #region Connection, Setting & Filter
+            MongoDBContext.ConnectionString = connection;
+            MongoDBContext.DatabaseName = database;
+            MongoDBContext.IsSSL = true;
+            MongoDBContext dbContext = new MongoDBContext();
+            #endregion
+
+            var leaveType = dbContext.LeaveTypes.Find(m => m.Alias.Equals("phep-nam")).FirstOrDefault();
+            var leaveTypeId = leaveType.Id;
+
+            Application excelApp = new Application();
+            if (excelApp == null)
+            {
+                Console.WriteLine("Excel is not installed!!");
+                return;
+            }
+            //C:\Projects\Files
             Workbook excelBook = excelApp.Workbooks.Open(@"C:\Projects\Files\phep-nm.xlsx");
             _Worksheet excelSheet = excelBook.Sheets[1];
             Range excelRange = excelSheet.UsedRange;
@@ -102,48 +845,168 @@ namespace xdatafix
             int rows = excelRange.Rows.Count;
             int cols = excelRange.Columns.Count;
 
-            for (int i = 1; i <= rows; i++)
+            for (int i = 2; i <= rows; i++)
             {
-                int columnIndex = 1;
-                var ma = string.Empty;
+                int columnIndex = 2;
                 var ten = string.Empty;
+                var phep2018 = string.Empty;
+                var phep2019 = string.Empty;
                 if (excelRange.Cells[i, columnIndex] != null && excelRange.Cells[i, columnIndex].Value2 != null)
                 {
-                    ma = excelRange.Cells[i, columnIndex].Value2.ToString();
+                    ten = excelRange.Cells[i, columnIndex].Value2.ToString();
+                }
+                columnIndex = columnIndex + 2;
+                columnIndex++;
+                if (excelRange.Cells[i, columnIndex] != null && excelRange.Cells[i, columnIndex].Value2 != null)
+                {
+                    phep2018 = excelRange.Cells[i, columnIndex].Value2.ToString();
                 }
                 columnIndex++;
                 if (excelRange.Cells[i, columnIndex] != null && excelRange.Cells[i, columnIndex].Value2 != null)
                 {
-                    ten = excelRange.Cells[i, columnIndex].Value2.ToString();
+                    phep2019 = excelRange.Cells[i, columnIndex].Value2.ToString();
                 }
                 if (string.IsNullOrEmpty(ten))
                 {
                     continue;
                 }
-                Console.Write("Update: " + ma + "\t");
-                var filter = Builders<Employee>.Filter.Eq(m => m.FullName, ten);
-                var update = Builders<Employee>.Update
-                    .Set(m => m.NgachLuongCode, "B.05")
-                    .Set(m => m.NgachLuongLevel, 1)
-                    .Set(m => m.CodeOld, ma);
-                dbContext.Employees.UpdateOne(filter, update);
+
+                var employee = dbContext.Employees.Find(m => m.FullName.Equals(ten.Trim())).FirstOrDefault();
+                if (employee != null)
+                {
+                    var leaveE = dbContext.LeaveEmployees.Find(m => m.EmployeeId.Equals(employee.Id) && m.LeaveTypeId.Equals(leaveTypeId)).FirstOrDefault();
+                    if (leaveE == null)
+                    {
+                        var leaveEmployeeNew2018 = new LeaveEmployee()
+                        {
+                            LeaveTypeId = leaveTypeId,
+                            EmployeeId = employee.Id,
+                            LeaveTypeName = leaveType.Name,
+                            EmployeeName = employee.FullName,
+                            Number = Convert.ToDouble(phep2018),
+                            Department = employee.PhongBanName,
+                            Part = employee.BoPhanName,
+                            Title = employee.ChucVuName,
+                            LeaveLevel = employee.LeaveLevelYear,
+                            NumberUsed = 0,
+                            UseFlag = true,
+                            Year = 2018
+                        };
+                        dbContext.LeaveEmployees.InsertOne(leaveEmployeeNew2018);
+                        dbContext.LeaveEmployeeHistories.InsertOne(new LeaveEmployeeHistory
+                        {
+                            EmployeeId = employee.Id,
+                            LeaveTypeId = leaveTypeId,
+                            Current = 0,
+                            Change = Convert.ToDouble(phep2018),
+                            Month = 5,
+                            Year = 2018,
+                            Description = "Cập nhật phép admin"
+                        });
+
+                        var leaveEmployeeNew2019 = leaveEmployeeNew2018;
+                        leaveEmployeeNew2019.Id = null;
+                        leaveEmployeeNew2019.Year = 2019;
+                        leaveEmployeeNew2019.Number = Convert.ToDouble(phep2019);
+                        dbContext.LeaveEmployees.InsertOne(leaveEmployeeNew2019);
+                        dbContext.LeaveEmployeeHistories.InsertOne(new LeaveEmployeeHistory
+                        {
+                            EmployeeId = employee.Id,
+                            LeaveTypeId = leaveTypeId,
+                            Current = 0,
+                            Change = Convert.ToDouble(phep2019),
+                            Month = 5,
+                            Year = 2019,
+                            Description = "Cập nhật phép admin"
+                        });
+                    }
+                    else
+                    {
+                        double currentLeaveNum = leaveE.Number;
+                        var filterLeaveEmployee = Builders<LeaveEmployee>.Filter.Eq(m => m.EmployeeId, employee.Id);
+                        var updateLeaveEmployee = Builders<LeaveEmployee>.Update
+                            .Set(m => m.UseFlag, true)
+                            .Inc(m => m.Number, Convert.ToDouble(phep2019))
+                            .Set(m => m.UpdatedOn, DateTime.Now);
+                        dbContext.LeaveEmployees.UpdateOne(filterLeaveEmployee, updateLeaveEmployee);
+                        dbContext.LeaveEmployeeHistories.InsertOne(new LeaveEmployeeHistory
+                        {
+                            EmployeeId = employee.Id,
+                            LeaveTypeId = leaveTypeId,
+                            Current = currentLeaveNum,
+                            Change = Convert.ToDouble(phep2019),
+                            Month = 5,
+                            Year = 2019,
+                            Description = "Admin updated."
+                        });
+                    }
+                }
             }
             excelApp.Quit();
             System.Runtime.InteropServices.Marshal.ReleaseComObject(excelApp);
+        }
 
-            dbContext.LeaveEmployees.InsertOne(new LeaveEmployee()
+        static void UpdateLeaveDayMissing(string connection, string database)
+        {
+            #region Connection, Setting & Filter
+            MongoDBContext.ConnectionString = connection;
+            MongoDBContext.DatabaseName = database;
+            MongoDBContext.IsSSL = true;
+            MongoDBContext dbContext = new MongoDBContext();
+            #endregion
+
+            var leaveType = dbContext.LeaveTypes.Find(m => m.Alias.Equals("phep-nam")).FirstOrDefault();
+            var leaveTypeId = leaveType.Id;
+
+            var employees = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && !m.UserName.Equals(Constants.System.account)).ToList();
+
+            //double phep2019 = 5; // từ tháng 1->5
+            foreach (var employee in employees)
             {
-                LeaveTypeId = "5bbdb5a97caedd0c7411c89d",
-                EmployeeId = "5c3e90b5566d7c0a345e5488",
-                LeaveTypeName = "Phép năm",
-                EmployeeName = "Vòng Thị Thúy Phượng",
-                Number = 0,
-                Department = "PHÒNG HCNS - NS",
-                Part = "HCNS",
-                Title = "NV HÀNH CHÍNH",
-                LeaveLevel = 12,
-                NumberUsed = 1
-            });
+                double phep2019 = 0;
+                if (employee.Joinday.AddMonths(5) < new DateTime(2019, 5, 1))
+                {
+                    phep2019 = 5; // nv cũ
+                }
+                else
+                {
+                    for (int i = employee.Joinday.Month; i <= 5; i++)
+                    {
+                        phep2019++;
+                    }
+                }
+
+                var leaveE = dbContext.LeaveEmployees.Find(m => m.EmployeeId.Equals(employee.Id) && m.LeaveTypeId.Equals(leaveTypeId)).FirstOrDefault();
+                if (leaveE == null)
+                {
+                    var leaveEmployee2019 = new LeaveEmployee()
+                    {
+                        LeaveTypeId = leaveTypeId,
+                        EmployeeId = employee.Id,
+                        LeaveTypeName = leaveType.Name,
+                        EmployeeName = employee.FullName,
+                        Number = phep2019,
+                        Department = employee.PhongBanName,
+                        Part = employee.BoPhanName,
+                        Title = employee.ChucVuName,
+                        LeaveLevel = employee.LeaveLevelYear,
+                        NumberUsed = 0,
+                        UseFlag = true,
+                        Year = 2019
+                    };
+                    dbContext.LeaveEmployees.InsertOne(leaveEmployee2019);
+                    dbContext.LeaveEmployeeHistories.InsertOne(new LeaveEmployeeHistory
+                    {
+                        EmployeeId = employee.Id,
+                        LeaveTypeId = leaveTypeId,
+                        Current = 0,
+                        Change = phep2019,
+                        Month = 5,
+                        Year = 2019,
+                        Description = "Cập nhật phép admin"
+                    });
+                }
+            }
         }
 
         static void FixEmployeeTimeKeeper(string connection, string database)
@@ -201,7 +1064,7 @@ namespace xdatafix
             var chucvus = dbContext.ChucVus.Find(m => m.Enable.Equals(true)).ToList();
 
             var employees = dbContext.Employees.Find(m => true).ToList();
-            foreach(var item in employees)
+            foreach (var item in employees)
             {
                 var congtychinhanhName = string.Empty;
                 var khoichucnangName = string.Empty;
@@ -210,7 +1073,7 @@ namespace xdatafix
                 var bophanConName = string.Empty;
                 var chucvuName = string.Empty;
                 var managerInformation = string.Empty;
-                
+
                 if (!string.IsNullOrEmpty(item.CongTyChiNhanh))
                 {
                     var ctcnE = congtychinhanhs.Where(m => m.Id.Equals(item.CongTyChiNhanh)).FirstOrDefault();
@@ -928,7 +1791,7 @@ namespace xdatafix
             hisEntity.EmployeeId = newUserId;
             dbContext.EmployeeHistories.InsertOne(hisEntity);
         }
-        
+
         static void InitFactoryProductDinhMucTangCa(string connection, string database)
         {
             #region Connection, Setting & Filter

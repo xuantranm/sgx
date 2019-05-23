@@ -1,0 +1,93 @@
+﻿@using Common.Utilities;
+@using ViewModels;
+@model BangLuongViewModel
+@{
+    Layout = "~/Views/Shared/_LayoutSocialFbFS.cshtml";
+    var login = User.Identity.Name;
+    var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+
+    var priceHOCHIMINHN = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("HOCHIMINH") && m.LoaiXeCode.Equals("XN"));
+    var priceHOCHIMINHL = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("HOCHIMINH") && m.LoaiXeCode.Equals("XL"));
+    var priceBINHDUONGN = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("BINHDUONG") && m.LoaiXeCode.Equals("XN"));
+    var priceBINHDUONGL = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("BINHDUONG") && m.LoaiXeCode.Equals("XL"));
+    var priceBIENHOAN = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("BIENHOA") && m.LoaiXeCode.Equals("XN"));
+    var priceBIENHOAL = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("BIENHOA") && m.LoaiXeCode.Equals("XL"));
+    var priceVUNGTAUN = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("VUNGTAU") && m.LoaiXeCode.Equals("XN"));
+    var priceVUNGTAUL = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("VUNGTAU") && m.LoaiXeCode.Equals("XL"));
+    var priceBINHTHUANN = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("BINHTHUAN") && m.LoaiXeCode.Equals("XN"));
+    var priceBINHTHUANL = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("BINHTHUAN") && m.LoaiXeCode.Equals("XL"));
+    var priceCANTHON = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("CANTHO") && m.LoaiXeCode.Equals("XN"));
+    var priceCANTHOL = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("CANTHO") && m.LoaiXeCode.Equals("XL"));
+    var priceVINHLONGN = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("VINHLONG") && m.LoaiXeCode.Equals("XN"));
+    var priceVINHLONGL = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("VINHLONG") && m.LoaiXeCode.Equals("XL"));
+    var priceLONGANN = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("LONGAN") && m.LoaiXeCode.Equals("XN"));
+    var priceLONGANL = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("LONGAN") && m.LoaiXeCode.Equals("XL"));
+    var priceTIENGIANGN = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("TIENGIANG") && m.LoaiXeCode.Equals("XN"));
+    var priceTIENGIANGL = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("TIENGIANG") && m.LoaiXeCode.Equals("XL"));
+    var priceDONGNAIN = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("DONGNAI") && m.LoaiXeCode.Equals("XN"));
+    var priceDONGNAIL = Model.LogisticGiaChuyenXes.First(m => m.TuyenCode.Equals("DONGNAI") && m.LoaiXeCode.Equals("XL"));
+}
+<div class="main-container">
+    <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="/">Trang chủ</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.LogisticCong">Danh sách</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">Công Logistic</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="flush-with-above space-0">
+        <div class="bg-white">
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <ul class="nav nav-tabs" id="myTab" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.VanPhong/@Constants.LinkSalary.ThangLuong">THANG LƯƠNG</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.VanPhong/@Constants.LinkSalary.BangLuong">BẢNG LƯƠNG</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Timer">CHẤM CÔNG</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Setting">THAM SỐ</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.SaleKPIEmployee">KINH DOANH</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link active" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.LogisticCong">LOGISTICS</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Credits">VAY & TẠM ỨNG</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <h1>TÍNH NĂNG ĐANG CẬP NHẬT. VUI LÒNG QUAY LẠI SAU.</h1>
+    <h1>DÙNG TÍNH NĂNG CẬP NHẬT THEO TÀI LIỆU</h1>
+</div>
+
+@section scripts {
+    <script type="text/javascript" src="~/js/salary-logistic-employee-cong-update.js?@DateTime.Now.Ticks"></script>
+}
+
+
+

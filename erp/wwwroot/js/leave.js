@@ -64,6 +64,11 @@
 
     function registerTimePicker() {
         var dateNow = new Date();
+        console.log(dateNow);
+        //var numberOfDaysToAdd = -30;
+        //var numDate = dateNow.setDate(dateNow.getDate() + numberOfDaysToAdd);
+        //dateNow = new Date(numDate);
+        //console.log(dateNow);
         $("#from_date").datepicker({
             language: "vi",
             format: 'dd/mm/yyyy',
@@ -96,7 +101,7 @@
         var startTimeMM = parseInt($('#Leave_Start').val().split(':')[1]);
         var endTimeHH = parseInt($('#Leave_End').val().split(':')[0]);
         var endTimeMM = parseInt($('#Leave_End').val().split(':')[1]);
-
+        console.log(moment(dateNow).hours(startTimeHH).minutes(startTimeMM).seconds(0).milliseconds(0));
         $('#leave-start').datetimepicker({
             locale: 'vi',
             format: 'LT',
@@ -123,7 +128,8 @@
         var to = moment($('#to_date').datepicker('getFormattedDate'), 'DD-MM-YYYY')._d;
         to.setHours($('#leave-end').val().split(':')[0]);
         to.setMinutes($('#leave-end').val().split(':')[1]);
-
+        console.log(from);
+        console.log(to);
         //MM-DD-YYYY
 
         var fromPost =

@@ -872,7 +872,7 @@ namespace erp.Controllers
                 #region Settings
                 Thread.CurrentThread.CurrentCulture = new CultureInfo("en-CA");
                 var now = DateTime.Now;
-                entity.CreatedBy = login;
+                entity.CreatedBy = loginInformation.FullName;
                 entity.UpdatedBy = login;
                 entity.CheckedBy = login;
                 entity.ApprovedBy = login;
@@ -1005,14 +1005,13 @@ namespace erp.Controllers
 
                 var notification = new Notification
                 {
-                    Type = Constants.Notification.HR,
+                    Type = (int)ENotification.HrChange,
                     Title = Constants.Notification.CreateHR,
                     Content = entity.FullName,
                     Link = Constants.LinkHr.Main + "/" + Constants.LinkHr.Human + "/" + Constants.LinkHr.Information + "/" + entity.Id,
                     Images = notificationImages.Count > 0 ? notificationImages : null,
-                    UserId = newUserId,
-                    CreatedBy = login,
-                    CreatedByName = loginInformation.FullName
+                    User = newUserId,
+                    CreatedBy = loginInformation.FullName
                 };
                 dbContext.Notifications.InsertOne(notification);
                 #endregion
@@ -1395,7 +1394,7 @@ namespace erp.Controllers
                         var viTriE = dbContext.SalaryThangBangLuongs.Find(m => m.ViTriCode.Equals(entity.NgachLuongCode)).SortByDescending(m => m.UpdatedOn).FirstOrDefault();
                         if (viTriE != null)
                         {
-                            entity.SalaryChucVu = viTriE.ViTri;
+                            entity.SalaryChucVu = viTriE.ViTriName;
                         }
                     }
 
@@ -1736,9 +1735,8 @@ namespace erp.Controllers
                     Content = entity.FullName,
                     Link = linkInformation,
                     Images = notificationImages.Count > 0 ? notificationImages : null,
-                    UserId = userId,
-                    CreatedBy = login,
-                    CreatedByName = loginInformation.Employee.FullName
+                    User = userId,
+                    CreatedBy = loginE.FullName
                 };
                 dbContext.Notifications.InsertOne(notification);
                 #endregion

@@ -93,7 +93,7 @@ namespace erp.Controllers
             linkCurrent += "Thang=" + Thang;
             #endregion
 
-            var mucluongvung = GetSalaryMucLuongVung(month, year);
+            var mucluongvung = Utility.SalaryMucLuongVung(month, year);
 
             #region Filter
             var builder = Builders<SalaryEmployeeMonth>.Filter;
@@ -185,7 +185,7 @@ namespace erp.Controllers
         }
 
         [Route(Constants.LinkSalary.ThangLuong + "/" + Constants.LinkSalary.Calculator)]
-        public IActionResult ThangLuongCalculator(decimal money, decimal heso, string id)
+        public IActionResult ThangLuongCalculator(decimal money, double heso, string id)
         {
             var list = new List<IdMoney>();
             decimal salaryMin = dbContext.SalaryMucLuongVungs.Find(m => m.Enable.Equals(true)).First().ToiThieuVungDoanhNghiepApDung; // use reset
@@ -207,14 +207,14 @@ namespace erp.Controllers
                     {
                         heso = currentLevel.HeSo;
                     }
-                    var salaryDeclareTax = heso * salaryMin;
+                    var salaryDeclareTax = Convert.ToDecimal(heso * (double)salaryMin);
                     if (bac > 1)
                     {
                         var previousBac = bac - 1;
                         var previousBacEntity = dbContext.SalaryThangBangLuongs.Find(m => m.MaSo.Equals(maso) & m.Bac.Equals(previousBac)).FirstOrDefault();
                         if (previousBacEntity != null)
                         {
-                            salaryDeclareTax = heso * previousBacEntity.MucLuong;
+                            salaryDeclareTax = Convert.ToDecimal(heso * (double)previousBacEntity.MucLuong);
                         }
                     }
                     // Add current change
@@ -230,7 +230,7 @@ namespace erp.Controllers
                     {
                         if (level.Bac > bac)
                         {
-                            salaryDeclareTax = level.HeSo * salaryDeclareTax;
+                            salaryDeclareTax = Convert.ToDecimal(level.HeSo * (double)salaryDeclareTax);
                             list.Add(new IdMoney
                             {
                                 Id = level.Id,
@@ -263,7 +263,7 @@ namespace erp.Controllers
                     var salaryDeclareTax = salaryMin;
                     foreach (var level in group.Salaries)
                     {
-                        salaryDeclareTax = level.HeSo * salaryDeclareTax;
+                        salaryDeclareTax = Convert.ToDecimal(level.HeSo * (double)salaryDeclareTax);
                         list.Add(new IdMoney
                         {
                             Id = level.Id,
@@ -278,23 +278,7 @@ namespace erp.Controllers
         }
 
         #region Sub
-        private SalaryMucLuongVung GetSalaryMucLuongVung(int month, int year)
-        {
-            var result = new SalaryMucLuongVung();
-            result = dbContext.SalaryMucLuongVungs.Find(m => m.Enable.Equals(true) && m.Month.Equals(month) && m.Year.Equals(year)).FirstOrDefault();
-            if (result == null)
-            {
-                var lastItemVung = dbContext.SalaryMucLuongVungs.Find(m => m.Enable.Equals(true)).SortByDescending(m => m.Year).SortByDescending(m => m.Month).FirstOrDefault();
-                var lastMonthVung = lastItemVung.Month;
-                var lastYearVung = lastItemVung.Year;
-                lastItemVung.Id = null;
-                lastItemVung.Month = month;
-                lastItemVung.Year = year;
-                dbContext.SalaryMucLuongVungs.InsertOne(lastItemVung);
-                result = dbContext.SalaryMucLuongVungs.Find(m => m.Enable.Equals(true) && m.Month.Equals(month) && m.Year.Equals(year)).FirstOrDefault();
-            }
-            return result;
-        }
+        
         #endregion
 
     }

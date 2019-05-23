@@ -8,34 +8,26 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Models
 {
-    // Store data user
-    public class Notification
+    public class Notification: CommonV101
     {
-        [BsonId]
-        [BsonRepresentation(BsonType.ObjectId)]
-        public string Id { get; set; }
-
-        // 1: system, 2.nhan-su-change, 3: expire-document, 4: task-bhxh, 5: company, 6:...
-        public int Type { get; set; } = 0;
+        public int Type { get; set; } = (int)ENotification.None;
 
         public string Title { get; set; }
 
+        public string Alias { get; set; }
+
+        public string Description { get; set; }
+
         public string Content { get; set; }
 
+        // No use
         public string Link { get; set; }
 
         public IList<Image> Images { get; set; }
 
+        public IList<Document> Documents { get; set; }
+
         // Thông báo cho từng user| null theo type.
-        public string UserId { get; set; }
-
-        public string CreatedBy { get; set; }
-
-        public string CreatedByName { get; set; }
-
-        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
-        public DateTime CreatedOn { get; set; } = DateTime.Now;
-
-        public bool Enable { get; set; } = true;
+        public string User { get; set; }
     }
 }

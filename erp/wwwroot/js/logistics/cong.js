@@ -1,19 +1,22 @@
 ﻿$(function () {
-    var $table = $('table.floating-header');
-    $table.floatThead();
-
-    $('.left-menu').addClass('d-none');
+    $('#ddlMonthImport').on('change', function (e) {
+        var href = $('.btn-link-import').attr("href");
+        var href1 = href.split('?')[0];
+        $('.btn-link-import').attr("href", href1 + "?thang=" + $('#ddlMonthImport').val());
+    });
 
     $('.js-select2-basic-single').select2(
         {
             theme: "bootstrap"
         });
 
-    $('#Thang').on('change', function (e) {
+    $('#Id').on('change', function (e) {
         formSubmit();
     });
 
-    registerAutoNumeric();
+    $('#Thang').on('change', function (e) {
+        formSubmit();
+    });
 
     $('.btnUpload').on('click', function () {
         var parent = $(this).closest('form');
@@ -30,6 +33,7 @@
                 return false;
             }
         }
+        showProgress(parent);
         var fdata = new FormData();
         var fileUpload = $(".fUpload", parent).get(0);
         var files = fileUpload.files;
@@ -47,10 +51,11 @@
             contentType: false,
             processData: false,
             success: function (response) {
+                resetFormUpload(parent);
                 if (response.length === 0)
                     alert('Some error occured while uploading');
                 else {
-                    window.location.replace(response.url);
+                    location.reload();
                 }
             },
             error: function (e) {
@@ -61,7 +66,8 @@
         });
     });
 
-    var $progress = $('.progress', parent)[0];
+
+    registerAutoNumeric();
 
     $(".data-form").on("submit", function (event) {
         event.preventDefault();
@@ -106,63 +112,12 @@
         });
     }
 
-    function uploadProgress(e) {
-        if (e.lengthComputable) {
-            //console.log("total:" + e.total)
-            var percentComplete = (e.loaded * 100) / e.total;
-            //console.log(percentComplete);
-            $('.progress-bar', $progress).css('width', percentComplete + "%");
-            //$progress.value = percentComplete;
-
-            if (percentComplete >= 100) {
-                // process completed
-            }
-        }
-    }
-
-    function downloadProgress(e) {
-        if (e.lengthComputable) {
-            var percentage = (e.loaded * 100) / e.total;
-            //console.log(percentage);
-            //$progress.value = percentage;
-            $('.progress-bar', $progress).css('width', percentage + "%");
-
-            if (percentage >= 100) {
-                // process completed
-            }
-        }
-    }
-
     function enableNumeric(element) {
         var code = $(element).data('id');
         newInstall = new AutoNumeric('.' + code, { decimalPlaces: 0 });
-        $('.' + code).on('keyup', function () {
-            calculatorData(code.split('-')[1]);
-        });
-    }
-
-    function calculatorData(code) {
-        var dataInput = $('.tr-' + code + ' :input').serialize().replace(new RegExp('%5B' + code + '%5D', 'g'), '%5B0%5D');
-        $.ajax({
-            type: "post",
-            url: $('#hidCalculator').val(),
-            data: dataInput,
-            success: function (data) {
-                console.log(data);
-                $('.chitieuthuchiendoanhso-' + code).html(accounting.formatNumber(data.entity.chiTieuThucHienDoanhSo) +" %");
-                $('.chitieuthuchiendoanhthu-' + code).html(accounting.formatNumber(data.entity.chiTieuThucHienDoanhThu) + " %");
-                $('.chitieuthuchiendophu-' + code).html(accounting.formatNumber(data.entity.chiTieuThucHienDoPhu) + " %");
-                $('.chitieuthuchienmomoi-' + code).html(accounting.formatNumber(data.entity.chiTieuThucHienMoMoi) + " %");
-                $('.chitieuthuchiennganhhang-' + code).html(accounting.formatNumber(data.entity.chiTieuThucHienNganhHang) + " %");
-                
-                $('.thuongchitieuthuchiendoanhso-' + code).html(accounting.formatNumber(data.entity.thuongChiTieuThucHienDoanhSo / 1000));
-                $('.thuongchitieuthuchiendoanhthu-' + code).html(accounting.formatNumber(data.entity.thuongChiTieuThucHienDoanhThu / 1000));
-                $('.thuongchitieuthuchiendophu-' + code).html(accounting.formatNumber(data.entity.thuongChiTieuThucHienDoPhu / 1000));
-                $('.thuongchitieuthuchienmomoi-' + code).html(accounting.formatNumber(data.entity.thuongChiTieuThucHienMoMoi / 1000));
-                $('.thuongchitieuthuchiennganhhang-' + code).html(accounting.formatNumber(data.entity.thuongChiTieuThucHienNganhHang / 1000));
-                $('.tongthuong-' + code).html(accounting.formatNumber(data.entity.tongThuong / 1000));
-            }
-        });
+        //$('.' + code).on('keyup', function () {
+        //    calculatorLuong(code.split('-')[1]);
+        //});
     }
 });
 

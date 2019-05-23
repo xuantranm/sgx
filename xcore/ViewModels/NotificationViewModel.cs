@@ -5,7 +5,7 @@ using ViewModels;
 
 namespace ViewModels
 {
-    public class NotificationViewModel : ExtensionViewModel
+    public class NotificationViewModel : CommonViewModel
     {
         public IList<Notification> Notifications { get; set; }
 

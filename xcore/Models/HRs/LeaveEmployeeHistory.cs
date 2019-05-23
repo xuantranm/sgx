@@ -16,16 +16,13 @@ namespace Models
 
         public string LeaveTypeId { get; set; }
 
-        [BsonRepresentation(BsonType.Decimal128)]
-        public decimal Current { get; set; } = 0;
+        public double Current { get; set; } = 0;
 
-        [BsonRepresentation(BsonType.Decimal128)]
-        public decimal Change { get; set; } = 0;
+        public double Change { get; set; } = 0;
 
         // Use define cộng hay chua
         public int Month { get; set; }
 
-        [BsonRepresentation(BsonType.Decimal128)]
         public int Year { get; set; }
 
         public string Description { get; set; }

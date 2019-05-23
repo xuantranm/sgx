@@ -31,7 +31,6 @@ namespace Models
 
         public string ModifiedBy { get; set; }
 
-
         #region SEO
         public string SeoTitle { get; set; }
         public string KeyWords { get; set; }
@@ -45,5 +44,7 @@ namespace Models
         public string RelationshipCategory { get; set; }
         public string RelationshipItem { get; set; }
         #endregion
+
+        public string Language { get; set; } = Constants.Languages.Vietnamese;
     }
 }

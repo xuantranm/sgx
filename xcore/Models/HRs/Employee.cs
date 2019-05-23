@@ -170,8 +170,7 @@ namespace Models
         public bool ConfirmEmail { get; set; } = true;
 
         [Display(Name = "Ngày phép sẵn có")]
-        [BsonRepresentation(BsonType.Decimal128)]
-        public decimal LeaveDayAvailable { get; set; } = 0;
+        public double LeaveDayAvailable { get; set; } = 0;
 
         // Checked - Approved
         [Display(Name = "Trạng thái")]
@@ -359,9 +358,10 @@ namespace Models
         // Update on future: 0: hand, 1: bank
         public int SalaryPayMethod { get; set; } = 0;
 
-        public string SalaryChucVu { get; set; }
 
-        public string SalaryChucVuViTriCode { get; set; }
+        public string SalaryChucVu { get; set; } // Don't use
+
+        public string SalaryChucVuViTriCode { get; set; } // Don't use
         #endregion
 
         #region SALES
@@ -371,6 +371,8 @@ namespace Models
         #region LOGISTICS
         public string LogisticChucVu { get; set; }
         #endregion
+
+        public PhuCapPhucLoi PhuCapPhucLoi { get; set; }
 
         #region Get
         public int Age

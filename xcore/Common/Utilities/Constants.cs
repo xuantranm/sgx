@@ -7,6 +7,11 @@ namespace Common.Utilities
     {
         public static string VersionJs = "v-" + DateTime.Now.Ticks;
 
+        public static decimal RoundOff(this decimal i)
+        {
+            return Convert.ToDecimal((Math.Round((double)i / 10.0)) * 10);
+        }
+
         public static string NgachLuongBoss = "C.01; C.02; C.03";
 
         public static string PhanLoaiDuAnBun(this int input)
@@ -34,14 +39,16 @@ namespace Common.Utilities
         public static class ActionLink
         {
             public const string Init = "init";
-            public const string Export = "xuat-tai-lieu";
-            public const string Template = "mau-tai-lieu";
+            public const string Template = "mau-du-lieu";
+            public const string Import = "nhap-du-lieu";
+            public const string Export = "xuat-du-lieu";
             public const string Add = "nhan-su";
             public const string Edit = "thong-tin";
             public const string Update = "cap-nhat";
             public const string Delete = "danh-sach";
             public const string Disable = "disable";
             public const string Post = "post";
+            public const string Calculator = "tinh-toan";
         }
 
         public static string Location(int loc)
@@ -263,24 +270,23 @@ namespace Common.Utilities
             public const string SaleKPIEmployeeTemplate = "kinh-doanh-so-lieu-mau";
             public const string SaleKPIEmployeeCalculator = "tinh-toan-so-lieu-kinh-doanh";
 
-            public const string LogisticGiaChuyenXe = "logistic-gia-chuyen-xe";
-            public const string LogisticGiaChuyenXeCalculator = "tinh-toan-logistic-gia-chuyen-xe";
-            public const string LogisticGiaChuyenXeImport = "logistic-gia-chuyen-xe-import";
-            public const string LogisticGiaChuyenXeTemplate = "logistic-gia-chuyen-xe-mau";
+            public const string LogisticCong = "logistics-cong";
+            public const string LogisticPrice = "logistics-bang-gia-chuyen-xe";
 
-            public const string LogisticGiaBunPost = "logistic-gia-bun-post";
-
-            public const string LogisticEmployeeCong = "logistics-cong-nhan-vien";
-            public const string LogisticEmployeeCongCalculator = "tinh-toan-cong-nhan-vien-logistic";
-            public const string LogisticEmployeeImport = "logistics-so-lieu-import";
-            public const string LogisticEmployeeTemplate = "logistics-so-lieu-mau";
+            public const string LogisticGiaChuyenXeImport = "logistic-bang-gia-chuyen-xe-import";
+            
+            public const string LogisticGiaBunPost = "logistic-bang-gia-bun-post";
 
             public const string Credits = "so-lieu-tam-ung";
 
+            public const string Template = "mau";
+            public const string Import = "nhap-du-lieu";
             public const string Export = "xuat-tai-lieu";
             public const string Update = "cap-nhat";
             public const string Calculator = "tinh-toan";
             public const string CalculatorThucLanh = "tinh-toan-thuc-lanh";
+
+
 
             public const string Init = "init";
             public const string Document = "tai-lieu";
@@ -356,7 +362,6 @@ namespace Common.Utilities
         {
             public const string Main = "nws";
             public const string Index = "tin-tuc";
-
             public const string List = "danh-sach";
             public const string Create = "tao";
             public const string CalculatorDate = "calculator-date";
@@ -364,7 +369,7 @@ namespace Common.Utilities
             public const string Approve = "duyet-phep";
         }
 
-        public static class LinkNotication
+        public static class LinkNotification
         {
             public const string Main = "nt";
             public const string Index = "thong-bao";

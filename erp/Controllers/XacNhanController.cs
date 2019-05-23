@@ -174,18 +174,6 @@ namespace erp.Controllers
             // cc người duyệt
             ccs.Add(new EmailAddress { Name = approvement.FullName, Address = approvement.Email });
 
-            #region UAT
-            //tos = new List<EmailAddress>
-            //            {
-            //                new EmailAddress { Name = "Xuan", Address = "xuan.tm1988@gmail.com" }
-            //            };
-
-            //ccs = new List<EmailAddress>
-            //            {
-            //                new EmailAddress { Name = "Xuan CC", Address = "xuantranm@gmail.com" }
-            //            };
-            #endregion
-
             var webRoot = Environment.CurrentDirectory;
             var pathToFile = _env.WebRootPath
                     + Path.DirectorySeparatorChar.ToString()

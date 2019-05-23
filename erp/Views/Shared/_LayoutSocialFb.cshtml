@@ -4,7 +4,6 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <!--speed test-->
     <script type="text/javascript">
         var start = Date.now();
     </script>
@@ -94,6 +93,7 @@
             @ViewData["Disable"]
         </div>
     }
+
     @*<div class="d-none d-lg-block">
             <img style="position:absolute;top:0;right:0px;z-index:1002;" src="~/images/holidays/phaophai2019.png">
             <img style="position:absolute;top:0;left:0px;z-index:1002;" src="~/images/holidays/phaotrai2019.png">
@@ -104,7 +104,6 @@
             <div class="container">
                 <nav class="navbar navbar-expand-lg">
                     <a class="navbar-brand" href="/">
-                        @*<img alt="Tribat" src="~/assets/wingman/img/logo-white.svg" />*@
                         <img alt="Tribat" src="~/images/logo.png" style="width:120px; height:30px" />
                     </a>
                     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -149,7 +148,7 @@
                             @if (rightDataKhoNguyenVatLieu || rightDataKhoThanhPham || rightDataKhoBun || rightDataKhoHangTraVe || rightDataTramCan)
                             {
                                 <li class="nav-item dropdown">
-                                    <a href="#" class="nav-link" role="button" data-toggle="dropdown"><i class="fas fa-cloud-download-alt"></i> KẾ HOẠCH TỔNG HỢP</a>
+                                    <a href="#" class="nav-link" role="button" data-toggle="dropdown"><i class="fas fa-cloud-download-alt"></i> DỮ LIỆU NHÀ MÁY</a>
                                     <div class="dropdown-menu" aria-labelledby="pagesDropdown">
                                         @{
                                             if (rightDataKhoNguyenVatLieu)
@@ -191,7 +190,7 @@
                                     </div>
                                 </li>
                             }
-                            @if (rightLuong)
+                            @if (rightHr)
                             {
                                 var displayLaw = string.Empty;
                                 @if (rightLuongVanPhong)
@@ -199,7 +198,7 @@
                                     displayLaw = "BHXH";
                                 }
                                 <li class="nav-item dropdown">
-                                    <a class="nav-link dropdown-toggle" href="#" id="pagesDropdown" role="button" data-toggle="dropdown"><i class="fas fa-dollar-sign"></i> Lương</a>
+                                    <a class="nav-link" href="#" role="button" data-toggle="dropdown"><i class="fas fa-dollar-sign"></i> Lương</a>
                                     <div class="dropdown-menu" aria-labelledby="pagesDropdown">
                                         @{
                                             if (rightLuongVanPhong)
@@ -252,6 +251,12 @@
                             }
                             @if (isLogin)
                             {
+                                if (rightHr)
+                                {
+                                    <li class="nav-item">
+                                        <a href="/@Constants.LinkHr.Main/@Constants.LinkHr.Human" class="nav-link" data-toggle="tooltip" title="Bấm vô để xem hồ sơ nhân sự."><i class="fas fa-users"></i> Hồ sơ nhân sự</a>
+                                    </li>
+                                }
                                 <li class="nav-item">
                                     <a href="/@Constants.LinkHr.Main/@Constants.LinkHr.Human/@Constants.LinkHr.Information/@login" class="nav-link" data-toggle="tooltip" title="Bấm vô để xem thông tin tài khoản."><i class="fas fa-user-shield"></i> Thông tin</a>
                                 </li>
@@ -302,7 +307,7 @@
                         <ul class="navbar-nav d-none" id="ownerInfo">
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle dropdown-toggle-no-arrow p-lg-0" href="/" id="dropdown01" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    <img alt="Thông tin nhân viên" src="http://via.placeholder.com/36x36" class="avatar avatar-xs" />
+                                    <img alt="Thông tin nhân viên" src="~/images/placeholder/36x36.png" class="avatar avatar-xs" />
                                     <span class="badge badge-danger">8</span>
                                 </a>
                                 <div class="dropdown-menu dropdown-menu-sm" aria-labelledby="dropdown01">
@@ -339,10 +344,8 @@
                             </div>
                         </script>
                     </div>
-                    <!--end nav collapse-->
                 </nav>
             </div>
-            <!--end of container-->
         </div>
     </div>
 
@@ -350,14 +353,14 @@
         <section class="space-sm">
             <div class="container">
                 <div class="row">
-                    <div class="col-12 col-md-4 mb-4 mb-md-0 left-menu">
+                    <div class="col-12 col-md-4 mb-4 mb-md-0 d-none d-md-block">
                         <div class="card card-profile-large text-center card-info">
                             <div class="card-header">
-                                <img alt="Đang cập nhật" src="http://via.placeholder.com/354x167" class="bg-image" />
+                                <img alt="Đang cập nhật" src="~/images/placeholder/354x167.png" class="bg-image" />
                             </div>
                             <div class="card-body">
                                 <a href="/@Constants.LinkHr.Main/@Constants.LinkHr.Human/@Constants.LinkHr.Information">
-                                    <img alt="Đang cập nhật" src="http://via.placeholder.com/120x120" class="avatar avatar-lg" />
+                                    <img alt="Đang cập nhật" src="~/images/placeholder/120x120.png" class="avatar avatar-lg" />
                                 </a>
                                 <div class="my-3">
                                     <div class="mb-2">
@@ -365,12 +368,6 @@
                                         <span class="text-muted">Đang cập nhật</span>
                                     </div>
                                     <span class="text-small text-muted"><i class="icon-location"></i> Đang cập nhật</span>
-                                </div>
-                                <div class="d-none">
-                                    @*<button class="btn btn-outline-primary"><i class="icon-add-user"></i> Theo dõi</button>*@
-                                    @*<button class="btn btn-outline-primary">
-                                            <i class="icon-mail"></i>
-                                        </button>*@
                                 </div>
                             </div>
                         </div>
@@ -389,225 +386,76 @@
                                     </div>
                                     <span class="text-small text-muted"><i class="icon-location"></i> {{:addressResident}}</span>
                                 </div>
-                                <div class="d-none">
-                                    @*<button class="btn btn-outline-primary"><i class="icon-add-user"></i> Theo dõi</button>
-                                        <button class="btn btn-outline-primary">
-                                                <i class="icon-mail"></i>
-                                            </button>*@
-                                </div>
                             </div>
                         </script>
-                        <!-- end card -->
 
                         <div class="card card-sm card-function">
-                            <div class="card-header d-flex justify-content-between">
+                            <div class="card-header">
                                 <div>
                                     <a href="javascript:;" data-target="#card-body" data-toggle="collapse" aria-expanded="true">
                                         <span class="h6">Chức năng</span><i class="icon-popup"></i>
                                     </a>
                                 </div>
-                                @*<a href="#">Tất cả &rsaquo;</a>*@
                             </div>
                             <div class="card-body collapse show" id="card-body">
                                 @if (rightHr)
                                 {
-                                    <a class="list-group-item d-flex justify-content-between" href="/@Constants.LinkHr.Main/@Constants.LinkHr.Human">
-                                        <div>
-                                            <span>Hồ sơ nhân sự</span>
-                                        </div>
-                                        <div>
-                                            <i class="icon-chevron-right"></i>
-                                        </div>
+                                    <a class="list-group-item" href="/@Constants.LinkHr.Main/@Constants.LinkHr.Human">
+                                        <i class="icon-chevron-right"></i> Hồ sơ nhân sự
                                     </a>
                                 }
-                                <a class="list-group-item d-flex justify-content-between" href="/@Constants.LinkLeave.Main/@Constants.LinkLeave.Index">
-                                    <div>
-                                        <span>Nghỉ phép</span>
-                                    </div>
-                                    <div>
-                                        <i class="icon-chevron-right"></i>
-                                    </div>
+                                <a class="list-group-item" href="/@Constants.LinkLeave.Main/@Constants.LinkLeave.Index">
+                                    <i class="icon-chevron-right"></i> <span>Nghỉ phép</span>
                                 </a>
-                                <a class="list-group-item d-flex justify-content-between" href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Index">
-                                    <div>
-                                        <span>Chấm công</span>
-                                    </div>
-                                    <div>
-                                        <i class="icon-chevron-right"></i>
-                                    </div>
+                                <a class="list-group-item" href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Index">
+                                    <i class="icon-chevron-right"></i> <span>Chấm công</span>
+                                </a>
+                                <a class="list-group-item" href="/@Constants.LinkNotification.Main/@Constants.LinkNotification.Index/@Constants.LinkNotification.List">
+                                    <i class="icon-chevron-right"></i> Thông báo
                                 </a>
                                 @if (rightLuong)
                                 {
-                                    <a class="list-group-item d-flex justify-content-between" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.BangLuong">
-                                        <div>
-                                            <span>Lương</span>
-                                        </div>
-                                        <div>
-                                            <i class="icon-chevron-right"></i>
-                                        </div>
+                                    <a class="list-group-item" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.BangLuong">
+                                        <i class="icon-chevron-right"></i> Lương
                                     </a>
                                 }
                                 @if (rightHr)
                                 {
-                                    <a class="list-group-item d-flex justify-content-between" href="/@Constants.LinkEvaluate.Main/@Constants.LinkEvaluate.Index">
-                                        <div>
-                                            <span>Đánh giá</span>
-                                        </div>
-                                        <div>
-                                            <i class="icon-chevron-right"></i>
-                                        </div>
+                                    <a class="list-group-item" href="/@Constants.LinkEvaluate.Main/@Constants.LinkEvaluate.Index">
+                                        <i class="icon-chevron-right"></i> Đánh giá
                                     </a>
-                                    <a class="list-group-item d-flex justify-content-between" href="/@Constants.LinkRecruitment.Main/@Constants.LinkRecruitment.Index">
-                                        <div>
-                                            <span>Tuyển dụng</span>
-                                        </div>
-                                        <div>
-                                            <i class="icon-chevron-right"></i>
-                                        </div>
+                                    <a class="list-group-item" href="/@Constants.LinkRecruitment.Main/@Constants.LinkRecruitment.Index">
+                                        <i class="icon-chevron-right"></i> Tuyển dụng
                                     </a>
 
-                                    <a class="list-group-item d-flex justify-content-between" href="/@Constants.LinkSurvey.Main/@Constants.LinkSurvey.Index">
-                                        <div>
-                                            <span>Khảo sát</span>
-                                        </div>
-                                        <div>
-                                            <i class="icon-chevron-right"></i>
-                                        </div>
+                                    <a class="list-group-item" href="/@Constants.LinkSurvey.Main/@Constants.LinkSurvey.Index">
+                                        <i class="icon-chevron-right"></i> Khảo sát
                                     </a>
                                 }
-                                <a class="list-group-item d-flex justify-content-between" href="/@Constants.LinkTraining.Main/@Constants.LinkTraining.Index">
-                                    <div>
-                                        <span>Đào tạo</span>
-                                    </div>
-                                    <div>
-                                        <i class="icon-chevron-right"></i>
-                                    </div>
+                                <a class="list-group-item" href="/@Constants.LinkTraining.Main/@Constants.LinkTraining.Index">
+                                    <i class="icon-chevron-right"></i> Đào tạo
                                 </a>
-                                @*<a class="list-group-item d-flex justify-content-between d-none" href="/@Constants.LinkNotication.Main/@Constants.LinkNotication.Index">
-                                        <div>
-                                            <span>Thông báo</span>
-                                        </div>
-                                        <div>
-                                            <i class="icon-chevron-right"></i>
-                                        </div>
-                                    </a>*@
-
                                 @if (rightNhaMay)
                                 {
                                     <!-- NHA MAY -->
-                                    <a class="list-group-item d-flex justify-content-between" href="/@Constants.LinkFactory.Main/@Constants.LinkFactory.TonSx">
-                                        <div>
-                                            <span>Tồn sản xuất</span>
-                                        </div>
-                                        <div>
-                                            <i class="icon-chevron-right"></i>
-                                        </div>
+                                    <a class="list-group-item" href="/@Constants.LinkFactory.Main/@Constants.LinkFactory.TonSx">
+                                        <i class="icon-chevron-right"></i> Tồn sản xuất
                                     </a>
-                                    <a class="list-group-item d-flex justify-content-between" href="/@Constants.LinkFactory.Main/@Constants.LinkFactory.VanHanh">
-                                        <div>
-                                            <span>Vận hành</span>
-                                        </div>
-                                        <div>
-                                            <i class="icon-chevron-right"></i>
-                                        </div>
+                                    <a class="list-group-item" href="/@Constants.LinkFactory.Main/@Constants.LinkFactory.VanHanh">
+                                        <i class="icon-chevron-right"></i> Vận hành
                                     </a>
-                                    <a class="list-group-item d-flex justify-content-between" href="/@Constants.LinkFactory.Main/@Constants.LinkFactory.PhieuInCa">
-                                        <div>
-                                            <span>Phiếu in ca</span>
-                                        </div>
-                                        <div>
-                                            <i class="icon-chevron-right"></i>
-                                        </div>
+                                    <a class="list-group-item" href="/@Constants.LinkFactory.Main/@Constants.LinkFactory.PhieuInCa">
+                                        <i class="icon-chevron-right"></i> Phiếu in ca
                                     </a>
                                 }
                             </div>
                         </div>
-                        <!-- end card -->
-
-                        <div class="card card-activity d-none">
-                            <div class="card-header d-flex justify-content-between">
-                                <div>
-                                    <span class="h6">Hoạt động</span>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <form class="mb-4">
-                                    <input class="form-control" placeholder="Search" type="search" name="search-conversations" />
-                                </form>
-                                <nav class="nav flex-md-column">
-                                    <a href="/activities" class="nav-link active">All</a>
-                                    <a href="#" class="nav-link">
-                                        <span class="badge badge-indicator badge-success mr-1">&nbsp;</span>On track
-                                    </a>
-                                    <a href="#" class="nav-link">
-                                        <span class="badge badge-indicator badge-warning mr-1">&nbsp;</span>Falling behind
-                                    </a>
-                                    <a href="#" class="nav-link">
-                                        <span class="badge badge-indicator badge-danger mr-1">&nbsp;</span>Needs attention
-                                    </a>
-                                    <a href="#" class="nav-link">
-                                        <span class="badge badge-indicator badge-secondary mr-1">&nbsp;</span>Archived
-                                    </a>
-                                </nav>
-                            </div>
-                        </div>
-                        <!--end of card-->
-
-                        <div class="card card-flollow d-none">
-                            <div class="card-header d-flex justify-content-between">
-                                <div>
-                                    <span class="h6">Followers</span>
-                                </div>
-                                <a href="#">View all &rsaquo;</a>
-                            </div>
-                            <div class="card-body">
-                                <ul class="list-unstyled list-spacing-sm">
-                                    @for (int i = 1; i <= 4; i++)
-                                    {
-                                        <li>
-                                            <a class="media" href="#">
-                                                <img alt="Image" src="~/assets/wingman/img/avatar-male-1.jpg" class="avatar avatar-sm mr-3" />
-                                                <div class="media-body">
-                                                    <span class="h6 mb-0">Daniel Cameron</span>
-                                                    <span class="text-muted">Product Designer</span>
-                                                </div>
-                                            </a>
-                                        </li>
-                                    }
-                                </ul>
-                            </div>
-                        </div>
-                        <!-- end card -->
-
-                        <div class="card card-borderless bg-secondary card-future d-none">
-                            <a class="card-body" href="#">
-                                <div class="d-flex justify-content-between mb-3">
-                                    <img alt="Image" src="~/assets/wingman/img/logo-w-gradient.svg" />
-                                    <span class="title-decorative">Sponsor</span>
-                                </div>
-                                <span class="h6">A robust suite of styled elements and pages</span>
-                            </a>
-                        </div>
-                        <!-- end card -->
                     </div>
-                    <!--end of col-->
                     <div class="col-12 col-md-8">
-                        @*<div class="alert alert-info text-small mb-0" role="alert">
-                                <i class="icon-shield"></i>
-                                <span>
-                                    We will never distribute your email address to third parties. Read about email communication in our privacy policy.
-                                </span>
-                                <a href="/nhan-su/thong-tin">Xem thêm ›</a>
-                            </div>*@
-
                         @RenderBody()
-
                     </div>
-                    <!--end of col-->
                 </div>
-                <!--end of row-->
             </div>
-            <!--end of container-->
         </section>
 
         <footer class="footer">
@@ -627,7 +475,7 @@
                         <a href="/@Constants.LinkDocument.Main/@Constants.LinkDocument.GettingStarted" alt="Hướng dẫn sử dụng" target="_blank" data-toggle="tooltip" title="Bấm vô để mở hướng dẫn chi tiết bằng hình ảnh.">Hướng dẫn</a>
                     </div>
                     <div class="col-md-3 col-xs-6">
-                        <a href="http://tribat.vn" target="_blank">tribat.vn</a>
+                        <a href="https://tribat.vn" target="_blank">tribat.vn</a>
                     </div>
                 </div>
             </div>
@@ -636,10 +484,6 @@
         @*<div class="d-none d-lg-block">
                 <img class="maidao lazyloaded img-responsive" data-original="~/images/holidays/maidao2019.png" src="~/images/holidays/maidao2019.png">
             </div>*@
-    </div>
-
-    <div class="alert alert-light d-none" role="alert">
-        Account beta testing: sysadmin - pwd: 06021988
     </div>
 
     <div class="modal fade" id="pwdModal" tabindex="-1" role="dialog" aria-labelledby="pwdModal" aria-hidden="true">
@@ -678,7 +522,6 @@
     <input type="hidden" value=""
            name="clientScreenWidth" id="clientScreenWidth" />
 
-
     <script>
         $(document).ready(function () {
             $("#clientScreenWidth").val($(window).width());
@@ -695,7 +538,6 @@
     <script type="text/javascript" src="~/lib/zoom/zoom-vanilla.min.js"></script>
     <script type="text/javascript" src="~/lib/bootstrap-4.0.0-dist/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="~/assets/wingman/js/theme.js"></script>
-    @*<script type="text/javascript" src="~/lib/jquery-autocomplete/jquery.autocomplete.min.js"></script>*@
     <script type="text/javascript" src="~/lib/bootstrap-multiselect/dist/js/bootstrap-multiselect.js"></script>
     <script type="text/javascript" src="~/lib/autosize/jquery.textarea_autosize.js"></script>
     <script type="text/javascript" src="~/lib/bootstrap-datepicker-1.6.4-dist/js/bootstrap-datepicker.min.js"></script>
@@ -711,24 +553,9 @@
     <script type="text/javascript" src="~/lib/js-render/jsrender.min.js"></script>
     <script type="text/javascript" src="~/lib/select2/select2.min.js"></script>
     <script type="text/javascript" src="~/lib/jquery.floatThead/dist/jquery.floatThead.min.js"></script>
-
     <script type="text/javascript" src="~/js/site.js?@DateTime.Now.Ticks"></script>
 
     @RenderSection("scripts", required: false)
-
-    <!--Start of Tawk.to Script-->
-    <script type="text/javascript">
-        var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
-        (function () {
-            var s1 = document.createElement("script"), s0 = document.getElementsByTagName("script")[0];
-            s1.async = true;
-            s1.src = 'https://embed.tawk.to/5adae73a227d3d7edc242b43/default';
-            s1.charset = 'UTF-8';
-            s1.setAttribute('crossorigin', '*');
-            s0.parentNode.insertBefore(s1, s0);
-        })();
-    </script>
-    <!--End of Tawk.to Script-->
 
     <script type="text/javascript">
         $(document).ready(function () {

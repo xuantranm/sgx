@@ -143,7 +143,7 @@ namespace erp.Controllers
                 Employees = employees,
                 Id = Id,
                 KhoiChucNang = KhoiChucNang,
-                Phongban = PhongBan,
+                PhongBan = PhongBan,
                 BoPhan = BoPhan
             };
 

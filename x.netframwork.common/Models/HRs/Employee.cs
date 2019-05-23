@@ -30,8 +30,7 @@ namespace Models
         // true: not chấm công.
         public bool IsTimeKeeper { get; set; } = false;
 
-        [BsonRepresentation(BsonType.Decimal128)]
-        public decimal LeaveLevelYear { get; set; } = 12;
+        public double LeaveLevelYear { get; set; } = 12;
 
         public string FullName { get; set; }
 
@@ -150,8 +149,7 @@ namespace Models
 
         public bool ConfirmEmail { get; set; } = true;
 
-        [BsonRepresentation(BsonType.Decimal128)]
-        public decimal LeaveDayAvailable { get; set; } = 0;
+        public double LeaveDayAvailable { get; set; } = 0;
 
         public string Status { get; set; }
 
@@ -303,6 +301,8 @@ namespace Models
         #region LOGISTICS
         public string LogisticChucVu { get; set; }
         #endregion
+
+        public PhuCapPhucLoi PhuCapPhucLoi { get; set; }
 
         #region Get
         public int Age

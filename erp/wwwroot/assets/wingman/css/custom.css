@@ -239,3 +239,6 @@ img {
 .table-bordered-black thead th, .table-bordered-black thead td, .table-bordered-black td {
     border-bottom-width: 1px;
 }*/
+.select2-container {
+    z-index: 98 !important;
+}

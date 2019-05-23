@@ -34,6 +34,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="wwwroot\images\placeholder\36x36.png" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="Views\Account\AccessDenied.cshtml" />
     <None Include="Views\Account\ConfirmEmail.cshtml" />
     <None Include="Views\Account\ExternalLogin.cshtml" />
@@ -54,9 +58,9 @@
     <None Include="Views\File\Index.cshtml" />
     <None Include="Views\File\NhanVien.cshtml" />
     <None Include="Views\Salary\BangLuong.cshtml" />
-    <None Include="Views\Salary\LogisticEmployeeCong.cshtml" />
-    <None Include="Views\Salary\LogisticEmployeeCongUpdate.cshtml" />
-    <None Include="Views\Salary\LogisticGiaChuyenXeUpdate.cshtml" />
+    <None Include="Views\Salary\LogisticCong.cshtml" />
+    <None Include="Views\Salary\LogisticCongUpdate.cshtml" />
+    <None Include="Views\Salary\LogisticPriceUpdate.cshtml" />
     <None Include="Views\Salary\SaleKPIEmployee.cshtml" />
     <None Include="Views\Salary\SaleKPIEmployeeUpdate.cshtml" />
     <None Include="Views\Salary\SaleKPIUpdate.cshtml" />
@@ -808,12 +812,6 @@
     <Content Update="Views\Notification\Create.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
-    <Content Update="Views\Notification\Index3.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Notification\Index2.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
     <Content Update="Views\PhanQuyen\Create.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
@@ -862,6 +860,12 @@
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
     <Content Update="Views\SalaryLaw\ThangLuong.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Salary\LogisticPrice.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Salary\SaleKPI.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
     <Content Update="Views\Shared\_LayoutNotification.cshtml">

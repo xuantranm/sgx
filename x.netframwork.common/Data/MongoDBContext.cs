@@ -116,6 +116,15 @@ namespace Data
             }
         }
 
+        // VP
+        public IMongoCollection<SalaryThangBangLuong> SalaryThangBangLuongs
+        {
+            get
+            {
+                return _database.GetCollection<SalaryThangBangLuong>("SalaryThangBangLuongs");
+            }
+        }
+
         public IMongoCollection<EmployeeWorkTime> EmployeeWorkTimes
         {
             get

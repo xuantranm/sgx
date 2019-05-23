@@ -967,7 +967,7 @@ namespace erp.Controllers
 
             #region DDL
             var sortTimes = Utility.DllMonths();
-            var employees = await dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) 
+            var employees = await dbContext.Employees.Find(m => m.Enable.Equals(true)
                             && m.IsTimeKeeper.Equals(false) && !m.UserName.Equals(Constants.System.account)).SortBy(m => m.FullName).ToListAsync();
 
             var congtychinhanhs = dbContext.CongTyChiNhanhs.Find(m => m.Enable.Equals(true)).ToList();
@@ -1015,7 +1015,7 @@ namespace erp.Controllers
 
             #region Filter
             var builder = Builders<Employee>.Filter;
-            var filter = !builder.Eq(i => i.UserName, Constants.System.account) & builder.Eq(m => m.Enable, true) & builder.Eq(m => m.Leave, false);
+            var filter = !builder.Eq(i => i.UserName, Constants.System.account) & builder.Eq(m => m.Enable, true);
 
             if (!string.IsNullOrEmpty(Id))
             {

@@ -152,7 +152,7 @@
                             @if (rightDataKhoNguyenVatLieu || rightDataKhoThanhPham || rightDataKhoBun || rightDataKhoHangTraVe || rightDataTramCan)
                             {
                                 <li class="nav-item dropdown">
-                                    <a href="#" class="nav-link" role="button" data-toggle="dropdown"><i class="fas fa-cloud-download-alt"></i> KẾ HOẠCH TỔNG HỢP</a>
+                                    <a href="#" class="nav-link" role="button" data-toggle="dropdown"><i class="fas fa-cloud-download-alt"></i> DỮ LIỆU NHÀ MÁY</a>
                                     <div class="dropdown-menu" aria-labelledby="pagesDropdown">
                                         @{
                                             if (rightDataKhoNguyenVatLieu)
@@ -202,7 +202,7 @@
                                     displayLaw = "BHXH";
                                 }
                                 <li class="nav-item dropdown">
-                                    <a class="nav-link dropdown-toggle" href="#" id="pagesDropdown" role="button" data-toggle="dropdown"><i class="fas fa-dollar-sign"></i> Lương</a>
+                                    <a class="nav-link" href="#" role="button" data-toggle="dropdown"><i class="fas fa-dollar-sign"></i> Lương</a>
                                     <div class="dropdown-menu" aria-labelledby="pagesDropdown">
                                         @{
                                             if (rightLuongVanPhong)
@@ -252,13 +252,12 @@
                                     </div>
                                 </li>
                             }
-                            <li class="nav-item dropdown d-none">
-                                <a class="nav-link dropdown-toggle" href="#" id="componentsDropdown" role="button" data-toggle="dropdown">Hướng dẫn</a>
-                                <div class="dropdown-menu" aria-labelledby="componentsDropdown">
-                                    <a class="dropdown-item" href="/tai-lieu/nhan-su">Nhân sự</a>
-                                    <a class="dropdown-item" href="/tai-lieu/hanh-chinh">Hành chính</a>
-                                </div>
-                            </li>
+                            @if (rightHr)
+                            {
+                                <li class="nav-item">
+                                    <a href="/@Constants.LinkHr.Main/@Constants.LinkHr.Human" class="nav-link" data-toggle="tooltip" title="Bấm vô để xem hồ sơ nhân sự."><i class="fas fa-users"></i> Hồ sơ nhân sự</a>
+                                </li>
+                            }
                             <li class="nav-item">
                                 <a href="/@Constants.LinkHr.Main/@Constants.LinkHr.Human/@Constants.LinkHr.Information/@login" class="nav-link" data-toggle="tooltip" title="Bấm vô để xem thông tin tài khoản."><i class="fas fa-user-shield"></i> Thông tin</a>
                             </li>
@@ -298,7 +297,7 @@
                         <ul class="navbar-nav d-none" id="ownerInfo">
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle dropdown-toggle-no-arrow p-lg-0" href="/" id="dropdown01" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    <img alt="Thông tin nhân viên" src="http://via.placeholder.com/36x36" class="avatar avatar-xs" />
+                                    <img alt="Thông tin nhân viên" src="~/images/placeholder/36x36.png" class="avatar avatar-xs" />
                                     <span class="badge badge-danger">8</span>
                                 </a>
                                 <div class="dropdown-menu dropdown-menu-sm" aria-labelledby="dropdown01">
@@ -349,11 +348,11 @@
                     <div class="col-12 col-md-4 mb-4 mb-md-0 d-none">
                         <div class="card card-profile-large text-center card-info">
                             <div class="card-header">
-                                <img alt="Đang cập nhật" src="http://via.placeholder.com/354x167" class="bg-image" />
+                                <img alt="Đang cập nhật" src="~/images/placeholder/354x167.png" class="bg-image" />
                             </div>
                             <div class="card-body">
                                 <a href="/@Constants.LinkHr.Main/@Constants.LinkHr.Human/@Constants.LinkHr.Information">
-                                    <img alt="Đang cập nhật" src="http://via.placeholder.com/120x120" class="avatar avatar-lg" />
+                                    <img alt="Đang cập nhật" src="~/images/placeholder/120x120.png" class="avatar avatar-lg" />
                                 </a>
                                 <div class="my-3">
                                     <div class="mb-2">

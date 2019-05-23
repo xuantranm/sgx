@@ -61,7 +61,7 @@ namespace xleave
             foreach (var employee in employees)
             {
                 // default, normal employee
-                decimal numLeave = 1;
+                double numLeave = 1;
                 var description = "Cộng từng tháng: " + numLeave + " ngày;";
                 var employeeId = employee.Id;
                 var thamnienlamviec = employee.Joinday; // Included probation
@@ -117,35 +117,69 @@ namespace xleave
                 {
                     useFlag = false;
                 }
-                // No update if updated
-                var checkUpdated = dbContext.LeaveEmployeeHistories.CountDocuments(m => m.EmployeeId.Equals(employeeId) && m.Month.Equals(month) && m.Year.Equals(year)) == 0 ? true : false;
-                if (checkUpdated)
+                // Check exist leaveEmployee
+                var leaveE = dbContext.LeaveEmployees.Find(m => m.EmployeeId.Equals(employeeId)).FirstOrDefault();
+                if (leaveE == null)
                 {
-                    decimal currentLeaveNum = 0;
-                    var currentLeave = dbContext.LeaveEmployees.Find(m => m.EmployeeId.Equals(employeeId) && m.LeaveTypeId.Equals(leaveTypeId)).FirstOrDefault();
-                    if (currentLeave != null)
-                    {
-                        currentLeaveNum = currentLeave.Number;
-                    }
-
-                    // Update LeaveEmployees
-                    var filterLeaveEmployee = Builders<LeaveEmployee>.Filter.Eq(m => m.EmployeeId, employeeId);
-                    var updateLeaveEmployee = Builders<LeaveEmployee>.Update
-                        .Set(m => m.UseFlag, useFlag)
-                        .Inc(m => m.Number, numLeave)
-                        .Set(m => m.UpdatedOn, now);
-                    dbContext.LeaveEmployees.UpdateOne(filterLeaveEmployee, updateLeaveEmployee);
-                    //Add LeaveEmployeeHistories
+                    var leaveEmployeeNew = new LeaveEmployee() {
+                        LeaveTypeId = leaveTypeId,
+                        EmployeeId = employeeId,
+                        LeaveTypeName = leaveType.Name,
+                        EmployeeName = employee.FullName,
+                        Number = numLeave,
+                        Department = employee.PhongBanName,
+                        Part = employee.BoPhanName,
+                        Title = employee.ChucVuName,
+                        LeaveLevel = employee.LeaveLevelYear,
+                        NumberUsed = 0,
+                        UseFlag = useFlag,
+                        Year = DateTime.Now.Year
+                    };
+                    dbContext.LeaveEmployees.InsertOne(leaveEmployeeNew);
                     dbContext.LeaveEmployeeHistories.InsertOne(new LeaveEmployeeHistory
                     {
                         EmployeeId = employeeId,
                         LeaveTypeId = leaveTypeId,
-                        Current = currentLeaveNum,
+                        Current = 0,
                         Change = numLeave,
                         Month = month,
                         Year = year,
                         Description = description
                     });
+                }
+                else
+                {
+                    // No update if updated
+                    var checkUpdated = dbContext.LeaveEmployeeHistories.CountDocuments(m => m.EmployeeId.Equals(employeeId) && m.Month.Equals(month) && m.Year.Equals(year)) == 0 ? true : false;
+                    if (checkUpdated)
+                    {
+                        double currentLeaveNum = 0;
+                        var currentLeave = dbContext.LeaveEmployees.Find(m => m.EmployeeId.Equals(employeeId) && m.LeaveTypeId.Equals(leaveTypeId)).FirstOrDefault();
+                        if (currentLeave != null)
+                        {
+                            currentLeaveNum = currentLeave.Number;
+                        }
+
+                        // Missing here, if no LeaveEmployee ??
+                        // Update LeaveEmployees
+                        var filterLeaveEmployee = Builders<LeaveEmployee>.Filter.Eq(m => m.EmployeeId, employeeId);
+                        var updateLeaveEmployee = Builders<LeaveEmployee>.Update
+                            .Set(m => m.UseFlag, useFlag)
+                            .Inc(m => m.Number, numLeave)
+                            .Set(m => m.UpdatedOn, now);
+                        dbContext.LeaveEmployees.UpdateOne(filterLeaveEmployee, updateLeaveEmployee);
+                        //Add LeaveEmployeeHistories
+                        dbContext.LeaveEmployeeHistories.InsertOne(new LeaveEmployeeHistory
+                        {
+                            EmployeeId = employeeId,
+                            LeaveTypeId = leaveTypeId,
+                            Current = currentLeaveNum,
+                            Change = numLeave,
+                            Month = month,
+                            Year = year,
+                            Description = description
+                        });
+                    }
                 }
             }
         }
