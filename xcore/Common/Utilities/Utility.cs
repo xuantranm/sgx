@@ -96,7 +96,11 @@ namespace Common.Utilities
                     }
                     else if (salaryType == (int)ESalaryType.VP)
                     {
-                        luongcanban = GetLuongCanBanVP(employee.ChucVu, employee.NgachLuongLevel);
+                        luongcanban = GetLuongCanBanVP(employee.ChucVu, string.Empty, employee.NgachLuongLevel);
+                        if (!string.IsNullOrEmpty(employee.SaleChucVu))
+                        {
+                            luongcanban = GetLuongCanBanVP(string.Empty, employee.SaleChucVu, employee.NgachLuongLevel);
+                        }
                     }
                     // Get direct to employees
                     decimal luongThamGiaBHXH = employee.LuongBHXH;
@@ -293,8 +297,8 @@ namespace Common.Utilities
                 double tongbunboc = 0;
                 decimal thanhtienbunboc = 0;
                 
-                var logisticData = dbContext.LogisticEmployeeCongs.Find(m => m.EmployeeId.Equals(employeeId) & m.Year.Equals(salary.YearLogistic) & m.Month.Equals(salary.MonthLogistic)).FirstOrDefault();
-                var saleData = dbContext.SaleKPIEmployees.Find(m => m.EmployeeId.Equals(employeeId) & m.Year.Equals(salary.YearSale) & m.Month.Equals(salary.MonthSale)).FirstOrDefault();
+                var logisticData = dbContext.LogisticEmployeeCongs.Find(m => m.EmployeeId.Equals(employeeId) && m.Year.Equals(salary.YearLogistic) && m.Month.Equals(salary.MonthLogistic)).FirstOrDefault();
+                var saleData = dbContext.SaleKPIEmployees.Find(m => m.EmployeeId.Equals(employeeId) && m.Year.Equals(salary.YearSale) && m.Month.Equals(salary.MonthSale)).FirstOrDefault();
                 if (logisticData != null)
                 {
                     congtacxa = logisticData.CongTacXa;
@@ -314,6 +318,10 @@ namespace Common.Utilities
                 if (saleData != null)
                 {
                     luongtheodoanhthudoanhso += saleData.TongThuong;
+                    if (saleData.ThuViec > 0)
+                    {
+                        luongtheodoanhthudoanhso = saleData.ThuViec;
+                    }
                 }
                 
                 salary.CongTacXa = congtacxa;
@@ -476,7 +484,7 @@ namespace Common.Utilities
             return result;
         }
 
-        public static decimal GetLuongCanBanVP(string chucvuId, int level)
+        public static decimal GetLuongCanBanVP(string chucvuId, string chucvudepartment, int level)
         {
             decimal mucluong = 4013;
             double tile = 1;

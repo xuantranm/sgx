@@ -40,7 +40,7 @@ namespace Models
         [BsonRepresentation(BsonType.Decimal128)]
         public decimal ChiTieuMoMoi { get; set; } = 0;
 
-        public int ChiTieuNganhHang { get; set; } = 0;
+        public decimal ChiTieuNganhHang { get; set; } = 0;
 
         [BsonRepresentation(BsonType.Decimal128)]
         public decimal ThucHienDoanhSo { get; set; } = 0;
@@ -54,7 +54,7 @@ namespace Models
         [BsonRepresentation(BsonType.Decimal128)]
         public decimal ThucHienMoMoi { get; set; } = 0;
 
-        public int ThucHienNganhHang { get; set; } = 0;
+        public decimal ThucHienNganhHang { get; set; } = 0;
 
         [BsonRepresentation(BsonType.Decimal128)]
         public decimal ChiTieuThucHienDoanhSo { get; set; } = 0;
@@ -68,7 +68,7 @@ namespace Models
         [BsonRepresentation(BsonType.Decimal128)]
         public decimal ChiTieuThucHienMoMoi { get; set; } = 0;
 
-        public int ChiTieuThucHienNganhHang { get; set; } = 0;
+        public decimal ChiTieuThucHienNganhHang { get; set; } = 0;
 
         [BsonRepresentation(BsonType.Decimal128)]
         public decimal ThuongChiTieuThucHienDoanhSo { get; set; } = 0;

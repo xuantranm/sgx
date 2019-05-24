@@ -1,0 +1,248 @@
+﻿@using System.Globalization;
+@using Common.Utilities;
+@using Common.Enums;
+@using ViewModels
+@model BangLuongViewModel
+
+@{
+    Layout = "~/Views/Shared/_LayoutSocialFbFS.cshtml";
+}
+
+@Html.ValidationSummary()
+
+<div class="main-container">
+    <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="/">Trang chủ</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.BangLuong">Bảng lương</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">Thời gian Logistics, Kinh doanh</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="flush-with-above space-0">
+        <div class="bg-white">
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <ul class="nav nav-tabs" id="myTab" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.VanPhong/@Constants.LinkSalary.ThangLuong">THANG LƯƠNG</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link active" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.VanPhong/@Constants.LinkSalary.BangLuong">BẢNG LƯƠNG</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" target="_blank" href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Timer?khoi=@EKhoiLamViec.VP">CHẤM CÔNG</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.LogisticCong">LOGISTICS</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.SaleKPIEmployee">SALES</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@Constants.LinkCredit.Main/@Constants.LinkCredit.Credits?thang=@Model.Thang&khoi=@EKhoiLamViec.VP">VAY & TẠM ỨNG</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="flush-with-above height-80 d-block">
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="sale" role="tabpanel" aria-labelledby="sale-tab">
+                <div class="container">
+                    <div class="card">
+                        <div class="card-header">
+                            <a data-target="#update-duration" data-toggle="collapse" aria-expanded="false" aria-controls="update-duration" style="cursor:pointer">
+                                <i class="icon-add-to-list mr-1"></i> Cập nhật thời gian tính Logistics, Kinh doanh
+                            </a>
+                        </div>
+                        @{
+                            var showUpdateForm = string.Empty;
+                            if (Model.SalaryDuration != null && !string.IsNullOrEmpty(Model.SalaryDuration.Id))
+                            {
+                                showUpdateForm = "show";
+
+                            }
+                         }
+                        <div class="collapse @showUpdateForm" id="update-duration">
+                            <div class="card-body">
+                                <form method="post" action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Duration/@Constants.ActionLink.Update" class="data-form" enctype="multipart/form-data">
+                                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                                    <input type="hidden" asp-for="SalaryDuration.Id" />
+                                    <input type="hidden" asp-for="SalaryDuration.SalaryMonth" class="salary-month" />
+                                    <input type="hidden" asp-for="SalaryDuration.SalaryYear" class="salary-year" />
+                                    <input type="hidden" asp-for="SalaryDuration.SaleMonth" class="sale-month" />
+                                    <input type="hidden" asp-for="SalaryDuration.SaleYear" class="sale-year" />
+                                    <input type="hidden" asp-for="SalaryDuration.LogisticMonth" class="logistics-month" />
+                                    <input type="hidden" asp-for="SalaryDuration.LogisticYear" class="logistics-year" />
+                                    <div class="form-group">
+                                        <label class="control-label">Lương</label>
+                                        <select class="form-control ddl-salary">
+                                            <option value="">Chọn</option>
+                                            @foreach (var item in Model.MonthYears)
+                                            {
+                                                if (!string.IsNullOrEmpty(showUpdateForm))
+                                                {
+                                                    if (Model.SalaryDuration.SalaryMonth == item.Month && Model.SalaryDuration.SalaryYear == item.Year)
+                                                    {
+                                                        <option value="@item.Month-@item.Year" data-month="@item.Month" data-year="@item.Year" selected>@item.Month/@item.Year</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="@item.Month-@item.Year" data-month="@item.Month" data-year="@item.Year">@item.Month/@item.Year</option>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <option value="@item.Month-@item.Year" data-month="@item.Month" data-year="@item.Year">@item.Month/@item.Year</option>
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label">Logistics</label>
+                                        <select class="form-control ddl-logistics">
+                                            <option value="">Chọn</option>
+                                            @foreach (var item in Model.MonthYears)
+                                            {
+                                                if (!string.IsNullOrEmpty(showUpdateForm))
+                                                {
+                                                    if (Model.SalaryDuration.LogisticMonth == item.Month && Model.SalaryDuration.LogisticYear == item.Year)
+                                                    {
+                                                        <option value="@item.Month-@item.Year" data-month="@item.Month" data-year="@item.Year" selected>@item.Month/@item.Year</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="@item.Month-@item.Year" data-month="@item.Month" data-year="@item.Year">@item.Month/@item.Year</option>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <option value="@item.Month-@item.Year" data-month="@item.Month" data-year="@item.Year">@item.Month/@item.Year</option>
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label">Kinh doanh</label>
+                                        <select class="form-control ddl-sale">
+                                            <option value="">Chọn</option>
+                                            @foreach (var item in Model.MonthYears)
+                                            {
+                                                if (!string.IsNullOrEmpty(showUpdateForm))
+                                                {
+                                                    if (Model.SalaryDuration.SaleMonth == item.Month && Model.SalaryDuration.SaleYear == item.Year)
+                                                    {
+                                                        <option value="@item.Month-@item.Year" data-month="@item.Month" data-year="@item.Year" selected>@item.Month/@item.Year</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="@item.Month-@item.Year" data-month="@item.Month" data-year="@item.Year">@item.Month/@item.Year</option>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <option value="@item.Month-@item.Year" data-month="@item.Month" data-year="@item.Year">@item.Month/@item.Year</option>
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <div class="mr-2">
+                                            <a href="#update-duration" class="btn btn-outline-primaryd" data-toggle="collapse" aria-expanded="true" aria-controls="new-setting">Hủy</a>
+                                            <button type="submit" class="btn btn-outline-primary"><i class="icon-save"></i>&nbsp;Lưu</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card card-sm">
+                        <div class="card-header bg-secondary d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6>MỐC THỜI GIAN LOGISTICS, KINH DOANH</h6>
+                            </div>
+                            <form class="d-flex align-items-center" method="get" action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Duration" id="form-main">
+                                <span class="mr-2 text-muted text-small text-nowrap">Tháng:</span>
+                                <select asp-for="Thang" class="custom-select ddl-times">
+                                    <option value="">Chọn</option>
+                                    @foreach (var item in Model.MonthYears)
+                                    {
+                                        <option value="@item.Month-@item.Year">@item.Month/@item.Year</option>
+                                    }
+                                </select>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12">Tìm thấy <span class="badge badge-info">@Model.Records</span> kết quả.</div>
+                        <div class="col-12 table-responsive mb-1">
+                            <table class="table table-sm table-striped table-bordered table-hover">
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th>#</th>
+                                        <th>Lương tháng</th>
+                                        <th>Logistics tháng</th>
+                                        <th>Kinh doanh tháng</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        int i = 1;
+                                        foreach (var item in Model.SalaryDurations)
+                                        {
+                                            var salaryDuration = item.SalaryMonth + "/" + item.SalaryYear;
+                                            var logisticDuration = item.LogisticMonth + "/" + item.LogisticYear;
+                                            var saleDuration = item.SaleMonth + "/" + item.SaleYear;
+                                            <tr class="tr-@item.Id" data-id="@item.Id">
+                                                <td>
+                                                    <a href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Duration?Id=@item.Id" class="btn btn-sm btn-warning btn-edit">
+                                                        <i class="fas fa-edit"></i> Sửa
+                                                    </a>
+                                                </td>
+                                                <td>
+                                                    @i
+                                                </td>
+                                                <td class="salary-item">
+                                                    @salaryDuration
+                                                </td>
+                                                <td class="logistic-item">
+                                                    @logisticDuration
+                                                </td>
+                                                <td class="sale-item">
+                                                    @saleDuration
+                                                </td>
+                                            </tr>
+                                            i++;
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+@section scripts {
+    <script type="text/javascript" src="~/js/salaries/duration.js?@Constants.VersionJs"></script>
+}
+

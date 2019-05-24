@@ -274,6 +274,14 @@ namespace Data
             }
         }
 
+        public IMongoCollection<SalaryDuration> SalaryDurations
+        {
+            get
+            {
+                return _database.GetCollection<SalaryDuration>("SalaryDurations");
+            }
+        }
+
         // Danh sách phụ cấp - phúc lợi
         public IMongoCollection<SalaryPhuCapPhucLoi> SalaryPhuCapPhucLois
         {

@@ -83,7 +83,7 @@
                                                     <div>
                                                         <h6 class="title-decorative mb-2">Bước 1.</h6>
                                                         <h4 class="mb-2">Chọn tháng tính lương của Logistics, Sales.</h4>
-                                                        <p>Đường dẫn: <a href="/">Mốc thời gian Logistics/ Sales</a></p>
+                                                        <p>Đường dẫn: <a href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Duration">Mốc thời gian Logistics/ Sales</a></p>
                                                     </div>
                                                     <button class="btn btn-success sw-btn-next" type="button">Bước tiếp theo</button>
                                                 </div>
@@ -139,7 +139,15 @@
 
                     <div>
                         <h6>BẢNG LƯƠNG</h6>(đvt: 1,000vnđ)
-                        <small>Tham số tính lương <span class="badge badge-info">@Model.ThamSoTinhLuong</span></small>
+                        <br />
+                        <small>THAM SỐ <span class="badge badge-info">@Model.ThamSoTinhLuong</span></small>
+                        @{
+                            var logisticDuration = Model.SalaryDuration.LogisticMonth + "/" + Model.SalaryDuration.LogisticYear;
+                            var saleDuration = Model.SalaryDuration.SalaryMonth + "/" + Model.SalaryDuration.SalaryYear;
+                        }
+                        <small>LOGISTICS <span class="badge badge-info"> @logisticDuration</span></small>
+                        <small>KINH DOANH <span class="badge badge-info"> @logisticDuration</span></small>
+                        <small><a href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Duration"><i class="fas fa-edit"></i> Sửa</a></small>
                     </div>
                     <!-- FILTER  & SORTER -->
                     <form method="get" action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.VanPhong/@Constants.LinkSalary.BangLuong" id="form-main">
@@ -494,7 +502,7 @@
                                                             @String.Format("{0:#,###,###}", item.CongLeTet)
                                                         </td>
                                                         <td>
-                                                            @String.Format("{0:#,###,###}", Math.Round((double)item.CongTacXa, 0))
+                                                            @String.Format("{0:#,###,###}", Math.Round((double)item.CongTacXa/1000, 0))
                                                         </td>
                                                         <td>
                                                             @String.Format("{0:#,###,###}", Math.Round((double)item.MucDatTrongThang, 0))

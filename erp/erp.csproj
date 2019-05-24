@@ -862,6 +862,9 @@
     <Content Update="Views\SalaryLaw\ThangLuong.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
+    <Content Update="Views\Salary\Duration.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
     <Content Update="Views\Salary\LogisticPrice.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>

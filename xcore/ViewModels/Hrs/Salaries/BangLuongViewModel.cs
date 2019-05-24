@@ -32,6 +32,10 @@ namespace ViewModels
 
         public IList<MonthYear> MonthYears { get; set; }
 
+        public IList<SalaryDuration> SalaryDurations { get; set; }
+
+        public SalaryDuration SalaryDuration { get; set; }
+
         public IList<SaleKPI> SaleKPIs { get; set; }
 
         public IList<SaleKPIEmployee> SaleKPIEmployees { get; set; }

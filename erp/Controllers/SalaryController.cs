@@ -166,9 +166,12 @@ namespace erp.Controllers
             }
             #endregion
 
+            SalaryDuration salaryDuration = GetSalaryDuration(year, month);
+
             var viewModel = new BangLuongViewModel
             {
                 SalaryEmployeeMonths = results,
+                SalaryDuration = salaryDuration,
                 Employees = employees,
                 PhongBans = phongbans,
                 MonthYears = sortTimes,
@@ -185,8 +188,28 @@ namespace erp.Controllers
             return View(viewModel);
         }
 
+        private SalaryDuration GetSalaryDuration(int year, int month)
+        {
+            var salaryDuration = dbContext.SalaryDurations.Find(m => m.Enable.Equals(true) && m.SalaryYear.Equals(year) && m.SalaryMonth.Equals(month)).FirstOrDefault();
+            if (salaryDuration == null)
+            {
+                salaryDuration = new SalaryDuration()
+                {
+                    SalaryMonth = month,
+                    SalaryYear = year,
+                    SaleMonth = month,
+                    SaleYear = year,
+                    LogisticMonth = month,
+                    LogisticYear = year
+                };
+                dbContext.SalaryDurations.InsertOne(salaryDuration);
+            }
+
+            return salaryDuration;
+        }
+
         [HttpPost]
-        [Route(Constants.LinkSalary.VanPhong + "/" + Constants.LinkSalary.BangLuong + "/" + Constants.LinkSalary.Update)]
+        [Route(Constants.LinkSalary.VanPhong + "/" + Constants.LinkSalary.BangLuong + "/" + Constants.ActionLink.Update)]
         public async Task<IActionResult> BangLuongUpdate(BangLuongViewModel viewModel)
         {
             #region Authorization
@@ -656,6 +679,142 @@ namespace erp.Controllers
         //}
         #endregion
 
+        #region DURATION: SALE, LOGISTICS
+        [Route(Constants.LinkSalary.Duration)]
+        public async Task<IActionResult> Duration(string Thang, string Id, string SapXep, string ThuTu)
+        {
+            #region Authorization
+            var login = User.Identity.Name;
+            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+            ViewData["LoginUserName"] = loginUserName;
+
+            var loginInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
+            if (loginInformation == null)
+            {
+                #region snippet1
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                #endregion
+                return RedirectToAction("login", "account");
+            }
+
+            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, "nhan-su", (int)ERights.View)))
+            {
+                return RedirectToAction("AccessDenied", "Account");
+            }
+
+            #endregion
+
+            var linkCurrent = string.Empty;
+
+            #region DDL
+            var sortTimes = Utility.DllMonths();
+            #endregion
+
+            #region Filter
+            var builder = Builders<SalaryDuration>.Filter;
+            var filter = builder.Eq(m => m.Enable, true);
+            if (!string.IsNullOrEmpty(Thang))
+            {
+                int month = Convert.ToInt32(Thang.Split('-')[0]);
+                int year = Convert.ToInt32(Thang.Split('-')[1]);
+                filter = filter & builder.Eq(m => m.SalaryYear, year) & builder.Eq(m => m.SalaryMonth, month);
+            }
+            #endregion
+
+            #region Sort
+            var sortBuilder = Builders<SalaryDuration>.Sort.Descending(m => m.SalaryYear).Descending(m => m.SalaryMonth);
+            SapXep = string.IsNullOrEmpty(SapXep) ? "code" : SapXep;
+            ThuTu = string.IsNullOrEmpty(ThuTu) ? "asc" : ThuTu;
+            switch (SapXep)
+            {
+                default:
+                    sortBuilder = ThuTu == "asc" ? Builders<SalaryDuration>.Sort.Descending(m => m.SalaryYear).Descending(m => m.SalaryMonth) : Builders<SalaryDuration>.Sort.Ascending(m => m.SalaryYear).Ascending(m => m.SalaryMonth);
+                    break;
+            }
+            #endregion
+
+            var records = dbContext.SalaryDurations.CountDocuments(filter);
+            var list = new List<SalaryDuration>();
+            list = dbContext.SalaryDurations.Find(filter).Sort(sortBuilder).ToList();
+
+            // Id use update
+            var entity = new SalaryDuration();
+            if (!string.IsNullOrEmpty(Id))
+            {
+                entity = dbContext.SalaryDurations.Find(m => m.Id.Equals(Id)).FirstOrDefault();
+            }
+            var viewModel = new BangLuongViewModel
+            {
+                SalaryDurations = list,
+                SalaryDuration = entity,
+                MonthYears = sortTimes,
+                Thang = Thang,
+                LinkCurrent = linkCurrent,
+                ThuTu = ThuTu,
+                SapXep = SapXep,
+                Records = (int)records
+            };
+
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        [Route(Constants.LinkSalary.Duration + "/" + Constants.ActionLink.Update)]
+        public async Task<IActionResult> DurationUpdate(BangLuongViewModel viewModel)
+        {
+            #region Authorization
+            var login = User.Identity.Name;
+            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+            ViewData["LoginUserName"] = loginUserName;
+
+            var loginInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
+            if (loginInformation == null)
+            {
+                #region snippet1
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                #endregion
+                return RedirectToAction("login", "account");
+            }
+
+            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, "nhan-su", (int)ERights.View)))
+            {
+                return RedirectToAction("AccessDenied", "Account");
+            }
+
+            #endregion
+            var durationE = viewModel.SalaryDuration;
+            if (durationE != null && !string.IsNullOrEmpty(durationE.Id))
+            {
+                var builder = Builders<SalaryDuration>.Filter;
+                var filter = builder.Eq(m => m.Id, durationE.Id);
+                var update = Builders<SalaryDuration>.Update
+                    .Set(m => m.SalaryMonth, durationE.SalaryMonth)
+                    .Set(m => m.SalaryYear, durationE.SalaryYear)
+                    .Set(m => m.SaleMonth, durationE.SaleMonth)
+                    .Set(m => m.SaleYear, durationE.SaleYear)
+                    .Set(m => m.LogisticMonth, durationE.LogisticMonth)
+                    .Set(m => m.LogisticYear, durationE.LogisticYear);
+                dbContext.SalaryDurations.UpdateOne(filter, update);
+            }
+            else
+            {
+                dbContext.SalaryDurations.InsertOne(durationE);
+            }
+
+            // Update SalaryEmployeeMonth
+            var builderS = Builders<SalaryEmployeeMonth>.Filter;
+            var filterS = builderS.Eq(m => m.Month, durationE.SalaryMonth) & builderS.Eq(m => m.Year, durationE.SalaryYear);
+            var updateS = Builders<SalaryEmployeeMonth>.Update
+                .Set(m => m.MonthSale, durationE.SaleMonth)
+                .Set(m => m.YearSale, durationE.SaleYear)
+                .Set(m => m.MonthLogistic, durationE.LogisticMonth)
+                .Set(m => m.YearLogistic, durationE.LogisticYear);
+            dbContext.SalaryEmployeeMonths.UpdateMany(filterS, updateS);
+
+            return Json(new { result = true, source = "data", message = "Thành công" });
+        }
+        #endregion
+
         #region SALES
         [Route(Constants.LinkSalary.SaleKPIEmployee)]
         public async Task<IActionResult> SaleKPIEmployee(string Thang, string Id, string SapXep, string ThuTu)
@@ -1102,7 +1261,7 @@ namespace erp.Controllers
             decimal ChiTieuThucHienDoanhThu = 0;
             decimal ChiTieuThucHienDoPhu = 0;
             decimal ChiTieuThucHienMoMoi = 0;
-            int ChiTieuThucHienNganhHang = 0;
+            decimal ChiTieuThucHienNganhHang = 0;
 
             if (newData.ChiTieuDoanhSo > 0)
             {
@@ -1122,7 +1281,7 @@ namespace erp.Controllers
             }
             if (newData.ChiTieuNganhHang > 0)
             {
-                ChiTieuThucHienNganhHang = (newData.ThucHienNganhHang / newData.ChiTieuNganhHang) * 100;
+                ChiTieuThucHienNganhHang = Math.Ceiling(newData.ThucHienNganhHang / newData.ChiTieuNganhHang * 100);
             }
 
             decimal ThuongChiTieuThucHienDoanhSo = 0;
@@ -1357,6 +1516,7 @@ namespace erp.Controllers
                         var thuchiendophu = Utility.GetNumbericCellValue(row.GetCell(11));
                         var thuchienmomoi = Utility.GetNumbericCellValue(row.GetCell(12));
                         var thuchiennganhhang = Convert.ToInt32(Utility.GetNumbericCellValue(row.GetCell(13)) * 100);
+                        var thuviec = Utility.GetNumbericCellValue(row.GetCell(14));
                         var employee = new Employee();
                         if (!string.IsNullOrEmpty(alias))
                         {
@@ -1411,6 +1571,17 @@ namespace erp.Controllers
                             hisEntity.EmployeeId = newUserId;
                             dbContext.EmployeeHistories.InsertOne(hisEntity);
                         }
+                        else
+                        {
+                            if (!string.IsNullOrEmpty(title))
+                            {
+                                var builderE = Builders<Employee>.Filter;
+                                var filterE = builderE.Eq(m => m.Id, employee.Id);
+                                var updateE = Builders<Employee>.Update
+                                    .Set(m => m.SaleChucVu, title);
+                                dbContext.Employees.UpdateOne(filterE, updateE);
+                            }
+                        }
 
                         // check exist to update
                         var existEntity = dbContext.SaleKPIEmployees.Find(m => m.Enable.Equals(true) && m.EmployeeId.Equals(employee.Id) && m.Month.Equals(month) && m.Year.Equals(year)).FirstOrDefault();
@@ -1434,7 +1605,8 @@ namespace erp.Controllers
                                 ThucHienDoanhThu = (decimal)thuchiendoanhthu,
                                 ThucHienDoPhu = (decimal)thuchiendophu,
                                 ThucHienMoMoi = (decimal)thuchienmomoi,
-                                ThucHienNganhHang = thuchiennganhhang
+                                ThucHienNganhHang = thuchiennganhhang,
+                                ThuViec = (decimal)thuviec
                             };
                             var itemFull = GetSaleKPIEmployee(salekpiemployee, month + "-" + year);
                             var builder = Builders<SaleKPIEmployee>.Filter;
@@ -1484,7 +1656,8 @@ namespace erp.Controllers
                                 ThucHienDoanhThu = (decimal)thuchiendoanhthu,
                                 ThucHienDoPhu = (decimal)thuchiendophu,
                                 ThucHienMoMoi = (decimal)thuchienmomoi,
-                                ThucHienNganhHang = thuchiennganhhang
+                                ThucHienNganhHang = thuchiennganhhang,
+                                ThuViec = (decimal)thuviec
                             };
                             var fullEntity = GetSaleKPIEmployee(salekpiemployee, month + "-" + year);
                             dbContext.SaleKPIEmployees.InsertOne(fullEntity);

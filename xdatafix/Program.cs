@@ -27,8 +27,10 @@ namespace xdatafix
             var database = "tribat";
             #endregion
 
+            FixTimeKeeper(connection, database);
+
             //UpdateEMailError(connection, database);
-            UpdateThangLuongVP(connection, database);
+            //UpdateThangLuongVP(connection, database);
             //UpdateLevelVP(connection, database);
 
             //UpdateLeaveDay2NM(connection, database);
@@ -83,6 +85,34 @@ namespace xdatafix
         }
 
         #region ERP
+        static void FixTimeKeeper(string connection, string database)
+        {
+            #region Connection, Setting & Filter
+            MongoDBContext.ConnectionString = connection;
+            MongoDBContext.DatabaseName = database;
+            MongoDBContext.IsSSL = true;
+            MongoDBContext dbContext = new MongoDBContext();
+            #endregion
+
+            var timeerror = new DateTime(2019, 5, 24).AddHours(7);
+            var enderror = timeerror.AddHours(3);
+            var builder = Builders<AttLog>.Filter;
+            var filter = builder.Gte(m => m.Date, timeerror)
+                        & builder.Lte(m => m.Date, enderror);
+            var times = dbContext.X928CNMAttLogs.Find(filter).ToList();
+
+            foreach(var item in times)
+            {
+                var newTime = item;
+                newTime.Id = null;
+                newTime.Date = item.Date.AddHours(-1);
+                dbContext.X928CNMAttLogs.InsertOne(newTime);
+            }
+            //var builder = Builders<ScheduleEmail>.Filter;
+            //var filter = builder.Eq(m => m.Error, "Sai định dạng mail");
+            //dbContext.ScheduleEmails.DeleteMany(filter);
+        }
+
         static void UpdateEMailError(string connection, string database)
         {
             #region Connection, Setting & Filter

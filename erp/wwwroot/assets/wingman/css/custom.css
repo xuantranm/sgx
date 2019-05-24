@@ -242,3 +242,6 @@ img {
 .select2-container {
     z-index: 98 !important;
 }
+tr.active td {
+    background-color:darkcyan;
+}

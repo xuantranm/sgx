@@ -260,6 +260,8 @@ namespace Common.Utilities
             public const string BangLuong = "bang-luong";
             public const string TheLuong = "the-luong";
 
+            public const string Duration = "moc-thoi-gian";
+
             public const string SaleKPI = "kinh-doanh-kpi-thang";
             public const string SaleKPICalculator = "tinh-toan-kinh-doanh-kpi-thang";
             public const string SaleKPIImport = "kinh-doanh-kpi-thang-import";
