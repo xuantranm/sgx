@@ -1,6 +1,6 @@
 ﻿@using Common.Utilities;
 @using ViewModels;
-@model ThangBangLuongViewModel
+@model BangLuongViewModel
 @{
     Layout = "~/Views/Shared/_LayoutSocialFbFS.cshtml";
     var login = User.Identity.Name;
@@ -39,9 +39,6 @@
                                 <a class="nav-link" href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Timer">CHẤM CÔNG</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Setting">THAM SỐ</a>
-                            </li>
-                            <li class="nav-item">
                                 <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.SaleKPIEmployee/@Constants.LinkSalary.Update">KINH DOANH</a>
                             </li>
                             <li class="nav-item">
@@ -67,72 +64,99 @@
                             <div>
                                 <h6>HỆ THỐNG THANG LƯƠNG</h6>(ĐVT: 1,000 đồng)
                             </div>
-                            <form class="d-flex align-items-center" method="get" action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.VanPhong/@Constants.LinkSalary.ThangLuong/@Constants.LinkSalary.Update" id="form-main">
-                                <span class="mr-2 text-muted text-small text-nowrap">Tháng:</span>
-                                <select asp-for="Thang" class="custom-select ddl-times">
-                                    @{
-                                        foreach (var item in Model.MonthYears)
-                                        {
-                                            <option value="@item.Month-@item.Year">@item.Month/@item.Year</option>
-                                        }
-                                    }
-                                </select>
-                            </form>
                         </div>
                     </div>
 
-                    <form action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.VanPhong/@Constants.LinkSalary.ThangLuong/@Constants.LinkSalary.Update" method="post" class="data-form">
-                        <div class="d-flex align-items-center">
-                            <div class="mr-2">
-                                <a href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.VanPhong/@Constants.LinkSalary.ThangLuong" class="btn btn-info btn-back" data-toggle="tooltip" title="Bấm trở về thang bảng lương.">
-                                    <i class="icon icon-back"></i>Trở về
-                                </a>
-                                <button type="submit" class="btn btn-danger btn-submit" data-toggle="tooltip" title="Bấm cập nhật thang bảng lương."><i class="icon-save"></i>&nbsp;Cập nhật thang bảng lương</button>
-                            </div>
-                        </div>
-
-                        <input type="hidden" asp-for="Thang" value="@Model.Thang" />
-                        <input type="hidden" id="hidCalculatorThangBangLuongReal" value="/@Constants.LinkSalary.Main/@Constants.LinkSalary.VanPhong/@Constants.LinkSalary.ThangLuong/@Constants.LinkSalary.Calculator" />
-                        <div class="row mb-3">
-                            <div class="col-12">
-                                Mức lương tối thiểu mà doanh nghiệp đang áp dụng (đồng/tháng):
-                                <input class="form-control form-control-lg toithieuvungdoanhnghiepapdung" name="SalaryMucLuongVung.ToiThieuVungDoanhNghiepApDung" value="@(Math.Round((double)Model.SalaryMucLuongVung.ToiThieuVungDoanhNghiepApDung / 1000d, 0) )" />
-                                <input type="hidden" name="SalaryMucLuongVung.ToiThieuVungQuiDinh" value="@Model.SalaryMucLuongVung.ToiThieuVungQuiDinh" />
-                                <input type="hidden" name="SalaryMucLuongVung.Id" value="@Model.SalaryMucLuongVung.Id" />
-                            </div>
-                        </div>
+                    <form action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.VanPhong/@Constants.LinkSalary.ThangLuong/@Constants.ActionLink.Update" method="post" class="data-form">
+                        <input type="hidden" asp-for="ThangBangLuong.Id" />
+                        <input type="hidden" asp-for="ThangBangLuong.Month" />
+                        <input type="hidden" asp-for="ThangBangLuong.Year" />
                         <div class="row">
-                            @{
-                                var levelMaxReal = 10;
-                                var levelMaxEditReal = 10;
-                                <div class="col-12 table-responsive-sm">
-                                    <table class="table table-responsive-sm table-bordered table-striped table-hover floating-header">
-                                        <thead>
-                                            <tr style="background-color:yellow!important">
-                                                <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>#</th>
-                                                <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>VỊ TRÍ</th>
-                                                <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>HỆ SỐ</th>
-                                                <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>ĐIỂM THAM KHẢO</th>
-                                                <td colspan="@levelMaxEditReal" style="text-align:center;font-weight:bold">BẬC LƯƠNG</td>
-                                            </tr>
-                                            <tr style="background-color:yellow!important">
-                                                @for (var ilevel = 1; ilevel <= levelMaxEditReal; ilevel++)
-                                                {
-                                                    <td style="text-align:center; color:red">@ilevel</td>
-                                                }
-                                            </tr>
-                                        </thead>
-                                    </table>
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <label class="control-label">Vị trí thang lương (Chức vụ)</label>
+                                    <input asp-for="ThangBangLuong.ViTriName" class="form-control form-control-lg" autofocus />
                                 </div>
-                            }
+                            </div>
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <label class="control-label">Điểm tham khảo</label>
+                                    <input asp-for="ThangBangLuong.MucLuong" class="form-control form-control-lg muc-luong" />
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <label class="control-label">Hệ số</label>
+                                    <input asp-for="ThangBangLuong.TiLe" class="form-control form-control-lg he-so" />
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <label class="control-label">Thời điểm áp dụng</label>
+                                    <select class="custom-select form-control-lg">
+                                        <option value="">Chọn</option>
+                                        @foreach (var item in Model.MonthYears)
+                                        {
+                                            <option value="@item.Month-@item.Year">@item.Month/@item.Year</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <label class="control-label">Nơi làm việc</label>
+                                    <select asp-for="CongTyChiNhanh" class="form-control form-control-lg">
+                                        <option value="">Chọn</option>
+                                        @foreach (var item in Model.CongTyChiNhanhs)
+                                        {
+                                            <option value="@item.Id">@item.Name</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <label class="control-label">Khối chức năng</label>
+                                    <select asp-for="KhoiChucNang" class="form-control form-control-lg">
+                                        <option value="">Chọn</option>
+                                        @foreach (var item in Model.KhoiChucNangs)
+                                        {
+                                            <option value="@item.Id">@item.Name</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <label class="control-label">Phòng ban</label>
+                                    <select asp-for="PhongBan" class="form-control form-control-lg">
+                                        <option value="">Chọn</option>
+                                        @foreach (var item in Model.PhongBans)
+                                        {
+                                            <option value="@item.Id">@item.Name</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <label class="control-label">Phòng ban</label>
+                                    <select asp-for="BoPhan" class="form-control form-control-lg">
+                                        <option value="">Chọn</option>
+                                        @foreach (var item in Model.BoPhans)
+                                        {
+                                            <option value="@item.Id">@item.Name</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
                         </div>
-
                         <div class="d-flex align-items-center">
                             <div class="mr-2">
                                 <button class="btn btn-info btn-list d-none" data-toggle="tooltip" title="Bấm trở về thang bảng lương.">
                                     <i class="icon icon-back"></i>Trở về
                                 </button>
-                                <button type="submit" class="btn btn-danger btnSubmitThangBangLuongReal" data-toggle="tooltip" title="Bấm cập nhật thang bảng lương."><i class="icon-save"></i>&nbsp;Cập nhật thang bảng lương</button>
+                                <button type="submit" class="btn btn-danger btnSubmitThangBangLuongReal" data-toggle="tooltip" title="Bấm cập nhật thang lương."><i class="icon-save"></i>&nbsp;Cập nhật</button>
                             </div>
                         </div>
                     </form>
@@ -143,7 +167,7 @@
 </div>
 
 @section scripts {
-    <script type="text/javascript" src="~/js/thang-bang-luong-real-update.js?@Constants.VersionJs"></script>
+    <script type="text/javascript" src="~/js/salaries/thang-luong/data.js?@Constants.VersionJs"></script>
 }
 
 

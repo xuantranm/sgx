@@ -44,9 +44,9 @@ namespace Models
 
         public int Bac { get; set; }
 
-        public double TiLe { get; set; } = 0;
+        public double TiLe { get; set; } = 0; // dung VP
 
-        public double HeSo { get; set; }
+        public double HeSo { get; set; } // dung Ngach Luong
 
         [BsonRepresentation(BsonType.Decimal128)]
         public decimal MucLuong { get; set; } // ĐIỂM THAM KHẢO: Get tròn 1 số

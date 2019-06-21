@@ -19,6 +19,16 @@
 </div>
 
 <div class="row">
+    <div class="col-12">Nha May</div>
+    <div class="col-12">
+        @foreach (var employee in Model.NhaMays)
+        {
+            <span>@employee.Email</span><span>;</span>
+        }
+    </div>
+</div>
+
+<div class="row">
     <div class="col-12">PKD</div>
     <div class="col-12">
         @foreach (var employee in Model.KinhDoanhs)

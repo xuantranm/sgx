@@ -26,7 +26,7 @@ namespace Models
 
         public string FullName { get; set; }
 
-        public string ChucVu { get; set; }
+        public string ChucVu { get; set; } // base department. No relation Employee
 
         [BsonRepresentation(BsonType.Decimal128)]
         public decimal ChiTieuDoanhSo { get; set; } = 0;

@@ -1,7 +1,7 @@
 ﻿@using Common.Utilities;
 @using Common.Enums;
 @using ViewModels;
-@model ThangBangLuongViewModel
+@model BangLuongViewModel
 @{
     Layout = "~/Views/Shared/_LayoutSocialFbFS.cshtml";
     var login = User.Identity.Name;
@@ -46,7 +46,7 @@
                                 <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.LogisticCong">LOGISTICS</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkCredit.Main/@Constants.LinkCredit.Credits?thang=@Model.Thang&khoi=@EKhoiLamViec.VP">VAY & TẠM ỨNG</a>
+                                <a class="nav-link" href="/@Constants.LinkCredit.Main/@Constants.LinkCredit.Credits?Thang=@Model.Thang&khoi=@EKhoiLamViec.VP">VAY & TẠM ỨNG</a>
                             </li>
                         </ul>
                     </div>
@@ -68,77 +68,146 @@
                             Mức lương tối thiểu mà doanh nghiệp đang áp dụng: <b>@String.Format("{0:#,###,###}", Math.Round(Model.SalaryMucLuongVung.ToiThieuVungDoanhNghiepApDung))</b> đồng/tháng
                         </div>
                     </div>
-                    <div class="card card-sm">
-                        <div class="card-header bg-secondary d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6>HỆ THỐNG THANG LƯƠNG</h6>(ĐVT: 1,000 đồng)
-                            </div>
-                            <form class="d-flex align-items-center" method="get" action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.VanPhong/@Constants.LinkSalary.ThangLuong" id="form-main">
-                                <span class="mr-2 text-muted text-small text-nowrap">Tháng:</span>
-                                <select asp-for="Thang" class="custom-select ddl-times">
-                                    @{
-                                        foreach (var item in Model.MonthYears)
-                                        {
-                                            <option value="@item.Month-@item.Year">@item.Month/@item.Year</option>
-                                        }
-                                    }
-                                </select>
-                            </form>
+
+                    <div>
+                        <h6>HỆ THỐNG THANG LƯƠNG</h6>(ĐVT: 1,000 đồng)
+                    </div>
+
+                    <div class="card">
+                        <div class="card-body">
+                            <a href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.VanPhong/@Constants.LinkSalary.ThangLuong/@Constants.ActionLink.Update"><i class="icon-add-to-list mr-1"></i> Thêm vị trí thang lương</a>
                         </div>
                     </div>
-                    <div class="row">
-                        @{
-                            var levelMaxReal = 10;
-                            <div class="col-12 table-responsive mb-1">
-                                <table class="table table-sm table-striped table-bordered table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>#</th>
-                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>VỊ TRÍ</th>
-                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>HỆ SỐ</th>
-                                            <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>ĐIỂM THAM KHẢO</th>
-                                            <td colspan="@levelMaxReal" style="text-align:center;font-weight:bold">BẬC LƯƠNG</td>
-                                        </tr>
-                                        <tr>
-                                            @for (var ilevel = 1; ilevel <= levelMaxReal; ilevel++)
-                                            {
-                                                <td style="text-align:center; color:red">@ilevel</td>
-                                            }
-                                        </tr>
-                                    </thead>
+                    <!-- FILTER  & SORTER -->
+                    <form method="get" action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.VanPhong/@Constants.LinkSalary.ThangLuong" id="form-main">
+                        <input asp-for="Trang" type="hidden" value="1" />
+                        <input asp-for="SapXep" class="sap-xep" type="hidden" />
+                        <input asp-for="ThuTu" class="thu-tu" type="hidden" />
+                        <div class="row">
+                            <div class="col-12"><span class="badge badge-primary">Tìm kiếm:</span></div>
+                        </div>
 
-                                    <tbody class="font-14">
-                                        @{
-                                            int i = 1;
-                                            foreach (var item in Model.SalaryThangBangLuongs)
-                                            {
-                                                <tr>
-                                                    <td style="background-color:white">
-                                                        @i
-                                                    </td>
-                                                    <td nowrap>@item.ViTriName</td>
-                                                    <td>@item.TiLe</td>
-                                                    <td>@String.Format("{0:#,###,###}", Math.Round(item.MucLuong, 0))</td>
-                                                    @{
-                                                        decimal level = Constants.RoundOff(item.MucLuong);
-                                                        double tile = item.TiLe;
-                                                        for (var iNo = 1; iNo <= levelMaxReal; iNo++)
-                                                        {
-                                                            if (iNo != 1)
-                                                            {
-                                                                level = Convert.ToDecimal((double)level * tile);
-                                                            }
-                                                            <td>@String.Format("{0:#,###,###}", Constants.RoundOff(level)) </td>
-                                                        }
-                                                    }
-                                                </tr>
-                                                i++;
-                                            }
-                                        }
-                                    </tbody>
-                                </table>
+                        <div class="row mb-3">
+                            <div class="col-md-4 col-xs-12">
+                                <span class="mr-2 text-muted text-small text-nowrap">Tháng:</span>
+                                <select asp-for="Thang" class="custom-select form-control-lg" onchange="formSubmit();">
+                                    <option value="">Tất cả</option>
+                                    @foreach (var item in Model.MonthYears)
+                                    {
+                                        <option value="@item.Month-@item.Year">@item.Month/@item.Year</option>
+                                    }
+                                </select>
                             </div>
-                        }
+                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                <span class="mr-2 text-muted text-small text-nowrap">Phòng ban</span>
+                                <select asp-for="ChucVu" class="custom-select js-select2-basic-single ddlChucVu" onchange="formSubmit();">
+                                    <option value="">Tất cả</option>
+                                    @foreach (var item in Model.ChucVus)
+                                    {
+                                        <option value="@item.Id">@item.Name</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <span>Sắp xếp theo: </span>
+                                @{
+                                    var sortFlagNameDesc = "badge-default";
+                                    if (Model.SapXep == "ten" && Model.ThuTu == "desc")
+                                    {
+                                        sortFlagNameDesc = "badge-success";
+                                    }
+                                    var sortFlagNameAsc = "badge-default";
+                                    if (Model.SapXep == "ten" && Model.ThuTu == "asc")
+                                    {
+                                        sortFlagNameAsc = "badge-success";
+                                    }
+                                    var sortFlagLuongDesc = "badge-default";
+                                    if (Model.SapXep == "luong" && Model.ThuTu == "desc")
+                                    {
+                                        sortFlagLuongDesc = "badge-success";
+                                    }
+                                    var sortFlagLuongAsc = "badge-default";
+                                    if (Model.SapXep == "luong" && Model.ThuTu == "asc")
+                                    {
+                                        sortFlagLuongAsc = "badge-success";
+                                    }
+                                    <a href="javascript:;" data-sortby="ten" data-sortorder="asc" class="btn-sort">
+                                        <span class="badge @sortFlagNameAsc"><i class="fas fa-sort-alpha-up"></i> Tên tăng dần</span>
+                                    </a>
+                                    <a href="javascript:;" data-sortby="ten" data-sortorder="desc" class="btn-sort">
+                                        <span class="badge @sortFlagNameDesc"><i class="fas fa-sort-alpha-down"></i> Tên giảm dần</span>
+                                    </a>
+                                    <a href="javascript:;" data-sortby="luong" data-sortorder="asc" class="btn-sort">
+                                        <span class="badge @sortFlagLuongAsc"><i class="fas fa-sort-alpha-up"></i> Lương tăng dần</span>
+                                    </a>
+                                    <a href="javascript:;" data-sortby="luong" data-sortorder="desc" class="btn-sort">
+                                        <span class="badge @sortFlagLuongDesc"><i class="fas fa-sort-alpha-down"></i> Lương giảm dần</span>
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    </form>
+
+                    <div class="row">
+                        <div class="col-12">Tìm thấy <span class="badge badge-info">@Model.Records</span> kết quả.</div>
+                        <div class="col-12 table-responsive mb-1">
+                            @{ 
+                                int levelMaxReal = 10;
+                            }
+                            <table class="table table-sm table-striped table-bordered table-hover">
+                                <thead>
+                                    <tr>
+                                        <th rowspan="2"></th>
+                                        <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>#</th>
+                                        <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>VỊ TRÍ</th>
+                                        <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>HỆ SỐ</th>
+                                        <th rowspan="2" style="vertical-align:middle;font-weight:bold" nowrap>ĐIỂM THAM KHẢO</th>
+                                        <td colspan="@levelMaxReal" style="text-align:center;font-weight:bold">BẬC LƯƠNG</td>
+                                    </tr>
+                                    <tr>
+                                        @for (var ilevel = 1; ilevel <= levelMaxReal; ilevel++)
+                                        {
+                                            <td style="text-align:center; color:red">@ilevel</td>
+                                        }
+                                    </tr>
+                                </thead>
+                                <tbody class="font-14">
+                                    @{
+                                        int i = 1;
+                                        foreach (var item in Model.SalaryThangBangLuongs)
+                                        {
+                                            <tr>
+                                                <td style="background-color:white">
+                                                    <a href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.VanPhong/@Constants.LinkSalary.ThangLuong/@Constants.LinkSalary.Update?Id=@item.Id"><i class="fas fa-edit"></i> Sửa</a>
+                                                </td>
+                                                <td style="background-color:white">
+                                                    @i
+                                                </td>
+                                                <td nowrap>@item.ViTriName.ToUpper()</td>
+                                                <td>@item.TiLe</td>
+                                                <td>@String.Format("{0:#,###,###}", Math.Round(item.MucLuong, 0))</td>
+                                                @{
+                                                    decimal level = Constants.RoundOff(item.MucLuong);
+                                                    double tile = item.TiLe;
+                                                    for (var iNo = 1; iNo <= levelMaxReal; iNo++)
+                                                    {
+                                                        if (iNo != 1)
+                                                        {
+                                                            level = Convert.ToDecimal((double)level * tile);
+                                                        }
+                                                        <td>@String.Format("{0:#,###,###}", Constants.RoundOff(level)) </td>
+                                                    }
+                                                }
+                                            </tr>
+                                            i++;
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -147,7 +216,7 @@
 </div>
 
 @section scripts {
-    <script type="text/javascript" src="~/js/thang-bang-luong-real.js?@Constants.VersionJs"></script>
+    <script type="text/javascript" src="~/js/salaries/thang-luong/list.js?@Constants.VersionJs"></script>
 }
 
 

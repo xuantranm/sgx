@@ -1506,8 +1506,6 @@ namespace erp.Controllers
                     columnIndex++;
                 }
 
-                cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex, columnIndex, columnIndex + 1);
-                sheet1.AddMergedRegion(cellRangeAddress);
                 cell = row.CreateCell(columnIndex, CellType.String);
                 cell.SetCellValue("Ngày công");
                 cell.CellStyle = styleHeader;
@@ -1515,7 +1513,15 @@ namespace erp.Controllers
                 RegionUtil.SetBorderLeft((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
                 RegionUtil.SetBorderRight((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
                 RegionUtil.SetBorderBottom((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
-                columnIndex = columnIndex + 1;
+                columnIndex++;
+
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Lễ tết");
+                cell.CellStyle = styleHeader;
+                RegionUtil.SetBorderTop((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                RegionUtil.SetBorderLeft((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                RegionUtil.SetBorderRight((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                RegionUtil.SetBorderBottom((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
                 columnIndex++;
 
                 cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex, columnIndex, columnIndex + 1);
@@ -1576,11 +1582,12 @@ namespace erp.Controllers
                     columnIndex++;
                 }
 
-                cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex, columnIndex, columnIndex + 1);
-                sheet1.AddMergedRegion(cellRangeAddress);
                 cell = row.CreateCell(columnIndex, CellType.String);
                 cell.SetCellValue("");
-                columnIndex = columnIndex + 1;
+                columnIndex++;
+
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("");
                 columnIndex++;
 
                 //cell = row.CreateCell(columnIndex);
@@ -1623,12 +1630,12 @@ namespace erp.Controllers
                 columnIndex++;
 
                 cell = row.CreateCell(columnIndex);
-                cell.SetCellValue("KP");
+                cell.SetCellValue("P");
                 cell.CellStyle = styleHeader;
                 columnIndex++;
 
                 cell = row.CreateCell(columnIndex);
-                cell.SetCellValue("P");
+                cell.SetCellValue("KP");
                 cell.CellStyle = styleHeader;
                 columnIndex++;
 
@@ -1649,6 +1656,7 @@ namespace erp.Controllers
                     double tangCaLeTet = 0;
                     double vangKP = 0;
                     double ngayNghiP = 0;
+                    double letet = 0;
                     double ngayNghiOM = 0;
                     double ngayNghiTS = 0;
                     double ngayNghiR = 0;
@@ -1727,7 +1735,7 @@ namespace erp.Controllers
                         if (item != null)
                         {
                             var modeMiss = false;
-                            if (item.Mode < (int)ETimeWork.Sunday)
+                            if (item.Mode == (int)ETimeWork.Normal)
                             {
                                 switch (item.Status)
                                 {
@@ -1775,6 +1783,7 @@ namespace erp.Controllers
                                 var timeoutin = item.Out - item.In;
                                 if (timeoutin.HasValue && timeoutin.Value.TotalHours > 6)
                                 {
+                                    item.WorkDay = 1;
                                     ngayCongNT++;
                                 }
                                 else
@@ -1783,13 +1792,16 @@ namespace erp.Controllers
                                 }
                             }
                             
-                            if (item.Mode < (int)ETimeWork.Sunday && item.Logs == null)
+                            if (item.Mode > (int)ETimeWork.Normal && item.Logs == null)
                             {
                                 if (item.Mode == (int)ETimeWork.LeavePhep)
                                 {
                                     ngayNghiP += item.SoNgayNghi;
                                 }
-
+                                if (item.Mode == (int)ETimeWork.Holiday)
+                                {
+                                    letet += 1;
+                                }
                                 cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
                                 sheet1.AddMergedRegion(cellRangeAddress);
                                 cell = row.CreateCell(columnIndex, CellType.String);
@@ -1845,6 +1857,23 @@ namespace erp.Controllers
 
                                 if (item.Mode < (int)ETimeWork.Sunday)
                                 {
+                                    if (item.Mode == (int)ETimeWork.LeavePhep
+                                        || item.Mode == (int)ETimeWork.LeaveHuongLuong
+                                        || item.Mode == (int)ETimeWork.LeaveKhongHuongLuong)
+                                    {
+                                        if (item.WorkTime.TotalHours > 6)
+                                        {
+                                            item.WorkDay = 1;
+                                            item.TangCaThucTe = new TimeSpan(0, 0, 0);
+                                            item.TangCaDaXacNhan = new TimeSpan(0, 0, 0);
+                                            ngayCongNT++;
+                                        }
+                                        else
+                                        {
+                                            ngayCongNT += item.WorkDay;
+                                        }
+                                    }
+
                                     detail += item.WorkDay + " ngày";
                                     tangCaNgayThuong += item.TangCaDaXacNhan.TotalHours;
                                     if (item.TangCaDaXacNhan.TotalHours > 0)
@@ -1919,7 +1948,7 @@ namespace erp.Controllers
                     cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
                     sheet1.AddMergedRegion(cellRangeAddress);
                     cell = row.CreateCell(columnIndex, CellType.Numeric);
-                    cell.SetCellValue(Math.Round(ngayCongCT, 2));
+                    cell.SetCellValue(letet);
                     cell.CellStyle = styleDedaultMerge;
                     columnIndex++;
 
@@ -1975,14 +2004,14 @@ namespace erp.Controllers
                     cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
                     sheet1.AddMergedRegion(cellRangeAddress);
                     cell = row.CreateCell(columnIndex, CellType.Numeric);
-                    cell.SetCellValue(vangKP);
+                    cell.SetCellValue(ngayNghiP);
                     cell.CellStyle = styleDedaultMerge;
                     columnIndex++;
 
                     cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
                     sheet1.AddMergedRegion(cellRangeAddress);
                     cell = row.CreateCell(columnIndex, CellType.Numeric);
-                    cell.SetCellValue(ngayNghiP);
+                    cell.SetCellValue(vangKP);
                     cell.CellStyle = styleDedaultMerge;
 
                     var columnIndexT = columnIndex;

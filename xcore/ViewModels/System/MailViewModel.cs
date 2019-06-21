@@ -11,6 +11,8 @@ namespace ViewModels
 
         public IList<Employee> Employees { get; set; }
 
+        public IList<Employee> NhaMays { get; set; }
+
         public IList<ScheduleEmail> ScheduleEmails { get; set; }
 
         public ScheduleEmail ScheduleEmail { get; set; }

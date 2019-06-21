@@ -96,12 +96,15 @@ namespace Common.Utilities
                     }
                     else if (salaryType == (int)ESalaryType.VP)
                     {
-                        luongcanban = GetLuongCanBanVP(employee.ChucVu, string.Empty, employee.NgachLuongLevel);
-                        if (!string.IsNullOrEmpty(employee.SaleChucVu))
-                        {
-                            luongcanban = GetLuongCanBanVP(string.Empty, employee.SaleChucVu, employee.NgachLuongLevel);
-                        }
+                        // base chuc vu
+                        luongcanban = GetLuongCanBanVP(employee.ChucVu, employee.NgachLuongLevel);
                     }
+                    // Thử việc = 85% lương
+                    if (!employee.Official)
+                    {
+                        luongcanban = Convert.ToDecimal((double)luongcanban * 0.85);
+                    }
+
                     // Get direct to employees
                     decimal luongThamGiaBHXH = employee.LuongBHXH;
 
@@ -484,7 +487,7 @@ namespace Common.Utilities
             return result;
         }
 
-        public static decimal GetLuongCanBanVP(string chucvuId, string chucvudepartment, int level)
+        public static decimal GetLuongCanBanVP(string chucvuId, int level)
         {
             decimal mucluong = 4013;
             double tile = 1;

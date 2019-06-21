@@ -27,7 +27,10 @@ namespace xdatafix
             var database = "tribat";
             #endregion
 
-            FixTimeKeeper(connection, database);
+            DeleteEmailNull(connection, database);
+
+            //UpdateLeave29(connection, database);
+            //FixTimeKeeper(connection, database);
 
             //UpdateEMailError(connection, database);
             //UpdateThangLuongVP(connection, database);
@@ -85,6 +88,89 @@ namespace xdatafix
         }
 
         #region ERP
+
+        static void DeleteEmailNull(string connection, string database)
+        {
+            #region Connection, Setting & Filter
+            MongoDBContext.ConnectionString = connection;
+            MongoDBContext.DatabaseName = database;
+            MongoDBContext.IsSSL = true;
+            MongoDBContext dbContext = new MongoDBContext();
+            #endregion
+
+            var builder = Builders<ScheduleEmail>.Filter;
+            var filter = builder.Eq(m => m.Status, 4) & builder.Eq(m => m.EmployeeId, "5b6bb231e73a301f941c58ec");
+            dbContext.ScheduleEmails.DeleteMany(filter);
+        }
+
+
+        static void UpdateLeave29(string connection, string database)
+        {
+            #region Connection, Setting & Filter
+            MongoDBContext.ConnectionString = connection;
+            MongoDBContext.DatabaseName = database;
+            MongoDBContext.IsSSL = true;
+            MongoDBContext dbContext = new MongoDBContext();
+            #endregion
+
+            var timeoff = new DateTime(2019, 4, 29);
+            var builder = Builders<EmployeeWorkTimeLog>.Filter;
+            var filter = builder.Eq(m => m.Date, timeoff)
+                        & builder.Eq(m => m.Logs, null);
+            var times = dbContext.EmployeeWorkTimeLogs.Find(filter).ToList();
+            var update = Builders<EmployeeWorkTimeLog>.Update
+               .Set(m=>m.Mode, (int)ETimeWork.LeavePhep)
+               .Set(m=>m.SoNgayNghi, 1)
+               .Set(m => m.Reason, "Phép năm")
+               .Set(m => m.ReasonDetail, "Duyệt tự động. Nghỉ phép năm lễ 30/4.")
+               .Set(m => m.Status, (int)EStatusWork.DuCong)
+               .Set(m=>m.WorkDay, 1);
+            dbContext.EmployeeWorkTimeLogs.UpdateMany(filter, update);
+            foreach (var item in times)
+            {
+                // Check create leave or no
+                var existLeave = dbContext.Leaves.Find(m => m.EmployeeId.Equals(item.EmployeeId)
+                                && m.From >= timeoff && m.To <= timeoff.AddDays(1)).FirstOrDefault();
+                if (existLeave == null)
+                {
+                    // Update => nghi phep nam in month employee
+                    var builderM = Builders<EmployeeWorkTimeMonthLog>.Filter;
+                    var filterM = builderM.Eq(m => m.Id, item.EmployeeId)
+                                    & builderM.Eq(m => m.Month, item.Month)
+                                    & builderM.Eq(m => m.Year, item.Year)
+                                    & builderM.Eq(m => m.WorkplaceCode, item.WorkplaceCode);
+                    var updateM = Builders<EmployeeWorkTimeMonthLog>.Update
+                        .Inc(m => m.NghiPhepNam, 1);
+                    dbContext.EmployeeWorkTimeMonthLogs.UpdateOne(filterM, updateM);
+                    // Tao nghỉ phép, approve auto
+                    var leave = new Leave()
+                    {
+                        TypeId = "5bbdb5a97caedd0c7411c89d",
+                        TypeName = "Phép năm",
+                        Salary = true,
+                        EmployeeId = item.EmployeeId,
+                        EmployeeName = item.EmployeeName,
+                        From = timeoff.Add(item.Start),
+                        Start = item.Start,
+                        To = timeoff.Add(item.End),
+                        End = item.End,
+                        WorkingScheduleTime = item.Start + "-" + item.End,
+                        Number = 1,
+                        Reason = "Nghỉ phép năm lễ 30/4",
+                        ApproverName = "erp-hcns"
+                    };
+
+                    // Tru phep nam
+                    var builderLE = Builders<LeaveEmployee>.Filter;
+                    var filterLE = builderLE.Eq(m => m.EmployeeId, item.EmployeeId);
+                    var updateLE = Builders<LeaveEmployee>.Update
+                        .Inc(m => m.Number, -1)
+                        .Inc(m => m.NumberUsed, 1);
+                    dbContext.LeaveEmployees.UpdateOne(filterLE, updateLE);
+                }
+            }
+        }
+
         static void FixTimeKeeper(string connection, string database)
         {
             #region Connection, Setting & Filter

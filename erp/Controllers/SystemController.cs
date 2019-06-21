@@ -101,10 +101,12 @@ namespace erp.Controllers
 
             var employees = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && !string.IsNullOrEmpty(m.Email)).ToList();
             var kinhdoanhs = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && !string.IsNullOrEmpty(m.Email) && m.PhongBan.Equals("5c88d094d59d56225c43244b")).ToList();
+            var nhamays = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && !string.IsNullOrEmpty(m.Email) && m.CongTyChiNhanh.Equals("5c88d094d59d56225c43240b")).ToList();
             var viewModel = new MailViewModel
             {
                 KinhDoanhs = kinhdoanhs,
                 Employees = employees,
+                NhaMays = nhamays,
                 ScheduleEmails = list,
                 Records = (int)records,
                 Pages = pages,

@@ -59,7 +59,7 @@ namespace xmailtimer
             var builder = Builders<Employee>.Filter;
             var filter = !builder.Eq(i => i.UserName, Constants.System.account)
                         & builder.Eq(m => m.Enable, true)
-                        & builder.Eq(m => m.Leave, false);
+                        & builder.Eq(m => m.IsTimeKeeper, false);
             if (!string.IsNullOrEmpty(location))
             {
                 var locationId = location == "NM" ? congtychinhanhNhaMay.Id : congtychinhanhTruSo.Id;
@@ -75,8 +75,17 @@ namespace xmailtimer
             var employees = dbContext.Employees.Find(filter).ToList();
             var employeesId = dbContext.Employees.Find(filter).Project<Employee>(fields).ToList().Select(m => m.Id).ToList();
 
-            if (string.IsNullOrEmpty(debug) && !string.IsNullOrEmpty(location))
+            var employeesIdHrNM = new List<string>(); // use cc hr
+            var employeesHrNM = new List<Employee>(); // use cc hr
+            var employeesIdHrVP = new List<string>(); // use cc hr
+            var employeesHrVP = new List<Employee>(); // use cc hr
+            if (string.IsNullOrEmpty(debug))
             {
+                var locationNM = congtychinhanhNhaMay.Id;
+                filter = filter & builder.Eq(m => m.CongTyChiNhanh, locationNM);
+                var employeesNM = dbContext.Employees.Find(filter).ToList();
+                var employeesIdNM = dbContext.Employees.Find(filter).Project<Employee>(fields).ToList().Select(m => m.Id).ToList();
+
                 // NHA MAY: + Phong XDCB + Phong Du An, Vat Tu, TTNC, NCUD
                 var listPhongBanTinhCongONhaMay = new List<string>
                 {
@@ -100,49 +109,39 @@ namespace xmailtimer
                     "5c3e90b5566d7c0a345e5488" // Phuong
                 };
 
-                if (location == "NM")
-                {
-                    var employeesPhongBanONhaMay = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false)
-                                            && listPhongBanTinhCongONhaMay.Contains(m.PhongBan) && !listIdLoaiTruONhaMay.Contains(m.Id)).ToList();
-                    var employeesPhongBanONhaMayId = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false)
-                                            && listPhongBanTinhCongONhaMay.Contains(m.PhongBan) && !listIdLoaiTruONhaMay.Contains(m.Id)).ToList()
-                                            .Select(m => m.Id).ToList();
-                    var employeesCongThem = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false)
-                                            && listIdCongThemONhaMay.Contains(m.Id)).ToList();
-                    var employeesCongThemId = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false)
-                                            && listIdCongThemONhaMay.Contains(m.Id)).ToList()
-                                            .Select(m => m.Id).ToList();
+                var employeesPhongBanONhaMay = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false)
+                                        && listPhongBanTinhCongONhaMay.Contains(m.PhongBan) && !listIdLoaiTruONhaMay.Contains(m.Id)).ToList();
+                var employeesPhongBanONhaMayId = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false)
+                                        && listPhongBanTinhCongONhaMay.Contains(m.PhongBan) && !listIdLoaiTruONhaMay.Contains(m.Id)).ToList()
+                                        .Select(m => m.Id).ToList();
+                var employeesCongThem = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false)
+                                        && listIdCongThemONhaMay.Contains(m.Id)).ToList();
+                var employeesCongThemId = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false)
+                                        && listIdCongThemONhaMay.Contains(m.Id)).ToList()
+                                        .Select(m => m.Id).ToList();
 
-                    employees = employees.Concat(employeesPhongBanONhaMay).Concat(employeesCongThem).ToList();
-                    employeesId = employeesId.Concat(employeesPhongBanONhaMayId).Concat(employeesCongThemId).ToList();
-                }
-                else
+                employeesIdHrNM = employeesIdNM.Concat(employeesPhongBanONhaMayId).Concat(employeesCongThemId).ToList();
+                employeesHrNM = employeesNM.Concat(employeesPhongBanONhaMay).Concat(employeesCongThem).ToList();
+
+                employeesHrVP = employees.Where(m => !listPhongBanTinhCongONhaMay.Contains(m.PhongBan)
+                                && !listIdCongThemONhaMay.Contains(m.Id)).ToList();
+                employeesIdHrVP = employees.Where(m => !listPhongBanTinhCongONhaMay.Contains(m.PhongBan)
+                                && !listIdCongThemONhaMay.Contains(m.Id)).ToList().Select(m => m.Id).ToList();
+
+                if (!string.IsNullOrEmpty(location))
                 {
-                    employees = employees.Where(m => !listPhongBanTinhCongONhaMay.Contains(m.PhongBan)
-                                    && !listIdCongThemONhaMay.Contains(m.Id)).ToList();
-                    employeesId = employees.Where(m => !listPhongBanTinhCongONhaMay.Contains(m.PhongBan)
-                                    && !listIdCongThemONhaMay.Contains(m.Id)).ToList().Select(m => m.Id).ToList();
+                    if (location == "NM")
+                    {
+                        employees = employeesHrNM;
+                        employeesId = employeesIdHrNM;
+                    }
+                    else
+                    {
+                        employees = employeesHrVP;
+                        employeesId = employeesIdHrVP;
+                    }
                 }
             }
-
-            // ANH
-            //employeesId = new List<string>
-            //{
-            //    "5b6bb230e73a301f941c58ba", // Phan Thanh Tùng
-            //    "5b6bb230e73a301f941c58c0", // Nguyễn Đức Trung
-            //    "5b6bb230e73a301f941c58c1",// Nguyễn Minh Đại
-            //    "5b6bb230e73a301f941c58ad",//Ngô Mạnh Linh
-            //    "5b6bb230e73a301f941c58ac",//Thạch Minh Châu
-            //    "5b6bb230e73a301f941c58c3",//Nguyễn Hồng Hải
-            //    "5b6bb230e73a301f941c58bc",//Trịnh Minh Hảo
-            //    "5b7d1ce80be6b00f1478d13c",//Huỳnh Ngọc Minh
-            //    "5b7d16aa0be6b00f1478d131",//Hoàng Văn Nhân
-            //    "5b7bddcf5bee9d1678e2dd17",//Nguyễn Thái Bình
-            //    "5b7be17c5bee9d1678e2dd1b",//Nguyễn Ngọc Hồng Vy
-            //    "5c8b3e143ee1e90fdc3e5199"//Tran Chi Minh
-            //};
-            //employees = dbContext.Employees.Find(m => employeesId.Contains(m.Id)).ToList();
-            // ANH
 
             var builderT = Builders<EmployeeWorkTimeLog>.Filter;
             var filterT = builderT.Eq(m => m.Enable, true)
@@ -165,9 +164,9 @@ namespace xmailtimer
                 if (employeeWorkTimeLogs == null || employeeWorkTimeLogs.Count == 0) continue;
 
                 var enrollNumber = string.Empty;
-                if (employee.Workplaces !=null && employee.Workplaces.Count > 0)
+                if (employee.Workplaces != null && employee.Workplaces.Count > 0)
                 {
-                    foreach(var workplace in employee.Workplaces)
+                    foreach (var workplace in employee.Workplaces)
                     {
                         if (!string.IsNullOrEmpty(workplace.Fingerprint))
                         {
@@ -217,11 +216,11 @@ namespace xmailtimer
                         if (employeeHr != null)
                         {
                             // Because data not good, set hand
-                            if (employeeHr.Id == "5b6bb22fe73a301f941c5887")
+                            if (employeeHr.Id == "5b6bb22fe73a301f941c5887") // Anh
                             {
                                 hrsCongTy.Add(employeeHr);
                             }
-                            else if (employeeHr.Id == "5b6bb231e73a301f941c58dd")
+                            else if (employeeHr.Id == "5b6bb231e73a301f941c58dd") //Thoa
                             {
                                 hrsNhaMay.Add(employeeHr);
                             }
@@ -259,20 +258,97 @@ namespace xmailtimer
                     new EmailAddress { Name = employee.FullName, Address = employee.Email }
                 };
 
+                var ccs = new List<EmailAddress>();
+                if (!string.IsNullOrEmpty(location))
+                {
+                    if (location == "NM")
+                    {
+                        ccs = new List<EmailAddress>();
+                        foreach (var item in hrsNhaMay)
+                        {
+                            ccs.Add(new EmailAddress() { Name = item.FullName, Address = item.Email });
+                        }
+                    }
+                    else
+                    {
+                        ccs = new List<EmailAddress>();
+                        foreach (var item in hrsCongTy)
+                        {
+                            ccs.Add(new EmailAddress() { Name = item.FullName, Address = item.Email });
+                        }
+                    }
+                }
+                else
+                {
+                    bool exists = employeesIdHrNM.Any(s => s.Contains(employee.Id));
+                    if (exists)
+                    {
+                        ccs = new List<EmailAddress>();
+                        foreach (var item in hrsNhaMay)
+                        {
+                            ccs.Add(new EmailAddress() { Name = item.FullName, Address = item.Email });
+                        }
+                    }
+                    else
+                    {
+                        ccs = new List<EmailAddress>();
+                        foreach (var item in hrsCongTy)
+                        {
+                            ccs.Add(new EmailAddress() { Name = item.FullName, Address = item.Email });
+                        }
+                    }
+                }
+
                 // Because some case have enrollNumber but no time manage.
                 // If ngaycongNT = 0: gui nhan su
                 if (excelViewModel.NgayCongNT == 0)
                 {
-                    subject = "CHẤM CÔNG THÁNG " + thang + "-" + nam + " của " + employee.FullName.ToUpper();
-                    to2 = "Cao Thị Minh Thoa";
-                    owner = " của " + employee.FullName;
-                    tos = new List<EmailAddress>
+                    ccs = new List<EmailAddress>();
+                    if (!string.IsNullOrEmpty(location))
                     {
-                        new EmailAddress { Name = "Cao Thị Minh Thoa", Address = "thoa.ctm@tribat.vn" }
-                    };
-                    note = "<b>Anh/chị nhận được email này do nhân viên " + employee.FullName + " không có dữ liệu chấm công. Xin lỗi về bất tiện này và vui lòng kiểm tra lại.</b><br />";
+                        if (location == "NM")
+                        {
+                            subject = "CHẤM CÔNG THÁNG " + thang + "-" + nam + " của " + employee.FullName.ToUpper();
+                            to2 = string.Empty;
+                            owner = string.Empty;
+                            tos = new List<EmailAddress>();
+                            foreach (var item in hrsNhaMay)
+                            {
+                                tos.Add(new EmailAddress() { Name = item.FullName, Address = item.Email });
+                            }
+                            note = "<b>Anh/chị nhận được email này do nhân viên " + employee.FullName + " không có dữ liệu chấm công. Xin lỗi về bất tiện này và vui lòng kiểm tra lại.</b><br />";
+                        }
+                        else
+                        {
+                            subject = "CHẤM CÔNG THÁNG " + thang + "-" + nam + " của " + employee.FullName.ToUpper();
+                            to2 = string.Empty;
+                            owner = string.Empty;
+                            tos = new List<EmailAddress>();
+                            foreach(var item in hrsCongTy)
+                            {
+                                tos.Add(new EmailAddress() { Name = item.FullName, Address = item.Email });
+                            }
+                            note = "<b>Anh/chị nhận được email này do nhân viên " + employee.FullName + " không có dữ liệu chấm công. Xin lỗi về bất tiện này và vui lòng kiểm tra lại.</b><br />";
+                        }
+                    }
+                    else
+                    {
+                        subject = "CHẤM CÔNG THÁNG " + thang + "-" + nam + " của " + employee.FullName.ToUpper();
+                        to2 = string.Empty;
+                        owner = string.Empty;
+                        tos = new List<EmailAddress>();
+                        foreach (var item in hrsCongTy)
+                        {
+                            tos.Add(new EmailAddress() { Name = item.FullName, Address = item.Email });
+                        }
+                        foreach (var item in hrsNhaMay)
+                        {
+                            tos.Add(new EmailAddress() { Name = item.FullName, Address = item.Email });
+                        }
+                        note = "<b>Anh/chị nhận được email này do nhân viên " + employee.FullName + " không có dữ liệu chấm công. Xin lỗi về bất tiện này và vui lòng kiểm tra lại.</b><br />";
+                    }
                 }
-
+  
                 var attachments = new List<string>
                 {
                     excelViewModel.FileNameFullPath
@@ -299,6 +375,7 @@ namespace xmailtimer
                 var emailMessage = new EmailMessage()
                 {
                     ToAddresses = tos,
+                    CCAddresses = ccs,
                     Subject = subject,
                     BodyContent = messageBody,
                     Type = "bang-cham-cong",
@@ -348,6 +425,45 @@ namespace xmailtimer
                             new EmailAddress { Name = managerE.FullName, Address = managerE.Email }
                         };
 
+                        var ccs = new List<EmailAddress>();
+                        if (!string.IsNullOrEmpty(location))
+                        {
+                            if (location == "NM")
+                            {
+                                foreach (var item in hrsNhaMay)
+                                {
+                                    ccs.Add(new EmailAddress() { Name = item.FullName, Address = item.Email });
+                                }
+                            }
+                            else
+                            {
+                                foreach (var item in hrsCongTy)
+                                {
+                                    ccs.Add(new EmailAddress() { Name = item.FullName, Address = item.Email });
+                                }
+                            }
+                        }
+                        else
+                        {
+                            bool exists = employeesIdHrNM.Any(s => s.Contains(managerE.Id));
+                            if (exists)
+                            {
+                                ccs = new List<EmailAddress>();
+                                foreach (var item in hrsNhaMay)
+                                {
+                                    ccs.Add(new EmailAddress() { Name = item.FullName, Address = item.Email });
+                                }
+                            }
+                            else
+                            {
+                                ccs = new List<EmailAddress>();
+                                foreach (var item in hrsCongTy)
+                                {
+                                    ccs.Add(new EmailAddress() { Name = item.FullName, Address = item.Email });
+                                }
+                            }
+                        }
+
                         var attachments = new List<string>
                         {
                             excelViewModel.FileNameFullPath
@@ -372,6 +488,7 @@ namespace xmailtimer
                         var emailMessage = new EmailMessage()
                         {
                             ToAddresses = tos,
+                            CCAddresses = ccs,
                             Subject = subject,
                             BodyContent = messageBody,
                             Type = "bang-cham-cong-nhom",
@@ -409,7 +526,7 @@ namespace xmailtimer
                             tos.Add(new EmailAddress { Name = hrEmployee.FullName, Address = hrEmployee.Email });
                         }
                     }
-                    
+
                     var excelViewModel = RenderExcel(Tu, Den, ngaychot, sFileName, 2, listControl);
 
                     var attachments = new List<string>
@@ -644,8 +761,6 @@ namespace xmailtimer
                     columnIndex++;
                 }
 
-                cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex, columnIndex, columnIndex + 1);
-                sheet1.AddMergedRegion(cellRangeAddress);
                 cell = row.CreateCell(columnIndex, CellType.String);
                 cell.SetCellValue("Ngày công");
                 cell.CellStyle = styleHeader;
@@ -653,7 +768,15 @@ namespace xmailtimer
                 RegionUtil.SetBorderLeft((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
                 RegionUtil.SetBorderRight((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
                 RegionUtil.SetBorderBottom((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
-                columnIndex = columnIndex + 1;
+                columnIndex++;
+
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Lễ tết");
+                cell.CellStyle = styleHeader;
+                RegionUtil.SetBorderTop((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                RegionUtil.SetBorderLeft((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                RegionUtil.SetBorderRight((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
+                RegionUtil.SetBorderBottom((int)BorderStyle.Thin, cellRangeAddress, sheet1, workbook);
                 columnIndex++;
 
                 cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex, columnIndex, columnIndex + 1);
@@ -714,11 +837,12 @@ namespace xmailtimer
                     columnIndex++;
                 }
 
-                cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex, columnIndex, columnIndex + 1);
-                sheet1.AddMergedRegion(cellRangeAddress);
                 cell = row.CreateCell(columnIndex, CellType.String);
                 cell.SetCellValue("");
-                columnIndex = columnIndex + 1;
+                columnIndex++;
+
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("");
                 columnIndex++;
 
                 //cell = row.CreateCell(columnIndex);
@@ -761,12 +885,12 @@ namespace xmailtimer
                 columnIndex++;
 
                 cell = row.CreateCell(columnIndex);
-                cell.SetCellValue("KP");
+                cell.SetCellValue("P");
                 cell.CellStyle = styleHeader;
                 columnIndex++;
 
                 cell = row.CreateCell(columnIndex);
-                cell.SetCellValue("P");
+                cell.SetCellValue("KP");
                 cell.CellStyle = styleHeader;
                 columnIndex++;
 
@@ -781,6 +905,7 @@ namespace xmailtimer
 
                     ngayCongNT = 0;
                     ngayNghiP = 0;
+                    double letet = 0;
                     double ngayCongCT = 0;
                     var vaoTreLan = 0;
                     double vaoTrePhut = 0;
@@ -867,7 +992,7 @@ namespace xmailtimer
                         if (item != null)
                         {
                             var modeMiss = false;
-                            if (item.Mode < (int)ETimeWork.Sunday)
+                            if (item.Mode == (int)ETimeWork.Normal)
                             {
                                 switch (item.Status)
                                 {
@@ -915,6 +1040,7 @@ namespace xmailtimer
                                 var timeoutin = item.Out - item.In;
                                 if (timeoutin.HasValue && timeoutin.Value.TotalHours > 6)
                                 {
+                                    item.WorkDay = 1;
                                     ngayCongNT++;
                                 }
                                 else
@@ -923,13 +1049,16 @@ namespace xmailtimer
                                 }
                             }
 
-                            if (item.Mode == (int)ETimeWork.LeavePhep)
-                            {
-                                ngayNghiP += item.SoNgayNghi;
-                            }
-
                             if (item.Mode > (int)ETimeWork.Normal && item.Logs == null)
                             {
+                                if (item.Mode == (int)ETimeWork.LeavePhep)
+                                {
+                                    ngayNghiP += item.SoNgayNghi;
+                                }
+                                if (item.Mode == (int)ETimeWork.Holiday)
+                                {
+                                    letet += 1;
+                                }
                                 cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
                                 sheet1.AddMergedRegion(cellRangeAddress);
                                 cell = row.CreateCell(columnIndex, CellType.String);
@@ -941,7 +1070,6 @@ namespace xmailtimer
                                 RegionUtil.SetBorderLeft((int)BorderStyle.Thin, rowCellRangeAddress, sheet1, workbook);
                                 RegionUtil.SetBorderRight((int)BorderStyle.Thin, rowCellRangeAddress, sheet1, workbook);
                                 RegionUtil.SetBorderBottom((int)BorderStyle.Thin, rowCellRangeAddress, sheet1, workbook);
-
                             }
                             else
                             {
@@ -984,7 +1112,7 @@ namespace xmailtimer
 
                                 cell = rowreason.CreateCell(columnIndex, CellType.String);
                                 var detail = string.Empty;
-                                
+
                                 if (item.Mode < (int)ETimeWork.Sunday)
                                 {
                                     detail += item.WorkDay + " ngày";
@@ -1061,7 +1189,7 @@ namespace xmailtimer
                     cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
                     sheet1.AddMergedRegion(cellRangeAddress);
                     cell = row.CreateCell(columnIndex, CellType.Numeric);
-                    cell.SetCellValue(Math.Round(ngayCongCT, 2));
+                    cell.SetCellValue(letet);
                     cell.CellStyle = styleDedaultMerge;
                     columnIndex++;
 
@@ -1117,14 +1245,14 @@ namespace xmailtimer
                     cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
                     sheet1.AddMergedRegion(cellRangeAddress);
                     cell = row.CreateCell(columnIndex, CellType.Numeric);
-                    cell.SetCellValue(vangKP);
+                    cell.SetCellValue(ngayNghiP);
                     cell.CellStyle = styleDedaultMerge;
                     columnIndex++;
 
                     cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
                     sheet1.AddMergedRegion(cellRangeAddress);
                     cell = row.CreateCell(columnIndex, CellType.Numeric);
-                    cell.SetCellValue(ngayNghiP);
+                    cell.SetCellValue(vangKP);
                     cell.CellStyle = styleDedaultMerge;
 
                     var columnIndexT = columnIndex;

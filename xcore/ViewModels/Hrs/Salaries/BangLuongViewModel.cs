@@ -12,11 +12,15 @@ namespace ViewModels
     {
         public IList<SalaryEmployeeMonth> SalaryEmployeeMonths { get; set; }
 
+        public SalaryEmployeeMonth Salary { get; set; }
+
         public SalaryMucLuongVung SalaryMucLuongVung { get; set; }
+
+        public SalaryThangBangLuong ThangBangLuong { get; set; }
 
         public IList<SalaryThangBangLuong> SalaryThangBangLuongLaws { get; set; }
 
-        public IList<SalaryThangBangLuong> SalaryThangBangLuongReals { get; set; }
+        public IList<SalaryThangBangLuong> SalaryThangBangLuongs { get; set; }
 
         public IList<SalaryThangBangPhuCapPhucLoi> SalaryThangBangPhuCapPhucLois { get; set; }
 
@@ -61,11 +65,23 @@ namespace ViewModels
 
         public string Manv { get; set; }
 
+        public string CongTyChiNhanh { get; set; }
+
         public string KhoiChucNang { get; set; }
 
         public string PhongBan { get; set; }
+         
+        public string ChucVu { get; set; } // vi tri
+
+        public IList<CongTyChiNhanh> CongTyChiNhanhs { get; set; }
+
+        public IList<KhoiChucNang> KhoiChucNangs { get; set; }
 
         public IList<PhongBan> PhongBans { get; set; }
+
+        public IList<BoPhan> BoPhans { get; set; }
+
+        public IList<ChucVu> ChucVus { get; set; }
 
         public string BoPhan { get; set; }
 

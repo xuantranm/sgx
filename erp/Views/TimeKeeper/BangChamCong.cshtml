@@ -156,6 +156,7 @@
                                     <th rowspan="2" style="vertical-align:middle;text-align:center;font-weight:bold" nowrap>Mã chấm công</th>
                                     <th colspan="@calDate" style="text-align:center;font-weight:bold" nowrap>Chi tiết</th>
                                     <th rowspan="2" style="vertical-align:middle;font-weight:bold">Ngày công</th>
+                                    <th rowspan="2" style="vertical-align:middle;font-weight:bold">Lễ tết</th>
                                     <th colspan="2" style="vertical-align:middle;font-weight:bold">Vào trễ</th>
                                     <th colspan="2" style="vertical-align:middle;font-weight:bold">Ra sớm</th>
                                     <th colspan="3" style="vertical-align:middle;font-weight:bold">Tăng ca (giờ)</th>
@@ -219,6 +220,7 @@
                                         double tangCaLeTet = 0;
                                         double vangKP = 0;
                                         double ngayNghiP = 0;
+                                        double letet = 0;
                                         double ngayNghiOM = 0;
                                         double ngayNghiTS = 0;
                                         double ngayNghiR = 0;
@@ -241,7 +243,7 @@
                                                 else
                                                 {
                                                     var modeMiss = false;
-                                                    if (item.Mode < (int)ETimeWork.Sunday)
+                                                    if (item.Mode == (int)ETimeWork.Normal)
                                                     {
                                                         switch (item.Status)
                                                         {
@@ -289,6 +291,7 @@
                                                         var timeoutin = item.Out - item.In;
                                                         if (timeoutin.HasValue && timeoutin.Value.TotalHours > 6)
                                                         {
+                                                            item.WorkDay = 1;
                                                             ngayCongNT++;
                                                         }
                                                         else
@@ -297,11 +300,15 @@
                                                         }
                                                     }
 
-                                                    if (item.Mode < (int)ETimeWork.Sunday && item.Logs == null)
+                                                    if (item.Mode > (int)ETimeWork.Normal && item.Logs == null)
                                                     {
                                                         if (item.Mode == (int)ETimeWork.LeavePhep)
                                                         {
                                                             ngayNghiP += item.SoNgayNghi;
+                                                        }
+                                                        if (item.Mode == (int)ETimeWork.Holiday)
+                                                        {
+                                                            letet += 1;
                                                         }
                                                         <td nowrap>
                                                             <span class="badge badge-info">@item.Reason</span>
@@ -339,68 +346,29 @@
                                                                         {
                                                                             <p style="margin-bottom: 0;"><small>@log.Date.ToString("dd/MM/yyyy HH:mm:ss")</small></p>
                                                                         }
-                                                                        <!-- XAC NHAN TANG CA -->
-                                                                        if (item.Mode < (int)ETimeWork.Sunday)
-                                                                        {
-                                                                            var giotangca = Math.Round(item.TangCaThucTe.TotalHours, 2);
-                                                                            var statusTangCa = item.StatusTangCa;
-                                                                            if (giotangca >= 0.5)
-                                                                            {
-                                                                                <div class="card">
-                                                                                    <div class="card-body">
-                                                                                        <span>Thông tin tăng ca:</span>
-                                                                                        <br />
-                                                                                        <span class="badge badge-danger">@Constants.CTSTimeWork(item.Mode)</span>
-                                                                                        <br />
-                                                                                        <small>Giờ thực tế: <span class="badge badge-info">@giotangca</span></small>
-                                                                                        <br />
-                                                                                        @if (statusTangCa < (int)ETangCa.DongY)
-                                                                                        {
-                                                                                            <form class="xac-nhan-tang-ca-form" method="post" action="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.XacNhanTangCa" enctype="multipart/form-data">
-                                                                                                <input type="hidden" name="id" value="@item.Id" />
-                                                                                                <input type="hidden" name="trangthai" value="1" />
-                                                                                                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                                                                                                <div class="mb-2">
-                                                                                                    <small>
-                                                                                                        Xác nhận:
-                                                                                                        <input type="text" name="thoigian" value="@giotangca" class="form-control-tang-ca" />
-                                                                                                    </small>
-                                                                                                </div>
-                                                                                                <div class="mb-2">
-                                                                                                    <button type="submit" class="btn btn-sm btn-primary btn-xac-nhan-tang-ca"><i class="icon-save"></i>Xác nhận</button>
-                                                                                                </div>
-                                                                                            </form>
-                                                                                            <form class="khong-xac-nhan-tang-ca-form" method="post" action="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.XacNhanTangCa" enctype="multipart/form-data">
-                                                                                                <input type="hidden" name="id" value="@item.Id" />
-                                                                                                <input type="hidden" name="trangthai" value="0" />
-                                                                                                <div>
-                                                                                                    <button type="submit" class="btn btn-sm btn-secondary btn-khong-xac-nhan-tang-ca" data-dismiss="modal"><i class="fas fa-times"></i>Không xác nhận</button>
-                                                                                                </div>
-                                                                                            </form>
-                                                                                        }
-                                                                                        else
-                                                                                        {
-                                                                                            var giotangcaxacnhan = Math.Round(item.TangCaDaXacNhan.TotalHours, 2);
-                                                                                            if (statusTangCa == (int)ETangCa.DongY)
-                                                                                            {
-                                                                                                if (item.Mode == (int)ETimeWork.Normal)
-                                                                                                {
-                                                                                                    tangCaNgayThuong += item.TangCaDaXacNhan.TotalHours;
-                                                                                                }
-                                                                                            }
-                                                                                            var statusBag = statusTangCa == (int)ETangCa.TuChoi ? "badge-pill" : "badge-info";
-                                                                                            <small>Giờ xác nhận: <span class="badge @statusBag">@giotangcaxacnhan</span></small>
-                                                                                        }
-                                                                                    </div>
-                                                                                </div>
-                                                                            }
-                                                                        }
                                                                     }
 
                                                                     <!-- CALCULATOR & REASON -->
                                                                     var detail = string.Empty;
                                                                     if (item.Mode < (int)ETimeWork.Sunday)
                                                                     {
+                                                                        if (item.Mode == (int)ETimeWork.LeavePhep
+                                                                            || item.Mode == (int)ETimeWork.LeaveHuongLuong
+                                                                            || item.Mode == (int)ETimeWork.LeaveKhongHuongLuong)
+                                                                        {
+                                                                            if (item.WorkTime.TotalHours > 6)
+                                                                            {
+                                                                                item.WorkDay = 1;
+                                                                                item.TangCaThucTe = new TimeSpan(0, 0, 0);
+                                                                                item.TangCaDaXacNhan = new TimeSpan(0, 0, 0);
+                                                                                ngayCongNT++;
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                ngayCongNT += item.WorkDay;
+                                                                            }
+                                                                        }
+
                                                                         detail += item.WorkDay + " ngày";
                                                                         tangCaNgayThuong += item.TangCaDaXacNhan.TotalHours;
                                                                         if (item.TangCaDaXacNhan.TotalHours > 0)
@@ -448,6 +416,63 @@
                                                                         <br />
                                                                         <small data-toggle="tooltip" title="@item.ReasonDetail">@Constants.Truncate(item.ReasonDetail, 12)</small>
                                                                     }
+
+                                                                    <!-- XAC NHAN TANG CA -->
+                                                                    if (item.Mode < (int)ETimeWork.Sunday)
+                                                                    {
+                                                                        var giotangca = Math.Round(item.TangCaThucTe.TotalHours, 2);
+                                                                        var statusTangCa = item.StatusTangCa;
+                                                                        if (giotangca >= 0.5)
+                                                                        {
+                                                                            <div class="card">
+                                                                                <div class="card-body">
+                                                                                    <span>Thông tin tăng ca:</span>
+                                                                                    <br />
+                                                                                    <span class="badge badge-danger">@Constants.CTSTimeWork(item.Mode)</span>
+                                                                                    <br />
+                                                                                    <small>Giờ thực tế: <span class="badge badge-info">@giotangca</span></small>
+                                                                                    <br />
+                                                                                    @if (statusTangCa < (int)ETangCa.DongY)
+                                                                                    {
+                                                                                        <form class="xac-nhan-tang-ca-form" method="post" action="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.XacNhanTangCa" enctype="multipart/form-data">
+                                                                                            <input type="hidden" name="id" value="@item.Id" />
+                                                                                            <input type="hidden" name="trangthai" value="1" />
+                                                                                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                                                                                            <div class="mb-2">
+                                                                                                <small>
+                                                                                                    Xác nhận:
+                                                                                                    <input type="text" name="thoigian" value="@giotangca" class="form-control-tang-ca" />
+                                                                                                </small>
+                                                                                            </div>
+                                                                                            <div class="mb-2">
+                                                                                                <button type="submit" class="btn btn-sm btn-primary btn-xac-nhan-tang-ca"><i class="icon-save"></i>Xác nhận</button>
+                                                                                            </div>
+                                                                                        </form>
+                                                                                        <form class="khong-xac-nhan-tang-ca-form" method="post" action="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.XacNhanTangCa" enctype="multipart/form-data">
+                                                                                            <input type="hidden" name="id" value="@item.Id" />
+                                                                                            <input type="hidden" name="trangthai" value="0" />
+                                                                                            <div>
+                                                                                                <button type="submit" class="btn btn-sm btn-secondary btn-khong-xac-nhan-tang-ca" data-dismiss="modal"><i class="fas fa-times"></i>Không xác nhận</button>
+                                                                                            </div>
+                                                                                        </form>
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        var giotangcaxacnhan = Math.Round(item.TangCaDaXacNhan.TotalHours, 2);
+                                                                                        if (statusTangCa == (int)ETangCa.DongY)
+                                                                                        {
+                                                                                            if (item.Mode == (int)ETimeWork.Normal)
+                                                                                            {
+                                                                                                tangCaNgayThuong += item.TangCaDaXacNhan.TotalHours;
+                                                                                            }
+                                                                                        }
+                                                                                        var statusBag = statusTangCa == (int)ETangCa.TuChoi ? "badge-pill" : "badge-info";
+                                                                                        <small>Giờ xác nhận: <span class="badge @statusBag">@giotangcaxacnhan</span></small>
+                                                                                    }
+                                                                                </div>
+                                                                            </div>
+                                                                        }
+                                                                    }
                                                                 }
                                                             </div>
                                                         </td>
@@ -456,7 +481,7 @@
                                             }
 
                                             <td>@Math.Round(ngayCongNT, 2)</td>
-                                            @*<td>@ngayCongNT</td>*@
+                                            <td>@letet</td>
                                             <td>@vaoTreLan</td>
                                             <td>@Math.Round(vaoTrePhut, 2)</td>
                                             <td>@raSomLan</td>
@@ -464,8 +489,8 @@
                                             <td>@Math.Round(tangCaNgayThuong, 2)</td>
                                             <td>@Math.Round(tangCaChuNhat, 2)</td>
                                             <td>@Math.Round(tangCaLeTet, 2)</td>
-                                            <td>@vangKP</td>
                                             <td>@ngayNghiP</td>
+                                            <td>@vangKP</td>
                                         </tr>
                                         iNo++;
                                     }

@@ -269,33 +269,33 @@
                                             var i = (Model.Trang - 1) * Model.PageSize + 1;
                                             foreach (var item in Model.KhoBuns)
                                             {
-                                        <tr>
-                                            <th scope="row">@i</th>
-                                            <td nowrap>
-                                                @item.Date.ToString("dd/MM/yyyy")
-                                            </td>
-                                            <td nowrap>
-                                                @item.ProductName
-                                            </td>
-                                            <td nowrap>
-                                                @item.Customer
-                                            </td>
-                                            <td nowrap>
-                                                @item.HoChua
-                                            </td>
-                                            <td nowrap>
-                                                @item.ProductUnit
-                                            </td>
-                                            <td>@String.Format("{0:#,###,###.##}", item.TonDau)</td>
-                                            <td>@String.Format("{0:#,###,###.##}", item.NhapKho)</td>
-                                            <td>@String.Format("{0:#,###,###.##}", item.XuLy)</td>
-                                            <td>@String.Format("{0:#,###,###.##}", item.XuLyBao)</td>
-                                            <td>@String.Format("{0:#,###,###.##}", item.XuLyKhac)</td>
-                                            <td>@String.Format("{0:#,###,###.##}", item.HaoHut)</td>
-                                            <td>@String.Format("{0:#,###,###.##}", item.TonKho)</td>
-                                            <td>@Constants.Truncate(item.Note, 150)</td>
-                                            <td>@Constants.PhanLoaiDuAnBun(item.PhanLoaiDuAn)</td>
-                                        </tr>
+                                                <tr>
+                                                    <th scope="row">@i</th>
+                                                    <td nowrap>
+                                                        @item.Date.ToString("dd/MM/yyyy")
+                                                    </td>
+                                                    <td nowrap>
+                                                        @item.ProductName
+                                                    </td>
+                                                    <td nowrap>
+                                                        @item.Customer
+                                                    </td>
+                                                    <td nowrap>
+                                                        @item.HoChua
+                                                    </td>
+                                                    <td nowrap>
+                                                        @item.ProductUnit
+                                                    </td>
+                                                    <td>@String.Format("{0:#,###,###.##}", item.TonDau)</td>
+                                                    <td>@String.Format("{0:#,###,###.##}", item.NhapKho)</td>
+                                                    <td>@String.Format("{0:#,###,###.##}", item.XuLy)</td>
+                                                    <td>@String.Format("{0:#,###,###.##}", item.XuLyBao)</td>
+                                                    <td>@String.Format("{0:#,###,###.##}", item.XuLyKhac)</td>
+                                                    <td>@String.Format("{0:#,###,###.##}", item.HaoHut)</td>
+                                                    <td>@String.Format("{0:#,###,###.##}", item.TonKho)</td>
+                                                    <td>@Constants.Truncate(item.Note, 150)</td>
+                                                    <td>@Constants.PhanLoaiDuAnBun(item.PhanLoaiDuAn)</td>
+                                                </tr>
                                                 i++;
                                             }
                                         }

@@ -419,3 +419,4 @@ D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Salary\Lo
 D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Salary\LogisticPriceUpdate.g.cshtml.cs
 D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Salary\SaleKPI.g.cshtml.cs
 D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Salary\Duration.g.cshtml.cs
+D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Salary\BangLuongUpdate.g.cshtml.cs

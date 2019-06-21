@@ -29,7 +29,6 @@
     <Content Remove="Views\KeHoachTongHop\DuLieuDuAnCong.cshtml" />
     <Content Remove="Views\SalaryProduction\CongTong.cshtml" />
     <Content Remove="Views\SalaryProduction\CongTongUpdate.cshtml" />
-    <Content Remove="Views\Salary\BangLuongUpdate.cshtml" />
     <Content Remove="Views\TimeKeeper\BangChamCong - Copy.cshtml" />
   </ItemGroup>
 

@@ -210,7 +210,7 @@ namespace Services
                             Content = emailMessage.BodyContent,
                             Status = (int)EEmailStatus.Fail,
                             Error = "Sai định dạng mail",
-                            ErrorCount = 0,
+                            ErrorCount = 1,
                             EmployeeId = emailMessage.EmployeeId
                         };
                         dbContext.ScheduleEmails.InsertOne(errorEmail);
@@ -251,7 +251,7 @@ namespace Services
                 var error = string.Empty;
                 try
                 {
-                    var client = new System.Net.Mail.SmtpClient("mail.tribat.vn")
+                    var client = new SmtpClient("mail.tribat.vn")
                     {
                         Port = 587, //465 timeout
                         UseDefaultCredentials = true,

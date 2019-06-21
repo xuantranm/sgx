@@ -179,6 +179,12 @@ namespace xtime
                             continue;
                         }
 
+                        // debug
+                        //if (date == new DateTime(2019, 5, 21))
+                        //{
+                        //    var dd = "here";
+                        //}
+                        //end
                         var employeeWorkTimeLog = new EmployeeWorkTimeLog
                         {
                             EmployeeId = employee.Id,
@@ -383,7 +389,17 @@ namespace xtime
                                 }
                                 if (employeeWorkTimeLog.Mode != (int)ETimeWork.Normal)
                                 {
-                                    tangcathucte = workTime;
+                                    if (employeeWorkTimeLog.Mode == (int)ETimeWork.LeavePhep 
+                                        || employeeWorkTimeLog.Mode == (int)ETimeWork.LeaveHuongLuong 
+                                        || employeeWorkTimeLog.Mode == (int)ETimeWork.LeaveKhongHuongLuong)
+                                    {
+                                        var hourOff = new TimeSpan(Convert.ToInt32(employeeWorkTimeLog.SoNgayNghi*8), 0,0);
+                                        tangcathucte = workTime - hourOff;
+                                    }
+                                    else
+                                    {
+                                        tangcathucte = workTime;
+                                    }
                                 }
 
                                 if (inLogTime > startWorkingScheduleTime)
@@ -530,7 +546,9 @@ namespace xtime
                             {
                                 iDateSent--;
                             }
-                            if (employeeWorkTimeLog.Status == (int)EStatusWork.XacNhanCong && date == today.AddDays(iDateSent) && !string.IsNullOrEmpty(email))
+                            if (employeeWorkTimeLog.Status == (int)EStatusWork.XacNhanCong 
+                                && date == today.AddDays(iDateSent) 
+                                && !string.IsNullOrEmpty(email) && Utility.IsValidEmail(email))
                             {
                                 Console.WriteLine("Sending mail...");
                                 var tos = new List<EmailAddress>

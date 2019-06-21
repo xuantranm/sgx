@@ -124,6 +124,11 @@ namespace Common.Utilities
 
         public static bool IsValidEmail(string email)
         {
+            if (string.IsNullOrEmpty(email))
+            {
+                return false;
+            }
+
             try
             {
                 var addr = new System.Net.Mail.MailAddress(email);

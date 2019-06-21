@@ -4630,8 +4630,8 @@ namespace erp.Controllers
                                             && m.TonDau.Equals(tondau)
                                             && m.NhapKho.Equals(nhapkho)
                                             && m.XuLy.Equals(xuly)).FirstOrDefault();
-                        if (existDataBun == null)
-                        {
+                        //if (existDataBun == null)
+                        //{
                             InitProduct((int)EKho.Bun, tenbun, string.Empty, dvt, out string alias, out string productid);
 
                             InitCustomer((int)ECustomer.Bun, tenkhachhang, out string customeralias, out string customerid);
@@ -4663,20 +4663,20 @@ namespace erp.Controllers
                                 PhanLoaiDuAn = phanloaiduanInt
                             };
                             dbContext.KhoBuns.InsertOne(bun);
-                        }
-                        else
-                        {
-                            var stDupplicate = "Dữ liệu đã tồn tại. Xem chi tiết tài liệu tải lên ở dòng: " + (i + 1) + ", ngày: " + ngay.ToString("MM/dd/yyyy");
-                            if (!string.IsNullOrEmpty(tenbun))
-                            {
-                                stDupplicate += ", tên: " + tenbun;
-                            }
-                            if (!string.IsNullOrEmpty(tenkhachhang))
-                            {
-                                stDupplicate += ", khách hàng: " + tenkhachhang;
-                            }
-                            Errors.Add(stDupplicate);
-                        }
+                        //}
+                        //else
+                        //{
+                        //    var stDupplicate = "Dữ liệu đã tồn tại. Xem chi tiết tài liệu tải lên ở dòng: " + (i + 1) + ", ngày: " + ngay.ToString("MM/dd/yyyy");
+                        //    if (!string.IsNullOrEmpty(tenbun))
+                        //    {
+                        //        stDupplicate += ", tên: " + tenbun;
+                        //    }
+                        //    if (!string.IsNullOrEmpty(tenkhachhang))
+                        //    {
+                        //        stDupplicate += ", khách hàng: " + tenkhachhang;
+                        //    }
+                        //    Errors.Add(stDupplicate);
+                        //}
                     }
                 }
             }

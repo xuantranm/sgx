@@ -188,24 +188,67 @@ namespace erp.Controllers
             return View(viewModel);
         }
 
-        private SalaryDuration GetSalaryDuration(int year, int month)
+        [Route(Constants.LinkSalary.VanPhong + "/" + Constants.LinkSalary.BangLuong + "/" + Constants.ActionLink.Update)]
+        public async Task<IActionResult> BangLuongUpdate(string Id)
         {
-            var salaryDuration = dbContext.SalaryDurations.Find(m => m.Enable.Equals(true) && m.SalaryYear.Equals(year) && m.SalaryMonth.Equals(month)).FirstOrDefault();
-            if (salaryDuration == null)
+            #region Authorization
+            var login = User.Identity.Name;
+            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+            ViewData["LoginUserName"] = loginUserName;
+
+            var loginInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
+            if (loginInformation == null)
             {
-                salaryDuration = new SalaryDuration()
-                {
-                    SalaryMonth = month,
-                    SalaryYear = year,
-                    SaleMonth = month,
-                    SaleYear = year,
-                    LogisticMonth = month,
-                    LogisticYear = year
-                };
-                dbContext.SalaryDurations.InsertOne(salaryDuration);
+                #region snippet1
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                #endregion
+                return RedirectToAction("login", "account");
             }
 
-            return salaryDuration;
+            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, "nhan-su", (int)ERights.View)))
+            {
+                return RedirectToAction("AccessDenied", "Account");
+            }
+
+            #endregion
+
+            var linkCurrent = string.Empty;
+
+            #region Times
+            var toDate = Utility.GetSalaryToDate(string.Empty);
+            var fromDate = toDate.AddMonths(-1).AddDays(1);
+            var year = toDate.Year;
+            var month = toDate.Month;
+            #endregion
+
+            #region DDL
+            var congtychinhanhs = dbContext.CongTyChiNhanhs.Find(m => m.Enable.Equals(true)).ToList();
+            var ctcnvp = congtychinhanhs.First(x => x.Code.Equals("CT1"));
+            var ctcnnm = congtychinhanhs.First(x => x.Code.Equals("CT2"));
+
+            var sortTimes = Utility.DllMonths();
+            var employees = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false)
+                                && m.CongTyChiNhanh.Equals(ctcnvp.Id) && !m.UserName.Equals(Constants.System.account)).SortBy(m => m.FullName).ToList();
+            var phongbans = dbContext.PhongBans.Find(m => m.Enable.Equals(true)).SortBy(m => m.Order).ToList();
+            #endregion
+
+            var luongE = new SalaryEmployeeMonth();
+            if (!string.IsNullOrEmpty(Id))
+            {
+                luongE = dbContext.SalaryEmployeeMonths.Find(m => m.Id.Equals(Id)).FirstOrDefault();
+            }
+
+            var viewModel = new BangLuongViewModel
+            {
+                Salary = luongE,
+                Employees = employees,
+                PhongBans = phongbans,
+                MonthYears = sortTimes,
+                Id = Id,
+                LinkCurrent = linkCurrent
+            };
+
+            return View(viewModel);
         }
 
         [HttpPost]
@@ -303,7 +346,7 @@ namespace erp.Controllers
 
         #region THANG LUONG
         [Route(Constants.LinkSalary.VanPhong + "/" + Constants.LinkSalary.ThangLuong)]
-        public async Task<IActionResult> ThangLuong(string Thang)
+        public async Task<IActionResult> ThangLuong(string Thang, string ChucVu, string SapXep, string ThuTu)
         {
             #region Authorization
             var login = User.Identity.Name;
@@ -330,6 +373,7 @@ namespace erp.Controllers
 
             #region DDL
             var sortTimes = Utility.DllMonths();
+            var chucvus = dbContext.ChucVus.Find(m => m.Enable.Equals(true)).ToList();
             #endregion
 
             #region Times
@@ -343,55 +387,77 @@ namespace erp.Controllers
             linkCurrent += "Thang=" + Thang;
             #endregion
 
-            var mucluongvung = Utility.SalaryMucLuongVung(month, year);
-
-            var thangbangluongs = await dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true) && m.Law.Equals(false) && m.Month.Equals(month) && m.Year.Equals(year)).ToListAsync();
-            if (thangbangluongs.Count == 0)
+            #region Filter
+            var builder = Builders<SalaryThangBangLuong>.Filter;
+            var filter = builder.Eq(m => m.Enable, true) & builder.Eq(m => m.Law, false)
+                        & builder.Eq(m => m.Year, year) & builder.Eq(m => m.Month, month);
+            if (!string.IsNullOrEmpty(ChucVu))
             {
-                var lastItem = await dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true) && m.Law.Equals(false)).SortByDescending(m => m.Year).SortByDescending(m => m.Month).FirstOrDefaultAsync();
+                filter = filter & builder.Eq(x => x.ViTriId, ChucVu);
+                linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "?";
+                linkCurrent += "ChucVu=" + ChucVu;
+            }
+            #endregion
+
+            #region Sort
+            var sortBuilder = Builders<SalaryThangBangLuong>.Sort.Ascending(m => m.ViTriAlias);
+            SapXep = string.IsNullOrEmpty(SapXep) ? "code" : SapXep;
+            ThuTu = string.IsNullOrEmpty(ThuTu) ? "asc" : ThuTu;
+            switch (SapXep)
+            {
+                case "ten":
+                    sortBuilder = ThuTu == "asc" ? Builders<SalaryThangBangLuong>.Sort.Ascending(m => m.ViTriAlias) : Builders<SalaryThangBangLuong>.Sort.Descending(m => m.ViTriAlias);
+                    break;
+                case "luong":
+                    sortBuilder = ThuTu == "asc" ? Builders<SalaryThangBangLuong>.Sort.Ascending(m => m.MucLuong) : Builders<SalaryThangBangLuong>.Sort.Descending(m => m.MucLuong);
+                    break;
+                default:
+                    sortBuilder = ThuTu == "asc" ? Builders<SalaryThangBangLuong>.Sort.Ascending(m => m.ViTriAlias) : Builders<SalaryThangBangLuong>.Sort.Descending(m => m.ViTriAlias);
+                    break;
+            }
+            #endregion
+
+            var records = dbContext.SalaryThangBangLuongs.CountDocuments(filter);
+            if (records == 0)
+            {
+                var lastItem = dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true) && m.Law.Equals(false)).SortByDescending(m => m.Year).SortByDescending(m => m.Month).FirstOrDefault();
                 var lastMonth = lastItem.Month;
                 var lastYear = lastItem.Year;
-                var lastestThangBangLuongs = await dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true) && m.Law.Equals(false) && m.Month.Equals(lastMonth) && m.Year.Equals(lastYear)).ToListAsync();
-                foreach (var item in lastestThangBangLuongs)
+                var lastestList = dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true) && m.Law.Equals(false) && m.Month.Equals(lastMonth) && m.Year.Equals(lastYear)).ToList();
+                foreach (var item in lastestList)
                 {
                     item.Id = null;
                     item.Month = month;
                     item.Year = year;
                     dbContext.SalaryThangBangLuongs.InsertOne(item);
                 }
-                thangbangluongs = lastestThangBangLuongs;
+                records = lastestList.Count();
             }
+            var list = new List<SalaryThangBangLuong>();
+            list = dbContext.SalaryThangBangLuongs.Find(filter).Sort(sortBuilder).ToList();
 
-            var pcpls = await dbContext.SalaryThangBangPhuCapPhucLois.Find(m => m.Enable.Equals(true) && m.Law.Equals(false) && m.Month.Equals(month) && m.Year.Equals(year)).ToListAsync();
-            if (pcpls.Count == 0)
-            {
-                var lastItemPC = await dbContext.SalaryThangBangPhuCapPhucLois.Find(m => m.Enable.Equals(true) && m.Law.Equals(false)).SortByDescending(m => m.Year).SortByDescending(m => m.Month).FirstOrDefaultAsync();
-                var lastMonthPC = lastItemPC.Month;
-                var lastYearPC = lastItemPC.Year;
-                var lastestPcplss = await dbContext.SalaryThangBangPhuCapPhucLois.Find(m => m.Enable.Equals(true) && m.Law.Equals(false) && m.Month.Equals(lastMonthPC) && m.Year.Equals(lastYearPC)).ToListAsync();
-                foreach (var item in lastestPcplss)
-                {
-                    item.Id = null;
-                    item.Month = month;
-                    item.Year = year;
-                    dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(item);
-                }
-                pcpls = lastestPcplss;
-            }
+            var mucluongvung = Utility.SalaryMucLuongVung(month, year);
+            var pcpls = GetPCPLs(year, month);
 
-            var viewModel = new ThangBangLuongViewModel
+            var viewModel = new BangLuongViewModel
             {
                 SalaryMucLuongVung = mucluongvung,
-                SalaryThangBangLuongs = thangbangluongs,
+                SalaryThangBangLuongs = list,
                 SalaryThangBangPhuCapPhucLoisReal = pcpls,
+                ChucVus = chucvus,
                 Thang = Thang,
-                MonthYears = sortTimes
+                ChucVu = ChucVu,
+                MonthYears = sortTimes,
+                LinkCurrent = linkCurrent,
+                ThuTu = ThuTu,
+                SapXep = SapXep,
+                Records = (int)records,
             };
             return View(viewModel);
         }
 
         [Route(Constants.LinkSalary.VanPhong + "/" + Constants.LinkSalary.ThangLuong + "/" + Constants.LinkSalary.Update)]
-        public async Task<IActionResult> ThangLuongUpdate(string thang)
+        public async Task<IActionResult> ThangLuongUpdate(string Id)
         {
             #region Authorization
             var login = User.Identity.Name;
@@ -415,268 +481,117 @@ namespace erp.Controllers
             #endregion
 
             #region DDL
-            var monthYears = new List<MonthYear>();
-            var date = new DateTime(2018, 02, 01);
-            var endDate = DateTime.Now;
-            while (date.Year < endDate.Year || (date.Year == endDate.Year && date.Month <= endDate.Month))
-            {
-                monthYears.Add(new MonthYear
-                {
-                    Month = date.Month,
-                    Year = date.Year
-                });
-                date = date.AddMonths(1);
-            }
-            if (endDate.Day > 25)
-            {
-                monthYears.Add(new MonthYear
-                {
-                    Month = endDate.AddMonths(1).Month,
-                    Year = endDate.AddMonths(1).Year
-                });
-            }
-            var sortTimes = monthYears.OrderByDescending(x => x.Month).OrderByDescending(x => x.Year).ToList();
+            var sortTimes = Utility.DllMonths();
+            var congtychinhanhs = dbContext.CongTyChiNhanhs.Find(m => m.Enable.Equals(true)).ToList();
+            var khoichucnangs = dbContext.KhoiChucNangs.Find(m => m.Enable.Equals(true)).ToList();
+            var phongbans = dbContext.PhongBans.Find(m => m.Enable.Equals(true)).ToList();
+            var bophans = dbContext.BoPhans.Find(m => m.Enable.Equals(true)).ToList();
+            var chucvus = dbContext.ChucVus.Find(m => m.Enable.Equals(true)).ToList();
             #endregion
 
-            #region Times
-            var toDate = Utility.WorkingMonthToDate(thang);
-            var fromDate = toDate.AddMonths(-1).AddDays(1);
-            if (string.IsNullOrEmpty(thang))
-            {
-                toDate = DateTime.Now;
-                fromDate = toDate.Day > 25 ? new DateTime(toDate.Year, toDate.Month, 26) : new DateTime(toDate.AddMonths(-1).Year, toDate.AddMonths(-1).Month, 26);
-            }
-            var year = toDate.Day > 25 ? toDate.AddMonths(1).Year : toDate.Year;
-            var month = toDate.Day > 25 ? toDate.AddMonths(1).Month : toDate.Month;
-            thang = string.IsNullOrEmpty(thang) ? month + "-" + year : thang;
-            #endregion
+            var mucluongvung = Utility.SalaryMucLuongVung(DateTime.Now.Month, DateTime.Now.Year);
 
-            var mucluongvungs = await dbContext.SalaryMucLuongVungs.Find(m => m.Enable.Equals(true) & m.Month.Equals(month) & m.Year.Equals(year)).FirstOrDefaultAsync();
-            if (mucluongvungs == null)
-            {
-                var lastItemVung = await dbContext.SalaryMucLuongVungs.Find(m => m.Enable.Equals(true)).SortByDescending(m => m.Year).SortByDescending(m => m.Month).FirstOrDefaultAsync();
-                var lastMonthVung = lastItemVung.Month;
-                var lastYearVung = lastItemVung.Year;
+            var entity = new SalaryThangBangLuong() {
+                MucLuong = mucluongvung.ToiThieuVungDoanhNghiepApDung
+            };
 
-                lastItemVung.Id = null;
-                lastItemVung.Month = month;
-                lastItemVung.Year = year;
-                dbContext.SalaryMucLuongVungs.InsertOne(lastItemVung);
-                mucluongvungs = await dbContext.SalaryMucLuongVungs.Find(m => m.Enable.Equals(true) & m.Month.Equals(month) & m.Year.Equals(year)).FirstOrDefaultAsync(); ;
-            }
-
-            var thangbangluongs = await dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true) & m.Law.Equals(false) & m.Month.Equals(month) & m.Year.Equals(year)).ToListAsync();
-            if (thangbangluongs.Count == 0)
+            var congtychinhanh = string.Empty;
+            var khoichucnang = string.Empty;
+            var phongban = string.Empty;
+            var bophan = string.Empty;
+            if (!string.IsNullOrEmpty(Id))
             {
-                var lastItem = await dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true) & m.Law.Equals(false)).SortByDescending(m => m.Year).SortByDescending(m => m.Month).FirstOrDefaultAsync();
-                var lastMonth = lastItem.Month;
-                var lastYear = lastItem.Year;
-                var lastestThangBangLuongs = await dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true) & m.Law.Equals(false) & m.Month.Equals(lastMonth) & m.Year.Equals(lastYear)).ToListAsync();
-                foreach (var item in lastestThangBangLuongs)
+                entity = dbContext.SalaryThangBangLuongs.Find(m => m.Id.Equals(Id)).FirstOrDefault();
+                var chucvuE = dbContext.ChucVus.Find(m => m.Id.Equals(entity.ViTriId)).FirstOrDefault();
+                if (chucvuE != null)
                 {
-                    item.Id = null;
-                    item.Month = month;
-                    item.Year = year;
-                    dbContext.SalaryThangBangLuongs.InsertOne(item);
+                    congtychinhanh = chucvuE.CongTyChiNhanhId;
+                    khoichucnang = chucvuE.KhoiChucNangId;
+                    phongban = chucvuE.PhongBanId;
+                    bophan = chucvuE.BoPhanId;
                 }
-                thangbangluongs = await dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true) & m.Law.Equals(false) & m.Month.Equals(month) & m.Year.Equals(year)).ToListAsync();
             }
-
-            var pcpls = await dbContext.SalaryThangBangPhuCapPhucLois.Find(m => m.Enable.Equals(true) & m.Law.Equals(false) & m.Month.Equals(month) & m.Year.Equals(year)).ToListAsync();
-            if (pcpls.Count == 0)
+            var viewModel = new BangLuongViewModel
             {
-                var lastItemPC = await dbContext.SalaryThangBangPhuCapPhucLois.Find(m => m.Enable.Equals(true) & m.Law.Equals(false)).SortByDescending(m => m.Year).SortByDescending(m => m.Month).FirstOrDefaultAsync();
-                var lastMonthPC = lastItemPC.Month;
-                var lastYearPC = lastItemPC.Year;
-                var lastestPcplss = await dbContext.SalaryThangBangPhuCapPhucLois.Find(m => m.Enable.Equals(true) & m.Law.Equals(false) & m.Month.Equals(lastMonthPC) & m.Year.Equals(lastYearPC)).ToListAsync();
-                foreach (var item in lastestPcplss)
-                {
-                    item.Id = null;
-                    item.Month = month;
-                    item.Year = year;
-                    dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(item);
-                }
-                pcpls = await dbContext.SalaryThangBangPhuCapPhucLois.Find(m => m.Enable.Equals(true) & m.Law.Equals(false) & m.Month.Equals(month) & m.Year.Equals(year)).ToListAsync(); ;
-            }
-
-            var viewModel = new ThangBangLuongViewModel
-            {
-                SalaryMucLuongVung = mucluongvungs,
-                SalaryThangBangLuongs = thangbangluongs,
-                SalaryThangBangPhuCapPhucLoisReal = pcpls,
-                Thang = thang,
-                MonthYears = sortTimes
+                ThangBangLuong = entity,
+                MonthYears = sortTimes,
+                CongTyChiNhanhs = congtychinhanhs,
+                KhoiChucNangs = khoichucnangs,
+                PhongBans = phongbans,
+                BoPhans = bophans,
+                ChucVus = chucvus,
+                CongTyChiNhanh = congtychinhanh,
+                KhoiChucNang = khoichucnang,
+                PhongBan = phongban,
+                BoPhan = bophan
             };
 
             return View(viewModel);
         }
 
-        //[HttpPost]
-        //[Route(Constants.LinkSalary.VanPhong + "/" + Constants.LinkSalary.ThangLuong + "/" + Constants.LinkSalary.Update)]
-        //public async Task<IActionResult> ThangLuongUpdate(ThangBangLuongViewModel viewModel)
-        //{
-        //    #region Authorization
-        //    var login = User.Identity.Name;
-        //    var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
-        //    ViewData["LoginUserName"] = loginUserName;
+        [HttpPost]
+        [Route(Constants.LinkSalary.VanPhong + "/" + Constants.LinkSalary.ThangLuong + "/" + Constants.LinkSalary.Update)]
+        public async Task<IActionResult> ThangLuongUpdate(BangLuongViewModel viewModel)
+        {
+            #region Authorization
+            var login = User.Identity.Name;
+            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+            ViewData["LoginUserName"] = loginUserName;
 
-        //    var loginInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
-        //    if (loginInformation == null)
-        //    {
-        //        #region snippet1
-        //        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-        //        #endregion
-        //        return RedirectToAction("login", "account");
-        //    }
+            var loginInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
+            if (loginInformation == null)
+            {
+                #region snippet1
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                #endregion
+                return RedirectToAction("login", "account");
+            }
 
-        //    if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, "nhan-su", (int)ERights.View)))
-        //    {
-        //        return RedirectToAction("AccessDenied", "Account");
-        //    }
+            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, "nhan-su", (int)ERights.View)))
+            {
+                return RedirectToAction("AccessDenied", "Account");
+            }
 
-        //    #endregion
+            #endregion
 
-        //    try
-        //    {
-        //        var now = DateTime.Now;
-
-        //        var thang = viewModel.Thang;
-        //        var toDate = Utility.WorkingMonthToDate(thang);
-        //        var fromDate = toDate.AddMonths(-1).AddDays(1);
-        //        if (string.IsNullOrEmpty(thang))
-        //        {
-        //            toDate = DateTime.Now;
-        //            fromDate = new DateTime(toDate.AddMonths(-1).Year, toDate.AddMonths(-1).Month, 26);
-        //        }
-        //        var year = toDate.Year;
-        //        var month = toDate.Month;
-
-        //        #region ToiThieuVung
-        //        // Update by month later
-        //        var salaryMucLuongVung = viewModel.SalaryMucLuongVung;
-        //        var builderSalaryMucLuongVung = Builders<SalaryMucLuongVung>.Filter;
-        //        var filterSalaryMucLuongVung = builderSalaryMucLuongVung.Eq(m => m.Id, salaryMucLuongVung.Id);
-        //        var updateSalaryMucLuongVung = Builders<SalaryMucLuongVung>.Update
-        //            .Set(m => m.ToiThieuVungDoanhNghiepApDung, salaryMucLuongVung.ToiThieuVungDoanhNghiepApDung * 1000)
-        //            .Set(m => m.UpdatedOn, now);
-        //        dbContext.SalaryMucLuongVungs.UpdateOne(filterSalaryMucLuongVung, updateSalaryMucLuongVung);
-        //        #endregion
-
-        //        #region SalaryThangBangLuongReal
-        //        decimal salaryMin = salaryMucLuongVung.ToiThieuVungDoanhNghiepApDung * 1000;
-        //        var salaryThangBangLuongs = viewModel.SalaryThangBangLuongs;
-        //        var groups = (from a in salaryThangBangLuongs
-        //                      group a by new
-        //                      {
-        //                          a.ViTriCode
-        //                      }
-        //                                            into b
-        //                      select new
-        //                      {
-        //                          b.Key.ViTriCode,
-        //                          Salaries = b.ToList()
-        //                      }).ToList();
-
-        //        int maxLevel = 10;
-        //        foreach (var group in groups)
-        //        {
-        //            var id = group.Salaries[0].Id;
-        //            if (!string.IsNullOrEmpty(id))
-        //            {
-        //                var vitriCode = group.ViTriCode;
-        //                var vitri = group.Salaries[0].ViTri;
-        //                var vitriAlias = group.Salaries[0].ViTriAlias;
-        //                var salaryDeclareTax = group.Salaries[0].MucLuong * 1000;
-        //                var heso = group.Salaries[0].HeSo;
-        //                if (salaryDeclareTax == 0)
-        //                {
-        //                    salaryDeclareTax = salaryMin;
-        //                }
-        //                for (int lv = 0; lv <= maxLevel; lv++)
-        //                {
-        //                    if (lv > 1)
-        //                    {
-        //                        salaryDeclareTax = heso * salaryDeclareTax;
-        //                    }
-        //                    var exist = dbContext.SalaryThangBangLuongs.CountDocuments(m => m.ViTriCode.Equals(vitriCode) & m.Bac.Equals(lv) & m.Law.Equals(false) & m.Month.Equals(month) & m.Year.Equals(year));
-        //                    if (exist > 0)
-        //                    {
-        //                        var builderSalaryThangBangLuong = Builders<SalaryThangBangLuong>.Filter;
-        //                        var filterSalaryThangBangLuong = builderSalaryThangBangLuong.Eq(m => m.ViTriCode, vitriCode);
-        //                        filterSalaryThangBangLuong = filterSalaryThangBangLuong & builderSalaryThangBangLuong.Eq(m => m.Month, month);
-        //                        filterSalaryThangBangLuong = filterSalaryThangBangLuong & builderSalaryThangBangLuong.Eq(m => m.Year, year);
-        //                        filterSalaryThangBangLuong = filterSalaryThangBangLuong & builderSalaryThangBangLuong.Eq(m => m.Bac, lv);
-        //                        var updateSalaryThangBangLuong = Builders<SalaryThangBangLuong>.Update
-        //                            .Set(m => m.MucLuong, salaryDeclareTax)
-        //                            .Set(m => m.HeSo, heso)
-        //                            .Set(m => m.UpdatedOn, now);
-        //                        dbContext.SalaryThangBangLuongs.UpdateOne(filterSalaryThangBangLuong, updateSalaryThangBangLuong);
-        //                    }
-        //                    else
-        //                    {
-        //                        dbContext.SalaryThangBangLuongs.InsertOne(new SalaryThangBangLuong()
-        //                        {
-        //                            Month = month,
-        //                            Year = year,
-        //                            ViTri = vitriCode,
-        //                            Bac = lv,
-        //                            HeSo = heso,
-        //                            MucLuong = salaryDeclareTax,
-        //                            ViTriCode = vitriCode,
-        //                            ViTriAlias = vitriAlias,
-        //                            Law = false
-        //                        });
-        //                    }
-        //                }
-        //            }
-        //            else
-        //            {
-        //                // Insert NEW VI TRI
-        //                var vitri = group.Salaries[0].ViTri;
-        //                if (!string.IsNullOrEmpty(vitri))
-        //                {
-        //                    var vitriAlias = Utility.AliasConvert(group.Salaries[0].ViTri);
-        //                    string vitriLastCode = dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true) & m.Law.Equals(false)).SortByDescending(m => m.ViTriCode).FirstOrDefault().ViTriCode;
-        //                    int newCode = Convert.ToInt32(vitriLastCode.Split('-')[1]) + 1;
-        //                    string newCodeFull = Constants.System.viTriCodeTBLuong + newCode.ToString("000");
-        //                    var salaryDeclareTax = group.Salaries[0].MucLuong * 1000;
-        //                    var heso = group.Salaries[0].HeSo;
-
-        //                    if (salaryDeclareTax == 0)
-        //                    {
-        //                        salaryDeclareTax = salaryMin;
-        //                    }
-        //                    for (int lv = 1; lv <= 10; lv++)
-        //                    {
-        //                        if (lv > 1)
-        //                        {
-        //                            salaryDeclareTax = heso * salaryDeclareTax;
-        //                        }
-        //                        dbContext.SalaryThangBangLuongs.InsertOne(new SalaryThangBangLuong()
-        //                        {
-        //                            Month = month,
-        //                            Year = year,
-        //                            ViTri = vitri,
-        //                            Bac = lv,
-        //                            HeSo = heso,
-        //                            MucLuong = salaryDeclareTax,
-        //                            ViTriCode = newCodeFull,
-        //                            ViTriAlias = vitriAlias,
-        //                            Law = false
-        //                        });
-        //                    }
-        //                }
-        //            }
-        //        }
-        //        #endregion
-
-        //        return Json(new { result = true, source = "update", message = "Thành công" });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return Json(new { result = false, source = "update", id = string.Empty, message = ex.Message });
-        //    }
-        //}
+            var entity = viewModel.ThangBangLuong;
+            var alias = Utility.AliasConvert(entity.ViTriName);
+            if (!string.IsNullOrEmpty(entity.Id))
+            {
+                var builder = Builders<SalaryThangBangLuong>.Filter;
+                var filter = builder.Eq(m => m.Id, entity.Id);
+                var update = Builders<SalaryThangBangLuong>.Update
+                    .Set(m => m.MucLuong, entity.MucLuong)
+                    .Set(m => m.TiLe, entity.TiLe)
+                    .Set(m => m.Month, entity.Month)
+                    .Set(m => m.Year, entity.Year);
+                dbContext.SalaryThangBangLuongs.UpdateOne(filter, update);
+            }
+            else
+            {
+                dbContext.SalaryThangBangLuongs.InsertOne(entity);
+                // Insert to Chuc Vu
+                var chucvu = new ChucVu
+                {
+                    Alias = alias,
+                    CongTyChiNhanhId = viewModel.CongTyChiNhanh,
+                    KhoiChucNangId = viewModel.KhoiChucNang,
+                    PhongBanId = viewModel.PhongBan,
+                    BoPhanId = viewModel.BoPhan
+                };
+                bool exist = dbContext.ChucVus.CountDocuments(m => m.Alias.Equals(alias)) > 0;
+                if (!exist)
+                {
+                    var lastestChucVu = dbContext.ChucVus.Find(m => m.Enable.Equals(true)).SortByDescending(m => m.Order).Limit(1).FirstOrDefault();
+                    var lastestCode = lastestChucVu != null ? lastestChucVu.Order + 1 : 1;
+                    chucvu.Code = "CHUCVU" + lastestCode;
+                    chucvu.Order = lastestCode;
+                    dbContext.ChucVus.InsertOne(chucvu);
+                }
+            }
+            var url = "/" + Constants.LinkSalary.Main + "/" + Constants.LinkSalary.VanPhong + "/" + Constants.LinkSalary.ThangLuong;
+            return Json(new { result = true, source = "data", message = "Thành công", url });
+        }
         #endregion
 
         #region DURATION: SALE, LOGISTICS
@@ -4648,6 +4563,48 @@ namespace erp.Controllers
                 code++;
             }
             return list;
+        }
+
+        private List<SalaryThangBangPhuCapPhucLoi> GetPCPLs(int year, int month)
+        {
+            var pcpls = dbContext.SalaryThangBangPhuCapPhucLois.Find(m => m.Enable.Equals(true) && m.Law.Equals(false) && m.Month.Equals(month) && m.Year.Equals(year)).ToList();
+            if (pcpls.Count == 0)
+            {
+                var lastItem = dbContext.SalaryThangBangPhuCapPhucLois.Find(m => m.Enable.Equals(true) && m.Law.Equals(false)).SortByDescending(m => m.Year).SortByDescending(m => m.Month).FirstOrDefault();
+                var lastMonth = lastItem.Month;
+                var lastYear = lastItem.Year;
+                var lastestList = dbContext.SalaryThangBangPhuCapPhucLois.Find(m => m.Enable.Equals(true) && m.Law.Equals(false) && m.Month.Equals(lastMonth) && m.Year.Equals(lastYear)).ToList();
+                foreach (var item in lastestList)
+                {
+                    item.Id = null;
+                    item.Month = month;
+                    item.Year = year;
+                    dbContext.SalaryThangBangPhuCapPhucLois.InsertOne(item);
+                }
+                pcpls = lastestList;
+            }
+
+            return pcpls;
+        }
+
+        private SalaryDuration GetSalaryDuration(int year, int month)
+        {
+            var salaryDuration = dbContext.SalaryDurations.Find(m => m.Enable.Equals(true) && m.SalaryYear.Equals(year) && m.SalaryMonth.Equals(month)).FirstOrDefault();
+            if (salaryDuration == null)
+            {
+                salaryDuration = new SalaryDuration()
+                {
+                    SalaryMonth = month,
+                    SalaryYear = year,
+                    SaleMonth = month,
+                    SaleYear = year,
+                    LogisticMonth = month,
+                    LogisticYear = year
+                };
+                dbContext.SalaryDurations.InsertOne(salaryDuration);
+            }
+
+            return salaryDuration;
         }
         #endregion
     }
