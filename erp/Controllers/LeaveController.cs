@@ -78,6 +78,12 @@ namespace erp.Controllers
             {
                 isRight = true;
             }
+
+            var managerList = dbContext.Employees.CountDocuments(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.ManagerId.Equals(userInformation.ChucVu));
+            if (managerList > 0)
+            {
+                isRight = true;
+            }
             #endregion
 
             id = string.IsNullOrEmpty(id) ? login : id;
@@ -99,13 +105,13 @@ namespace erp.Controllers
                 }
                 if (!string.IsNullOrEmpty(userInformation.ManagerId))
                 {
-                    var approveEntity = dbContext.Employees.Find(m => m.Id.Equals(userInformation.ManagerId)).FirstOrDefault();
+                    var approveEntity = dbContext.Employees.Find(m => m.ChucVu.Equals(userInformation.ManagerId)).FirstOrDefault();
                     if (approveEntity != null)
                     {
                         approves.Add(new IdName
                         {
-                            Id = approveEntity.Id,
-                            Name = approveEntity.FullName
+                            Id = approveEntity.ChucVu,
+                            Name = approveEntity.FullName + " (" + approveEntity.ChucVuName + ")"
                         });
                     }
                 }
@@ -147,10 +153,11 @@ namespace erp.Controllers
 
                 foreach (var roleApprove in rolesApprove)
                 {
+                    var employeeRole = dbContext.Employees.Find(m => m.Id.Equals(roleApprove.User)).FirstOrDefault();
                     approves.Add(new IdName
                     {
-                        Id = roleApprove.User,
-                        Name = roleApprove.FullName
+                        Id = employeeRole.ChucVu,
+                        Name = employeeRole.FullName + " (" + employeeRole.ChucVuName + ")"
                     });
                 }
             }
@@ -195,11 +202,20 @@ namespace erp.Controllers
                 #endregion
                 return RedirectToAction("login", "account");
             }
+            bool isRightSys = false;
             bool isRight = false;
             if (loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.XinNghiPhepDum, (int)ERights.Add))
             {
+                isRightSys = true;
                 isRight = true;
             }
+
+            var managerList = dbContext.Employees.CountDocuments(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.ManagerId.Equals(userInformation.ChucVu));
+            if (managerList > 0)
+            {
+                isRight = true;
+            }
+
             if (!isRight)
             {
                 return RedirectToAction("AccessDenied", "Account");
@@ -220,7 +236,13 @@ namespace erp.Controllers
             filter = filter & !builder.Eq(m => m.UserName, Constants.System.account);
             // Remove cấp cao ra (theo mã số lương)
             filter = filter & !builder.In(m => m.NgachLuongCode, new string[] { "C.01", "C.02", "C.03" });
+
+            if (!isRightSys)
+            {
+                filter = filter & builder.Eq(m => m.ManagerId, userInformation.ChucVu);
+            }
             var employees = await dbContext.Employees.Find(filter).SortBy(m => m.FullName).ToListAsync();
+           
             var approves = new List<IdName>();
             #endregion
 
@@ -239,13 +261,13 @@ namespace erp.Controllers
             }
             if (!string.IsNullOrEmpty(userInformation.ManagerId))
             {
-                var approveEntity = dbContext.Employees.Find(m => m.Id.Equals(userInformation.ManagerId)).FirstOrDefault();
+                var approveEntity = dbContext.Employees.Find(m => m.ChucVu.Equals(userInformation.ManagerId)).FirstOrDefault();
                 if (approveEntity != null)
                 {
                     approves.Add(new IdName
                     {
-                        Id = approveEntity.Id,
-                        Name = approveEntity.FullName
+                        Id = approveEntity.ChucVu,
+                        Name = approveEntity.FullName + " (" + approveEntity.ChucVuName + ")"
                     });
                 }
             }
@@ -287,10 +309,11 @@ namespace erp.Controllers
             {
                 if (!approves.Any(item => item.Id == roleApprove.User))
                 {
+                    var employeeRole = dbContext.Employees.Find(m => m.Id.Equals(roleApprove.User)).FirstOrDefault();
                     approves.Add(new IdName
                     {
-                        Id = roleApprove.User,
-                        Name = roleApprove.FullName
+                        Id = employeeRole.ChucVu,
+                        Name = employeeRole.FullName + " (" + employeeRole.ChucVuName + ")"
                     });
                 }
             }
@@ -569,9 +592,11 @@ namespace erp.Controllers
             // Tự yêu cầu
             var employee = userInformation;
             // Làm cho người khác
+            var help = false;
             if (entity.EmployeeId != login)
             {
                 employee = dbContext.Employees.Find(m => m.Id.Equals(entity.EmployeeId)).FirstOrDefault();
+                help = true;
             }
 
             var workdayStartTime = new TimeSpan(7, 0, 0);
@@ -626,6 +651,11 @@ namespace erp.Controllers
             entity.EmployeeTitle = employee.ChucVuName;
 
             entity.Status = (int)StatusLeave.New;
+            if (help)
+            {
+                entity.Status = (int)StatusLeave.Accept;
+                entity.ApprovedBy = userInformation.Id;
+            }
             entity.CreatedBy = login;
             entity.UpdatedBy = login;
 
@@ -657,88 +687,156 @@ namespace erp.Controllers
             #endregion
 
             #region Send Mail
-            var tos = new List<EmailAddress>();
-            var approver = string.Empty;
-            if (!string.IsNullOrEmpty(entity.ApproverId))
+            if (!help)
             {
-                var approve1 = dbContext.Employees.Find(m => m.Id.Equals(entity.ApproverId)).FirstOrDefault();
-                approver = approve1.FullName;
-                tos.Add(new EmailAddress { Name = approve1.FullName, Address = approve1.Email });
+                var tos = new List<EmailAddress>();
+                var approver = string.Empty;
+                if (!string.IsNullOrEmpty(entity.ApproverId))
+                {
+                    var approve1 = dbContext.Employees.Find(m => m.ChucVu.Equals(entity.ApproverId)).FirstOrDefault();
+                    approver = approve1.FullName;
+                    tos.Add(new EmailAddress { Name = approve1.FullName, Address = approve1.Email });
+                }
+                else
+                {
+                    tos.Add(new EmailAddress { Name = "Tran Minh Xuan", Address = "xuan.tm@tribat.vn" });
+                }
+                var webRoot = Environment.CurrentDirectory;
+                var pathToFile = _env.WebRootPath
+                        + Path.DirectorySeparatorChar.ToString()
+                        + "Templates"
+                        + Path.DirectorySeparatorChar.ToString()
+                        + "EmailTemplate"
+                        + Path.DirectorySeparatorChar.ToString()
+                        + "LeaveRequest.html";
+
+                var subject = "Xác nhận nghỉ phép.";
+                var requester = employee.FullName;
+                var var3 = employee.FullName;
+                if (entity.EmployeeId != login)
+                {
+                    requester += " (người tạo phép: " + userInformation.FullName + ")";
+                }
+                var dateRequest = entity.From.ToString("dd/MM/yyyy HH:mm") + " - " + entity.To.ToString("dd/MM/yyyy HH:mm") + " (" + entity.Number + " ngày)";
+                // Api update, generate code.
+                var linkapprove = Constants.System.domain + "/xacnhan/phep";
+                var linkAccept = linkapprove + "?id=" + entity.Id + "&approve=1&secure=" + entity.SecureCode;
+                var linkCancel = linkapprove + "?id=" + entity.Id + "&approve=2&secure=" + entity.SecureCode;
+                var linkDetail = Constants.System.domain;
+                var bodyBuilder = new BodyBuilder();
+                using (StreamReader SourceReader = System.IO.File.OpenText(pathToFile))
+                {
+                    bodyBuilder.HtmlBody = SourceReader.ReadToEnd();
+                }
+                string messageBody = string.Format(bodyBuilder.HtmlBody,
+                    subject,
+                    approver,
+                    requester,
+                    var3,
+                    employee.Email,
+                    employee.ChucVuName,
+                    dateRequest,
+                    entity.Reason,
+                    entity.TypeName,
+                    entity.Phone,
+                    linkAccept,
+                    linkCancel,
+                    linkDetail,
+                    Constants.System.domain
+                    );
+
+                var emailMessage = new EmailMessage()
+                {
+                    ToAddresses = tos,
+                    Subject = subject,
+                    BodyContent = messageBody,
+                    Type = "yeu-cau-nghi-phep",
+                    EmployeeId = employee.Id
+                };
+
+                // For faster. Add to schedule.
+                // Send later
+                var scheduleEmail = new ScheduleEmail
+                {
+                    Status = (int)EEmailStatus.Schedule,
+                    To = emailMessage.ToAddresses,
+                    CC = emailMessage.CCAddresses,
+                    BCC = emailMessage.BCCAddresses,
+                    Type = emailMessage.Type,
+                    Title = emailMessage.Subject,
+                    Content = emailMessage.BodyContent,
+                    EmployeeId = emailMessage.EmployeeId
+                };
+                dbContext.ScheduleEmails.InsertOne(scheduleEmail);
             }
             else
             {
-                tos.Add(new EmailAddress { Name = "Tran Minh Xuan", Address = "xuan.tm@tribat.vn" });
-            }
-            var webRoot = Environment.CurrentDirectory;
-            var pathToFile = _env.WebRootPath
-                    + Path.DirectorySeparatorChar.ToString()
-                    + "Templates"
-                    + Path.DirectorySeparatorChar.ToString()
-                    + "EmailTemplate"
-                    + Path.DirectorySeparatorChar.ToString()
-                    + "LeaveRequest.html";
+                // KO CÓ EMAIL,...
+                // [To] nếu có email, người tạo
+                var tos = new List<EmailAddress>();
+                if (!string.IsNullOrEmpty(employee.Email))
+                {
+                    tos.Add(new EmailAddress { Name = employee.FullName, Address = employee.Email });
+                }
+                tos.Add(new EmailAddress { Name = userInformation.FullName, Address = userInformation.Email });
+                
+                var webRoot = Environment.CurrentDirectory;
+                var pathToFile = _env.WebRootPath
+                        + Path.DirectorySeparatorChar.ToString()
+                        + "Templates"
+                        + Path.DirectorySeparatorChar.ToString()
+                        + "EmailTemplate"
+                        + Path.DirectorySeparatorChar.ToString()
+                        + "LeaveHelp.html";
 
-            var subject = "Xác nhận nghỉ phép.";
-            var requester = employee.FullName;
-            var var3 = employee.FullName;
-            if (entity.EmployeeId != login)
-            {
-                requester += " (người tạo phép: " + userInformation.FullName + ")";
-            }
-            var dateRequest = entity.From.ToString("dd/MM/yyyy HH:mm") + " - " + entity.To.ToString("dd/MM/yyyy HH:mm") + " (" + entity.Number + " ngày)";
-            // Api update, generate code.
-            var linkapprove = Constants.System.domain + "/xacnhan/phep";
-            var linkAccept = linkapprove + "?id=" + entity.Id + "&approve=1&secure=" + entity.SecureCode;
-            var linkCancel = linkapprove + "?id=" + entity.Id + "&approve=2&secure=" + entity.SecureCode;
-            var linkDetail = Constants.System.domain;
-            var bodyBuilder = new BodyBuilder();
-            using (StreamReader SourceReader = System.IO.File.OpenText(pathToFile))
-            {
-                bodyBuilder.HtmlBody = SourceReader.ReadToEnd();
-            }
-            string messageBody = string.Format(bodyBuilder.HtmlBody,
-                subject,
-                approver,
-                requester,
-                var3,
-                employee.Email,
-                employee.ChucVuName,
-                dateRequest,
-                entity.Reason,
-                entity.TypeName,
-                entity.Phone,
-                linkAccept,
-                linkCancel,
-                linkDetail,
-                Constants.System.domain
-                );
+                var subject = "Thông tin nghỉ phép.";
+                var dateRequest = entity.From.ToString("dd/MM/yyyy HH:mm") + " - " + entity.To.ToString("dd/MM/yyyy HH:mm") + " (" + entity.Number + " ngày)";
+                // Api update, generate code.
+                var linkDetail = Constants.System.domain;
+                var bodyBuilder = new BodyBuilder();
+                using (StreamReader SourceReader = System.IO.File.OpenText(pathToFile))
+                {
+                    bodyBuilder.HtmlBody = SourceReader.ReadToEnd();
+                }
+                string messageBody = string.Format(bodyBuilder.HtmlBody,
+                    subject,
+                    employee.FullName,
+                    userInformation.FullName,
+                    dateRequest,
+                    entity.Reason,
+                    entity.TypeName,
+                    entity.Phone,
+                    linkDetail,
+                    Constants.System.domain
+                    );
 
-            var emailMessage = new EmailMessage()
-            {
-                ToAddresses = tos,
-                Subject = subject,
-                BodyContent = messageBody,
-                Type = "yeu-cau-nghi-phep",
-                EmployeeId = employee.Id
-            };
+                var emailMessage = new EmailMessage()
+                {
+                    ToAddresses = tos,
+                    Subject = subject,
+                    BodyContent = messageBody,
+                    Type = "nghi-phep-thong-tin",
+                    EmployeeId = employee.Id
+                };
 
-            // For faster. Add to schedule.
-            // Send later
-            var scheduleEmail = new ScheduleEmail
-            {
-                Status = (int)EEmailStatus.Schedule,
-                To = emailMessage.ToAddresses,
-                CC = emailMessage.CCAddresses,
-                BCC = emailMessage.BCCAddresses,
-                Type = emailMessage.Type,
-                Title = emailMessage.Subject,
-                Content = emailMessage.BodyContent,
-                EmployeeId = emailMessage.EmployeeId
-            };
-            dbContext.ScheduleEmails.InsertOne(scheduleEmail);
+                // For faster. Add to schedule.
+                // Send later
+                var scheduleEmail = new ScheduleEmail
+                {
+                    Status = (int)EEmailStatus.Schedule,
+                    To = emailMessage.ToAddresses,
+                    CC = emailMessage.CCAddresses,
+                    BCC = emailMessage.BCCAddresses,
+                    Type = emailMessage.Type,
+                    Title = emailMessage.Subject,
+                    Content = emailMessage.BodyContent,
+                    EmployeeId = emailMessage.EmployeeId
+                };
+                dbContext.ScheduleEmails.InsertOne(scheduleEmail);
+            }
             #endregion
 
-            return Json(new { result = true, message = "Yêu cầu được gửi các bộ phận liên quan." });
+            return Json(new { result = true, message = "Thông tin sẽ được gửi các bộ phận liên quan, thời gian tùy theo qui định của công ty và các yếu tố khách quan." });
         }
 
         [Route(Constants.LinkLeave.ApprovePost)]
@@ -807,7 +905,7 @@ namespace erp.Controllers
 
             #endregion
 
-            var approvement = dbContext.Employees.Find(m => m.Id.Equals(leave.ApproverId)).FirstOrDefault();
+            var approvement = dbContext.Employees.Find(m => m.ChucVu.Equals(leave.ApproverId)).FirstOrDefault();
             // Tự yêu cầu
             bool seftFlag = leave.EmployeeId == leave.CreatedBy ? true : false;
             var employee = dbContext.Employees.Find(m => m.Id.Equals(leave.EmployeeId)).FirstOrDefault();

@@ -294,23 +294,16 @@
                         <div class="col-12">
                             <div class="form-group">
                                 <i class="icon icon-select-arrows"></i>
-                                <label class="control-label">Người quản lý trực tiếp</label>
-                                <select name="Employee.ManagerId" id="ManagerId" class="form-control form-control-lg js-select2-basic-single">
-                                    <option value="">Không có quản lý</option>
+                                <label class="control-label">Quản lý trực tiếp</label>
+                                <select asp-for="Employee.ManagerId" id="ManagerId" class="form-control form-control-lg js-select2-basic-single">
+                                    <option value="">Chọn</option>
                                     @{
-                                        foreach (var item in Model.Employees)
+                                        foreach (var item in Model.ChucVus)
                                         {
-                                            string displayTitle = string.Empty;
-                                            if (!string.IsNullOrEmpty(item.Email))
-                                            {
-                                                displayTitle += "- " + item.Email + "";
-                                            }
-                                            <option value="@item.Id">@item.FullName @displayTitle</option>
+                                            <option value="@item.Id">@item.Name</option>
                                         }
                                     }
                                 </select>
-                                <input type="hidden" value="@Model.Employee.ManagerId" id="hidManagerId" />
-                                <input type="hidden" asp-for="Employee.ManagerInformation" id="hidManagerInformation" />
                             </div>
                         </div>
 

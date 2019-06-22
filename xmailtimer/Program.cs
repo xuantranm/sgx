@@ -266,7 +266,8 @@ namespace xmailtimer
                         ccs = new List<EmailAddress>();
                         foreach (var item in hrsNhaMay)
                         {
-                            ccs.Add(new EmailAddress() { Name = item.FullName, Address = item.Email });
+                            // Thoa no need cc
+                            //ccs.Add(new EmailAddress() { Name = item.FullName, Address = item.Email });
                         }
                     }
                     else
@@ -286,7 +287,8 @@ namespace xmailtimer
                         ccs = new List<EmailAddress>();
                         foreach (var item in hrsNhaMay)
                         {
-                            ccs.Add(new EmailAddress() { Name = item.FullName, Address = item.Email });
+                            // Thoa no need cc
+                            // ccs.Add(new EmailAddress() { Name = item.FullName, Address = item.Email });
                         }
                     }
                     else
@@ -432,7 +434,8 @@ namespace xmailtimer
                             {
                                 foreach (var item in hrsNhaMay)
                                 {
-                                    ccs.Add(new EmailAddress() { Name = item.FullName, Address = item.Email });
+                                    // Thoa no need cc
+                                    // ccs.Add(new EmailAddress() { Name = item.FullName, Address = item.Email });
                                 }
                             }
                             else
@@ -451,7 +454,8 @@ namespace xmailtimer
                                 ccs = new List<EmailAddress>();
                                 foreach (var item in hrsNhaMay)
                                 {
-                                    ccs.Add(new EmailAddress() { Name = item.FullName, Address = item.Email });
+                                    // Thoa no need cc
+                                    // ccs.Add(new EmailAddress() { Name = item.FullName, Address = item.Email });
                                 }
                             }
                             else

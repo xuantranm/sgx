@@ -118,13 +118,13 @@ namespace erp.Controllers
             var approves = new List<IdName>();
             if (!string.IsNullOrEmpty(userInformation.ManagerId))
             {
-                var approveEntity = dbContext.Employees.Find(m => m.Id.Equals(userInformation.ManagerId)).FirstOrDefault();
+                var approveEntity = dbContext.Employees.Find(m => m.ChucVu.Equals(userInformation.ManagerId)).FirstOrDefault();
                 if (approveEntity != null)
                 {
                     approves.Add(new IdName
                     {
-                        Id = approveEntity.Id,
-                        Name = approveEntity.FullName
+                        Id = approveEntity.ChucVu,
+                        Name = approveEntity.FullName + " ("+ approveEntity.ChucVuName +")"
                     });
                 }
             }
@@ -133,10 +133,11 @@ namespace erp.Controllers
                 var rolesApprove = dbContext.RoleUsers.Find(m => m.Enable.Equals(true) && m.Role.Equals(Constants.Rights.XacNhanCong)).ToList();
                 foreach (var roleApprove in rolesApprove)
                 {
+                    var employeeRole = dbContext.Employees.Find(m => m.Id.Equals(roleApprove.User)).FirstOrDefault();
                     approves.Add(new IdName
                     {
-                        Id = roleApprove.User,
-                        Name = roleApprove.FullName
+                        Id = employeeRole.ChucVu,
+                        Name = employeeRole.FullName + " (" + employeeRole.ChucVuName + ")"
                     });
                 }
             }
@@ -269,23 +270,24 @@ namespace erp.Controllers
             var approves = new List<IdName>();
             if (!string.IsNullOrEmpty(userInformation.ManagerId))
             {
-                var approveEntity = dbContext.Employees.Find(m => m.Id.Equals(userInformation.ManagerId)).FirstOrDefault();
+                var approveEntity = dbContext.Employees.Find(m => m.ChucVu.Equals(userInformation.ManagerId)).FirstOrDefault();
                 if (approveEntity != null)
                 {
                     approves.Add(new IdName
                     {
-                        Id = approveEntity.Id,
-                        Name = approveEntity.FullName
+                        Id = approveEntity.ChucVu,
+                        Name = approveEntity.FullName + " (" + approveEntity.ChucVuName + ")"
                     });
                 }
             }
             var rolesApprove = dbContext.RoleUsers.Find(m => m.Enable.Equals(true) && m.Role.Equals(Constants.Rights.XacNhanCong)).ToList();
             foreach (var roleApprove in rolesApprove)
             {
+                var employeeRole = dbContext.Employees.Find(m => m.Id.Equals(roleApprove.User)).FirstOrDefault();
                 approves.Add(new IdName
                 {
-                    Id = roleApprove.User,
-                    Name = roleApprove.FullName
+                    Id = employeeRole.ChucVu,
+                    Name = employeeRole.FullName + " (" + employeeRole.ChucVuName + ")"
                 });
             }
             #endregion
@@ -406,23 +408,24 @@ namespace erp.Controllers
             var approves = new List<IdName>();
             if (!string.IsNullOrEmpty(userInformation.ManagerId))
             {
-                var approveEntity = dbContext.Employees.Find(m => m.Id.Equals(userInformation.ManagerId)).FirstOrDefault();
+                var approveEntity = dbContext.Employees.Find(m => m.ChucVu.Equals(userInformation.ManagerId)).FirstOrDefault();
                 if (approveEntity != null)
                 {
                     approves.Add(new IdName
                     {
                         Id = approveEntity.Id,
-                        Name = approveEntity.FullName
+                        Name = approveEntity.FullName + " (" + approveEntity.ChucVuName + ")"
                     });
                 }
             }
             var rolesApprove = dbContext.RoleUsers.Find(m => m.Enable.Equals(true) && m.Role.Equals(Constants.Rights.XacNhanCong)).ToList();
             foreach (var roleApprove in rolesApprove)
             {
+                var employeeRole = dbContext.Employees.Find(m => m.Id.Equals(roleApprove.User)).FirstOrDefault();
                 approves.Add(new IdName
                 {
                     Id = roleApprove.User,
-                    Name = roleApprove.FullName
+                    Name = employeeRole.FullName + " (" + employeeRole.ChucVuName + ")"
                 });
             }
             #endregion
@@ -527,7 +530,7 @@ namespace erp.Controllers
             var approveEntity = new Employee();
             if (!string.IsNullOrEmpty(model.ConfirmId))
             {
-                approveEntity = dbContext.Employees.Find(m => m.Id.Equals(model.ConfirmId)).FirstOrDefault();
+                approveEntity = dbContext.Employees.Find(m => m.ChucVu.Equals(model.ConfirmId)).FirstOrDefault();
             }
             else
             {
@@ -784,7 +787,7 @@ namespace erp.Controllers
 
             #endregion
 
-            var approvement = dbContext.Employees.Find(m => m.Id.Equals(entity.ConfirmId)).FirstOrDefault();
+            var approvement = dbContext.Employees.Find(m => m.ChucVu.Equals(entity.ConfirmId)).FirstOrDefault();
             var approvementchucvuE = dbContext.ChucVus.Find(m => m.Id.Equals(approvement.ChucVu)).FirstOrDefault();
             var approvementchucvu = approvementchucvuE != null ? approvementchucvuE.Name : string.Empty;
             // Tự yêu cầu

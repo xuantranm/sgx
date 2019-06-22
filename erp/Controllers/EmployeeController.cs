@@ -678,15 +678,14 @@ namespace erp.Controllers
                 return NotFound();
             }
 
-            var nguoiquanly = string.Empty;
-            var nguoiquanlychucvu = string.Empty;
             if (!string.IsNullOrEmpty(entity.ManagerId))
             {
-                var manager = dbContext.Employees.Find(m => m.Id.Equals(entity.ManagerId)).FirstOrDefault();
-                if (manager != null)
+                var chucvuE = dbContext.ChucVus.Find(m => m.Id.Equals(entity.ManagerId)).FirstOrDefault();
+                entity.ManagerInformation = chucvuE.Name;
+                var managerEmployee = dbContext.Employees.Find(m => m.ChucVu.Equals(entity.ManagerId)).FirstOrDefault();
+                if (managerEmployee != null)
                 {
-                    nguoiquanly = manager.FullName;
-                    nguoiquanlychucvu = manager.ChucVuName;
+                    entity.ManagerInformation += " (anh/chị " + managerEmployee.FullName + ")";
                 }
             }
 
@@ -985,6 +984,12 @@ namespace erp.Controllers
                 entity.Code = sysCode;
                 entity.Password = sysPassword;
                 entity.AliasFullName = Utility.AliasConvert(entity.FullName);
+
+                if (!string.IsNullOrEmpty(entity.ManagerId))
+                {
+                    var managerE = dbContext.ChucVus.Find(m => m.Id.Equals(entity.ManagerId)).FirstOrDefault();
+                    entity.ManagerInformation = managerE.Name;
+                }
                 dbContext.Employees.InsertOne(entity);
                 var newUserId = entity.Id;
 
@@ -1133,10 +1138,15 @@ namespace erp.Controllers
             var sortEmployee = Builders<Employee>.Sort.Ascending(m => m.FullName);
             var employees = dbContext.Employees.Find(m => m.Enable.Equals(true)).Sort(sortEmployee).ToList();
 
-            var manager = new Employee();
             if (!string.IsNullOrEmpty(entity.ManagerId))
             {
-                manager = dbContext.Employees.Find(m => m.Id.Equals(entity.ManagerId)).FirstOrDefault();
+                var chucvuE = dbContext.ChucVus.Find(m => m.Id.Equals(entity.ManagerId)).FirstOrDefault();
+                entity.ManagerInformation = chucvuE.Name;
+                var managerEmployee = dbContext.Employees.Find(m => m.ChucVu.Equals(entity.ManagerId)).FirstOrDefault();
+                if (managerEmployee!= null)
+                {
+                    entity.ManagerInformation += " (anh/chị " + managerEmployee.FullName +")";
+                }
             }
 
             var employeeChanged = await dbContext.EmployeeHistories.Find(m => m.EmployeeId.Equals(id)).SortByDescending(m => m.UpdatedOn).Limit(1).FirstOrDefaultAsync();
@@ -1163,7 +1173,6 @@ namespace erp.Controllers
                 Employee = entity,
                 EmployeeChance = employeeChanged,
                 Employees = employees,
-                Manager = manager,
                 StatusChange = statusChange,
                 CongTyChiNhanhs = congtychinhanhs,
                 KhoiChucNangs = khoichucnangs,
@@ -1403,6 +1412,12 @@ namespace erp.Controllers
                         entity.Leaveday = null;
                         entity.LeaveReason = string.Empty;
                         entity.LeaveHandover = string.Empty;
+                    }
+
+                    if (!string.IsNullOrEmpty(entity.ManagerId))
+                    {
+                        var managerE = dbContext.ChucVus.Find(m => m.Id.Equals(entity.ManagerId)).FirstOrDefault();
+                        entity.ManagerInformation = managerE.Name;
                     }
 
                     var filter = Builders<Employee>.Filter.Eq(m => m.Id, entity.Id);

@@ -148,9 +148,9 @@ namespace Models
         public string GhiChu { get; set; }
         #endregion
 
-        public string ManagerId { get; set; }
+        public string ManagerId { get; set; } // Quản lý theo chức vụ
 
-        public string ManagerInformation { get; set; }
+        public string ManagerInformation { get; set; } // Load dynamic...
 
         [Display(Name = "ĐT bàn")]
         [DataType(DataType.PhoneNumber)]

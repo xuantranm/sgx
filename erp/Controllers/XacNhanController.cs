@@ -126,7 +126,7 @@ namespace erp.Controllers
 
             #endregion
 
-            var approvement = dbContext.Employees.Find(m => m.Id.Equals(leave.ApproverId)).FirstOrDefault();
+            var approvement = dbContext.Employees.Find(m => m.ChucVu.Equals(leave.ApproverId)).FirstOrDefault();
 
             // Tự yêu cầu
             bool seftFlag = leave.EmployeeId == leave.CreatedBy ? true : false;
@@ -354,7 +354,7 @@ namespace erp.Controllers
 
             #endregion
 
-            var approvement = dbContext.Employees.Find(m => m.Id.Equals(entity.ConfirmId)).FirstOrDefault();
+            var approvement = dbContext.Employees.Find(m => m.ChucVu.Equals(entity.ConfirmId)).FirstOrDefault();
             var employee = dbContext.Employees.Find(m => m.Id.Equals(entity.EmployeeId)).FirstOrDefault();
 
             #region Send email to user

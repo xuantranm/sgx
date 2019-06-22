@@ -100,10 +100,8 @@ namespace Models
         [Display(Name = "Chi tiết")]
         public string ReasonDetail { get; set; }
 
-        [Display(Name ="Người xác nhận")]
-        public string ConfirmId { get; set; }
+        public string ConfirmId { get; set; } // Chức vụ
 
-        [Display(Name = "Người xác nhận")]
         public string ConfirmName { get; set; }
 
         [Display(Name = "Ngày xác nhận công")]

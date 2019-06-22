@@ -4,10 +4,6 @@
             theme: "bootstrap"
         });
 
-    //$('#times').on('select2:select', function (e) {
-    //    formSubmit();
-    //});
-
     $('.ddl-times').on('change', function (e) {
         formSubmit();
     });
