@@ -894,6 +894,15 @@
     <Content Update="Views\TimeKeeper\Approvement.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
+    <Content Update="Views\TimeKeeper\OvertimeData.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\TimeKeeper\OvertimeSecurityList.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\TimeKeeper\OvertimeList.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
     <Content Update="Views\TimeKeeper\Manage.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
@@ -907,6 +916,9 @@
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
     <Content Update="Views\Shared\_LayoutSocialFb.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\XacNhan\TangCa.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
   </ItemGroup>

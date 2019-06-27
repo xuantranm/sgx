@@ -508,5 +508,141 @@ namespace erp.Controllers
             ViewData["Status"] = "Cám ơn đã xác nhận, kết quả đang gửi cho người liên quan.";
             return View(viewModel);
         }
+
+        [AllowAnonymous]
+        public IActionResult TangCa(int code, int approve, string secure)
+        {
+            var viewModel = new TimeKeeperViewModel
+            {
+                Approve = approve
+            };
+
+            #region Extensions
+            var builderTraining = Builders<Trainning>.Filter;
+            var filterTraining = builderTraining.Eq(m => m.Enable, true);
+            filterTraining = filterTraining & builderTraining.Eq(m => m.Type, "anh-van");
+            var listTraining = dbContext.Trainnings.Find(filterTraining).Limit(10).SortByDescending(m => m.CreatedOn).ToList();
+            viewModel.ListTraining = listTraining;
+            #endregion
+
+            var list = dbContext.OvertimeEmployees.Find(m => m.Code.Equals(code) && m.Timestamp.Equals(secure)).ToList();
+
+            if (list != null && list.Count > 0)
+            {
+                var filter = Builders<OvertimeEmployee>.Filter.Eq(m => m.Code, code) & Builders<OvertimeEmployee>.Filter.Eq(m => m.Timestamp, secure);
+                var update = Builders<OvertimeEmployee>.Update
+                    .Set(m => m.Timestamp, DateTime.Now.ToString("yyyyMMddHHmmssfff"))
+                    .Set(m => m.Status, approve)
+                    .Set(m => m.ApprovedOn, DateTime.Now);
+                dbContext.OvertimeEmployees.UpdateMany(filter, update);
+
+                #region Send mail AN NINH
+                if (approve == (int)EOvertime.Ok)
+                {
+                    #region parameters
+                    //{0} : Subject
+                    //{1} : Gender Nguoi nhan 
+                    //{2} : Fullname nguoi nhan
+                    //{3} : Gender nguoi yeu cau
+                    //{4} : Fullname nguoi yeu cau
+                    //{5} : Chức vụ
+                    //{6} : Email
+                    //{7} : Phone
+                    //{8} : Noi dung . Example: bang tang ca ngày dd/MM/yyyy
+                    //{9}: Link chi tiet
+                    //{10}: Website
+                    #endregion
+
+                    var overtime = list.First();
+                    var date = overtime.Date;
+
+                    var directorE = dbContext.Employees.Find(m => m.Id.Equals(overtime.ApprovedBy)).FirstOrDefault();
+
+                    var securityPosition = dbContext.ChucVus.Find(m => m.Code.Equals("CHUCVU86")).FirstOrDefault();
+
+                    var securityE = dbContext.Employees.Find(m => m.ChucVu.Equals(securityPosition.Id)).FirstOrDefault();
+
+                    var genderDE = directorE.Gender == "Nam" ? "Anh" : "Chị";
+                    var genderDELower = directorE.Gender == "Nam" ? "anh" : "chị";
+                    var genderSE = securityE.Gender == "Nam" ? "anh" : "chị";
+
+                    var phone = string.Empty;
+                    if (directorE.Mobiles != null && directorE.Mobiles.Count > 0)
+                    {
+                        phone = directorE.Mobiles[0].Number;
+                    }
+
+                    var webRoot = Environment.CurrentDirectory;
+                    var pathToFile = _env.WebRootPath
+                            + Path.DirectorySeparatorChar.ToString()
+                            + "Templates"
+                            + Path.DirectorySeparatorChar.ToString()
+                            + "EmailTemplate"
+                            + Path.DirectorySeparatorChar.ToString()
+                            + "OvertimeSecurity.html";
+
+                    var tos = new List<EmailAddress>
+                {
+                    new EmailAddress { Name = securityE.FullName, Address = securityE.Email }
+                };
+
+                    var subject = "Kiểm tra Bảng tăng ca ngày " + date.ToString("dd/MM/yyyy");
+                    var title = "Bảng tăng ca ngày " + date.ToString("dd/MM/yyyy");
+
+                    var linkDetail = Constants.System.domain + "/" + Constants.LinkTimeKeeper.Main + "/" + Constants.LinkTimeKeeper.OvertimeSecurityList + "?Tu=" + date.ToString("MM-dd-yyyy") + "&Den=" + date.ToString("MM-dd-yyyy");
+
+                    var bodyBuilder = new BodyBuilder();
+                    using (StreamReader SourceReader = System.IO.File.OpenText(pathToFile))
+                    {
+                        bodyBuilder.HtmlBody = SourceReader.ReadToEnd();
+                    }
+                    string messageBody = string.Format(bodyBuilder.HtmlBody,
+                        subject,
+                        genderSE,
+                        securityE.FullName,
+                        genderDE,
+                        directorE.FullName,
+                        directorE.ChucVuName,
+                        genderDELower,
+                        directorE.Email,
+                        phone,
+                        title,
+                        linkDetail,
+                        Constants.System.domain
+                        );
+
+                    var emailMessage = new EmailMessage()
+                    {
+                        ToAddresses = tos,
+                        Subject = subject,
+                        BodyContent = messageBody,
+                        Type = "overtime-security",
+                        EmployeeId = overtime.Code.ToString()
+                    };
+
+                    var scheduleEmail = new ScheduleEmail
+                    {
+                        Status = (int)EEmailStatus.Schedule,
+                        To = emailMessage.ToAddresses,
+                        CC = emailMessage.CCAddresses,
+                        BCC = emailMessage.BCCAddresses,
+                        Type = emailMessage.Type,
+                        Title = emailMessage.Subject,
+                        Content = emailMessage.BodyContent,
+                        EmployeeId = emailMessage.EmployeeId
+                    };
+
+                    dbContext.ScheduleEmails.InsertOne(scheduleEmail);
+                }
+                #endregion
+
+                ViewData["Status"] = "Cám ơn đã xác nhận, kết quả đang gửi cho người liên quan.";
+                return View(viewModel);
+            }
+
+            ViewData["Status"] = Constants.ErrorParameter;
+            viewModel.Error = true;
+            return View(viewModel);
+        }
     }
 }

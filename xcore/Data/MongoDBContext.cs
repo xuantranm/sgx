@@ -195,6 +195,14 @@ namespace Data
                 return _database.GetCollection<EmployeeWorkTimeMonthLog>("EmployeeWorkTimeMonthLogs");
             }
         }
+
+        public IMongoCollection<OvertimeEmployee> OvertimeEmployees
+        {
+            get
+            {
+                return _database.GetCollection<OvertimeEmployee>("OvertimeEmployees");
+            }
+        }
         #endregion
 
         #region HRs

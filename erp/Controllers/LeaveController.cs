@@ -32,6 +32,10 @@ using MongoDB.Bson;
 
 namespace erp.Controllers
 {
+    /// <summary>
+    /// Approve by EmployeeId,
+    /// Load list approver by Chuc Vu quan ly nhân viên đó.
+    /// </summary>
     [Authorize]
     [Route(Constants.LinkLeave.Main)]
     public class LeaveController : Controller
@@ -65,8 +69,8 @@ namespace erp.Controllers
             var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
             ViewData["LoginUserName"] = loginUserName;
 
-            var userInformation = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(login)).FirstOrDefault();
-            if (userInformation == null)
+            var loginE = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(login)).FirstOrDefault();
+            if (loginE == null)
             {
                 #region snippet1
                 await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
@@ -79,7 +83,7 @@ namespace erp.Controllers
                 isRight = true;
             }
 
-            var managerList = dbContext.Employees.CountDocuments(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.ManagerId.Equals(userInformation.ChucVu));
+            var managerList = dbContext.Employees.CountDocuments(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.ManagerId.Equals(loginE.ChucVu));
             if (managerList > 0)
             {
                 isRight = true;
@@ -89,7 +93,7 @@ namespace erp.Controllers
             id = string.IsNullOrEmpty(id) ? login : id;
             if (id != login)
             {
-                userInformation = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.Id.Equals(id)).FirstOrDefault();
+                loginE = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.Id.Equals(id)).FirstOrDefault();
             }
 
             var approves = new List<IdName>();
@@ -97,27 +101,27 @@ namespace erp.Controllers
             var start = new TimeSpan(8, 0, 0);
             var end = new TimeSpan(17, 0, 0);
             var workingScheduleTime = "8:00-17:00";
-            if (userInformation != null)
+            if (loginE != null)
             {
-                if (userInformation.Mobiles != null && userInformation.Mobiles.Count > 0)
+                if (loginE.Mobiles != null && loginE.Mobiles.Count > 0)
                 {
-                    phone = userInformation.Mobiles.First().Number;
+                    phone = loginE.Mobiles.First().Number;
                 }
-                if (!string.IsNullOrEmpty(userInformation.ManagerId))
+                if (!string.IsNullOrEmpty(loginE.ManagerId))
                 {
-                    var approveEntity = dbContext.Employees.Find(m => m.ChucVu.Equals(userInformation.ManagerId)).FirstOrDefault();
+                    var approveEntity = dbContext.Employees.Find(m => m.ChucVu.Equals(loginE.ManagerId)).FirstOrDefault();
                     if (approveEntity != null)
                     {
                         approves.Add(new IdName
                         {
-                            Id = approveEntity.ChucVu,
+                            Id = approveEntity.Id,
                             Name = approveEntity.FullName + " (" + approveEntity.ChucVuName + ")"
                         });
                     }
                 }
-                if (userInformation.Workplaces != null && userInformation.Workplaces.Count > 0)
+                if (loginE.Workplaces != null && loginE.Workplaces.Count > 0)
                 {
-                    foreach (var workplace in userInformation.Workplaces)
+                    foreach (var workplace in loginE.Workplaces)
                     {
                         if (!string.IsNullOrEmpty(workplace.WorkingScheduleTime))
                         {
@@ -132,8 +136,8 @@ namespace erp.Controllers
             // Create new leave
             var leave = new Leave
             {
-                EmployeeId = userInformation.Id,
-                EmployeeName = userInformation.FullName,
+                EmployeeId = loginE.Id,
+                EmployeeName = loginE.FullName,
                 Reason = "Nghỉ phép",
                 Phone = phone,
                 Start = start,
@@ -156,7 +160,7 @@ namespace erp.Controllers
                     var employeeRole = dbContext.Employees.Find(m => m.Id.Equals(roleApprove.User)).FirstOrDefault();
                     approves.Add(new IdName
                     {
-                        Id = employeeRole.ChucVu,
+                        Id = employeeRole.Id,
                         Name = employeeRole.FullName + " (" + employeeRole.ChucVuName + ")"
                     });
                 }
@@ -175,7 +179,7 @@ namespace erp.Controllers
             {
                 Leave = leave,
                 Leaves = leaves,
-                Employee = userInformation,
+                Employee = loginE,
                 Approves = approves,
                 Types = types,
                 LeaveEmployees = leaveEmployees,
@@ -194,8 +198,8 @@ namespace erp.Controllers
             var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
             ViewData["LoginUserName"] = loginUserName;
 
-            var userInformation = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(login)).FirstOrDefault();
-            if (userInformation == null)
+            var loginE = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(login)).FirstOrDefault();
+            if (loginE == null)
             {
                 #region snippet1
                 await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
@@ -207,43 +211,36 @@ namespace erp.Controllers
             if (loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.XinNghiPhepDum, (int)ERights.Add))
             {
                 isRightSys = true;
-                isRight = true;
             }
 
-            var managerList = dbContext.Employees.CountDocuments(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.ManagerId.Equals(userInformation.ChucVu));
-            if (managerList > 0)
+            var builderManager = Builders<Employee>.Filter;
+            var filterManager = builderManager.Eq(m => m.Enable, true) & builderManager.Eq(m => m.Leave, false);
+            filterManager = filterManager & !builderManager.Eq(m => m.UserName, Constants.System.account);
+            filterManager = filterManager & !builderManager.In(m => m.NgachLuongCode, new string[] { "C.01", "C.02", "C.03" });
+            if (!isRightSys)
+            {
+                filterManager = filterManager & builderManager.Eq(m => m.ManagerId, loginE.ChucVu);
+            }
+            var managerList = await dbContext.Employees.Find(filterManager).SortBy(m => m.FullName).ToListAsync();
+            if (managerList != null && managerList.Count > 0)
             {
                 isRight = true;
             }
-
             if (!isRight)
             {
                 return RedirectToAction("AccessDenied", "Account");
             }
             #endregion
 
+            var employee = new Employee();
             id = string.IsNullOrEmpty(id) ? login : id;
             if (id != login)
             {
-                userInformation = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.Id.Equals(id)).FirstOrDefault();
+                employee = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.Id.Equals(id)).FirstOrDefault();
             }
 
             #region Dropdownlist
             var types = dbContext.LeaveTypes.Find(m => m.Enable.Equals(true) && m.Display.Equals(true)).ToList();
-            // Danh sách nhân viên để tạo phép dùm
-            var builder = Builders<Employee>.Filter;
-            var filter = builder.Eq(m => m.Enable, true) & builder.Eq(m => m.Leave, false);
-            filter = filter & !builder.Eq(m => m.UserName, Constants.System.account);
-            // Remove cấp cao ra (theo mã số lương)
-            filter = filter & !builder.In(m => m.NgachLuongCode, new string[] { "C.01", "C.02", "C.03" });
-
-            if (!isRightSys)
-            {
-                filter = filter & builder.Eq(m => m.ManagerId, userInformation.ChucVu);
-            }
-            var employees = await dbContext.Employees.Find(filter).SortBy(m => m.FullName).ToListAsync();
-           
-            var approves = new List<IdName>();
             #endregion
 
             var leave = new Leave();
@@ -255,25 +252,13 @@ namespace erp.Controllers
             var end = new TimeSpan(16, 0, 0);
             var workingScheduleTime = "7:00-16:00";
 
-            if (userInformation.Mobiles != null && userInformation.Mobiles.Count > 0)
+            if (employee.Mobiles != null && employee.Mobiles.Count > 0)
             {
-                phone = userInformation.Mobiles.First().Number;
+                phone = employee.Mobiles.First().Number;
             }
-            if (!string.IsNullOrEmpty(userInformation.ManagerId))
+            if (employee.Workplaces != null && employee.Workplaces.Count > 0)
             {
-                var approveEntity = dbContext.Employees.Find(m => m.ChucVu.Equals(userInformation.ManagerId)).FirstOrDefault();
-                if (approveEntity != null)
-                {
-                    approves.Add(new IdName
-                    {
-                        Id = approveEntity.ChucVu,
-                        Name = approveEntity.FullName + " (" + approveEntity.ChucVuName + ")"
-                    });
-                }
-            }
-            if (userInformation.Workplaces != null && userInformation.Workplaces.Count > 0)
-            {
-                foreach (var workplace in userInformation.Workplaces)
+                foreach (var workplace in employee.Workplaces)
                 {
                     if (!string.IsNullOrEmpty(workplace.WorkingScheduleTime))
                     {
@@ -287,8 +272,8 @@ namespace erp.Controllers
             // Create new leave
             leave = new Leave
             {
-                EmployeeId = userInformation.Id,
-                EmployeeName = userInformation.FullName,
+                EmployeeId = employee.Id,
+                EmployeeName = employee.FullName,
                 Reason = "Nghỉ phép",
                 Phone = phone,
                 Start = start,
@@ -298,34 +283,18 @@ namespace erp.Controllers
 
             // History leave
             var sort = Builders<Leave>.Sort.Descending(m => m.UpdatedOn);
-            leaves = await dbContext.Leaves.Find(m => m.EmployeeId.Equals(userInformation.Id)).Sort(sort).ToListAsync();
+            leaves = await dbContext.Leaves.Find(m => m.EmployeeId.Equals(employee.Id)).Sort(sort).ToListAsync();
 
             // Quản lý số ngày nghỉ phép còn lại (nghỉ phép, các loại nghỉ bù,...)
-            leaveEmployees = await dbContext.LeaveEmployees.Find(m => m.EmployeeId.Equals(userInformation.Id)).ToListAsync();
-
-
-            var rolesApprove = dbContext.RoleUsers.Find(m => m.Enable.Equals(true) && m.Role.Equals(Constants.Rights.XacNhanNghiPhep)).ToList();
-            foreach (var roleApprove in rolesApprove)
-            {
-                if (!approves.Any(item => item.Id == roleApprove.User))
-                {
-                    var employeeRole = dbContext.Employees.Find(m => m.Id.Equals(roleApprove.User)).FirstOrDefault();
-                    approves.Add(new IdName
-                    {
-                        Id = employeeRole.ChucVu,
-                        Name = employeeRole.FullName + " (" + employeeRole.ChucVuName + ")"
-                    });
-                }
-            }
+            leaveEmployees = await dbContext.LeaveEmployees.Find(m => m.EmployeeId.Equals(employee.Id)).ToListAsync();
 
             var viewModel = new LeaveViewModel
             {
                 Leave = leave,
                 Leaves = leaves,
-                Employee = userInformation,
-                Approves = approves,
+                Employee = loginE,
                 Types = types,
-                Employees = employees,
+                Employees = managerList,
                 LeaveEmployees = leaveEmployees
             };
             return View(viewModel);
@@ -577,8 +546,8 @@ namespace erp.Controllers
             var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
             ViewData["LoginUserName"] = loginUserName;
 
-            var userInformation = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(login)).FirstOrDefault();
-            if (userInformation == null)
+            var loginE = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(login)).FirstOrDefault();
+            if (loginE == null)
             {
                 #region snippet1
                 await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
@@ -590,9 +559,9 @@ namespace erp.Controllers
             double phepcon = 0;
             var entity = viewModel.Leave;
             // Tự yêu cầu
-            var employee = userInformation;
-            // Làm cho người khác
+            var employee = loginE;
             var help = false;
+            // Làm cho người khác
             if (entity.EmployeeId != login)
             {
                 employee = dbContext.Employees.Find(m => m.Id.Equals(entity.EmployeeId)).FirstOrDefault();
@@ -616,9 +585,13 @@ namespace erp.Controllers
             var typeLeave = dbContext.LeaveTypes.Find(m => m.Id.Equals(entity.TypeId)).FirstOrDefault();
             if (typeLeave.SalaryPay == true)
             {
+                double leaveDayAvailable = 0;
                 // Get phép năm, bù còn
                 var leaveEmployeePhep = dbContext.LeaveEmployees.Find(m => m.EmployeeId.Equals(entity.EmployeeId) && m.LeaveTypeId.Equals(entity.TypeId)).FirstOrDefault();
-                var leaveDayAvailable = leaveEmployeePhep.Number;
+                if (leaveEmployeePhep != null)
+                {
+                    leaveDayAvailable = leaveEmployeePhep.Number;
+                }
                 // Nghỉ hưởng lương dc phép tạo (thai sản, cưới, sự kiện,...) 
                 if (typeLeave.Alias != "nghi-huong-luong")
                 {
@@ -649,15 +622,24 @@ namespace erp.Controllers
             entity.EmployeeDepartment = employee.PhongBanName;
             entity.EmployeePart = employee.BoPhanName;
             entity.EmployeeTitle = employee.ChucVuName;
-
             entity.Status = (int)StatusLeave.New;
+
             if (help)
             {
                 entity.Status = (int)StatusLeave.Accept;
-                entity.ApprovedBy = userInformation.Id;
+                entity.ApproverId = loginE.Id;
+                entity.ApprovedBy = loginE.Id;
             }
-            entity.CreatedBy = login;
-            entity.UpdatedBy = login;
+
+            var approverE = new Employee();
+            if (!string.IsNullOrEmpty(entity.ApproverId))
+            {
+                approverE = dbContext.Employees.Find(m => m.Id.Equals(entity.ApproverId)).FirstOrDefault();
+                entity.ApproverName = approverE.FullName + " ("+ approverE.ChucVuName +")";
+            }
+
+            entity.CreatedBy = loginE.Id;
+            entity.UpdatedBy = loginE.Id;
 
             dbContext.Leaves.InsertOne(entity);
 
@@ -682,24 +664,13 @@ namespace erp.Controllers
             }
             #endregion
 
-            #region tracking everything
-
-            #endregion
-
             #region Send Mail
             if (!help)
             {
                 var tos = new List<EmailAddress>();
-                var approver = string.Empty;
                 if (!string.IsNullOrEmpty(entity.ApproverId))
                 {
-                    var approve1 = dbContext.Employees.Find(m => m.ChucVu.Equals(entity.ApproverId)).FirstOrDefault();
-                    approver = approve1.FullName;
-                    tos.Add(new EmailAddress { Name = approve1.FullName, Address = approve1.Email });
-                }
-                else
-                {
-                    tos.Add(new EmailAddress { Name = "Tran Minh Xuan", Address = "xuan.tm@tribat.vn" });
+                    tos.Add(new EmailAddress { Name = approverE.FullName, Address = approverE.Email });
                 }
                 var webRoot = Environment.CurrentDirectory;
                 var pathToFile = _env.WebRootPath
@@ -715,7 +686,7 @@ namespace erp.Controllers
                 var var3 = employee.FullName;
                 if (entity.EmployeeId != login)
                 {
-                    requester += " (người tạo phép: " + userInformation.FullName + ")";
+                    requester += " (người tạo phép: " + loginE.FullName + ")";
                 }
                 var dateRequest = entity.From.ToString("dd/MM/yyyy HH:mm") + " - " + entity.To.ToString("dd/MM/yyyy HH:mm") + " (" + entity.Number + " ngày)";
                 // Api update, generate code.
@@ -730,7 +701,7 @@ namespace erp.Controllers
                 }
                 string messageBody = string.Format(bodyBuilder.HtmlBody,
                     subject,
-                    approver,
+                    approverE.FullName,
                     requester,
                     var3,
                     employee.Email,
@@ -778,8 +749,27 @@ namespace erp.Controllers
                 {
                     tos.Add(new EmailAddress { Name = employee.FullName, Address = employee.Email });
                 }
-                tos.Add(new EmailAddress { Name = userInformation.FullName, Address = userInformation.Email });
-                
+                tos.Add(new EmailAddress { Name = loginE.FullName, Address = loginE.Email });
+
+                // CC HR
+                var ccs = new List<EmailAddress>();
+                var listHrRoles = dbContext.RoleUsers.Find(m => m.Role.Equals(Constants.Rights.NhanSu) && (m.Expired.Equals(null) || m.Expired > DateTime.Now)).ToList();
+                if (listHrRoles != null && listHrRoles.Count > 0)
+                {
+                    foreach (var item in listHrRoles)
+                    {
+                        if (item.Action == 3)
+                        {
+                            var fields = Builders<Employee>.Projection.Include(p => p.Email).Include(p => p.FullName);
+                            var emailEntity = dbContext.Employees.Find(m => m.Id.Equals(item.User)).Project<Employee>(fields).FirstOrDefault();
+                            if (emailEntity != null)
+                            {
+                                ccs.Add(new EmailAddress { Name = emailEntity.FullName, Address = emailEntity.Email });
+                            }
+                        }
+                    }
+                }
+
                 var webRoot = Environment.CurrentDirectory;
                 var pathToFile = _env.WebRootPath
                         + Path.DirectorySeparatorChar.ToString()
@@ -801,7 +791,7 @@ namespace erp.Controllers
                 string messageBody = string.Format(bodyBuilder.HtmlBody,
                     subject,
                     employee.FullName,
-                    userInformation.FullName,
+                    loginE.FullName,
                     dateRequest,
                     entity.Reason,
                     entity.TypeName,
@@ -813,6 +803,7 @@ namespace erp.Controllers
                 var emailMessage = new EmailMessage()
                 {
                     ToAddresses = tos,
+                    CCAddresses = ccs,
                     Subject = subject,
                     BodyContent = messageBody,
                     Type = "nghi-phep-thong-tin",
@@ -899,10 +890,6 @@ namespace erp.Controllers
                 // Phep khac,...
                 #endregion
             }
-            #endregion
-
-            #region Tracking everything
-
             #endregion
 
             var approvement = dbContext.Employees.Find(m => m.ChucVu.Equals(leave.ApproverId)).FirstOrDefault();

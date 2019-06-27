@@ -25,6 +25,56 @@ namespace Common.Utilities
         {
         }
 
+        public static bool IsSecurityRole(string login)
+        {
+            var securityPosition = dbContext.ChucVus.Find(m => m.Code.Equals("CHUCVU86")).FirstOrDefault();
+            var loginE = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(login) && m.ChucVu.Equals(securityPosition.Id)).FirstOrDefault();
+            if (loginE == null)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public static bool IsManagerRole(string login)
+        {
+            var loginE = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(login)).FirstOrDefault();
+            if (loginE == null)
+            {
+                return false;
+            }
+
+            var builderEmp = Builders<Employee>.Filter;
+            var filterEmp = builderEmp.Eq(m => m.Enable, true) & builderEmp.Eq(m => m.Leave, false);
+            filterEmp = filterEmp & !builderEmp.Eq(m => m.UserName, Constants.System.account);
+            filterEmp = filterEmp & builderEmp.Eq(m => m.ManagerId, loginE.ChucVu);
+            var employees = dbContext.Employees.CountDocuments(filterEmp);
+            if (employees == 0)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public static int GetTypeDate(DateTime? date)
+        {
+            var dateHere = DateTime.Now;
+            if (date.HasValue)
+            {
+                dateHere = date.Value;
+            }
+            var result = (int)EDateType.Normal;
+            if (IsSunday(dateHere))
+            {
+                result = (int)EDateType.Sunday;
+            }
+            if (IsHoliday(dateHere))
+            {
+                result = (int)EDateType.PublicHoliday;
+            }
+            return result;
+        }
+
         public static void AutoInitSalary(int salaryType, int month, int year)
         {
             var endDateMonth = new DateTime(year, month, 25);

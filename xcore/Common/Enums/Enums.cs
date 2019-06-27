@@ -166,6 +166,23 @@ namespace Common.Enums
         TuChoi = 4
     }
 
+    public enum EOvertime
+    {
+        None = 0,
+        Create = 1,
+        Ok = 2,
+        Cancel = 3,
+        Secutity = 4,
+        Signed = 5
+    }
+
+    public enum EDateType
+    {
+        Normal = 1,
+        Sunday = 2,
+        PublicHoliday = 3
+    }
+
     public enum ETimeWork
     {
         None = 0,

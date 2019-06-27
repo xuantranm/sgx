@@ -233,6 +233,18 @@ namespace Common.Utilities
             public const string OvertimeTemplate = "bang-tang-ca-mau";
 
             public const string OvertimeTemplateFull = "bang-tang-ca-mau-full";
+
+            public const string OvertimeList = "lenh-tang-ca";
+
+            public const string OvertimeSecurityList = "an-ninh-lenh-tang-ca";
+
+            public const string OvertimeData = "cap-nhat-lenh-tang-ca";
+
+            public const string OvertimeSecurityData = "an-ninh-cap-nhat-lenh-tang-ca";
+
+            public const string OvertimeApprove = "duyet-tang-ca";
+
+            public const string OvertimeApproveSecurity = "an-ninh-duyet-tang-ca";
         }
 
         public static class KeHoachTongHopLink
@@ -878,6 +890,36 @@ namespace Common.Utilities
                     return "Lễ tết";
                 default:
                     return "Ngày thường";
+            }
+        }
+
+        public static string TimeWork(int input)
+        {
+            switch (input)
+            {
+                case (int)EDateType.Sunday:
+                    return "Chủ nhật";
+                case (int)EDateType.PublicHoliday:
+                    return "Lễ tết";
+                default:
+                    return "Ngày thường";
+            }
+        }
+
+        public static string OvertimeStatus(int input)
+        {
+            switch (input)
+            {
+                case (int)EOvertime.Create:
+                    return "Chờ duyệt";
+                case (int)EOvertime.Ok:
+                    return "Đã duyệt, chờ An Ninh xác nhận";
+                case (int)EOvertime.Cancel:
+                    return "Không duyệt";
+                case (int)EOvertime.Secutity:
+                    return "An ninh đã xác nhận";
+                default:
+                    return string.Empty;
             }
         }
     }

@@ -62,6 +62,10 @@
         var rightDataKhoHangTraVe = false;
         var rightDataTramCan = false;
         var login = User.Identity.Name;
+
+        var isManager = Utility.IsManagerRole(login);
+        var isSecurity = Utility.IsSecurityRole(login);
+
         if (!string.IsNullOrEmpty(login))
         {
             isLogin = true;
@@ -111,9 +115,6 @@
                     </button>
                     <div class="collapse navbar-collapse justify-content-between" id="navbarNav">
                         <ul class="navbar-nav">
-                            <li class="nav-item d-none">
-                                <a href="/" class="nav-link">Trang chủ</a>
-                            </li>
                             @if (rightSystem)
                             {
                                 <li class="nav-item dropdown">
@@ -254,41 +255,63 @@
                                 if (rightHr)
                                 {
                                     <li class="nav-item">
-                                        <a href="/@Constants.LinkHr.Main/@Constants.LinkHr.Human" class="nav-link" data-toggle="tooltip" title="Bấm vô để xem hồ sơ nhân sự."><i class="fas fa-users"></i> Hồ sơ nhân sự</a>
+                                        <a href="/@Constants.LinkHr.Main/@Constants.LinkHr.Human" class="nav-link" data-toggle="tooltip" title="Bấm vô để xem hồ sơ nhân sự."><i class="fas fa-users"></i> NHÂN SỰ</a>
                                     </li>
                                 }
                                 <li class="nav-item">
-                                    <a href="/@Constants.LinkHr.Main/@Constants.LinkHr.Human/@Constants.LinkHr.Information/@login" class="nav-link" data-toggle="tooltip" title="Bấm vô để xem thông tin tài khoản."><i class="fas fa-user-shield"></i> Thông tin</a>
+                                    <a href="/@Constants.LinkHr.Main/@Constants.LinkHr.Human/@Constants.LinkHr.Information/@login" class="nav-link" data-toggle="tooltip" title="Bấm vô để xem thông tin tài khoản."><i class="fas fa-user-shield"></i> THÔNG TIN</a>
                                 </li>
                                 <li class="nav-item">
                                     <a href="/@Constants.LinkLeave.Main/@Constants.LinkLeave.Index" class="nav-link" data-toggle="tooltip" title="Bấm vô tạo nghỉ phép, lịch sử nghỉ phép.">
-                                        <i class="far fa-calendar"></i> Nghỉ phép
+                                        <i class="far fa-calendar"></i> PHÉP
                                     </a>
                                 </li>
                                 <li class="nav-item">
                                     <a href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Index" class="nav-link" data-toggle="tooltip" title="Bấm vô xem lịch sử chấm công, xác nhận công.">
-                                        <i class="fas fa-fingerprint"></i> Chấm công
+                                        <i class="fas fa-fingerprint"></i> CÔNG
                                     </a>
                                 </li>
                                 @if (rightBangChamCong)
                                 {
                                     <li class="nav-item">
                                         <a href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Timer" class="nav-link" data-toggle="tooltip" title="Bấm vô xem bảng chấm công.">
-                                            <i class="far fa-calendar-alt"></i> Bảng chấm công
+                                            <i class="far fa-calendar-alt"></i> BẢNG CÔNG
                                         </a>
                                     </li>
                                 }
+                                @if (isManager)
+                                {
+                                    <li class="nav-item">
+                                        <a href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.OvertimeList" class="nav-link" data-toggle="tooltip" title="Quản lý tăng ca.">
+                                            <i class="fas fa-user-clock"></i> TĂNG CA
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="/@Constants.LinkLeave.Main/@Constants.LinkLeave.HelpLeave" class="nav-link" data-toggle="tooltip" title="Quản lý tăng ca.">
+                                            <i class="far fa-calendar"></i> TẠO PHÉP
+                                        </a>
+                                    </li>
+                                }
+                                @if (isSecurity)
+                                {
+                                    <li class="nav-item">
+                                        <a href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.OvertimeSecurityList" class="nav-link" data-toggle="tooltip" title="Xác nhận tăng ca.">
+                                            <i class="fas fa-user-clock"></i> TĂNG CA
+                                        </a>
+                                    </li>
+                                }
+
                                 <li class="nav-item">
                                     <span data-toggle="modal" data-target="#pwdModal">
                                         <a href="javascript:;" class="nav-link" title="Bấm thay đổi mật khẩu." data-toggle="tooltip">
-                                            <i class="fas fa-key"></i> Thay đổi mật khẩu
+                                            <i class="fas fa-key"></i> MẬT KHẨU
                                         </a>
                                     </span>
                                 </li>
                                 <li class="nav-item">
                                     <form asp-area="" asp-controller="Account" asp-action="Logout" method="post" class="navbar-right logout-form" id="logout-form-layout">
                                         <a href="#" onclick="document.getElementById('logout-form-layout').submit()" class="nav-link" title="Bấm vô để thoát tài khoản." data-toggle="tooltip">
-                                            <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                                            <i class="fas fa-sign-out-alt"></i> ĐĂNG XUẤT
                                         </a>
                                     </form>
                                 </li>
@@ -296,13 +319,10 @@
                             else
                             {
                                 <li class="nav-item">
-                                    <a href="/tk/dang-nhap" class="nav-link" data-toggle="tooltip" title="Bấm vô đăng nhập."><i class="far fa-user"></i> Đăng nhập</a>
+                                    <a href="/tk/dang-nhap" class="nav-link" data-toggle="tooltip" title="Bấm vô đăng nhập."><i class="far fa-user"></i> ĐĂNG NHẬP</a>
                                 </li>
                             }
                         </ul>
-                        <form class="form-inline col p-0 pl-md-2 pr-md-3 d-none">
-                            <input class="form-control w-100 common-search" type="search" placeholder="Tìm kiếm" aria-label="Tìm kiếm" onsearch="OnSearch(this)" />
-                        </form>
 
                         <ul class="navbar-nav d-none" id="ownerInfo">
                             <li class="nav-item dropdown">

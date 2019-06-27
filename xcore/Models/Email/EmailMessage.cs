@@ -23,5 +23,7 @@ namespace Models
         public string BodyContent { get; set; }
         public string Type { get; set; }
         public string EmployeeId { get; set; }
+
+        public List<string> Attachments { get; set; }
     }
 }

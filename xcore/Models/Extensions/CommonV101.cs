@@ -14,7 +14,7 @@ namespace Models
         public bool NoDelete { get; set; } = false;
         // For check use?
         public int Usage { get; set; } = 0;
-        // For multi update, general by system
+        // For multi update, general by system, security
         public string Timestamp { get; set; } = DateTime.Now.ToString("yyyyMMddHHmmssfff");
 
         public string Language { get; set; } = Constants.Languages.Vietnamese;

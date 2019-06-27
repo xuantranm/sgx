@@ -420,3 +420,7 @@ D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Salary\Lo
 D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Salary\SaleKPI.g.cshtml.cs
 D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Salary\Duration.g.cshtml.cs
 D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Salary\BangLuongUpdate.g.cshtml.cs
+D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\TimeKeeper\OvertimeData.g.cshtml.cs
+D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\TimeKeeper\OvertimeList.g.cshtml.cs
+D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\TimeKeeper\OvertimeSecurityList.g.cshtml.cs
+D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\XacNhan\TangCa.g.cshtml.cs

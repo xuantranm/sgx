@@ -5,7 +5,7 @@ using ViewModels;
 
 namespace ViewModels
 {
-    public class TimeKeeperViewModel : ExtensionViewModel
+    public class TimeKeeperViewModel : CommonViewModel
     {
         // data display
         public IList<EmployeeWorkTimeLog> EmployeeWorkTimeLogs { get; set; }
@@ -76,8 +76,16 @@ namespace ViewModels
         public bool RightManager { get; set; } = false;
         #endregion
 
-        public string LinkCurrent { get; set; }
-
         public bool Error { get; set; } = false;
+
+        public string Name { get; set; }
+
+        #region Tao Lenh Tang Ca
+        public int TrangThai { get; set; }
+
+        public int CodeInt { get; set; }
+
+        public IList<OvertimeEmployee> OvertimeEmployees { get; set; }
+        #endregion
     }
 }

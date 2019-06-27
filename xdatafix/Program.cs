@@ -124,40 +124,6 @@ namespace xdatafix
                     }
                 }
             }
-
-            var times = dbContext.EmployeeWorkTimeLogs.Find(m => true).ToList();
-            foreach (var item in times)
-            {
-                if (!string.IsNullOrEmpty(item.ApprovedBy))
-                {
-                    var managerE = dbContext.Employees.Find(m => m.Id.Equals(item.ApprovedBy)).FirstOrDefault();
-                    if (managerE != null)
-                    {
-                        var chucvuId = managerE.ChucVu;
-                        var filter = Builders<EmployeeWorkTimeLog>.Filter.Eq(m => m.Id, item.Id);
-                        var update = Builders<EmployeeWorkTimeLog>.Update
-                            .Set(m => m.ApprovedBy, chucvuId);
-                        dbContext.EmployeeWorkTimeLogs.UpdateOne(filter, update);
-                    }
-                }
-            }
-
-            var leaves = dbContext.Leaves.Find(m => true).ToList();
-            foreach (var item in leaves)
-            {
-                if (!string.IsNullOrEmpty(item.ApprovedBy))
-                {
-                    var managerE = dbContext.Employees.Find(m => m.Id.Equals(item.ApprovedBy)).FirstOrDefault();
-                    if (managerE != null)
-                    {
-                        var chucvuId = managerE.ChucVu;
-                        var filter = Builders<Leave>.Filter.Eq(m => m.Id, item.Id);
-                        var update = Builders<Leave>.Update
-                            .Set(m => m.ApprovedBy, chucvuId);
-                        dbContext.Leaves.UpdateOne(filter, update);
-                    }
-                }
-            }
         }
 
         static void DeleteEmailNull(string connection, string database)
