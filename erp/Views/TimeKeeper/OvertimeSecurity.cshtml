@@ -6,7 +6,6 @@
 @model TimeKeeperViewModel
 
 @{
-    Layout = "~/Views/Shared/_LayoutSocialFb.cshtml";
     CultureInfo culture = CultureInfo.CreateSpecificCulture("en-US");
     var login = User.Identity.Name;
 }
@@ -19,6 +18,9 @@
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item">
                             <a href="/">Trang chủ</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Index">Công</a>
                         </li>
                         <li class="breadcrumb-item active" aria-current="page">
                             @Model.Name
@@ -33,7 +35,7 @@
     <section class="flush-with-above height-80 d-block">
         <div class="container">
             <!-- FILTER -->
-            <form method="get" action="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.OvertimeSecurityList" id="form-main">
+            <form method="get" action="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Overtime/@Constants.LinkTimeKeeper.Security" id="form-main">
                 <input asp-for="Trang" type="hidden" value="1" />
                 <input asp-for="SapXep" class="sap-xep" type="hidden" />
                 <input asp-for="ThuTu" class="thu-tu" type="hidden" />
@@ -47,10 +49,6 @@
                         var fromdatesearch = Model.Tu > Constants.MinDate ? Model.Tu.ToString("dd/MM/yyyy") : "";
                         var todatesearch = Model.Den > Constants.MinDate ? Model.Den.ToString("dd/MM/yyyy") : "";
                     }
-                    @*<div class="col-md-3 col-sm-6 col-xs-12">
-                        <span class="mr-2 text-muted text-small text-nowrap">Mã</span>
-                        <input class="form-control form-control-lg" asp-for="CodeInt" />
-                    </div>*@
                     <div class="col-md-3 col-sm-6 col-xs-12">
                         <span class="mr-2 text-muted text-small text-nowrap">Ngày</span>
                         <input class="form-control datepicker datepicker-lg from-date" value="@fromdatesearch" />
@@ -64,9 +62,20 @@
                     <div class="col-md-3 col-sm-6 col-xs-12">
                         <span class="mr-2 text-muted text-small text-nowrap">Trạng thái</span>
                         <select asp-for="TrangThai" class="form-control form-control-lg custom-select" onchange="formSubmit();">
-                            <option value="@EOvertime.None">Tất cả</option>
-                            <option value="@EOvertime.Ok">Đã duyệt, chờ An Ninh xác nhận</option>
-                            <option value="@EOvertime.Secutity">An ninh đã xác nhận</option>
+                            <option value="@((int)EOvertime.None)">Tất cả</option>
+                            <option value="@((int)EOvertime.Ok)">Đã duyệt, chờ An Ninh xác nhận</option>
+                            <option value="@((int)EOvertime.Secutity)">An ninh đã xác nhận</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3 col-sm-6 col-xs-12">
+                        <span class="mr-2 text-muted text-small text-nowrap">Phòng ban</span>
+                        <select asp-for="Pb" class="form-control form-control-lg custom-select" onchange="formSubmit();">
+                            <option value="">Tất cả</option>
+                            @foreach (var item in Model.PhongBans)
+                            {
+                                <option value="@item.Id">@item.Name</option>
+                            }
                         </select>
                     </div>
 
@@ -129,22 +138,28 @@
                     <div class="col-12">Tìm thấy <span class="badge badge-info">@Model.Records</span> kết quả.</div>
                     @if (Model.Records > 0)
                     {
-                    <form method="post" action="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.OvertimeSecurityData" id="form-data">
+                    <form method="post" action="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Overtime/@Constants.LinkTimeKeeper.Security/@Constants.ActionLink.Data" class="data-form">
                         <div class="col-12 table-responsive mb-1">
                             <table class="table table-sm table-striped table-bordered table-hover">
                                 <thead>
                                     <tr>
-                                        <th scope="col">
+                                        <th scope="col" rowspan="2">
                                             <input type='checkbox' id='mainChkBox' checked /> Tất cả
                                         </th>
-                                        <th scope="col">#</th>
-                                        <th scope="col">Ngày</th>
-                                        <th scope="col">Họ và Tên</th>
-                                        <th scope="col">Giờ thực tế</th>
-                                        <th scope="col">Mã NV</th>
-                                        <th scope="col">Chức vụ</th>
-                                        <th scope="col">Loại tăng ca</th>
-                                        <th scope="col">Trạng thái duyệt</th>
+                                        <th scope="col" rowspan="2">#</th>
+                                        <th scope="col" rowspan="2">Ngày</th>
+                                        <th scope="col" rowspan="2">Họ và Tên</th>
+                                        <th scope="col" colspan="3" class="text-center text-uppercase">Tăng ca</th>
+                                        <th scope="col" rowspan="2">Loại tăng ca</th>
+                                        <th scope="col" rowspan="2">Mã NV</th>
+                                        <th scope="col" rowspan="2">Chức vụ</th>
+                                        <th scope="col" rowspan="2">Phòng ban</th>
+                                        <th scope="col" rowspan="2">Trạng thái duyệt</th>
+                                    </tr>
+                                    <tr>
+                                        <td>Bắt đầu</td>
+                                        <td>Kết thúc</td>
+                                        <td>Tổng giờ</td>
                                     </tr>
                                 </thead>
                                 <tbody class="font-14">
@@ -153,33 +168,42 @@
                                         int iE = 0;
                                         foreach (var item in Model.OvertimeEmployees)
                                         {
-                                            <tr>
-                                                <td>
-                                                    <input type='checkbox' name="OvertimeEmployees[@iE].CheckOnUI" checked value="true" class="chk-item" />
-                                                    <input type="hidden" name="OvertimeEmployees[@iE].Id" value="@item.Id" />
-                                                    <input type="hidden" name="OvertimeEmployees[@iE].Date" value="@item.Date" />
-                                                    <input type="hidden" name="OvertimeEmployees[@iE].EmployeeId" value="@item.EmployeeId" />
-                                                </td>
-                                                <th scope="row">@i</th>
-                                                <td nowrap>
-                                                    @item.Date.ToString("dd/MM/yyyy")
-                                                </td>
-                                                <td nowrap>
-                                                    @item.EmployeeName
-                                                </td>
-                                                <td>
-                                                    <input value="@item.HourSecurity" name="OvertimeEmployees[@iE].HourSecurity" class="form-control width100 numeric hour-@item.Id" data-id="hour-@item.Id" />
-                                                    <code>Giờ tăng ca: @item.Hour</code>
-                                                </td>
-                                                <td nowrap>
-                                                    @item.EmployeeCode
-                                                </td>
-                                                <td nowrap>
-                                                    @item.ChucVuName
-                                                </td>
-                                                <td>@Constants.TimeWork(item.Type)</td>
-                                                <td>@Constants.OvertimeStatus(item.Status)</td>
-                                            </tr>
+                                    <tr>
+                                        <td>
+                                            <input type='checkbox' name="OvertimeEmployees[@iE].CheckOnUI" checked value="true" class="chk-item" />
+                                            <input type="hidden" name="OvertimeEmployees[@iE].Id" value="@item.Id" />
+                                            <input type="hidden" name="OvertimeEmployees[@iE].Date" value="@item.Date" />
+                                            <input type="hidden" name="OvertimeEmployees[@iE].EmployeeId" value="@item.EmployeeId" />
+                                            <input type="hidden" name="OvertimeEmployees[@iE].HourSecurity" value="@item.HourSecurity" id="hHourSecurity-@iE"/>
+                                        </td>
+                                        <th scope="row">@i</th>
+                                        <td nowrap>
+                                            @item.Date.ToString("dd/MM/yyyy")
+                                        </td>
+                                        <td nowrap>
+                                            @item.EmployeeName
+                                        </td>
+                                        <td>
+                                            <input type="text" value="@item.StartSecurity" name="OvertimeEmployees[@iE].StartSecurity" class="form-control datetimepicker-input" id="start-@iE" data-toggle="datetimepicker" data-target="#start-@iE" data-id="@iE" />
+                                            <code>Bắt đầu: @item.Start.ToString(@"hh\:mm")</code>
+                                        </td>
+                                        <td>
+                                            <input type="text" value="@item.EndSecurity" name="OvertimeEmployees[@iE].EndSecurity" class="form-control datetimepicker-input" id="end-@iE" data-toggle="datetimepicker" data-target="#end-@iE" data-id="@iE" />
+                                            <code>Kết thúc: @item.End.ToString(@"hh\:mm")</code>
+                                        </td>
+                                        <td>
+                                            <code>Giờ tăng ca xác nhận: <span class="hSecurity-@iE">@item.HourSecurity</span></code>
+                                            <code>Giờ tăng ca: @item.Hour</code>
+                                        </td>
+                                        <td nowrap>
+                                            @item.EmployeeCode
+                                        </td>
+                                        <td nowrap>
+                                            @item.ChucVuName
+                                        </td>
+                                        <td>@Constants.TimeWork(item.Type)</td>
+                                        <td>@Constants.OvertimeStatus(item.Status)</td>
+                                    </tr>
                                             i++;
                                             iE++;
                                         }
@@ -188,7 +212,8 @@
                             </table>
                         </div>
 
-                        <button type="submit" class="btn btn-primary btn-block">Xác nhận tăng ca</button>
+                        <button type="submit" class="btn btn-danger btn-block">
+                            <i class="fas fa-check"></i> Xác nhận</button>
 
                     </form>
                     }
@@ -210,7 +235,7 @@
 @section scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
-        <script type="text/javascript" src="~/js/timer/overtime-security-list.js?@DateTime.Now.Ticks"></script>
+        <script type="text/javascript" src="~/js/timer/overtime-security.js?@Constants.VersionJs"></script>
     }
 }
 

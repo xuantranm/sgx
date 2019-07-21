@@ -318,36 +318,36 @@ namespace erp.Controllers
             return View();
         }
 
-        [Route("/nt/thong-bao/{userId}")]
-        public IActionResult Notification(string userId)
-        {
-            var isOwner = false;
-            var ownerId = User.Identity.Name;
-            if (string.IsNullOrEmpty(userId))
-            {
-                isOwner = true;
-                userId = ownerId;
-                if (string.IsNullOrEmpty(userId))
-                {
-                    return Json(new { result = false });
-                }
-            }
+        //[Route("/nt/thong-bao/{userId}")]
+        //public IActionResult Notification(string userId)
+        //{
+        //    var isOwner = false;
+        //    var ownerId = User.Identity.Name;
+        //    if (string.IsNullOrEmpty(userId))
+        //    {
+        //        isOwner = true;
+        //        userId = ownerId;
+        //        if (string.IsNullOrEmpty(userId))
+        //        {
+        //            return Json(new { result = false });
+        //        }
+        //    }
 
-            var userInformation = dbContext.Employees.Find(m => m.Id.Equals(userId)).First();
+        //    var userInformation = dbContext.Employees.Find(m => m.Id.Equals(userId)).First();
 
-            var owner = isOwner ? userInformation : dbContext.Employees.Find(m => m.Id.Equals(ownerId)).First();
-            // notification
-            var sortNotification = Builders<Notification>.Sort.Ascending(m => m.CreatedOn);
-            var notifications = dbContext.Notifications.Find(m => m.Enable.Equals(true) && m.User.Equals(ownerId)).Sort(sortNotification).ToList();
+        //    var owner = isOwner ? userInformation : dbContext.Employees.Find(m => m.Id.Equals(ownerId)).First();
+        //    // notification
+        //    var sortNotification = Builders<Notification>.Sort.Ascending(m => m.CreatedOn);
+        //    var notifications = dbContext.Notifications.Find(m => m.Enable.Equals(true) && m.User.Equals(ownerId)).Sort(sortNotification).ToList();
 
-            //var ownerViewModel = new OwnerViewModel
-            //{
-            //    Main = owner,
-            //    NotificationCount = notifications != null ? notifications.Count() : 0
-            //};
+        //    //var ownerViewModel = new OwnerViewModel
+        //    //{
+        //    //    Main = owner,
+        //    //    NotificationCount = notifications != null ? notifications.Count() : 0
+        //    //};
 
-            return View();
-        }
+        //    return View();
+        //}
 
         //chinh-sach-bao-mat
         [Route("/pp/{name}")]

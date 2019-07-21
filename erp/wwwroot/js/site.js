@@ -343,3 +343,43 @@ function resetFormUpload(parent) {
     $('.btn-upload-process', parent).addClass('d-none');
 }
 // END UPLOAD FILE
+
+function eventAutocomplete() {
+    // https://www.devbridge.com/sourcery/components/jquery-autocomplete/
+    //$('#autocomplete').autocomplete({
+    //    serviceUrl: '/autocomplete/countries',
+    //    onSelect: function (suggestion) {
+    //        alert('You selected: ' + suggestion.value + ', ' + suggestion.data);
+    //    }
+    //});
+
+    $('.autocomplete').on("focus", function () {
+        $(this).autocomplete({
+            source: function (request, response) {
+                $.ajax({
+                    url: "/api/employees/",
+                    data: {
+                        type: $(this).data('type'),
+                        term: request.term
+                    },
+                    success: function (data) {
+                        response(data.outputs);
+                    }
+                });
+            },
+            minLength: 2,
+            focus: function (event, ui) {
+                $(this).val(ui.item.fullName);
+                return false;
+            },
+            select: function (event, ui) {
+                //$('#name').val(ui.item.name);
+                return false;
+            }
+        }).autocomplete("instance")._renderItem = function (ul, item) {
+            return $("<li>")
+                .append("<div>" + item.fullName + "<br>" + item.email + " - " + item.title + "</div>")
+                .appendTo(ul);
+        };
+    });
+}

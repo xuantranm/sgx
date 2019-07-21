@@ -6,176 +6,202 @@
 @model TimeKeeperViewModel
 
 @{
-    Layout = "~/Views/Shared/_LayoutSocialFb.cshtml";
+
 }
 
-<div class="card card-sm">
-    <div class="card-header bg-secondary d-flex justify-content-between align-items-center">
-        <div>
-            <h6>Lịch sử duyệt công</h6>
+<div class="main-container">
+    <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="/">Trang chủ</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Index">Công</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">
+                            Lịch sử
+                        </li>
+                    </ol>
+                </div>
+            </div>
         </div>
-        <form class="d-flex align-items-center" method="get" action="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Approvement" id="form-main">
-            <span class="mr-2 text-muted text-small text-nowrap">Tháng:</span>
-            <select asp-for="Thang" class="custom-select ddl-times">
-                @{
-                    foreach (var item in Model.MonthYears)
-                    {
-                        <option value="@item.Month-@item.Year">@item.Month/@item.Year</option>
-                    }
-                }
-            </select>
-        </form>
-    </div>
-</div>
+    </nav>
 
-@if (Model.TimeKeeperDisplays.Count > 0)
-{
-    <div class="row">
-        <div class="col-12 table-responsive-sm">
-            <table class="table table-responsive-sm table-bordered table-striped table-hover floating-header">
-                <thead style="background-color:lightgrey">
-                    <tr>
-                        <th>#</th>
-                        <th>Trạng thái</th>
-                        <th>Ngày duyệt</th>
-                        <th>Ngày gửi xác nhận</th>
-                        <th scope="col">Nhân viên</th>
-                        <th scope="col">Ngày công</th>
-                        <th scope="col">Vào</th>
-                        <th scope="col">Ra</th>
-                        <th scope="col">Ca làm việc</th>
-                        <th scope="col">Đi trễ (phút)</th>
-                        <th scope="col">Về sớm (phút)</th>
-                        <th scope="col">Ngày làm việc</th>
-                        <th scope="col">Nơi chấm công</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @{
-                        var linkapprove = Constants.System.domain + "/xacnhan/cong";
-                        int i = 1;
-                        foreach (var display in Model.TimeKeeperDisplays)
-                        {
-                            var log = display.EmployeeWorkTimeLogs[0];
-                            <tr>
-                                <td>@i</td>
-                                <td>
-                                    @{
-                                        if (log.Status == (int)EStatusWork.DaGuiXacNhan)
-                                        {
-                                            
-                                            var linkAccept = linkapprove + "?id=" + log.Id + "&approve=3&secure=" + log.SecureCode;
-                                            var linkCancel = linkapprove + "?id=" + log.Id + "&approve=4&secure=" + log.SecureCode;
-                                            <p>
-                                                <a href="@linkAccept" target="_blank" onClick="javascript:document.location.reload(true)" class="btn btn-sm btn-block btn-success"><i class="far fa-check-circle"></i> Xác nhận</a>
-                                            </p>
-                                            <p>
-                                                <a href="@linkCancel" target="_blank" onClick="javascript:document.location.reload(true)" class="btn btn-sm btn-block btn-danger"><i class="fas fa-ban"></i> Không xác nhận</a>
-                                            </p>
-                                        }
-                                        else if (log.Status == (int)EStatusWork.DongY)
-                                        {
-                                            <small class="badge badge-success">@Constants.TimeKeeper(log.Status)</small>
-                                        }
-                                        else
-                                        {
-                                            <small class="badge badge-danger">@Constants.TimeKeeper(log.Status)</small>
-                                        }
-                                    }
-                                </td>
-                                <td>
-                                    @{
-                                        var dateConfirm = log.ConfirmDate.HasValue ? log.ConfirmDate.Value.ToString("dd/MM/yyyy") : string.Empty;
-                                    }
-                                    <span class="text-muted">@dateConfirm</span>
-                                </td>
-                                <td>
-                                    @{
-                                        var dateRequest = log.RequestDate.HasValue ? log.RequestDate.Value.ToString("dd/MM/yyyy") : string.Empty;
-                                    }
-                                    <span class="text-muted">@dateRequest</span>
-                                </td>
-                                <td nowrap>
-                                    @display.FullName <br />
-                                    <small>@display.ChucVu</small>
-                                </td>
-                                <td>
-                                    <span class="text-muted">@log.DateOnlyRecord.ToString("dd/MM/yyyy")</span>
-                                </td>
-                                <td>@log.In</td>
-                                <td>
-                                    <span>@log.Out</span>
-                                </td>
-                                <td>
-                                    @if (log.Start.TotalMilliseconds != 0)
+    <section class="space-sm">
+        <div class="container">
+            <div class="card card-sm">
+                <div class="card-header bg-secondary d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6>Lịch sử duyệt công</h6>
+                    </div>
+                    <form class="d-flex align-items-center" method="get" action="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Approvement" id="form-main">
+                        <span class="mr-2 text-muted text-small text-nowrap">Tháng:</span>
+                        <select asp-for="Thang" class="custom-select ddl-times">
+                            @{
+                                foreach (var item in Model.MonthYears)
+                                {
+                                    <option value="@item.Month-@item.Year">@item.Month/@item.Year</option>
+                                }
+                            }
+                        </select>
+                    </form>
+                </div>
+            </div>
+
+            @if (Model.TimeKeeperDisplays.Count > 0)
+            {
+                <div class="row">
+                    <div class="col-12 table-responsive-sm">
+                        <table class="table table-responsive-sm table-bordered table-striped table-hover floating-header">
+                            <thead style="background-color:lightgrey">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Trạng thái</th>
+                                    <th>Ngày duyệt</th>
+                                    <th>Ngày gửi xác nhận</th>
+                                    <th scope="col">Nhân viên</th>
+                                    <th scope="col">Ngày công</th>
+                                    <th scope="col">Vào</th>
+                                    <th scope="col">Ra</th>
+                                    <th scope="col">Ca làm việc</th>
+                                    <th scope="col">Đi trễ (phút)</th>
+                                    <th scope="col">Về sớm (phút)</th>
+                                    <th scope="col">Ngày làm việc</th>
+                                    <th scope="col">Nơi chấm công</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    var linkapprove = Constants.System.domain + "/xacnhan/cong";
+                                    int i = 1;
+                                    foreach (var display in Model.TimeKeeperDisplays)
                                     {
-                                        <small>@log.Start.ToString(@"hh\:mm")-@log.End.ToString(@"hh\:mm")</small>
-                                    }
-                                </td>
-                                <td>
-                                    @if ((log.StatusLate == 0 || log.StatusLate == 2 || log.StatusLate == 4) && log.Late.TotalMilliseconds > 0)
-                                    {
-                                        <span>@Math.Round(log.Late.TotalMinutes, 0)</span>
-                                    }
-                                </td>
-                                <td>
-                                    @if ((log.StatusEarly == 0 || log.StatusEarly == 2 || log.StatusEarly == 4) && log.Early.TotalMilliseconds > 0)
-                                    {
-                                        <span>@Math.Round(log.Early.TotalMinutes, 0)</span>
-                                    }
-                                </td>
-                                <td>
-                                    @if (log.Status == 3)
-                                    {
-                                        <span>1</span>
-                                    }
-                                    else
-                                    {
-                                        if (log.WorkDay == 0)
-                                        {
-                                            if (!string.IsNullOrEmpty(log.Reason))
-                                            {
-                                                var displayReason = log.Reason;
-                                                if (!string.IsNullOrEmpty(log.ReasonDetail))
-                                                {
-                                                    displayReason += ". Chi tiết: " + log.ReasonDetail;
+                                        var log = display.EmployeeWorkTimeLogs[0];
+                                        <tr>
+                                            <td>@i</td>
+                                            <td>
+                                                @{
+                                                    if (log.Status == (int)EStatusWork.DaGuiXacNhan)
+                                                    {
+
+                                                        var linkAccept = linkapprove + "?id=" + log.Id + "&approve=3&secure=" + log.SecureCode;
+                                                        var linkCancel = linkapprove + "?id=" + log.Id + "&approve=4&secure=" + log.SecureCode;
+                                                        <p>
+                                                            <a href="@linkAccept" target="_blank" onClick="javascript:document.location.reload(true)" class="btn btn-sm btn-block btn-success"><i class="far fa-check-circle"></i> Xác nhận</a>
+                                                        </p>
+                                                        <p>
+                                                            <a href="@linkCancel" target="_blank" onClick="javascript:document.location.reload(true)" class="btn btn-sm btn-block btn-danger"><i class="fas fa-ban"></i> Không xác nhận</a>
+                                                        </p>
+                                                    }
+                                                    else if (log.Status == (int)EStatusWork.DongY)
+                                                    {
+                                                        <small class="badge badge-success">@Constants.TimeKeeper(log.Status)</small>
+                                                    }
+                                                    else
+                                                    {
+                                                        <small class="badge badge-danger">@Constants.TimeKeeper(log.Status)</small>
+                                                    }
                                                 }
-                                                <small>@displayReason</small>
-                                            }
-                                        }
-                                        else
-                                        {
-                                            <span>@log.WorkDay</span>
-                                        }
+                                            </td>
+                                            <td>
+                                                @{
+                                                    var dateConfirm = log.ConfirmDate.HasValue ? log.ConfirmDate.Value.ToString("dd/MM/yyyy") : string.Empty;
+                                                }
+                                                <span class="text-muted">@dateConfirm</span>
+                                            </td>
+                                            <td>
+                                                @{
+                                                    var dateRequest = log.RequestDate.HasValue ? log.RequestDate.Value.ToString("dd/MM/yyyy") : string.Empty;
+                                                }
+                                                <span class="text-muted">@dateRequest</span>
+                                            </td>
+                                            <td nowrap>
+                                                @display.FullName <br />
+                                                <small>@display.ChucVu</small>
+                                            </td>
+                                            <td>
+                                                <span class="text-muted">@log.DateOnlyRecord.ToString("dd/MM/yyyy")</span>
+                                            </td>
+                                            <td>@log.In</td>
+                                            <td>
+                                                <span>@log.Out</span>
+                                            </td>
+                                            <td>
+                                                @if (log.Start.TotalMilliseconds != 0)
+                                                {
+                                                    <small>@log.Start.ToString(@"hh\:mm")-@log.End.ToString(@"hh\:mm")</small>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if ((log.StatusLate == 0 || log.StatusLate == 2 || log.StatusLate == 4) && log.Late.TotalMilliseconds > 0)
+                                                {
+                                                    <span>@Math.Round(log.Late.TotalMinutes, 0)</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if ((log.StatusEarly == 0 || log.StatusEarly == 2 || log.StatusEarly == 4) && log.Early.TotalMilliseconds > 0)
+                                                {
+                                                    <span>@Math.Round(log.Early.TotalMinutes, 0)</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (log.Status == 3)
+                                                {
+                                                    <span>1</span>
+                                                }
+                                                else
+                                                {
+                                                    if (log.WorkDay == 0)
+                                                    {
+                                                        if (!string.IsNullOrEmpty(log.Reason))
+                                                        {
+                                                            var displayReason = log.Reason;
+                                                            if (!string.IsNullOrEmpty(log.ReasonDetail))
+                                                            {
+                                                                displayReason += ". Chi tiết: " + log.ReasonDetail;
+                                                            }
+                                                            <small>@displayReason</small>
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        <span>@log.WorkDay</span>
+                                                    }
+                                                }
+                                            </td>
+                                            <td><small>@log.WorkplaceCode</small></td>
+                                        </tr>
+                                        i++;
                                     }
-                                </td>
-                                <td><small>@log.WorkplaceCode</small></td>
-                            </tr>
-                            i++;
-                        }
-                    }
-                </tbody>
-            </table>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <!--end of col-->
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-light" role="alert">
+                    Không có dữ liệu hoặc bạn thuộc danh sách không chấm công.
+                </div>
+            }
+
+            <br />
+            <small>Thiếu thời gian làm việc và không có xác nhận công của quản lý thì áp dụng cách tính:</small>
+            <small> * Quá giờ làm việc qui định 15 phút sẽ không tính công buổi làm việc đó.</small>
+            <small> * Thời gian thiếu được cộng dồn làm cơ sở xét thưởng, nâng lương cuối năm.</small>
+            <br />
+            <small>Vui lòng xác nhận công trong vòng 02 ngày.</small>
+            <br />
+            <small>Chúc ngày làm việc hiệu quả.</small>
+
         </div>
-        <!--end of col-->
-    </div>
-}
-else
-{
-    <div class="alert alert-light" role="alert">
-        Không có dữ liệu hoặc bạn thuộc danh sách không chấm công.
-    </div>
-}
-
-<br />
-<small>Thiếu thời gian làm việc và không có xác nhận công của quản lý thì áp dụng cách tính:</small>
-<small> * Quá giờ làm việc qui định 15 phút sẽ không tính công buổi làm việc đó.</small>
-<small> * Thời gian thiếu được cộng dồn làm cơ sở xét thưởng, nâng lương cuối năm.</small>
-<br />
-<small>Vui lòng xác nhận công trong vòng 02 ngày.</small>
-<br />
-<small>Chúc ngày làm việc hiệu quả.</small>
-
+    </section>
+</div>
 
 <script id="tmplDataItem" type="text/x-jsrender">
     <input type="hidden" class="hidLogId" name="EmployeeWorkTimeLog.Id" value="{{:id}}" />

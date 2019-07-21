@@ -126,7 +126,7 @@ namespace erp.Controllers
 
             #endregion
 
-            var approvement = dbContext.Employees.Find(m => m.ChucVu.Equals(leave.ApproverId)).FirstOrDefault();
+            var approvement = dbContext.Employees.Find(m => m.Id.Equals(leave.ApproverId)).FirstOrDefault();
 
             // Tự yêu cầu
             bool seftFlag = leave.EmployeeId == leave.CreatedBy ? true : false;
@@ -354,7 +354,7 @@ namespace erp.Controllers
 
             #endregion
 
-            var approvement = dbContext.Employees.Find(m => m.ChucVu.Equals(entity.ConfirmId)).FirstOrDefault();
+            var approvement = dbContext.Employees.Find(m => m.Id.Equals(entity.ConfirmId)).FirstOrDefault();
             var employee = dbContext.Employees.Find(m => m.Id.Equals(entity.EmployeeId)).FirstOrDefault();
 
             #region Send email to user
@@ -536,6 +536,220 @@ namespace erp.Controllers
                     .Set(m => m.ApprovedOn, DateTime.Now);
                 dbContext.OvertimeEmployees.UpdateMany(filter, update);
 
+                #region Send mail
+                var overtime = list.First();
+                var date = overtime.Date;
+                var directorE = dbContext.Employees.Find(m => m.Id.Equals(overtime.ApprovedBy)).FirstOrDefault();
+                var genderDE = directorE.Gender == "Nam" ? "Anh" : "Chị";
+                var genderDELower = directorE.Gender == "Nam" ? "anh" : "chị";
+                var phone = string.Empty;
+                if (directorE.Mobiles != null && directorE.Mobiles.Count > 0)
+                {
+                    phone = directorE.Mobiles[0].Number;
+                }
+                var employeeE = dbContext.Employees.Find(m => m.Id.Equals(overtime.EmployeeId)).FirstOrDefault();
+                var genderE = employeeE.Gender == "Nam" ? "Anh" : "Chị";
+                var genderELower = employeeE.Gender == "Nam" ? "anh" : "chị";
+
+                if (approve == (int)EOvertime.Ok)
+                {
+                    // AN NINH
+                    #region parameters
+                    //{0} : Subject
+                    //{1} : Gender Nguoi nhan 
+                    //{2} : Fullname nguoi nhan
+                    //{3} : Gender nguoi yeu cau
+                    //{4} : Fullname nguoi yeu cau
+                    //{5} : Chức vụ
+                    //{6} : Email
+                    //{7} : Phone
+                    //{8} : Noi dung . Example: bang tang ca ngày dd/MM/yyyy
+                    //{9}: Link chi tiet
+                    //{10}: Website
+                    #endregion
+
+                    var securityPosition = dbContext.ChucVus.Find(m => m.Code.Equals("CHUCVU86")).FirstOrDefault();
+
+                    var securityE = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.ChucVu.Equals(securityPosition.Id)).FirstOrDefault();
+                    var genderSE = securityE.Gender == "Nam" ? "anh" : "chị";
+
+                    var webRoot = Environment.CurrentDirectory;
+                    var pathToFile = _env.WebRootPath
+                            + Path.DirectorySeparatorChar.ToString()
+                            + "Templates"
+                            + Path.DirectorySeparatorChar.ToString()
+                            + "EmailTemplate"
+                            + Path.DirectorySeparatorChar.ToString()
+                            + "OvertimeSecurity.html";
+
+                    var tos = new List<EmailAddress>
+                    {
+                        new EmailAddress { Name = securityE.FullName, Address = securityE.Email }
+                    };
+
+                    var subject = "Kiểm tra Bảng tăng ca ngày " + date.ToString("dd/MM/yyyy");
+                    var title = "Bảng tăng ca ngày " + date.ToString("dd/MM/yyyy");
+
+                    var linkDetail = Constants.System.domain + "/" + Constants.LinkTimeKeeper.Main + "/" + Constants.LinkTimeKeeper.Overtime + "?Tu=" + date.ToString("MM-dd-yyyy") + "&Den=" + date.ToString("MM-dd-yyyy");
+
+                    var bodyBuilder = new BodyBuilder();
+                    using (StreamReader SourceReader = System.IO.File.OpenText(pathToFile))
+                    {
+                        bodyBuilder.HtmlBody = SourceReader.ReadToEnd();
+                    }
+                    string messageBody = string.Format(bodyBuilder.HtmlBody,
+                        subject,
+                        genderSE,
+                        securityE.FullName,
+                        genderDE,
+                        directorE.FullName,
+                        directorE.ChucVuName,
+                        genderDELower,
+                        directorE.Email,
+                        phone,
+                        title,
+                        linkDetail,
+                        Constants.System.domain
+                        );
+
+                    var emailMessage = new EmailMessage()
+                    {
+                        ToAddresses = tos,
+                        Subject = subject,
+                        BodyContent = messageBody,
+                        Type = "overtime-security",
+                        EmployeeId = overtime.Code.ToString()
+                    };
+
+                    var scheduleEmail = new ScheduleEmail
+                    {
+                        Status = (int)EEmailStatus.Schedule,
+                        To = emailMessage.ToAddresses,
+                        CC = emailMessage.CCAddresses,
+                        BCC = emailMessage.BCCAddresses,
+                        Type = emailMessage.Type,
+                        Title = emailMessage.Subject,
+                        Content = emailMessage.BodyContent,
+                        EmployeeId = emailMessage.EmployeeId
+                    };
+
+                    dbContext.ScheduleEmails.InsertOne(scheduleEmail);
+                }
+
+                // SEND USER
+                if (employeeE != null && !string.IsNullOrEmpty(employeeE.Email) && Utility.IsValidEmail(employeeE.Email))
+                {
+                    #region parameters
+                    //{0} : Subject
+                    //{1} : Gender Nguoi nhan 
+                    //{2} : Fullname nguoi nhan
+                    //{3} : Object
+                    //{4} : Trang thai duyet...
+                    //{5} : Nguoi duyet
+                    //{6} : Chuc vu
+                    //{7} : Email
+                    //{8} : Phone
+                    //{9}: Link chi tiet
+                    //{10}: Website
+                    #endregion
+                    var subject = "[Tăng ca] Kết quả xác nhận tăng ca";
+                    var objectName = "xác nhận tăng ca";
+                    var webRoot = Environment.CurrentDirectory;
+                    var pathToFile = _env.WebRootPath
+                            + Path.DirectorySeparatorChar.ToString()
+                            + "Templates"
+                            + Path.DirectorySeparatorChar.ToString()
+                            + "EmailTemplate"
+                            + Path.DirectorySeparatorChar.ToString()
+                            + "OvertimeResult.html";
+
+                    var tos = new List<EmailAddress>
+                    {
+                        new EmailAddress { Name = employeeE.FullName, Address = employeeE.Email }
+                    };
+
+                    var linkDetail = Constants.System.domain + "/" + Constants.LinkTimeKeeper.Main + "/" + Constants.LinkTimeKeeper.Overtime + "?Tu=" + date.ToString("MM-dd-yyyy") + "&Den=" + date.ToString("MM-dd-yyyy");
+
+                    var bodyBuilder = new BodyBuilder();
+                    using (StreamReader SourceReader = System.IO.File.OpenText(pathToFile))
+                    {
+                        bodyBuilder.HtmlBody = SourceReader.ReadToEnd();
+                    }
+                    string messageBody = string.Format(bodyBuilder.HtmlBody,
+                        subject,
+                        genderELower,
+                        employeeE.FullName,
+                        objectName,
+                        Constants.OvertimeStatus(approve),
+                        directorE.FullName,
+                        directorE.ChucVuName,
+                        directorE.Email,
+                        phone,
+                        linkDetail,
+                        Constants.System.domain
+                        );
+
+                    var emailMessage = new EmailMessage()
+                    {
+                        ToAddresses = tos,
+                        Subject = subject,
+                        BodyContent = messageBody,
+                        Type = "overtime-result",
+                        EmployeeId = overtime.Code.ToString()
+                    };
+
+                    var scheduleEmail = new ScheduleEmail
+                    {
+                        Status = (int)EEmailStatus.Schedule,
+                        To = emailMessage.ToAddresses,
+                        CC = emailMessage.CCAddresses,
+                        BCC = emailMessage.BCCAddresses,
+                        Type = emailMessage.Type,
+                        Title = emailMessage.Subject,
+                        Content = emailMessage.BodyContent,
+                        EmployeeId = emailMessage.EmployeeId
+                    };
+
+                    dbContext.ScheduleEmails.InsertOne(scheduleEmail);
+                }
+                #endregion
+
+                ViewData["Status"] = "Cám ơn đã xác nhận, kết quả đang gửi cho người liên quan.";
+                return View(viewModel);
+            }
+
+            ViewData["Status"] = Constants.ErrorParameter;
+            viewModel.Error = true;
+            return View(viewModel);
+        }
+
+        [AllowAnonymous]
+        public IActionResult TangCaNhanVien(int code, int approve, string secure)
+        {
+            var viewModel = new TimeKeeperViewModel
+            {
+                Approve = approve
+            };
+
+            #region Extensions
+            var builderTraining = Builders<Trainning>.Filter;
+            var filterTraining = builderTraining.Eq(m => m.Enable, true);
+            filterTraining = filterTraining & builderTraining.Eq(m => m.Type, "anh-van");
+            var listTraining = dbContext.Trainnings.Find(filterTraining).Limit(10).SortByDescending(m => m.CreatedOn).ToList();
+            viewModel.ListTraining = listTraining;
+            #endregion
+
+            var list = dbContext.OvertimeEmployees.Find(m => m.Code.Equals(code) && m.Timestamp.Equals(secure)).ToList();
+
+            if (list != null && list.Count > 0)
+            {
+                var filter = Builders<OvertimeEmployee>.Filter.Eq(m => m.Code, code) & Builders<OvertimeEmployee>.Filter.Eq(m => m.Timestamp, secure);
+                var update = Builders<OvertimeEmployee>.Update
+                    .Set(m => m.Timestamp, DateTime.Now.ToString("yyyyMMddHHmmssfff"))
+                    .Set(m => m.Status, approve)
+                    .Set(m => m.ApprovedOn, DateTime.Now);
+                dbContext.OvertimeEmployees.UpdateMany(filter, update);
+
                 #region Send mail AN NINH
                 if (approve == (int)EOvertime.Ok)
                 {
@@ -560,7 +774,7 @@ namespace erp.Controllers
 
                     var securityPosition = dbContext.ChucVus.Find(m => m.Code.Equals("CHUCVU86")).FirstOrDefault();
 
-                    var securityE = dbContext.Employees.Find(m => m.ChucVu.Equals(securityPosition.Id)).FirstOrDefault();
+                    var securityE = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.ChucVu.Equals(securityPosition.Id)).FirstOrDefault();
 
                     var genderDE = directorE.Gender == "Nam" ? "Anh" : "Chị";
                     var genderDELower = directorE.Gender == "Nam" ? "anh" : "chị";
@@ -589,7 +803,7 @@ namespace erp.Controllers
                     var subject = "Kiểm tra Bảng tăng ca ngày " + date.ToString("dd/MM/yyyy");
                     var title = "Bảng tăng ca ngày " + date.ToString("dd/MM/yyyy");
 
-                    var linkDetail = Constants.System.domain + "/" + Constants.LinkTimeKeeper.Main + "/" + Constants.LinkTimeKeeper.OvertimeSecurityList + "?Tu=" + date.ToString("MM-dd-yyyy") + "&Den=" + date.ToString("MM-dd-yyyy");
+                    var linkDetail = Constants.System.domain + "/" + Constants.LinkTimeKeeper.Main + "/" + Constants.LinkTimeKeeper.Overtime + "?Tu=" + date.ToString("MM-dd-yyyy") + "&Den=" + date.ToString("MM-dd-yyyy");
 
                     var bodyBuilder = new BodyBuilder();
                     using (StreamReader SourceReader = System.IO.File.OpenText(pathToFile))

@@ -4,123 +4,144 @@
 
 @{
     ViewData["Title"] = "Đào tạo";
-    Layout = "~/Views/Shared/_LayoutSocialFb.cshtml";
+    
 }
 
-<form method="get" action="/@Constants.LinkTraining.Main/@Constants.LinkTraining.Index">
-    <div class="form-row mb-3">
-        <div class="col-md-4">
-            <label class="control-label">Loại</label>
-            <select asp-for="type" asp-items="Model.Types" class="form-control">
-                <option value="">Tất cả</option>
-            </select>
-        </div>
-        <div class="col-md-8">
-            <label class="control-label">Từ khóa</label>
-            <input asp-for="search" class="form-control" />
-        </div>
-    </div>
-    <div class="form-row mb-3">
-        <div class="col-md-2">
-            <label class="control-label">Dòng</label>
-            <select asp-for="size" class="form-control">
-                <option value="10">10</option>
-                <option value="20">20</option>
-                <option value="50">50</option>
-                <option value="100">100</option>
-                <option value="500">500</option>
-            </select>
-        </div>
-        <div class="col-md-2">
-            <label class="control-label">Trang</label>
-            <select asp-for="page" class="form-control">
-                @{
-                    var pages = Model.Pages;
-                    for (var i = 1; i <= pages; i++)
-                    {
-                        <option value="@i">@i</option>
-                    }
-                }
-            </select>
-        </div>
-        <div class="col-md-8">
-            <label class="control-label"><small>Bấm nút hoặc Enter</small></label>
-            <button class="btn btn-primary form-control" type="submit"><i class="icon-magnifying-glass"></i> Tìm kiếm</button>
-        </div>
-    </div>
-</form>
-<small><span class="badge badge-info">@Model.Records</span> được tìm thấy.</small>
-<section class="flush-with-above">
-    <div class="container">
-        <ul class="row mb-3 feature-list feature-list-sm">
-            @foreach (var item in Model.List)
-            {
-                <li class="col-12 col-md-6">
-                    <div class="card card-lg">
-                        <div class="embed-responsive embed-responsive-16by9">
-                            <iframe class="embed-responsive-item" src="@item.Link" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-                        </div>
-                        @*<a href="#">
-                                <img class="card-img-top" src="assets/img/photo-team-desk.jpg" alt="Starting Up - A Candid Documentary">
-                            </a>*@
-                        <div class="card-body">
-                            <a href="#">
-                                <h4 class="card-title mb-3">@item.Name</h4>
-                            </a>
-                            <p class="card-text">@item.Description</p>
-                        </div>
-                        <div class="card-footer card-footer-borderless d-none">
-                            <div class="media blog-post-author">
-                                <img alt="Image" src="assets/img/avatar-male-1.jpg" class="avatar avatar-xs" />
-                                <div class="media-body">
-                                    <small>Cameron Vasquez</small>
-                                    <small>28th February 2018 &bull; 4 min read</small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </li>
-            }
-
-        </ul>
-
-        <!--PAGING-->
-        <div class="row justify-content-center d-none">
-            <div class="col-auto">
-                <nav aria-label="Page navigation example">
-                    <ul class="pagination">
-                        <li class="page-item disabled">
-                            <a class="page-link" href="@ViewContext.RouteData.Values" aria-label="Trước">
-                                <span aria-hidden="true">
-                                    <i class="icon-chevron-left"></i>
-                                </span>
-                                <span class="sr-only">Trước</span>
-                            </a>
+<div class="main-container">
+    <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="/">Trang chủ</a>
                         </li>
-                        <li class="page-item active">
-                            <a class="page-link" href="#">1</a>
+                        <li class="breadcrumb-item active" aria-current="page">
+                            Đào tạo
                         </li>
-                        <li class="page-item">
-                            <a class="page-link" href="#">2</a>
-                        </li>
-                        <li class="page-item">
-                            <a class="page-link" href="#">3</a>
-                        </li>
-                        <li class="page-item">
-                            <a class="page-link" href="#" aria-label="Sau">
-                                <span aria-hidden="true">
-                                    <i class="icon-chevron-right"></i>
-                                </span>
-                                <span class="sr-only">Sau</span>
-                            </a>
-                        </li>
-                    </ul>
-                </nav>
+                    </ol>
+                </div>
             </div>
-            <!--end of col-->
         </div>
-        <!--END PAGING-->
-    </div>
-</section>
+    </nav>
 
-<!--https://developers.google.com/youtube/v3/code_samples/dotnet-->
+    <section class="space-sm">
+        <div class="container">
+            <form method="get" action="/@Constants.LinkTraining.Main/@Constants.LinkTraining.Index">
+                <div class="form-row mb-3">
+                    <div class="col-md-4">
+                        <label class="control-label">Loại</label>
+                        <select asp-for="type" asp-items="Model.Types" class="form-control">
+                            <option value="">Tất cả</option>
+                        </select>
+                    </div>
+                    <div class="col-md-8">
+                        <label class="control-label">Từ khóa</label>
+                        <input asp-for="search" class="form-control" />
+                    </div>
+                </div>
+                <div class="form-row mb-3">
+                    <div class="col-md-2">
+                        <label class="control-label">Dòng</label>
+                        <select asp-for="size" class="form-control">
+                            <option value="10">10</option>
+                            <option value="20">20</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                            <option value="500">500</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="control-label">Trang</label>
+                        <select asp-for="page" class="form-control">
+                            @{
+                                var pages = Model.Pages;
+                                for (var i = 1; i <= pages; i++)
+                                {
+                                    <option value="@i">@i</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-8">
+                        <label class="control-label"><small>Bấm nút hoặc Enter</small></label>
+                        <button class="btn btn-primary form-control" type="submit"><i class="icon-magnifying-glass"></i> Tìm kiếm</button>
+                    </div>
+                </div>
+            </form>
+            <small><span class="badge badge-info">@Model.Records</span> được tìm thấy.</small>
+                    <ul class="row mb-3 feature-list feature-list-sm">
+                        @foreach (var item in Model.List)
+                        {
+                            <li class="col-12 col-md-6">
+                                <div class="card card-lg">
+                                    <div class="embed-responsive embed-responsive-16by9">
+                                        <iframe class="embed-responsive-item" src="@item.Link" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                                    </div>
+                                    @*<a href="#">
+                                    <img class="card-img-top" src="assets/img/photo-team-desk.jpg" alt="Starting Up - A Candid Documentary">
+                                </a>*@
+                                    <div class="card-body">
+                                        <a href="#">
+                                            <h4 class="card-title mb-3">@item.Name</h4>
+                                        </a>
+                                        <p class="card-text">@item.Description</p>
+                                    </div>
+                                    <div class="card-footer card-footer-borderless d-none">
+                                        <div class="media blog-post-author">
+                                            <img alt="Image" src="assets/img/avatar-male-1.jpg" class="avatar avatar-xs" />
+                                            <div class="media-body">
+                                                <small>Cameron Vasquez</small>
+                                                <small>28th February 2018 &bull; 4 min read</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        }
+
+                    </ul>
+
+                    <!--PAGING-->
+                    <div class="row justify-content-center d-none">
+                        <div class="col-auto">
+                            <nav aria-label="Page navigation example">
+                                <ul class="pagination">
+                                    <li class="page-item disabled">
+                                        <a class="page-link" href="@ViewContext.RouteData.Values" aria-label="Trước">
+                                            <span aria-hidden="true">
+                                                <i class="icon-chevron-left"></i>
+                                            </span>
+                                            <span class="sr-only">Trước</span>
+                                        </a>
+                                    </li>
+                                    <li class="page-item active">
+                                        <a class="page-link" href="#">1</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="#">2</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="#">3</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="#" aria-label="Sau">
+                                            <span aria-hidden="true">
+                                                <i class="icon-chevron-right"></i>
+                                            </span>
+                                            <span class="sr-only">Sau</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                        <!--end of col-->
+                    </div>
+                    <!--END PAGING-->
+
+        </div>
+        </section>
+    </div>
+
+            
+            <!--https://developers.google.com/youtube/v3/code_samples/dotnet-->

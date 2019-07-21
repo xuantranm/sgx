@@ -1,75 +1,324 @@
-﻿<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - erp</title>
+﻿@using Common.Utilities;
+@using Common.Enums;
+@{
+    var isLogin = false;
+    var rightSystem = false;
+    var rightHr = false;
+    var rightFactory = false;
+    var login = User.Identity.Name;
+    if (!string.IsNullOrEmpty(login))
+    {
+        var loginUserName = string.Empty;
+        if (User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault() != null)
+        {
+            loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+        }
 
-    <environment include="Development">
-        <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
-        <link rel="stylesheet" href="~/css/site.css" />
-    </environment>
-    <environment exclude="Development">
-        <link rel="stylesheet" href="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.7/css/bootstrap.min.css"
-              asp-fallback-href="~/lib/bootstrap/dist/css/bootstrap.min.css"
-              asp-fallback-test-class="sr-only" asp-fallback-test-property="position" asp-fallback-test-value="absolute" />
-        <link rel="stylesheet" href="~/css/site.min.css" asp-append-version="true" />
-    </environment>
+        isLogin = true;
+        rightSystem = Utility.IsRight(login, Constants.Rights.System, (int)ERights.View);
+        rightHr = Utility.IsRight(login, Constants.Rights.HR, (int)ERights.View);
+        rightFactory = Utility.IsRightChucVu(login, Constants.Rights.NhaMay);
+    }
+
+    //var login = User.Identity.Name;
+    //var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+    //var rightSystem = false;
+    //var rightHr = false;
+    //var rightBangChamCong = false;
+    //var rightLuong = false;
+    //var rightLuongVanPhong = false;
+    //var rightLuongNhaMay = false;
+    //var rightLuongSanXuat = false;
+    //var rightNhaMay = false;
+    //var rightDataKhoNguyenVatLieu = false;
+    //var rightDataKhoThanhPham = false;
+    //var rightDataKhoBun = false;
+    //var rightDataKhoHangTraVe = false;
+    //var rightDataTramCan = false;
+
+    //if (!string.IsNullOrEmpty(login))
+    //{
+    //    rightSystem = Utility.IsRight(login, Constants.Rights.System, (int)ERights.View);
+    //    rightHr = Utility.IsRight(login, Constants.Rights.HR, (int)ERights.View);
+    //    rightBangChamCong = Utility.IsRight(login, Constants.Rights.BangChamCong, (int)ERights.View);
+    //    rightLuong = Utility.IsRight(login, Constants.Rights.Luong, (int)ERights.View);
+    //    rightLuongVanPhong = Utility.IsRight(login, Constants.Rights.LuongVP, (int)ERights.View);
+    //    rightLuongNhaMay = Utility.IsRight(login, Constants.Rights.LuongNM, (int)ERights.View);
+    //    rightLuongSanXuat = Utility.IsRight(login, Constants.Rights.LuongSX, (int)ERights.View);
+    //    rightNhaMay = Utility.IsRight(login, Constants.Rights.NhaMay, (int)ERights.View);
+    //    rightDataKhoNguyenVatLieu = Utility.IsRight(login, Constants.Rights.KhoNguyenVatLieuDuLieu, (int)ERights.View);
+    //    rightDataKhoThanhPham = Utility.IsRight(login, Constants.Rights.KhoThanhPhamDuLieu, (int)ERights.View);
+    //    rightDataKhoBun = Utility.IsRight(login, Constants.Rights.KhoBunDuLieu, (int)ERights.View);
+    //    rightDataKhoHangTraVe = Utility.IsRight(login, Constants.Rights.KhoHangTraVeDuLieu, (int)ERights.View);
+    //    rightDataTramCan = Utility.IsRight(login, Constants.Rights.TramCanDuLieu, (int)ERights.View);
+    //}
+}
+
+<!doctype html>
+<html lang="en">
+<head>
+    <script type="text/javascript">
+        var start = Date.now();
+    </script>
+
+    <title>@Html.Raw(ViewData["title"])</title>
+    <meta charset="utf-8" />
+    <meta name="robots" content="@Html.Raw(ViewBag.Robots)" />
+    <meta name="keywords" content="@Html.Raw(ViewBag.KeyWords)" />
+    <meta name="description" content="@Html.Raw(ViewBag.Description)" />
+    <meta name="author" content="@Html.Raw(ViewBag.MetaAuthor)" />
+    <meta property="og:url" content="@Html.Raw(ViewBag.OgUrl)" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="@Html.Raw(ViewBag.OgTitle)" />
+    <meta property="og:description" content="@Html.Raw(ViewBag.OgDescription)" />
+
+    <link rel="canonical" href="@Html.Raw(ViewBag.Canonical)" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400,400i,500" rel="stylesheet" />
+    <link href="~/lib/jquery-ui-1.12.1/jquery-ui.min.css" rel="stylesheet" />
+    <link href="~/lib/fontawesome-free-5.3.1-web/css/all.css" rel="stylesheet" />
+    <link href="~/assets/wingman/css/socicon.css" rel="stylesheet" type="text/css" media="all" />
+    <link href="~/assets/wingman/css/entypo.css" rel="stylesheet" type="text/css" media="all" />
+    <link href="~/lib/zoom/zoom.css" rel="stylesheet" />
+    <link href="~/lib/toastr/toastr.min.css" rel="stylesheet" />
+    <link href="~/assets/wingman/css/theme.css" rel="stylesheet" type="text/css" media="all" />
+    <link href="~/lib/bootstrap-multiselect/dist/css/bootstrap-multiselect.css" rel="stylesheet" />
+    <link href="~/lib/bootstrap-datepicker-1.6.4-dist/css/bootstrap-datepicker.min.css" rel="stylesheet" />
+    <link href="~/lib/datetimepicker-tempusdominus/css/tempusdominus-bootstrap-4.css" rel="stylesheet" />
+    <link href="~/lib/daterangepicker/daterangepicker.css" rel="stylesheet" />
+    <link href="~/lib/select2/select2.min.css" rel="stylesheet" />
+    <link href="~/lib/select2/select2-bootstrap.min.css" rel="stylesheet" />
+    <link href="~/assets/wingman/css/custom.css" rel="stylesheet" type="text/css" media="all" />
+    <link href="~/assets/wingman/css/screen.css" rel="stylesheet" type="text/css" media="all" />
+
+    @RenderSection("css", required: false)
+    <script type="text/javascript" src="~/lib/jquery3.2.1/dist/jquery-3.2.1.min.js"></script>
 </head>
 <body>
-    <nav class="navbar navbar-inverse navbar-fixed-top">
-        <div class="container">
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand">erp</a>
-            </div>
-            <div class="navbar-collapse collapse">
-                <ul class="nav navbar-nav">
-                    <li><a asp-area="" asp-controller="Home" asp-action="Index">Home</a></li>
-                    <li><a asp-area="" asp-controller="Home" asp-action="About">About</a></li>
-                    <li><a asp-area="" asp-controller="Home" asp-action="Contact">Contact</a></li>
-                </ul>
-                <partial name="_LoginPartial" />
+    @if (ViewData["Disable"] != null)
+    {
+        <div class="alert alert-danger" role="alert">
+            @ViewData["Disable"]
+        </div>
+    }
+
+    <div class="nav-container">
+        <div class="bg-light navbar-light" data-sticky="top">
+            <div class="container">
+                <nav class="navbar navbar-expand-lg">
+                    <a class="navbar-brand" href="/">
+                        <img alt="Tribat" src="~/images/logo.png" style="width:120px; height:30px" />
+                    </a>
+                    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                        <i class="icon-menu h4"></i>
+                    </button>
+                    <div class="collapse navbar-collapse justify-content-between" id="navbarNav">
+                        <ul class="navbar-nav">
+                            @if (isLogin)
+                            {
+                                <li class="nav-item">
+                                    <a href="/@Constants.LinkHr.Main/@Constants.LinkHr.Human/@Constants.LinkHr.Information/@login" class="nav-link" data-toggle="tooltip" title="Thông tin tài khoản."><i class="fas fa-user-shield"></i> THÔNG TIN</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="/@Constants.LinkLeave.Main/@Constants.LinkLeave.Index" class="nav-link" data-toggle="tooltip" title="Bấm vô tạo nghỉ phép, lịch sử nghỉ phép.">
+                                        <i class="fas fa-business-time"></i> PHÉP
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Index" class="nav-link" data-toggle="tooltip" title="Chấm công, tăng ca.">
+                                        <i class="fas fa-user-clock"></i> CÔNG
+                                    </a>
+                                </li>
+
+                                if (rightHr)
+                                {
+                                    <li class="nav-item">
+                                        <a href="/@Constants.LinkHr.Main/@Constants.LinkHr.Human" class="nav-link" data-toggle="tooltip" title="Bấm vô để xem hồ sơ nhân sự."><i class="fas fa-users"></i> NHÂN SỰ</a>
+                                    </li>
+                                }
+                                @if (rightSystem)
+                                {
+                                    <li class="nav-item dropdown">
+                                        <a class="nav-link dropdown-toggle" href="#" id="pagesDropdown" role="button" data-toggle="dropdown">SYSTEM</a>
+                                        <div class="dropdown-menu" aria-labelledby="pagesDropdown">
+                                            <a class="dropdown-item" href="/r-u/phan-quyen/">
+                                                <span class="h6 mb-0">Phân quyền</span>
+                                                <p class="text-small text-muted">Configuration information system</p>
+                                            </a>
+                                            <div class="dropdown-divider"></div>
+
+                                            <a class="dropdown-item" href="/st/cai-dat/">
+                                                <span class="h6 mb-0">Cài đặt</span>
+                                                <p class="text-small text-muted">Configuration information system</p>
+                                            </a>
+                                            <div class="dropdown-divider"></div>
+
+                                            <a class="dropdown-item" href="/text/">
+                                                <span class="h6 mb-0">Nội dung</span>
+                                                <p class="text-small text-muted">Multi languages display control</p>
+                                            </a>
+
+                                            <div class="dropdown-divider"></div>
+                                            <a class="dropdown-item" href="/@Constants.LinkSystem.Main/@Constants.LinkSystem.Mail/">
+                                                <span class="h6 mb-0">Quản lý mail</span>
+                                                <p class="text-small text-muted">Tình trạng gửi mail</p>
+                                            </a>
+
+                                        </div>
+                                    </li>
+                                }
+                                @if (rightFactory)
+                                {
+                                    <li class="nav-item">
+                                        <a href="/@Constants.LinkFactory.Main/@Constants.LinkFactory.Index" class="nav-link" data-toggle="tooltip" title="Nhà máy Sài Gòn Xanh"><i class="fas fa-industry"></i> NHÀ MÁY</a>
+                                    </li>
+                                }
+
+                                <li class="nav-item">
+                                    <span data-toggle="modal" data-target="#pwdModal">
+                                        <a href="javascript:;" class="nav-link" title="Bấm thay đổi mật khẩu." data-toggle="tooltip">
+                                            <i class="fas fa-key"></i> MẬT KHẨU
+                                        </a>
+                                    </span>
+                                </li>
+                                <li class="nav-item">
+                                    <form asp-area="" asp-controller="Account" asp-action="Logout" method="post" class="navbar-right logout-form" id="logout-form-layout">
+                                        <a href="#" onclick="document.getElementById('logout-form-layout').submit()" class="nav-link" title="Bấm vô để thoát tài khoản." data-toggle="tooltip">
+                                            <i class="fas fa-sign-out-alt"></i> ĐĂNG XUẤT
+                                        </a>
+                                    </form>
+                                </li>
+                            }
+                            else
+                            {
+                                <li class="nav-item">
+                                    <a href="/tk/dang-nhap" class="nav-link" data-toggle="tooltip" title="Bấm vô đăng nhập."><i class="far fa-user"></i> ĐĂNG NHẬP</a>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </nav>
             </div>
         </div>
-    </nav>
-
-    <partial name="_CookieConsentPartial" />
-
-    <div class="container body-content">
-        @RenderBody()
-        <hr />
-        <footer>
-            <p>&copy; 2018 - erp</p>
-        </footer>
     </div>
 
-    <environment include="Development">
-        <script src="~/lib/jquery/dist/jquery.js"></script>
-        <script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>
-        <script src="~/js/site.js" asp-append-version="true"></script>
-    </environment>
-    <environment exclude="Development">
-        <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-3.3.1.min.js"
-                asp-fallback-src="~/lib/jquery/dist/jquery.min.js"
-                asp-fallback-test="window.jQuery"
-                crossorigin="anonymous"
-                integrity="sha384-tsQFqpEReu7ZLhBV2VZlAu7zcOV+rXbYlF2cqB8txI/8aZajjp4Bqd+V6D5IgvKT">
-        </script>
-        <script src="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.7/bootstrap.min.js"
-                asp-fallback-src="~/lib/bootstrap/dist/js/bootstrap.min.js"
-                asp-fallback-test="window.jQuery && window.jQuery.fn && window.jQuery.fn.modal"
-                crossorigin="anonymous"
-                integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa">
-        </script>
-        <script src="~/js/site.min.js" asp-append-version="true"></script>
-    </environment>
+    @RenderBody()
 
-    @RenderSection("Scripts", required: false)
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-3 col-xs-6">
+                    <a href="/">
+                        <img alt="Image" src="~/images/logo.png" style="height:30px;" />
+                    </a>
+                    <br />
+                    <small style="font-weight:bold;">&copy; @DateTime.Now.Year Công ty TNHH CNSH SÀI GÒN XANH</small>
+                </div>
+                <div class="col-md-3 col-xs-6">
+                    <a href="/">Trang chủ</a>
+                </div>
+                <div class="col-md-3 col-xs-6">
+                    <a href="/@Constants.LinkDocument.Main/@Constants.LinkDocument.GettingStarted" alt="Hướng dẫn sử dụng" target="_blank" data-toggle="tooltip" title="Bấm vô để mở hướng dẫn chi tiết bằng hình ảnh.">Hướng dẫn</a>
+                </div>
+                <div class="col-md-3 col-xs-6">
+                    <a href="https://tribat.vn" target="_blank">tribat.vn</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- MODAL PASSWORD -->
+    <div class="modal fade" id="pwdModal" tabindex="-1" role="dialog" aria-labelledby="pwdModal" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content" id="modalPwd">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Thay đổi mật khẩu</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form class="data-form-change-pwd">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="recipient-name" class="col-form-label">Mật khẩu mới:</label>
+                            <input type="password" class="form-control form-control-lg" name="newpassword" id="newpassword" />
+                            <span toggle="#newpassword" class="fa fa-fw fa-eye field-icon toggle-password"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="message-text" class="col-form-label">Nhập lại mật khẩu mới:</label>
+                            <input type="password" class="form-control form-control-lg" id="renewpassword" />
+                            <span toggle="#renewpassword" class="fa fa-fw fa-eye field-icon toggle-password"></span>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                        <button type="button" class="btn btn-primary btn-save-pwd">Lưu mật khẩu mới</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    <input type="hidden" value=""
+           name="clientScreenHeight" id="clientScreenHeight" />
+    <input type="hidden" value=""
+           name="clientScreenWidth" id="clientScreenWidth" />
+
+    <script>
+        $(document).ready(function () {
+            $("#clientScreenWidth").val($(window).width());
+            $("#clientScreenHeight").val($(window).height());
+        });
+    </script>
+    <script type="text/javascript" src="~/lib/jquery-ui-1.12.1/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="~/lib/popper/popper.min.js"></script>
+    <script type="text/javascript" src="~/assets/wingman/js/jquery.smartWizard.min.js"></script>
+    <script type="text/javascript" src="~/lib/flickity/flickity.pkgd.min.js"></script>
+    <script type="text/javascript" src="~/assets/wingman/js/scrollMonitor.js"></script>
+    <script type="text/javascript" src="~/lib/smooth-scroll/smooth-scroll.polyfills.min.js"></script>
+    <script type="text/javascript" src="~/lib/prism/prism.min.js"></script>
+    <script type="text/javascript" src="~/lib/zoom/zoom-vanilla.min.js"></script>
+    <script type="text/javascript" src="~/lib/bootstrap-4.0.0-dist/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="~/assets/wingman/js/theme.js"></script>
+    <script type="text/javascript" src="~/lib/bootstrap-multiselect/dist/js/bootstrap-multiselect.js"></script>
+    <script type="text/javascript" src="~/lib/autosize/jquery.textarea_autosize.js"></script>
+
+    <!-- TIENG VIET : Datepicker-->
+    <script type="text/javascript" src="~/lib/bootstrap-datepicker-1.6.4-dist/js/bootstrap-datepicker.min.js"></script>
+    <script type="text/javascript" src="~/lib/bootstrap-datepicker-1.6.4-dist/locales/bootstrap-datepicker.vi.min.js" charset="UTF-8"></script>
+
+    <script type="text/javascript" src="~/lib/moment/moment.min.js"></script>
+    <script type="text/javascript" src="~/lib/moment/moment-with-locales.min.js"></script>
+
+
+    <script type="text/javascript" src="~/lib/chart.js/Chart.min.js"></script>
+
+    <script type="text/javascript" src="~/lib/autoNumber-4-1/autoNumeric.js"></script>
+    <script type="text/javascript" src="~/lib/accounting.js/accounting.min.js"></script>
+    <script type="text/javascript" src="~/lib/toastr/toastr.min.js"></script>
+    <script type="text/javascript" src="~/lib/daterangepicker/daterangepicker.js"></script>
+
+    <!-- TIENG VIET ,... MOVE TO USE HERE -->
+    <!--Link: https://tempusdominus.github.io/bootstrap-4/Usage/ -->
+    <script type="text/javascript" src="~/lib/datetimepicker-tempusdominus/js/tempusdominus-bootstrap-4.min.js"></script>
+
+    <script type="text/javascript" src="~/lib/js-render/jsrender.min.js"></script>
+    <script type="text/javascript" src="~/lib/select2/select2.min.js"></script>
+    <script type="text/javascript" src="~/lib/jquery.floatThead/dist/jquery.floatThead.min.js"></script>
+    <script type="text/javascript" src="~/js/site.js?@DateTime.Now.Ticks"></script>
+
+    @RenderSection("scripts", required: false)
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            console.log("Time until DOMready: ", Date.now() - start);
+        });
+        $(window).on("load", function () {
+            console.log("Time until everything loaded: ", Date.now() - start);
+        });
+    </script>
 </body>
 </html>

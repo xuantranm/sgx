@@ -378,8 +378,6 @@ D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Shared\_L
 D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Shared\_LayoutDocument.g.cshtml.cs
 D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Shared\_LayoutNotification.g.cshtml.cs
 D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Shared\_LayoutSocial.g.cshtml.cs
-D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Shared\_LayoutSocialFb.g.cshtml.cs
-D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Shared\_LayoutSocialFbFS.g.cshtml.cs
 D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Shared\_LoginPartial.g.cshtml.cs
 D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Shared\_ValidationScriptsPartial.g.cshtml.cs
 D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Survey\Index.g.cshtml.cs
@@ -421,6 +419,9 @@ D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Salary\Sa
 D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Salary\Duration.g.cshtml.cs
 D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Salary\BangLuongUpdate.g.cshtml.cs
 D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\TimeKeeper\OvertimeData.g.cshtml.cs
-D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\TimeKeeper\OvertimeList.g.cshtml.cs
-D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\TimeKeeper\OvertimeSecurityList.g.cshtml.cs
 D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\XacNhan\TangCa.g.cshtml.cs
+D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\TimeKeeper\Overtime.g.cshtml.cs
+D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\TimeKeeper\OvertimeEmployee.g.cshtml.cs
+D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\TimeKeeper\OvertimeEmployeeData.g.cshtml.cs
+D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\TimeKeeper\OvertimeSecurity.g.cshtml.cs
+D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Factory\Index.g.cshtml.cs

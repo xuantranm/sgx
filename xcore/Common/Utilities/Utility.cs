@@ -25,6 +25,17 @@ namespace Common.Utilities
         {
         }
 
+        public static string GetSetting(string Key)
+        {
+            string result = string.Empty;
+            var settingE = dbContext.Settings.Find(m => m.Enable.Equals(true) && m.Key.Equals(Key)).FirstOrDefault();
+            if (settingE != null)
+            {
+                result = settingE.Value;
+            }
+            return result;
+        }
+
         public static bool IsSecurityRole(string login)
         {
             var securityPosition = dbContext.ChucVus.Find(m => m.Code.Equals("CHUCVU86")).FirstOrDefault();
@@ -54,6 +65,20 @@ namespace Common.Utilities
                 return false;
             }
             return true;
+        }
+
+        public static bool IsHrRole(string login)
+        {
+            var listHrs = new List<string>()
+            {
+                "GIÁM ĐỐC HCNS",
+                "NHÂN VIÊN HÀNH CHÍNH/ HCNS NM"
+            };
+            if (listHrs.Contains(login))
+            {
+                return true;
+            }
+            return false;
         }
 
         public static int GetTypeDate(DateTime? date)
@@ -607,6 +632,43 @@ namespace Common.Utilities
             {
                 return false;
             }
+            return true;
+        }
+
+        public static bool IsRightChucVu(string login, string function)
+        {
+            // check system
+            if (login == Constants.System.accountId)
+            {
+                return true;
+            }
+            var loginE = dbContext.Employees.Find(m=>m.Id.Equals(login)).FirstOrDefault();
+            if (loginE == null)
+            {
+                return false;
+            }
+            if (function == Constants.Rights.NhaMay)
+            {
+
+//                -Xem hết các thông tin trong hệ thống kho: Mr Huy, Mr Thái, Trưởng bộ phận kho, Trưởng bộ phận kế hoạch, nhân viên thống kê kho.
+
+
+//-Thủ kho thành phẩm->xem kho thành phẩm
+
+//- Thủ kho nguyên liệu->xem kho nguyên vật liệu
+
+
+//-Thủ kho bùn -> xem kho bùn
+
+//- Nhập liệu->Nv thống kê kho, Trưởng bộ phận kho, Mr Thái
+
+//->Chỉnh sửa thông tin trong kho->Trưởng bộ phận kho, Mr Thái
+
+
+//Ngoài Mr Huy, Mr Thái thì những phân quyền còn lại thì chỉ là chức vụ thôi.
+
+            }
+
             return true;
         }
         #endregion

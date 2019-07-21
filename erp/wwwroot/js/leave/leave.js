@@ -1,4 +1,13 @@
 ﻿$(function () {
+    $('.js-select2-basic-single').select2(
+        {
+            theme: "bootstrap"
+        });
+
+    $('.ddlEmployeeId').on('change', function () {
+        formSubmit();
+    });
+
     $('input[name="Leave.TypeName"]').val($('select[name="Leave.TypeId"] option:selected').text());
 
     $('select[name="Leave.TypeId"]').on('change', function () {
@@ -11,25 +20,35 @@
         $('input[name="Leave.ApproverName"]').val($('select[name="Leave.ApproverId"] option:selected').text());
     });
 
+    //$('.btn-chart-save').on('click', function () {
+    //    $('#chart-config').collapse('hide');
+    //    loadChart();
+    //});
+
+    //loadChart();
+
     registerTimePicker();
 
     $(".data-form").on("submit", function (event) {
         event.preventDefault();
-        var formData = new FormData($(this)[0]);
-        // loading button
-        $('#btn-save-submit').prop('disabled', true);
-        $('input', $('.data-form')).prop('disabled', true);
-        $('select', $('.data-form')).prop('disabled', true);
-        $('textarea', $('.data-form')).prop('disabled', true);
+        if ($('#Leave_EmployeeId').val() === "") {
+            toastr.error("Vui lòng chọn nhân viên!");
+            return false;
+        }
 
-        var loadingText = '<i class="fas fa-spinner"></i> đang xử lý...';
-        $('#btnSubmitLeave').html(loadingText);
+        if (!confirm("Bạn chắc chắn thông tin đã được kiểm tra và muốn cập nhật!")) {
+            return false;
+        }
 
-        //grab all form data  
-        
-        //console.log(formData);
         var $this = $(this);
-        var frmValues = $this.serialize();
+        var formData = new FormData($this[0]);
+        // loading button
+        $('.btn-submit', $this).prop('disabled', true);
+        $('input', $this).prop('disabled', true);
+        $('select', $this).prop('disabled', true);
+        $('textarea', $this).prop('disabled', true);
+        $('#btnSubmitLeave').html('<i class="fas fa-spinner"></i> đang xử lý...');
+        
         $.ajax({
             type: $this.attr('method'),
             url: $this.attr('action'),
@@ -47,38 +66,32 @@
                 }
                 else {
                     toastr.error(data.message);
-                    $('#btnSubmitLeave').prop('disabled', false);
-                    $('input', $('.data-form')).prop('disabled', false);
-                    $('select', $('.data-form')).prop('disabled', false);
-                    $('textarea', $('.data-form')).prop('disabled', false);
-                    $('#btnSubmitLeave').html($('#btnSubmitLeave').data('original-text'));
+                    $('.btn-submit', $this).prop('disabled', false);
+                    $('input', $this).prop('disabled', false);
+                    $('select', $this).prop('disabled', false);
+                    $('textarea', $this).prop('disabled', false);
+                    $('.btn-submit', $this).html($('.btn-submit', $this).data('original-text'));
                 }
             })
             .fail(function () {
                 toastr.error(data.message);
-                $('#btnSubmitLeave').prop('disabled', false);
-                $('#btnSubmitLeave').html($('#btnSubmitLeave').data('original-text'));
+                $('.btn-submit', $this).prop('disabled', false);
+                $('.btn-submit', $this).html($('.btn-submit', $this).data('original-text'));
             });
-        event.preventDefault();
     });
 
     function registerTimePicker() {
         var dateNow = new Date();
-        console.log(dateNow);
-        //var numberOfDaysToAdd = -30;
-        //var numDate = dateNow.setDate(dateNow.getDate() + numberOfDaysToAdd);
-        //dateNow = new Date(numDate);
-        //console.log(dateNow);
         $("#from_date").datepicker({
             language: "vi",
-            format: 'dd/mm/yyyy',
-            startDate: dateNow
+            format: 'dd/mm/yyyy'
+            //startDate: dateNow
         });
 
         $("#to_date").datepicker({
             language: "vi",
-            format: 'dd/mm/yyyy',
-            startDate: dateNow
+            format: 'dd/mm/yyyy'
+            //startDate: dateNow
         });
 
         $('#from_date').on('changeDate', function () {
@@ -173,6 +186,61 @@
             }
         });
 
+    }
+
+
+    function loadChart() {
+        resetCanvas();
+        var chartType = $('.chart-type').val() ? $('.chart-type').val() : "bar";
+        var chartCategory = $('.chart-category').val();
+
+        $.ajax({
+            url: "/chart/datahr",
+            type: "GET",
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            data: {
+                type: chartType,
+                category: chartCategory
+            },
+            success: function (data) {
+                console.log(data);
+                $('.chart-name').text(data.title);
+                $('.chart-info').text(data.info);
+                datasets = [{
+                    label: data.title,
+                    data: data.data,
+                    backgroundColor: data.backgroundColor,
+                    borderColor: data.borderColor,
+                    borderWidth: data.borderWidth
+                }];
+                var ctx = document.getElementById("chart");
+                var config = {
+                    type: data.type,
+                    data: {
+                        labels: data.labels,
+                        datasets: datasets
+                    },
+                    options: {
+                        responsive: true
+                        //title: {
+                        //    display: true,
+                        //    text: data.title
+                        //}
+                    }
+                };
+                var myChart = new Chart(ctx, config);
+                //window.myPie = new Chart(ctx, config);
+            },
+            error: function (rtnData) {
+                alert('error' + rtnData);
+            }
+        });
+    }
+
+    function resetCanvas() {
+        $('#chart').remove(); // this is my <canvas> element
+        $('.grap-container').append('<canvas id="chart"><canvas>');
     }
 });
 

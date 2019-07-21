@@ -42,11 +42,19 @@ namespace Common.Utilities
             public const string Template = "mau-du-lieu";
             public const string Import = "nhap-du-lieu";
             public const string Export = "xuat-du-lieu";
+
+            public const string Read = "xem";
+            public const string Create = "tao-moi";
+            public const string Edit = "chinh-sua";
+            public const string Update = "update";
+            public const string Data = "cap-nhat"; // Create/Edit
+            public const string Disable = "an";
+            public const string Delete = "xoa";
+            public const string Active = "kich-hoat";
+            public const string Approve = "xac-nhan";
+
             public const string Add = "nhan-su";
-            public const string Edit = "thong-tin";
-            public const string Update = "cap-nhat";
-            public const string Delete = "danh-sach";
-            public const string Disable = "disable";
+            
             public const string Post = "post";
             public const string Calculator = "tinh-toan";
         }
@@ -188,6 +196,7 @@ namespace Common.Utilities
         public static class LinkFactory
         {
             public const string Main = "nm";
+            public const string Index = "nha-may";
             public const string List = "danh-sach";
             public const string TonSx = "ton-sx";
             public const string ReportTonSx = "bao-cao-ton-san-xuat";
@@ -234,17 +243,16 @@ namespace Common.Utilities
 
             public const string OvertimeTemplateFull = "bang-tang-ca-mau-full";
 
-            public const string OvertimeList = "lenh-tang-ca";
+            /// <summary>
+            /// Version 2
+            /// </summary>
 
-            public const string OvertimeSecurityList = "an-ninh-lenh-tang-ca";
+            public const string Overtime = "tang-ca";
 
-            public const string OvertimeData = "cap-nhat-lenh-tang-ca";
+            public const string OvertimeEmployee = "tang-ca-nhan-vien";
 
-            public const string OvertimeSecurityData = "an-ninh-cap-nhat-lenh-tang-ca";
+            public const string Security = "an-ninh";
 
-            public const string OvertimeApprove = "duyet-tang-ca";
-
-            public const string OvertimeApproveSecurity = "an-ninh-duyet-tang-ca";
         }
 
         public static class KeHoachTongHopLink

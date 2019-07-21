@@ -8,6 +8,13 @@
         formSubmit();
     });
 
+    //$('.btn-chart-save').on('click', function () {
+    //    $('#chart-config').collapse('hide');
+    //    loadChart();
+    //});
+
+    //loadChart();
+
     $('#requestTimeKeeperModal').on('show.bs.modal', function (event) {
         var a = $(event.relatedTarget); // Button that triggered the modal
         var recipient = a.data('id'); // Extract info from data-* attributes
@@ -154,5 +161,59 @@
                 }
             }
         });
+    }
+
+    function loadChart() {
+        resetCanvas();
+        var chartType = $('.chart-type').val() ? $('.chart-type').val() : "bar";
+        var chartCategory = $('.chart-category').val();
+
+        $.ajax({
+            url: "/chart/datahr",
+            type: "GET",
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            data: {
+                type: chartType,
+                category: chartCategory
+            },
+            success: function (data) {
+                console.log(data);
+                $('.chart-name').text(data.title);
+                $('.chart-info').text(data.info);
+                datasets = [{
+                    label: data.title,
+                    data: data.data,
+                    backgroundColor: data.backgroundColor,
+                    borderColor: data.borderColor,
+                    borderWidth: data.borderWidth
+                }];
+                var ctx = document.getElementById("chart");
+                var config = {
+                    type: data.type,
+                    data: {
+                        labels: data.labels,
+                        datasets: datasets
+                    },
+                    options: {
+                        responsive: true
+                        //title: {
+                        //    display: true,
+                        //    text: data.title
+                        //}
+                    }
+                };
+                var myChart = new Chart(ctx, config);
+                //window.myPie = new Chart(ctx, config);
+            },
+            error: function (rtnData) {
+                alert('error' + rtnData);
+            }
+        });
+    }
+
+    function resetCanvas() {
+        $('#chart').remove(); // this is my <canvas> element
+        $('.grap-container').append('<canvas id="chart"><canvas>');
     }
 });

@@ -1,0 +1,173 @@
+﻿@using System;
+@using Common.Utilities;
+@using Common.Enums;
+@using System.Globalization;
+@using ViewModels
+@model TimeKeeperViewModel
+
+@{
+    
+    CultureInfo culture = CultureInfo.CreateSpecificCulture("en-US");
+    var login = User.Identity.Name;
+}
+
+<div class="main-container">
+    <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="/">Trang chủ</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Index">Công</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Overtime">Tăng ca</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.OvertimeEmployee">Danh sách tăng ca nhân viên</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">
+                            @Model.Name
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN -->
+    <section class="flush-with-above height-80 d-block">
+        <div class="container">
+            <!-- FILTER -->
+            <form method="post" action="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.OvertimeEmployee/@Constants.ActionLink.Data" class="data-form">
+                @{
+                    var fromdatesearch = Model.Tu.ToString("dd/MM/yyyy");
+                }
+                <input type="hidden" value="0" class="isChange" />
+                <input type="hidden" value="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.OvertimeEmployee/@Constants.ActionLink.Data" class="link" />
+                <div class="form-group row">
+                    <label class="col-sm-2 col-form-label">Ngày</label>
+                    <div class="col-sm-4">
+                        <input class="form-control datepicker datepicker-lg from-date" value="@fromdatesearch" />
+                        <input type="hidden" name="Tu" class="tu-ngay" value="@Model.Tu.ToString("MM-dd-yyyy")" />
+                    </div>
+                    <label class="col-sm-2 col-form-label">Loại tăng ca</label>
+                    <div class="col-sm-4">
+                        <input type="text" readonly class="form-control-plaintext" value="@Constants.TimeWork(Utility.GetTypeDate(Model.Tu))">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Danh sách nhân viên</label>
+                    <div class="row">
+                        <div class="col-12">
+                            <table class="table table-sm table-striped table-bordered table-hover">
+                                <thead>
+                                    <tr>
+                                        <th scope="col" rowspan="2">#</th>
+                                        <th scope="col" rowspan="2">Họ và Tên</th>
+                                        <th scope="col" colspan="3">Tăng ca</th>
+                                        <th scope="col" rowspan="2">Mã NV</th>
+                                        <th scope="col" rowspan="2">Chức vụ</th>
+                                    </tr>
+                                    <tr>
+                                        <td>Bắt đầu</td>
+                                        <td>Kết thúc</td>
+                                        <td>Giờ</td>
+                                    </tr>
+                                </thead>
+                                <tbody class="font-14">
+                                    @{
+                                        int i = 1;
+                                        int iE = 0;
+                                        foreach (var item in Model.OvertimeEmployees)
+                                        {
+                                            <tr>
+                                                <th scope="row">
+                                                    @i
+                                                    <input type="hidden" class="iE-value" value="@iE" />
+                                                    <input type="hidden" name="OvertimeEmployees[@iE].Id" value="@item.Id" />
+                                                    <input type="hidden" name="OvertimeEmployees[@iE].EmployeeId" value="@item.EmployeeId" />
+                                                    <input type="hidden" name="OvertimeEmployees[@iE].Hour" value="@item.Hour" id="hHour-@iE" />
+                                                </th>
+                                                <td nowrap>
+                                                    @item.EmployeeName
+                                                </td>
+                                                <td>
+                                                    <input type="text" name="OvertimeEmployees[@iE].Start" class="form-control datetimepicker-input" id="start-@iE" data-toggle="datetimepicker" data-target="#start-@iE" data-id="@iE" />
+                                                    <input type="hidden" value="@item.Start.ToString(@"hh\:mm")" id="hiddenStart-@iE" />
+                                                </td>
+                                                <td>
+                                                    <input type="text" name="OvertimeEmployees[@iE].End" class="form-control datetimepicker-input" id="end-@iE" data-toggle="datetimepicker" data-target="#end-@iE" data-id="@iE" />
+                                                    <input type="hidden" value="@item.End.ToString(@"hh\:mm")" id="hiddenEnd-@iE" />
+                                                </td>
+                                                <td>
+                                                    <code class="hour-@iE">@item.Hour</code>
+                                                </td>
+                                                <td nowrap>
+                                                    @item.EmployeeCode
+                                                </td>
+                                                <td nowrap>
+                                                    @item.ChucVuName
+                                                </td>
+                                            </tr>
+                                            i++;
+                                            iE++;
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                @if (Model.Manager != null)
+                {
+                    var manager = Model.Manager;
+                    var phone = string.Empty;
+                    if (manager.Mobiles != null && manager.Mobiles.Count > 0)
+                    {
+                        phone = manager.Mobiles[0].Number;
+                    }
+
+                    <div class="form-group row mb-3">
+                        <button type="submit" class="btn btn-lg btn-danger btn-block"><i class="fas fa-check"></i> Cập nhật</button>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-12">
+                            Lệnh tăng ca sẽ được duyệt bởi anh/chị:
+                            <span class="font-weight-bold overtime-manager-name">@manager.FullName</span>
+                            <br />
+                            Chức vụ: <span class="font-weight-bold overtime-manager-chuc-vu">@manager.ChucVuName</span>
+                            <br />
+                            Email: <span class="font-weight-bold overtime-manager-email">@manager.Email</span>
+                            <br />
+                            Điện thoại: <span class="font-weight-bold overtime-manager-phone">@phone</span>
+                            <br />
+                            Sau đó trạng thái kết quả được cập nhật ở <a href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Overtime">Tăng ca</a>.
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-danger" role="alert">
+                        Hệ thống không tìm thấy người quản lý của bạn. Vui lòng liên hệ Nhân sự (Thoa, Ánh) cập nhật người quản lý.
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block" disabled>Cập nhật</button>
+                }
+            </form>
+        </div>
+    </section>
+</div>
+
+@section scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+        <script type="text/javascript" src="~/js/timer/overtime-employee-data.js?@Constants.VersionJs"></script>
+    }
+}
+
+

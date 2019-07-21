@@ -361,9 +361,11 @@ namespace erp.Controllers
 
             var bophans = dbContext.BoPhans.Find(m => m.Enable.Equals(true) && m.PhongBanId.Equals(phongban)).ToList();
 
+            var managers = dbContext.ChucVus.Find(m => m.Enable.Equals(true) && m.PhongBanId.Equals(phongban)).ToList();
+
             watch.Stop();
             elapsedMs = watch.ElapsedMilliseconds;
-            return Json(new { elapsedMs = elapsedMs + "ms", result = true, bophans });
+            return Json(new { elapsedMs = elapsedMs + "ms", result = true, bophans, managers });
         }
 
         public JsonResult GetByBoPhan(string bophan)

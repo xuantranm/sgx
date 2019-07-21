@@ -27,7 +27,11 @@ namespace xdatafix
             var database = "tribat";
             #endregion
 
-            UpdateManager(connection, database);
+            UpdateLeave(connection, database);
+
+            //UpdateChucVuEmployee(connection, database);
+
+            //UpdateManager(connection, database);
 
             //DeleteEmailNull(connection, database);
 
@@ -90,6 +94,44 @@ namespace xdatafix
         }
 
         #region ERP
+
+        static void UpdateLeave(string connection, string database)
+        {
+            #region Connection, Setting & Filter
+            MongoDBContext.ConnectionString = connection;
+            MongoDBContext.DatabaseName = database;
+            MongoDBContext.IsSSL = true;
+            MongoDBContext dbContext = new MongoDBContext();
+            #endregion
+
+            var filter = Builders<LeaveEmployee>.Filter.Gt(m => m.Number, 10);
+            var update = Builders<LeaveEmployee>.Update
+                .Set(m => m.Number, 7);
+            dbContext.LeaveEmployees.UpdateMany(filter, update);
+        }
+
+        static void UpdateChucVuEmployee(string connection, string database)
+        {
+            #region Connection, Setting & Filter
+            MongoDBContext.ConnectionString = connection;
+            MongoDBContext.DatabaseName = database;
+            MongoDBContext.IsSSL = true;
+            MongoDBContext dbContext = new MongoDBContext();
+            #endregion
+
+            var chucvus = dbContext.ChucVus.Find(m => true).ToList();
+            foreach (var item in chucvus)
+            {
+                var employee = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.ChucVu.Equals(item.Id)).FirstOrDefault();
+                if (employee != null && !string.IsNullOrEmpty(employee.FullName))
+                {
+                    var filter = Builders<ChucVu>.Filter.Eq(m => m.Id, item.Id);
+                    var update = Builders<ChucVu>.Update
+                        .Set(m => m.Employee, employee.FullName);
+                    dbContext.ChucVus.UpdateOne(filter, update);
+                }
+            }
+        }
 
         static void UpdateManager(string connection, string database)
         {

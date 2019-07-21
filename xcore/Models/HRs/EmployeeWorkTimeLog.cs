@@ -100,7 +100,7 @@ namespace Models
         [Display(Name = "Chi tiết")]
         public string ReasonDetail { get; set; }
 
-        public string ConfirmId { get; set; } // Chức vụ
+        public string ConfirmId { get; set; } // Employee Id
 
         public string ConfirmName { get; set; }
 

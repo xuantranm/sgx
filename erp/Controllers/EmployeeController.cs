@@ -397,7 +397,8 @@ namespace erp.Controllers
                 row.CreateCell(32, CellType.String).SetCellValue("Cơ quan BHXH");
                 row.CreateCell(33, CellType.String).SetCellValue("Mã số BHYT");
                 row.CreateCell(34, CellType.String).SetCellValue("Người quản lý");
-                row.CreateCell(35, CellType.String).SetCellValue("Ngày nghỉ việc(nếu có)");
+                row.CreateCell(35, CellType.String).SetCellValue("Trình độ");
+                row.CreateCell(36, CellType.String).SetCellValue("Ngày nghỉ việc(nếu có)");
                 // Set style
 
                 for (int i = 0; i <= 31; i++)
@@ -499,7 +500,27 @@ namespace erp.Controllers
                         }
                     }
                     row.CreateCell(34, CellType.String).SetCellValue(manage);
-                    row.CreateCell(35, CellType.String).SetCellValue(data.Leaveday.HasValue ? data.Leaveday.Value.ToString("dd/MM/yyyy") : string.Empty);
+                    var trinhdo = string.Empty;
+                    if (data.Certificates != null && data.Certificates.Count > 0)
+                    {
+                        foreach(var item in data.Certificates)
+                        {
+                            if (!string.IsNullOrEmpty(item.Type))
+                            {
+                                trinhdo += "Học vấn: " + item.Type;
+                            }
+                            if (!string.IsNullOrEmpty(item.Location))
+                            {
+                                trinhdo += " - Nơi cấp: " + item.Location;
+                            }
+                            if (!string.IsNullOrEmpty(item.Type))
+                            {
+                                trinhdo += ";";
+                            }
+                        }
+                    }
+                    row.CreateCell(35, CellType.String).SetCellValue(trinhdo);
+                    row.CreateCell(36, CellType.String).SetCellValue(data.Leaveday.HasValue ? data.Leaveday.Value.ToString("dd/MM/yyyy") : string.Empty);
                     rowIndex++;
                 }
 
@@ -761,7 +782,11 @@ namespace erp.Controllers
             var phongbans = dbContext.PhongBans.Find(m => m.Enable.Equals(true)).ToList();
             var bophans = dbContext.BoPhans.Find(m => m.Enable.Equals(true) && string.IsNullOrEmpty(m.Parent)).ToList();
             var bophancons = dbContext.BoPhans.Find(m => m.Enable.Equals(true) && !string.IsNullOrEmpty(m.Parent)).ToList();
+
+
             var chucvus = dbContext.ChucVus.Find(m => m.Enable.Equals(true)).ToList();
+
+
             var employeeDdl = dbContext.Employees.Find(m => m.Enable.Equals(true) && !m.UserName.Equals(Constants.System.account)).SortBy(m => m.FullName).ToList();
 
             var roles = dbContext.Roles.Find(m => m.Enable.Equals(true)).ToList();

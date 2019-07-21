@@ -74,10 +74,6 @@ namespace erp.Controllers
             }
             #endregion
 
-            #region Sort
-            var sortBuilder = Builders<ScheduleEmail>.Sort.Descending(m => m.UpdatedOn);
-            #endregion
-
             var pages = 1;
             var records = dbContext.ScheduleEmails.CountDocuments(filter);
             
@@ -92,11 +88,11 @@ namespace erp.Controllers
             var list = new List<ScheduleEmail>();
             if (records > 0 && records > Size)
             {
-                list = dbContext.ScheduleEmails.Find(filter).Sort(sortBuilder).Skip((Page - 1) * Size).Limit(Size).ToList();
+                list = dbContext.ScheduleEmails.Find(filter).Skip((Page - 1) * Size).Limit(Size).ToList();
             }
             else
             {
-                list = dbContext.ScheduleEmails.Find(filter).Sort(sortBuilder).ToList();
+                list = dbContext.ScheduleEmails.Find(filter).ToList();
             }
 
             var employees = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && !string.IsNullOrEmpty(m.Email)).ToList();

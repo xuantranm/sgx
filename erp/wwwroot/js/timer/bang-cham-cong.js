@@ -42,7 +42,7 @@
         );
     });
 
-    tangca = new AutoNumeric('.form-control-tang-ca', { decimalPlaces: 2 });
+    //tangca = new AutoNumeric('.form-control-tang-ca', { decimalPlaces: 2 });
 
     $('.xac-nhan-tang-ca-form').on("submit", function (event) {
         event.preventDefault();

@@ -719,6 +719,19 @@
 
                     var $bpc = $("#Employee_BoPhanCon");
                     $bpc.empty();
+
+                    var $manager = $("#ManagerId");
+                    $manager.empty();
+                    $manager.append($("<option></option>")
+                        .attr("value", "").text("Chọn"));
+                    $.each(data.managers, function (key, manager) {
+                        var display = manager.name;
+                        if (manager.employee !== null) {
+                            display += " ( " + manager.employee + " )";
+                        }
+                        $manager.append($("<option></option>")
+                            .attr("value", manager.id).text(display));
+                    });
                 }
 
                 getChucVu($('#Employee_CongTyChiNhanh').val(), $('#Employee_KhoiChucNang').val(), $("#Employee_PhongBan").val(), $("#Employee_BoPhan").val());

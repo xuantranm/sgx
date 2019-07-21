@@ -1,6 +1,13 @@
 ﻿$(function () {
     eventAutocomplete();
 
+    $('.btn-chart-save').on('click', function () {
+        $('#chart-config').collapse('hide');
+        loadChart();
+    });
+
+    loadChart();
+
     $(".delete-item").on("click", function (event) {
         var id = $(this).attr("data-id");
         if (confirm("Bạn muốn xóa dữ liệu này!")) {
@@ -119,44 +126,58 @@
             return moment(val).format("DD/MM/YYYY");
         }
     });
-});
 
-function eventAutocomplete() {
-    // https://www.devbridge.com/sourcery/components/jquery-autocomplete/
-    //$('#autocomplete').autocomplete({
-    //    serviceUrl: '/autocomplete/countries',
-    //    onSelect: function (suggestion) {
-    //        alert('You selected: ' + suggestion.value + ', ' + suggestion.data);
-    //    }
-    //});
+    function loadChart() {
+        resetCanvas();
+        var chartType = $('.chart-type').val() ? $('.chart-type').val() : "bar";
+        var chartCategory = $('.chart-category').val();
 
-    $('.autocomplete').on("focus", function () {
-        $(this).autocomplete({
-            source: function (request, response) {
-                $.ajax({
-                    url: "/api/employees/",
+        $.ajax({
+            url: "/chart/datahr",
+            type: "GET",
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            data: {
+                type: chartType,
+                category: chartCategory
+            },
+            success: function (data) {
+                console.log(data);
+                $('.chart-name').text(data.title);
+                $('.chart-info').text(data.info);
+                datasets = [{
+                    label: data.title,
+                    data: data.data,
+                    backgroundColor: data.backgroundColor,
+                    borderColor: data.borderColor,
+                    borderWidth: data.borderWidth
+                }];
+                var ctx = document.getElementById("chart");
+                var config = {
+                    type: data.type,
                     data: {
-                        type: $(this).data('type'),
-                        term: request.term
+                        labels: data.labels,
+                        datasets: datasets
                     },
-                    success: function (data) {
-                        response(data.outputs);
+                    options: {
+                        responsive: true
+                        //title: {
+                        //    display: true,
+                        //    text: data.title
+                        //}
                     }
-                });
+                };
+                var myChart = new Chart(ctx, config);
+                //window.myPie = new Chart(ctx, config);
             },
-            minLength: 2,
-            focus: function (event, ui) {
-                $(this).val(ui.item.fullName);
-                return false;
-            },
-            select: function (event, ui) {
-                //$('#name').val(ui.item.name);
-                return false;
+            error: function (rtnData) {
+                alert('error' + rtnData);
             }
-        }).autocomplete("instance")._renderItem = function (ul, item) {
-            return $("<li>")
-                .append("<div>" + item.fullName + "<br>" + item.email + " - " + item.title + "</div>")
-                .appendTo(ul);
-        };
-    });
-}
+        });
+    }
+
+    function resetCanvas() {
+        $('#chart').remove(); // this is my <canvas> element
+        $('.grap-container').append('<canvas id="chart"><canvas>');
+    }
+});

@@ -4,7 +4,7 @@
 @model LeaveViewModel
 
 @{
-    Layout = "~/Views/Shared/_LayoutSocialFb.cshtml";
+    
 }
 
 <form method="get" action="/@Constants.LinkLeave.Main/@Constants.LinkLeave.Manage" id="form-main">
@@ -246,7 +246,7 @@ else
 @section scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
-        <script type="text/javascript" src="~/js/leave-help.js?@Constants.VersionJs"></script>
+        <script type="text/javascript" src="~/js/leave/leave.js?@Constants.VersionJs"></script>
     }
 }
 

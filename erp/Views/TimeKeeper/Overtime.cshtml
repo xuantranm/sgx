@@ -1,0 +1,227 @@
+﻿@using System;
+@using System.IO;
+@using Common.Utilities;
+@using Common.Enums;
+@using System.Globalization;
+@using ViewModels
+@model TimeKeeperViewModel
+
+@{
+    CultureInfo culture = CultureInfo.CreateSpecificCulture("en-US");
+    var login = User.Identity.Name;
+}
+
+<div class="main-container">
+    <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="/">Trang chủ</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Index">Công</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">
+                            @Model.Name
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN -->
+    <section class="flush-with-above height-80 d-block">
+        <div class="container">
+            <div class="row mb-3">
+                <div class="col-12">
+                    <a href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Overtime/@Constants.ActionLink.Data" class="btn btn-primary"><i class="icon-add-to-list mr-1"></i> Tạo tăng ca</a>
+                </div>
+            </div>
+
+            <!-- FILTER -->
+            <form method="get" action="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Overtime" id="form-main">
+                <input asp-for="Trang" type="hidden" value="1" />
+                <input asp-for="SapXep" class="sap-xep" type="hidden" />
+                <input asp-for="ThuTu" class="thu-tu" type="hidden" />
+                <div class="row">
+                    <div class="col-12">
+                        <span class="badge badge-primary">Tìm kiếm:</span>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    @{
+                        var fromdatesearch = Model.Tu > Constants.MinDate ? Model.Tu.ToString("dd/MM/yyyy") : "";
+                        var todatesearch = Model.Den > Constants.MinDate ? Model.Den.ToString("dd/MM/yyyy") : "";
+                    }
+                    <div class="col-md-3 col-sm-6 col-xs-12">
+                        <span class="mr-2 text-muted text-small text-nowrap">Ngày</span>
+                        <input class="form-control datepicker datepicker-lg from-date" value="@fromdatesearch" />
+                        <input type="hidden" name="Tu" class="tu-ngay" value="@Model.Tu.ToString("MM-dd-yyyy")" />
+                    </div>
+                    <div class="col-md-3 col-sm-6 col-xs-12">
+                        <span class="mr-2 text-muted text-small text-nowrap">Đến</span>
+                        <input class="to-date form-control datepicker datepicker-lg" value="@todatesearch" />
+                        <input type="hidden" name="Den" class="den-ngay" value="@Model.Den.ToString("MM-dd-yyyy")" />
+                    </div>
+                    <div class="col-md-3 col-sm-6 col-xs-12">
+                        <span class="mr-2 text-muted text-small text-nowrap">Trạng thái</span>
+                        <select asp-for="TrangThai" class="form-control form-control-lg custom-select" onchange="formSubmit();">
+                            <option value="@((int)EOvertime.None)">Tất cả</option>
+                            <option value="@((int)EOvertime.Create)">Chờ duyệt</option>
+                            <option value="@((int)EOvertime.Ok)">Đã duyệt, chờ An Ninh xác nhận</option>
+                            <option value="@((int)EOvertime.Cancel)">Không duyệt</option>
+                            <option value="@((int)EOvertime.Secutity)">An ninh đã xác nhận</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12">
+                        <span>Sắp xếp theo: </span>
+                        @{
+                            var sortFlagNgayDesc = "badge-default";
+                            if (Model.SapXep == "ngay" && Model.ThuTu == "desc")
+                            {
+                                sortFlagNgayDesc = "badge-success";
+                            }
+                            var sortFlagNgayAsc = "badge-default";
+                            if (Model.SapXep == "ngay" && Model.ThuTu == "asc")
+                            {
+                                sortFlagNgayAsc = "badge-success";
+                            }
+
+                            var sortFlagTenDesc = "badge-default";
+                            if (Model.SapXep == "ten" && Model.ThuTu == "desc")
+                            {
+                                sortFlagTenDesc = "badge-success";
+                            }
+                            var sortFlagTenAsc = "badge-default";
+                            if (Model.SapXep == "ten" && Model.ThuTu == "asc")
+                            {
+                                sortFlagTenAsc = "badge-success";
+                            }
+                            <a href="javascript:;" data-sortby="ngay" data-sortorder="asc" class="btn-sort">
+                                <span class="badge @sortFlagNgayAsc"><i class="fas fa-sort-alpha-up"></i> Ngày tăng dần</span>
+                            </a>
+                            <a href="javascript:;" data-sortby="ngay" data-sortorder="desc" class="btn-sort">
+                                <span class="badge @sortFlagNgayDesc"><i class="fas fa-sort-alpha-down"></i> Ngày giảm dần</span>
+                            </a>
+                            <a href="javascript:;" data-sortby="ten" data-sortorder="asc" class="btn-sort">
+                                <span class="badge @sortFlagTenAsc"><i class="fas fa-sort-alpha-up"></i> Tên tăng dần</span>
+                            </a>
+                            <a href="javascript:;" data-sortby="ten" data-sortorder="desc" class="btn-sort">
+                                <span class="badge @sortFlagTenDesc"><i class="fas fa-sort-alpha-down"></i> Tên giảm dần</span>
+                            </a>
+                        }
+                    </div>
+                </div>
+            </form>
+
+            <div class="row">
+                @{
+                    <div class="col-12">Tìm thấy <span class="badge badge-info">@Model.Records</span> kết quả.</div>
+                    @if (Model.Records > 0)
+                    {
+                        <div class="col-12 table-responsive mb-1">
+                            <table class="table table-sm table-striped table-bordered table-hover">
+                                <thead>
+                                    <tr>
+                                        <th scope="col" rowspan="2">#</th>
+                                        <th scope="col" rowspan="2"></th>
+                                        <th scope="col" rowspan="2">Ngày</th>
+                                        <th scope="col" colspan="3" class="text-center text-uppercase">Tăng ca</th>
+                                        <th scope="col" colspan="3" class="text-center text-uppercase">Xác nhận</th>
+                                        <th scope="col" rowspan="2">Suất cơm</th>
+                                        <th scope="col" rowspan="2">Loại tăng ca</th>
+                                        <th scope="col" rowspan="2">Trạng thái duyệt</th>
+                                        <th scope="col" rowspan="2">Ghi chú</th>
+                                    </tr>
+                                    <tr>
+                                        <td>Bắt đầu</td>
+                                        <td>Kết thúc</td>
+                                        <td>Tổng giờ</td>
+                                        <td>Bắt đầu</td>
+                                        <td>Kết thúc</td>
+                                        <td>Tổng giờ</td>
+                                    </tr>
+                                </thead>
+                                <tbody class="font-14">
+                                    @{
+                                        int i = 1;
+                                        foreach (var item in Model.OvertimeEmployees)
+                                        {
+                                            var securityConfirm = false;
+                                            if (item.Status == (int)EOvertime.Secutity)
+                                            {
+                                                securityConfirm = true;
+                                            }
+                                            <tr>
+                                                <th scope="row">@i</th>
+                                                <td>
+                                                    <a href="/@item.Document" target="_blank" title="Tải xác nhận">Tải xác nhận</a>
+                                                </td>
+                                                <td nowrap>
+                                                    @item.Date.ToString("dd/MM/yyyy")
+                                                </td>
+                                                <td>@item.Start.ToString(@"hh\:mm")</td>
+                                                <td>@item.End.ToString(@"hh\:mm")</td>
+                                                <td>@item.Hour</td>
+                                                @if (securityConfirm)
+                                                {
+                                                    <td>@item.StartSecurity.ToString(@"hh\:mm")</td>
+                                                    <td>@item.EndSecurity.ToString(@"hh\:mm")</td>
+                                                    <td>@item.HourSecurity</td>
+                                                    <td>@item.Food</td>
+                                                }
+                                                else
+                                                {
+                                                    if (item.Status == (int)EOvertime.Cancel)
+                                                    {
+                                                        <td colspan="4">
+                                                            @Constants.OvertimeStatus(item.Status)
+                                                        </td>
+                                                    }
+                                                    else
+                                                    {
+                                                        <td colspan="4">
+                                                            Chờ xác nhận
+                                                        </td>
+                                                    }
+                                                }
+                                                <td>@Constants.TimeWork(item.Type)</td>
+                                                <td>@Constants.OvertimeStatus(item.Status)</td>
+                                                <td>@Constants.Truncate(item.Description, 100)</td>
+                                            </tr>
+                                            i++;
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="col-12">
+                            <i class="far fa-clock"></i>
+                            <span>
+                                Chưa có thông tin tăng ca.
+                            </span>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </section>
+</div>
+
+@section scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+        <script type="text/javascript" src="~/js/timer/overtime-list.js?@DateTime.Now.Ticks"></script>
+    }
+}
+
+

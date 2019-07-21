@@ -71,14 +71,15 @@ namespace erp.Controllers
             var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
             ViewData["LoginUserName"] = loginUserName;
 
-            var userInformation = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(login)).FirstOrDefault();
-            if (userInformation == null)
+            var loginE = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(login)).FirstOrDefault();
+            if (loginE == null)
             {
                 #region snippet1
                 await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                 #endregion
                 return RedirectToAction("login", "account");
             }
+
             bool quyenXacNhanCong = false;
             if (loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.XacNhanCongDum, (int)ERights.Add))
             {
@@ -92,7 +93,13 @@ namespace erp.Controllers
             #endregion
 
             id = string.IsNullOrEmpty(id) ? login : id;
-            if (id != login)
+
+            var userInformation = new Employee();
+            if (id == login)
+            {
+                userInformation = loginE;
+            }
+            else
             {
                 userInformation = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(id)).FirstOrDefault();
             }
@@ -122,7 +129,7 @@ namespace erp.Controllers
             var approves = new List<IdName>();
             if (!string.IsNullOrEmpty(userInformation.ManagerId))
             {
-                var approveEntity = dbContext.Employees.Find(m => m.ChucVu.Equals(userInformation.ManagerId)).FirstOrDefault();
+                var approveEntity = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.ChucVu.Equals(userInformation.ManagerId)).FirstOrDefault();
                 if (approveEntity != null)
                 {
                     approves.Add(new IdName
@@ -184,10 +191,14 @@ namespace erp.Controllers
                 approver = true;
             }
 
+            var isManager = dbContext.Employees.CountDocuments(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.ManagerId.Equals(loginE.ChucVu)) > 0;
+            var securityPosition = dbContext.ChucVus.Find(m => m.Code.Equals("CHUCVU86")).FirstOrDefault();
+            var isSecurity = loginE.ChucVu == securityPosition.Id;
+
             var viewModel = new TimeKeeperViewModel
             {
                 EmployeeWorkTimeLogs = timekeepings,
-                Employee = userInformation,
+                Employee = loginE,
                 EmployeeWorkTimeMonthLogs = monthsTimes,
                 MonthYears = sortTimes,
                 StartWorkingDate = fromDate,
@@ -196,7 +207,9 @@ namespace erp.Controllers
                 Thang = thang,
                 RightRequest = quyenXacNhanCong,
                 RightManager = quyenBangCong,
-                Approver = approver
+                Approver = approver,
+                IsManager = isManager,
+                IsSecurity = isSecurity
             };
             return View(viewModel);
         }
@@ -274,7 +287,7 @@ namespace erp.Controllers
             var approves = new List<IdName>();
             if (!string.IsNullOrEmpty(userInformation.ManagerId))
             {
-                var approveEntity = dbContext.Employees.Find(m => m.ChucVu.Equals(userInformation.ManagerId)).FirstOrDefault();
+                var approveEntity = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.ChucVu.Equals(userInformation.ManagerId)).FirstOrDefault();
                 if (approveEntity != null)
                 {
                     approves.Add(new IdName
@@ -412,7 +425,7 @@ namespace erp.Controllers
             var approves = new List<IdName>();
             if (!string.IsNullOrEmpty(userInformation.ManagerId))
             {
-                var approveEntity = dbContext.Employees.Find(m => m.ChucVu.Equals(userInformation.ManagerId)).FirstOrDefault();
+                var approveEntity = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.ChucVu.Equals(userInformation.ManagerId)).FirstOrDefault();
                 if (approveEntity != null)
                 {
                     approves.Add(new IdName
@@ -507,8 +520,8 @@ namespace erp.Controllers
             var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
             ViewData["LoginUserName"] = loginUserName;
 
-            var userInformation = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(login)).FirstOrDefault();
-            if (userInformation == null)
+            var loginE = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(login)).FirstOrDefault();
+            if (loginE == null)
             {
                 #region snippet1
                 await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
@@ -521,7 +534,7 @@ namespace erp.Controllers
             var entity = dbContext.EmployeeWorkTimeLogs.Find(m => m.Id.Equals(model.Id)).FirstOrDefault();
             string secureCode = Helper.HashedPassword(Guid.NewGuid().ToString("N").Substring(0, 12));
             // Tự yêu cầu
-            var employee = userInformation;
+            var employee = loginE;
             // Làm cho người khác
             if (entity.EmployeeId != login)
             {
@@ -534,7 +547,7 @@ namespace erp.Controllers
             var approveEntity = new Employee();
             if (!string.IsNullOrEmpty(model.ConfirmId))
             {
-                approveEntity = dbContext.Employees.Find(m => m.ChucVu.Equals(model.ConfirmId)).FirstOrDefault();
+                approveEntity = dbContext.Employees.Find(m => m.Id.Equals(model.ConfirmId)).FirstOrDefault();
             }
             else
             {
@@ -598,7 +611,7 @@ namespace erp.Controllers
             var var3 = employee.FullName;
             if (entity.EmployeeId != login)
             {
-                requester += " (người tạo xác nhận: " + userInformation.FullName + ")";
+                requester += " (người tạo xác nhận: " + loginE.FullName + ")";
             }
             var inTime = entity.In.HasValue ? entity.In.Value.ToString(@"hh\:mm") : string.Empty;
             var outTime = entity.Out.HasValue ? entity.Out.Value.ToString(@"hh\:mm") : string.Empty;
@@ -791,9 +804,8 @@ namespace erp.Controllers
 
             #endregion
 
-            var approvement = dbContext.Employees.Find(m => m.ChucVu.Equals(entity.ConfirmId)).FirstOrDefault();
-            var approvementchucvuE = dbContext.ChucVus.Find(m => m.Id.Equals(approvement.ChucVu)).FirstOrDefault();
-            var approvementchucvu = approvementchucvuE != null ? approvementchucvuE.Name : string.Empty;
+            var approvement = dbContext.Employees.Find(m => m.Id.Equals(entity.ConfirmId)).FirstOrDefault();
+            var approvementchucvu = approvement.ChucVuName;
             // Tự yêu cầu
             //bool seftFlag = entity.EmployeeId == entity.Request ? true : false;
             var employee = dbContext.Employees.Find(m => m.Id.Equals(entity.EmployeeId)).FirstOrDefault();
@@ -2075,50 +2087,379 @@ namespace erp.Controllers
         #endregion
 
         #region TANG CA
-        [HttpPost]
-        [Route(Constants.LinkTimeKeeper.XacNhanTangCa)]
-        public IActionResult XacNhanTangCa(string id, double thoigian, int trangthai)
+        [Route(Constants.LinkTimeKeeper.Overtime)]
+        public async Task<IActionResult> Overtime(DateTime Tu, DateTime Den, string Id, int TrangThai, int Trang, string SapXep, string ThuTu)
         {
             var now = DateTime.Now;
-            int status = trangthai == 1 ? (int)ETangCa.DongY : (int)ETangCa.TuChoi;
+            var linkCurrent = string.Empty;
 
-            var timeWork = dbContext.EmployeeWorkTimeLogs.Find(m => m.Enable.Equals(true) && m.Id.Equals(id)).FirstOrDefault();
-
-            var filter = Builders<EmployeeWorkTimeLog>.Filter.Eq(m => m.Id, id);
-            var update = Builders<EmployeeWorkTimeLog>.Update
-                .Set(m => m.StatusTangCa, status)
-                .Set(m => m.TangCaDaXacNhan, TimeSpan.FromHours(thoigian))
-                .Set(m => m.UpdatedOn, DateTime.Now);
-            dbContext.EmployeeWorkTimeLogs.UpdateOne(filter, update);
-
-            // UPDATE SUMMARY
-            var builderS = Builders<EmployeeWorkTimeMonthLog>.Filter;
-            var filterS = builderS.Eq(m => m.EmployeeId, timeWork.EmployeeId) & builderS.Eq(m => m.EnrollNumber, timeWork.EnrollNumber)
-                & builderS.Eq(m => m.Month, timeWork.Month) & builderS.Eq(m => m.Year, timeWork.Year);
-
-            var updateS = Builders<EmployeeWorkTimeMonthLog>.Update
-                .Set(m => m.LastUpdated, now);
-            if (timeWork.Mode == (int)ETimeWork.Normal)
+            #region Authorization
+            var login = User.Identity.Name;
+            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+            ViewData["LoginUserName"] = loginUserName;
+            var loginE = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(login)).FirstOrDefault();
+            if (loginE == null)
             {
-                updateS = updateS.Set(m => m.CongTangCaNgayThuongGio, thoigian);
+                #region snippet1
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                #endregion
+                return RedirectToAction("login", "account");
             }
-            else if (timeWork.Mode == (int)ETimeWork.Sunday)
+            #endregion
+
+            #region Filter
+            Id = string.IsNullOrEmpty(Id) ? login : Id;
+            linkCurrent += "Id=" + Id;
+
+            var builder = Builders<OvertimeEmployee>.Filter;
+            Tu = Tu.Year < 1990 ? new DateTime(now.Year, now.Month, 1).Add(new TimeSpan(0, 0, 0)) : Tu.Date.Add(new TimeSpan(0, 0, 0));
+            Den = Den.Year < 1990 ? now.Date.Add(new TimeSpan(23, 59, 59)) : Den.Date.Add(new TimeSpan(23, 59, 59));
+            var filter = builder.Eq(m => m.Enable, true)
+                        & builder.Eq(m => m.EmployeeId, Id)
+                        & builder.Gte(m => m.Date, Tu)
+                        & builder.Lte(m => m.Date, Den);
+
+            if (TrangThai != 0)
             {
-                updateS = updateS.Set(m => m.CongCNGio, thoigian);
+                filter = filter & builder.Eq(m => m.Status, TrangThai);
+                linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "?";
+                linkCurrent += "TrangThai=" + TrangThai;
+            }
+            #endregion
+
+            #region Sort
+            var sortBuilder = Builders<OvertimeEmployee>.Sort.Ascending(m => m.Date);
+            SapXep = string.IsNullOrEmpty(SapXep) ? "ngay" : SapXep;
+            ThuTu = string.IsNullOrEmpty(ThuTu) ? "asc" : ThuTu;
+            switch (SapXep)
+            {
+                case "ten":
+                    sortBuilder = ThuTu == "asc" ? Builders<OvertimeEmployee>.Sort.Ascending(m => m.EmployeeAlias) : Builders<OvertimeEmployee>.Sort.Descending(m => m.EmployeeAlias);
+                    break;
+                default:
+                    sortBuilder = ThuTu == "asc" ? Builders<OvertimeEmployee>.Sort.Ascending(m => m.Date) : Builders<OvertimeEmployee>.Sort.Descending(m => m.Date);
+                    break;
+            }
+            #endregion
+
+            Trang = Trang == 0 ? 1 : Trang;
+            var settingPage = dbContext.Settings.Find(m => m.Type.Equals((int)ESetting.System) && m.Key.Equals("page-size")).FirstOrDefault();
+            int Size = Convert.ToInt32(settingPage.Value);
+            int pages = 1;
+            var records = dbContext.OvertimeEmployees.CountDocuments(filter);
+            var enablePage = false;
+            if (records > 0 && records > Size)
+            {
+                enablePage = true;
+                pages = (int)Math.Ceiling((double)records / (double)Size);
+                if (Trang > pages)
+                {
+                    Trang = 1;
+                }
+            }
+
+            var list = new List<OvertimeEmployee>();
+            if (enablePage)
+            {
+                list = dbContext.OvertimeEmployees.Find(filter).Sort(sortBuilder).Skip((Trang - 1) * Size).Limit(Size).ToList();
             }
             else
             {
-                updateS = updateS.Set(m => m.CongLeTet, thoigian);
+                list = dbContext.OvertimeEmployees.Find(filter).Sort(sortBuilder).ToList();
             }
-            dbContext.EmployeeWorkTimeMonthLogs.UpdateOne(filterS, updateS);
+            var viewModel = new TimeKeeperViewModel()
+            {
+                Name = "Quản lý tăng ca",
+                OvertimeEmployees = list,
+                Id = Id,
+                Tu = Tu,
+                Den = Den,
+                TrangThai = TrangThai,
+                LinkCurrent = linkCurrent,
+                ThuTu = ThuTu,
+                SapXep = SapXep,
+                Records = (int)records,
+                PageSize = Size,
+                SoTrang = pages,
+                Trang = Trang
+            };
 
-            return Json(new { error = 0, id, trangthai, thoigian });
+            return View(viewModel);
         }
-        #endregion
 
-        #region TANG CA V2
-        [Route(Constants.LinkTimeKeeper.OvertimeList)]
-        public async Task<IActionResult> OvertimeList(DateTime Tu, DateTime Den, int? Nam, int? Thang, int? Tuan, string Id, int TrangThai, int Trang, string SapXep, string ThuTu)
+        [Route(Constants.LinkTimeKeeper.Overtime + "/" + Constants.ActionLink.Data)]
+        public async Task<IActionResult> OvertimeData(DateTime? Ngay)
+        {
+            var now = DateTime.Now;
+            var linkCurrent = string.Empty;
+
+            #region Authorization
+            var login = User.Identity.Name;
+            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+            ViewData["LoginUserName"] = loginUserName;
+            var loginE = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(login)).FirstOrDefault();
+            if (loginE == null)
+            {
+                #region snippet1
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                #endregion
+                return RedirectToAction("login", "account");
+            }
+            #endregion
+
+            var directorE = new Employee();
+            if (!string.IsNullOrEmpty(loginE.ManagerId))
+            {
+                directorE = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.ChucVu.Equals(loginE.ManagerId)).FirstOrDefault();
+            }
+            else
+            {
+                // gửi cho ai | HCNS
+            }
+
+            var Tu = Ngay ?? DateTime.Now.Date;
+
+            #region Filter
+            var overtime = dbContext.OvertimeEmployees.Find(m => m.EmployeeId.Equals(loginE.Id) && m.Date.Equals(Tu) && !m.Status.Equals((int)EOvertime.Cancel)).FirstOrDefault();
+            if (overtime == null)
+            {
+                overtime = new OvertimeEmployee()
+                {
+                    EmployeeId = login
+                };
+            }
+            #endregion
+
+            var viewModel = new TimeKeeperViewModel()
+            {
+                Name = "Tăng ca",
+                OvertimeEmployee = overtime,
+                Tu = Tu,
+                LinkCurrent = linkCurrent,
+                Manager = directorE
+            };
+
+            return View(viewModel);
+        }
+
+        [Route(Constants.LinkTimeKeeper.Overtime + "/" + Constants.ActionLink.Data)]
+        [HttpPost]
+        public async Task<IActionResult> OvertimeData(TimeKeeperViewModel dataModel)
+        {
+            try
+            {
+                #region Authorization
+                var login = User.Identity.Name;
+                var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+                ViewData["LoginUserName"] = loginUserName;
+                var loginE = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(login)).FirstOrDefault();
+                if (loginE == null)
+                {
+                    #region snippet1
+                    await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                    #endregion
+                    return RedirectToAction("login", "account");
+                }
+                #endregion
+
+                #region Define director
+                var directorE = new Employee();
+                if (!string.IsNullOrEmpty(loginE.ManagerId))
+                {
+                    directorE = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.ChucVu.Equals(loginE.ManagerId)).FirstOrDefault();
+                }
+                else
+                {
+                    // gửi cho ai | HCNS
+                }
+                #endregion
+
+                var now = DateTime.Now;
+                var date = dataModel.Tu.Date;
+                var item = dataModel.OvertimeEmployee;
+
+                if (item.Hour <= 0)
+                {
+                    return Json(new { result = false, message = "Lỗi: Dữ liệu không đúng." });
+                }
+
+                var timestamp = now.ToString("yyyyMMddHHmmssfff");
+                var lastest = dbContext.OvertimeEmployees.Find(m => m.Enable.Equals(true)).SortByDescending(m => m.Code).FirstOrDefault();
+                int codeNew = lastest != null ? lastest.Code + 1 : 1;
+
+                #region Full Data
+                if (!string.IsNullOrEmpty(item.EmployeeId))
+                {
+                    var employeeE = dbContext.Employees.Find(m => m.Id.Equals(item.EmployeeId)).FirstOrDefault();
+                    if (employeeE != null)
+                    {
+                        item.EmployeeCode = employeeE.CodeOld;
+                        item.EmployeeAlias = employeeE.AliasFullName;
+                        item.EmployeeName = employeeE.FullName;
+                        item.ChucVuId = employeeE.ChucVu;
+                        item.ChucVuName = employeeE.ChucVuName;
+                        item.ChucVuAlias = Utility.AliasConvert(employeeE.ChucVuName);
+                        item.BoPhanId = employeeE.BoPhan;
+                        item.BoPhanName = employeeE.BoPhanName;
+                        item.BoPhanAlias = Utility.AliasConvert(employeeE.BoPhanName);
+                        item.PhongBanId = employeeE.PhongBan;
+                        item.PhongBanName = employeeE.PhongBanName;
+                        item.PhongBanAlias = Utility.AliasConvert(employeeE.PhongBanName);
+                        item.KhoiChucNangId = employeeE.KhoiChucNang;
+                        item.KhoiChucNangName = employeeE.KhoiChucNangName;
+                        item.KhoiChucNangAlias = Utility.AliasConvert(employeeE.KhoiChucNangName);
+                        item.CongTyChiNhanhId = employeeE.CongTyChiNhanh;
+                        item.CongTyChiNhanhName = employeeE.CongTyChiNhanhName;
+                        item.CongTyChiNhanhAlias = Utility.AliasConvert(employeeE.CongTyChiNhanhName);
+                    }
+                }
+
+                item.ManagerId = directorE.Id;
+                if (directorE != null)
+                {
+                    item.ManagerInfo = directorE.FullName + " (" + directorE.ChucVuName + ")";
+                }
+
+                item.Date = date;
+                item.Type = Utility.GetTypeDate(item.Date);
+                var endDate = Utility.EndWorkingMonthByDate(item.Date);
+                item.Month = endDate.Month;
+                item.Year = endDate.Year;
+                item.Timestamp = timestamp;
+                item.Code = codeNew;
+                item.ApprovedBy = directorE.Id;
+                item.StartSecurity = item.Start;
+                item.EndSecurity = item.End;
+                item.HourSecurity = item.Hour;
+                #endregion
+
+                if (string.IsNullOrEmpty(item.Id))
+                {
+                    dbContext.OvertimeEmployees.InsertOne(item);
+                }
+                else
+                {
+                    var filter = Builders<OvertimeEmployee>.Filter.Eq(m => m.Id, item.Id);
+                    var update = Builders<OvertimeEmployee>.Update
+                        .Set(m => m.Date, item.Date)
+                        .Set(m => m.Start, item.Start)
+                        .Set(m => m.End, item.End)
+                        .Set(m => m.Hour, item.Hour)
+                         .Set(m => m.StartSecurity, item.StartSecurity)
+                        .Set(m => m.EndSecurity, item.EndSecurity)
+                        .Set(m => m.HourSecurity, item.HourSecurity)
+                        .Set(m => m.Timestamp, timestamp)
+                        .Set(m => m.Description, item.Description)
+                        .Set(m => m.Code, codeNew)
+                        .Set(m => m.UpdatedOn, DateTime.Now);
+                    dbContext.OvertimeEmployees.UpdateOne(filter, update);
+                }
+
+                var linkExcel = RenderExcel(date, codeNew, loginE.Id);
+
+                var attachments = new List<string>
+                    {
+                        linkExcel
+                    };
+
+                #region Send mail: Quản lý trực tiếp (phòng ban)
+                var genderDE = directorE.Gender == "Nam" ? "anh" : "chị";
+                var genderLE = loginE.Gender == "Nam" ? "Anh" : "Chị";
+                var genderLELower = loginE.Gender == "Nam" ? "anh" : "chị";
+                var phone = string.Empty;
+                if (loginE.Mobiles != null && loginE.Mobiles.Count > 0)
+                {
+                    phone = loginE.Mobiles[0].Number;
+                }
+
+                var webRoot = Environment.CurrentDirectory;
+                var pathToFile = _env.WebRootPath
+                        + Path.DirectorySeparatorChar.ToString()
+                        + "Templates"
+                        + Path.DirectorySeparatorChar.ToString()
+                        + "EmailTemplate"
+                        + Path.DirectorySeparatorChar.ToString()
+                        + "OvertimeApprove.html";
+
+                var tos = new List<EmailAddress>
+            {
+                new EmailAddress { Name = directorE.FullName, Address = directorE.Email }
+            };
+
+                var ccs = new List<EmailAddress>
+            {
+                new EmailAddress { Name = loginE.FullName, Address = loginE.Email }
+            };
+
+                var subject = "Xác nhận Bảng tăng ca ngày " + date.ToString("dd/MM/yyyy");
+                var title = "Bảng tăng ca ngày " + date.ToString("dd/MM/yyyy");
+                // Api update, generate code.
+                var linkapprove = Constants.System.domain + "/xacnhan/tangca";
+                var linkAccept = linkapprove + "?code=" + codeNew + "&approve=" + (int)EOvertime.Ok + "&secure=" + timestamp;
+                var linkCancel = linkapprove + "?code=" + codeNew + "&approve=" + (int)EOvertime.Cancel + "&secure=" + timestamp;
+                var linkDetail = Constants.System.domain + "/" + Constants.LinkTimeKeeper.Main + "/" + Constants.LinkTimeKeeper.Overtime + "?Tu=" + date.ToString("MM-dd-yyyy") + "&Den=" + date.ToString("MM-dd-yyyy");
+
+                var bodyBuilder = new BodyBuilder();
+                using (StreamReader SourceReader = System.IO.File.OpenText(pathToFile))
+                {
+                    bodyBuilder.HtmlBody = SourceReader.ReadToEnd();
+                }
+                string messageBody = string.Format(bodyBuilder.HtmlBody,
+                    subject,
+                    genderDE,
+                    directorE.FullName,
+                    genderLE,
+                    genderLELower,
+                    loginE.FullName,
+                    loginE.ChucVuName,
+                    loginE.Email,
+                    phone,
+                    title,
+                    linkDetail,
+                    linkAccept,
+                    linkCancel,
+                    Constants.System.domain
+                    );
+
+                var emailMessage = new EmailMessage()
+                {
+                    ToAddresses = tos,
+                    CCAddresses = ccs,
+                    Subject = subject,
+                    BodyContent = messageBody,
+                    Type = "overtime-approve",
+                    EmployeeId = codeNew.ToString(),
+                    Attachments = attachments
+                };
+
+                var scheduleEmail = new ScheduleEmail
+                {
+                    Status = (int)EEmailStatus.Schedule,
+                    To = emailMessage.ToAddresses,
+                    CC = emailMessage.CCAddresses,
+                    BCC = emailMessage.BCCAddresses,
+                    Type = emailMessage.Type,
+                    Title = emailMessage.Subject,
+                    Content = emailMessage.BodyContent,
+                    EmployeeId = emailMessage.EmployeeId,
+                    Attachments = emailMessage.Attachments
+                };
+
+                dbContext.ScheduleEmails.InsertOne(scheduleEmail);
+                #endregion
+
+                var href = "/" + Constants.LinkTimeKeeper.Main + "/" + Constants.LinkTimeKeeper.Overtime;
+
+                return Json(new { result = true, source = "create", href, message = "Khởi tạo thành công" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { result = false, message = "Lỗi: " + ex.Message });
+            }
+        }
+
+        [Route(Constants.LinkTimeKeeper.OvertimeEmployee)]
+        public async Task<IActionResult> OvertimeEmployee(DateTime Tu, DateTime Den, int? Nam, int? Thang, int? Tuan, string Id, int TrangThai, int Trang, string SapXep, string ThuTu)
         {
             var now = DateTime.Now;
             var linkCurrent = string.Empty;
@@ -2144,33 +2485,17 @@ namespace erp.Controllers
             filterEmp = filterEmp & !builderEmp.Eq(m => m.UserName, Constants.System.account);
             filterEmp = filterEmp & builderEmp.Eq(m => m.ManagerId, loginE.ChucVu);
             var employees = await dbContext.Employees.Find(filterEmp).SortBy(m => m.FullName).ToListAsync();
-
-            // Datetimes
-            var nams = new List<int>();
-            for (int year = 2018; year <= now.Year; year++)
-            {
-                nams.Add(year);
-            };
-            var thangs = new List<int>();
-            for (int m = 1; m <= 12; m++)
-            {
-                thangs.Add(m);
-            };
-            var tuans = new List<int>();
-            var maxTuan = DateWeek.GetWeeksInYear(now.Year);
-            for (int w = 1; w <= maxTuan; w++)
-            {
-                tuans.Add(w);
-            };
             #endregion
 
             #region Filter
             var builder = Builders<OvertimeEmployee>.Filter;
-            Tu = Tu.Year < 1990 ? now.Date.Add(new TimeSpan(0, 0, 0)) : Tu.Date.Add(new TimeSpan(0, 0, 0));
+            Tu = Tu.Year < 1990 ? new DateTime(now.Year, now.Month, 1).Add(new TimeSpan(0, 0, 0)) : Tu.Date.Add(new TimeSpan(0, 0, 0));
             Den = Den.Year < 1990 ? now.Date.Add(new TimeSpan(23, 59, 59)) : Den.Date.Add(new TimeSpan(23, 59, 59));
             var filter = builder.Eq(m => m.Enable, true)
+                        & builder.Eq(m => m.ManagerId, login)
                         & builder.Gte(m => m.Date, Tu)
                         & builder.Lte(m => m.Date, Den);
+
             if (!string.IsNullOrEmpty(Id))
             {
                 filter = filter & builder.Eq(m => m.EmployeeId, Id);
@@ -2246,8 +2571,8 @@ namespace erp.Controllers
             return View(viewModel);
         }
 
-        [Route(Constants.LinkTimeKeeper.OvertimeData)]
-        public async Task<IActionResult> OvertimeData(DateTime? Ngay)
+        [Route(Constants.LinkTimeKeeper.OvertimeEmployee + "/" + Constants.ActionLink.Data)]
+        public async Task<IActionResult> OvertimeEmployeeData(DateTime? Ngay)
         {
             var now = DateTime.Now;
             var linkCurrent = string.Empty;
@@ -2318,11 +2643,15 @@ namespace erp.Controllers
             }
             #endregion
 
+            // Director base PhongBan
+            var manager = new Employee();
+
             var viewModel = new TimeKeeperViewModel()
             {
                 Name = "Cập nhật tăng ca",
                 OvertimeEmployees = times,
                 Employees = employees,
+                Manager = manager,
                 Tu = Tu,
                 LinkCurrent = linkCurrent
             };
@@ -2330,211 +2659,233 @@ namespace erp.Controllers
             return View(viewModel);
         }
 
-        [Route(Constants.LinkTimeKeeper.OvertimeData)]
+        [Route(Constants.LinkTimeKeeper.OvertimeEmployee + "/" + Constants.ActionLink.Data)]
         [HttpPost]
-        public async Task<IActionResult> OvertimeData(TimeKeeperViewModel dataModel)
+        public async Task<IActionResult> OvertimeEmployeeData(TimeKeeperViewModel dataModel)
         {
-            #region Authorization
-            var login = User.Identity.Name;
-            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
-            ViewData["LoginUserName"] = loginUserName;
-            var loginE = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(login)).FirstOrDefault();
-            if (loginE == null)
+            try
             {
-                #region snippet1
-                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                #endregion
-                return RedirectToAction("login", "account");
-            }
-            #endregion
-
-            #region Define director
-            var directorE = new Employee();
-            var congtychinhanhId = loginE.CongTyChiNhanh;
-            var listDirector = new string[] { "C.01", "C.02", "C.03" };
-            // CTY
-            if (congtychinhanhId == "5c88d094d59d56225c43240a")
-            {
-                directorE = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false)
-                                                    && listDirector.Contains(m.NgachLuongCode) && m.PhongBan.Equals(loginE.PhongBan)).FirstOrDefault();
-            }
-            else // NM
-            {
-                directorE = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false)
-                                                    && listDirector.Contains(m.NgachLuongCode) && m.CongTyChiNhanh.Equals(loginE.CongTyChiNhanh)).FirstOrDefault();
-            }
-            #endregion
-
-            var now = DateTime.Now;
-            var data = dataModel.OvertimeEmployees;
-            var date = dataModel.Tu.Date;
-
-            var timestamp = now.ToString("yyyyMMddHHmmssfff");
-            var lastest = dbContext.OvertimeEmployees.Find(m => m.Enable.Equals(true)).SortByDescending(m => m.Code).FirstOrDefault();
-            int codeNew = lastest != null ? lastest.Code + 1 : 1;
-
-            foreach (var item in data)
-            {
-                #region Full Data
-                if (!string.IsNullOrEmpty(item.EmployeeId))
+                #region Authorization
+                var login = User.Identity.Name;
+                var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+                ViewData["LoginUserName"] = loginUserName;
+                var loginE = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(login)).FirstOrDefault();
+                if (loginE == null)
                 {
-                    var employeeE = dbContext.Employees.Find(m => m.Id.Equals(item.EmployeeId)).FirstOrDefault();
-                    if (employeeE != null)
+                    #region snippet1
+                    await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                    #endregion
+                    return RedirectToAction("login", "account");
+                }
+                #endregion
+
+                #region Define director
+                var directorE = new Employee();
+                var congtychinhanhId = loginE.CongTyChiNhanh;
+                var listDirector = new string[] { "C.01", "C.02", "C.03" };
+                // CTY
+                if (congtychinhanhId == "5c88d094d59d56225c43240a")
+                {
+                    directorE = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false)
+                                                        && listDirector.Contains(m.NgachLuongCode) && m.PhongBan.Equals(loginE.PhongBan)).FirstOrDefault();
+                }
+                else // NM
+                {
+                    directorE = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false)
+                                                        && listDirector.Contains(m.NgachLuongCode) && m.CongTyChiNhanh.Equals(loginE.CongTyChiNhanh)).FirstOrDefault();
+                }
+                #endregion
+
+                var now = DateTime.Now;
+                var data = dataModel.OvertimeEmployees;
+
+                //if (data.Count(m => m.Hour <= 0) > 0)
+                //{
+                //    return Json(new { result = false, message = "Lỗi: Dữ liệu không đúng." });
+                //}
+
+                var date = dataModel.Tu.Date;
+
+                var timestamp = now.ToString("yyyyMMddHHmmssfff");
+                var lastest = dbContext.OvertimeEmployees.Find(m => m.Enable.Equals(true)).SortByDescending(m => m.Code).FirstOrDefault();
+                int codeNew = lastest != null ? lastest.Code + 1 : 1;
+
+                foreach (var item in data)
+                {
+                    #region Full Data
+                    if (!string.IsNullOrEmpty(item.EmployeeId))
                     {
-                        item.EmployeeCode = employeeE.CodeOld;
-                        item.EmployeeAlias = employeeE.AliasFullName;
-                        item.EmployeeName = employeeE.FullName;
-                        item.ChucVuId = employeeE.ChucVu;
-                        item.ChucVuName = employeeE.ChucVuName;
-                        item.ChucVuAlias = Utility.AliasConvert(employeeE.ChucVuName);
-                        item.BoPhanId = employeeE.BoPhan;
-                        item.BoPhanName = employeeE.BoPhanName;
-                        item.BoPhanAlias = Utility.AliasConvert(employeeE.BoPhanName);
-                        item.PhongBanId = employeeE.PhongBan;
-                        item.PhongBanName = employeeE.PhongBanName;
-                        item.PhongBanAlias = Utility.AliasConvert(employeeE.PhongBanName);
-                        item.KhoiChucNangId = employeeE.KhoiChucNang;
-                        item.KhoiChucNangName = employeeE.KhoiChucNangName;
-                        item.KhoiChucNangAlias = Utility.AliasConvert(employeeE.KhoiChucNangName);
-                        item.CongTyChiNhanhId = employeeE.CongTyChiNhanh;
-                        item.CongTyChiNhanhName = employeeE.CongTyChiNhanhName;
-                        item.CongTyChiNhanhAlias = Utility.AliasConvert(employeeE.CongTyChiNhanhName);
+                        var employeeE = dbContext.Employees.Find(m => m.Id.Equals(item.EmployeeId)).FirstOrDefault();
+                        if (employeeE != null)
+                        {
+                            item.EmployeeCode = employeeE.CodeOld;
+                            item.EmployeeAlias = employeeE.AliasFullName;
+                            item.EmployeeName = employeeE.FullName;
+                            item.ChucVuId = employeeE.ChucVu;
+                            item.ChucVuName = employeeE.ChucVuName;
+                            item.ChucVuAlias = Utility.AliasConvert(employeeE.ChucVuName);
+                            item.BoPhanId = employeeE.BoPhan;
+                            item.BoPhanName = employeeE.BoPhanName;
+                            item.BoPhanAlias = Utility.AliasConvert(employeeE.BoPhanName);
+                            item.PhongBanId = employeeE.PhongBan;
+                            item.PhongBanName = employeeE.PhongBanName;
+                            item.PhongBanAlias = Utility.AliasConvert(employeeE.PhongBanName);
+                            item.KhoiChucNangId = employeeE.KhoiChucNang;
+                            item.KhoiChucNangName = employeeE.KhoiChucNangName;
+                            item.KhoiChucNangAlias = Utility.AliasConvert(employeeE.KhoiChucNangName);
+                            item.CongTyChiNhanhId = employeeE.CongTyChiNhanh;
+                            item.CongTyChiNhanhName = employeeE.CongTyChiNhanhName;
+                            item.CongTyChiNhanhAlias = Utility.AliasConvert(employeeE.CongTyChiNhanhName);
+                        }
+                    }
+
+                    item.ManagerId = loginE.Id;
+                    var employeeME = dbContext.Employees.Find(m => m.Id.Equals(item.ManagerId)).FirstOrDefault();
+                    if (employeeME != null)
+                    {
+                        item.ManagerInfo = employeeME.FullName + " (" + employeeME.ChucVuName + ")";
+                    }
+
+                    item.Date = date;
+                    item.Type = Utility.GetTypeDate(item.Date);
+                    var endDate = Utility.EndWorkingMonthByDate(item.Date);
+                    item.Month = endDate.Month;
+                    item.Year = endDate.Year;
+                    item.Timestamp = timestamp;
+                    item.Code = codeNew;
+                    item.ApprovedBy = directorE.Id;
+                    item.StartSecurity = item.Start;
+                    item.EndSecurity = item.End;
+                    item.HourSecurity = item.Hour;
+                    #endregion
+
+                    if (string.IsNullOrEmpty(item.Id))
+                    {
+                        dbContext.OvertimeEmployees.InsertOne(item);
+                    }
+                    else
+                    {
+                        var filter = Builders<OvertimeEmployee>.Filter.Eq(m => m.Id, item.Id);
+                        var update = Builders<OvertimeEmployee>.Update
+                            .Set(m => m.Date, item.Date)
+                            .Set(m => m.Start, item.Start)
+                            .Set(m => m.End, item.End)
+                            .Set(m => m.Hour, item.Hour)
+                             .Set(m => m.StartSecurity, item.StartSecurity)
+                            .Set(m => m.EndSecurity, item.EndSecurity)
+                            .Set(m => m.HourSecurity, item.HourSecurity)
+                            .Set(m => m.Timestamp, timestamp)
+                            .Set(m => m.Code, codeNew)
+                            .Set(m => m.UpdatedOn, DateTime.Now);
+                        dbContext.OvertimeEmployees.UpdateOne(filter, update);
                     }
                 }
 
-                item.ManagerId = loginE.Id;
-                var employeeME = dbContext.Employees.Find(m => m.Id.Equals(item.ManagerId)).FirstOrDefault();
-                if (employeeME != null)
-                {
-                    item.ManagerInfo = employeeME.FullName + " (" + employeeME.ChucVuName + ")";
-                }
+                var linkExcel = RenderExcelManager(date, codeNew, loginE.Id);
 
-                item.Date = date;
-                item.Type = Utility.GetTypeDate(item.Date);
-                var endDate = Utility.EndWorkingMonthByDate(item.Date);
-                item.Month = endDate.Month;
-                item.Year = endDate.Year;
-                item.Timestamp = timestamp;
-                item.Code = codeNew;
-                item.ApprovedBy = directorE.Id;
-                #endregion
-
-                if (string.IsNullOrEmpty(item.Id))
-                {
-                    dbContext.OvertimeEmployees.InsertOne(item);
-                }
-                else
-                {
-                    var filter = Builders<OvertimeEmployee>.Filter.Eq(m => m.Id, item.Id);
-                    var update = Builders<OvertimeEmployee>.Update
-                        .Set(m => m.Date, item.Date)
-                        .Set(m => m.Hour, item.Hour)
-                        .Set(m => m.HourSecurity, item.Hour)
-                        .Set(m => m.Timestamp, timestamp)
-                        .Set(m => m.Code, codeNew)
-                        .Set(m => m.UpdatedOn, DateTime.Now);
-                    dbContext.OvertimeEmployees.UpdateOne(filter, update);
-                }
-            }
-
-            var linkExcel = RenderExcel(date, codeNew, loginE.Id);
-
-            var attachments = new List<string>
+                var attachments = new List<string>
                     {
                         linkExcel
                     };
 
-            #region Send mail: Giám đốc bộ phận (phòng ban)
-            var genderDE = directorE.Gender == "Nam" ? "anh" : "chị";
-            var genderLE = loginE.Gender == "Nam" ? "Anh" : "Chị";
-            var genderLELower = loginE.Gender == "Nam" ? "anh" : "chị";
-            var phone = string.Empty;
-            if (loginE.Mobiles != null && loginE.Mobiles.Count > 0)
-            {
-                phone = loginE.Mobiles[0].Number;
-            }
+                #region Send mail: Giám đốc bộ phận (phòng ban)
+                var genderDE = directorE.Gender == "Nam" ? "anh" : "chị";
+                var genderLE = loginE.Gender == "Nam" ? "Anh" : "Chị";
+                var genderLELower = loginE.Gender == "Nam" ? "anh" : "chị";
+                var phone = string.Empty;
+                if (loginE.Mobiles != null && loginE.Mobiles.Count > 0)
+                {
+                    phone = loginE.Mobiles[0].Number;
+                }
 
-            var webRoot = Environment.CurrentDirectory;
-            var pathToFile = _env.WebRootPath
-                    + Path.DirectorySeparatorChar.ToString()
-                    + "Templates"
-                    + Path.DirectorySeparatorChar.ToString()
-                    + "EmailTemplate"
-                    + Path.DirectorySeparatorChar.ToString()
-                    + "OvertimeApprove.html";
+                var webRoot = Environment.CurrentDirectory;
+                var pathToFile = _env.WebRootPath
+                        + Path.DirectorySeparatorChar.ToString()
+                        + "Templates"
+                        + Path.DirectorySeparatorChar.ToString()
+                        + "EmailTemplate"
+                        + Path.DirectorySeparatorChar.ToString()
+                        + "OvertimeApprove.html";
 
-            var tos = new List<EmailAddress>
+                var tos = new List<EmailAddress>
             {
                 new EmailAddress { Name = directorE.FullName, Address = directorE.Email }
             };
 
-            var ccs = new List<EmailAddress>
+                var ccs = new List<EmailAddress>
             {
                 new EmailAddress { Name = loginE.FullName, Address = loginE.Email }
             };
 
-            var subject = "Xác nhận Bảng tăng ca ngày " + date.ToString("dd/MM/yyyy");
-            var title = "Bảng tăng ca ngày " + date.ToString("dd/MM/yyyy");
-            // Api update, generate code.
-            var linkapprove = Constants.System.domain + "/xacnhan/tangca";
-            var linkAccept = linkapprove + "?code=" + codeNew + "&approve=" + (int)EOvertime.Ok + "&secure=" + timestamp;
-            var linkCancel = linkapprove + "?code=" + codeNew + "&approve=" + (int)EOvertime.Cancel + "&secure=" + timestamp;
-            var linkDetail = Constants.System.domain +"/" + Constants.LinkTimeKeeper.Main + "/" + Constants.LinkTimeKeeper.OvertimeList + "?Tu=" + date.ToString("MM-dd-yyyy") + "&Den=" + date.ToString("MM-dd-yyyy");
+                var subject = "Xác nhận Bảng tăng ca ngày " + date.ToString("dd/MM/yyyy");
+                var title = "Bảng tăng ca ngày " + date.ToString("dd/MM/yyyy");
+                // Api update, generate code.
+                var linkapprove = Constants.System.domain + "/xacnhan/tangca";
+                var linkAccept = linkapprove + "?code=" + codeNew + "&approve=" + (int)EOvertime.Ok + "&secure=" + timestamp;
+                var linkCancel = linkapprove + "?code=" + codeNew + "&approve=" + (int)EOvertime.Cancel + "&secure=" + timestamp;
+                var linkDetail = Constants.System.domain + "/" + Constants.LinkTimeKeeper.Main + "/" + Constants.LinkTimeKeeper.OvertimeEmployee + "?Tu=" + date.ToString("MM-dd-yyyy") + "&Den=" + date.ToString("MM-dd-yyyy");
 
-            var bodyBuilder = new BodyBuilder();
-            using (StreamReader SourceReader = System.IO.File.OpenText(pathToFile))
-            {
-                bodyBuilder.HtmlBody = SourceReader.ReadToEnd();
+                var bodyBuilder = new BodyBuilder();
+                using (StreamReader SourceReader = System.IO.File.OpenText(pathToFile))
+                {
+                    bodyBuilder.HtmlBody = SourceReader.ReadToEnd();
+                }
+                string messageBody = string.Format(bodyBuilder.HtmlBody,
+                    subject,
+                    genderDE,
+                    directorE.FullName,
+                    genderLE,
+                    genderLELower,
+                    loginE.FullName,
+                    loginE.ChucVuName,
+                    loginE.Email,
+                    phone,
+                    title,
+                    linkDetail,
+                    linkAccept,
+                    linkCancel,
+                    Constants.System.domain
+                    );
+
+                var emailMessage = new EmailMessage()
+                {
+                    ToAddresses = tos,
+                    CCAddresses = ccs,
+                    Subject = subject,
+                    BodyContent = messageBody,
+                    Type = "overtime-approve",
+                    EmployeeId = codeNew.ToString(),
+                    Attachments = attachments
+                };
+
+                var scheduleEmail = new ScheduleEmail
+                {
+                    Status = (int)EEmailStatus.Schedule,
+                    To = emailMessage.ToAddresses,
+                    CC = emailMessage.CCAddresses,
+                    BCC = emailMessage.BCCAddresses,
+                    Type = emailMessage.Type,
+                    Title = emailMessage.Subject,
+                    Content = emailMessage.BodyContent,
+                    EmployeeId = emailMessage.EmployeeId,
+                    Attachments = emailMessage.Attachments,
+                };
+
+                dbContext.ScheduleEmails.InsertOne(scheduleEmail);
+                #endregion
+
+                var href = "/" + Constants.LinkTimeKeeper.Main + "/" + Constants.LinkTimeKeeper.OvertimeEmployee;
+
+                return Json(new { result = true, source = "create", href, message = "Khởi tạo thành công" });
             }
-            string messageBody = string.Format(bodyBuilder.HtmlBody,
-                subject,
-                genderDE,
-                directorE.FullName,
-                genderLE,
-                genderLELower,
-                loginE.FullName,
-                loginE.ChucVuName,
-                loginE.Email,
-                phone,
-                title,
-                linkDetail,
-                linkAccept,
-                linkCancel,
-                Constants.System.domain
-                );
-
-            var emailMessage = new EmailMessage()
+            catch (Exception ex)
             {
-                ToAddresses = tos,
-                CCAddresses = ccs,
-                Subject = subject,
-                BodyContent = messageBody,
-                Type = "overtime-approve",
-                EmployeeId = codeNew.ToString(),
-                Attachments = attachments
-            };
-
-            var scheduleEmail = new ScheduleEmail
-            {
-                Status = (int)EEmailStatus.Schedule,
-                To = emailMessage.ToAddresses,
-                CC = emailMessage.CCAddresses,
-                BCC = emailMessage.BCCAddresses,
-                Type = emailMessage.Type,
-                Title = emailMessage.Subject,
-                Content = emailMessage.BodyContent,
-                EmployeeId = emailMessage.EmployeeId,
-                Attachments = emailMessage.Attachments,
-            };
-
-            dbContext.ScheduleEmails.InsertOne(scheduleEmail);
-            #endregion
-
-            return Redirect("/" + Constants.LinkTimeKeeper.Main + "/" + Constants.LinkTimeKeeper.OvertimeList);
+                return Json(new { result = false, message = "Lỗi: " + ex.Message });
+            }
         }
 
         [AllowAnonymous]
-        [Route(Constants.LinkTimeKeeper.OvertimeApprove)]
+        [Route(Constants.LinkTimeKeeper.Overtime + "/" + Constants.ActionLink.Approve)]
         [HttpPost]
         public IActionResult OvertimeApprove(int code, int approve, string secure)
         {
@@ -2576,7 +2927,7 @@ namespace erp.Controllers
 
                 var securityPosition = dbContext.ChucVus.Find(m => m.Code.Equals("CHUCVU86")).FirstOrDefault();
 
-                var securityE = dbContext.Employees.Find(m => m.ChucVu.Equals(securityPosition.Id)).FirstOrDefault();
+                var securityE = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.ChucVu.Equals(securityPosition.Id)).FirstOrDefault();
 
                 var genderDE = directorE.Gender == "Nam" ? "Anh" : "Chị";
                 var genderDELower = directorE.Gender == "Nam" ? "anh" : "chị";
@@ -2605,7 +2956,7 @@ namespace erp.Controllers
                 var subject = "Kiểm tra Bảng tăng ca ngày " + date.ToString("dd/MM/yyyy");
                 var title = "Bảng tăng ca ngày " + date.ToString("dd/MM/yyyy");
 
-                var linkDetail = Constants.System.domain + "/" + Constants.LinkTimeKeeper.Main + "/" + Constants.LinkTimeKeeper.OvertimeList + "?Tu=" + date.ToString("MM-dd-yyyy") + "&Den=" + date.ToString("MM-dd-yyyy");
+                var linkDetail = Constants.System.domain + "/" + Constants.LinkTimeKeeper.Main + "/" + Constants.LinkTimeKeeper.Overtime + "?Tu=" + date.ToString("MM-dd-yyyy") + "&Den=" + date.ToString("MM-dd-yyyy");
 
                 var bodyBuilder = new BodyBuilder();
                 using (StreamReader SourceReader = System.IO.File.OpenText(pathToFile))
@@ -2655,8 +3006,8 @@ namespace erp.Controllers
             return Json(new { result = true, message = "Cám ơn đã xác nhận, kết quả đang gửi cho người liên quan." });
         }
 
-        [Route(Constants.LinkTimeKeeper.OvertimeSecurityList)]
-        public async Task<IActionResult> OvertimeSecurityList(DateTime Tu, DateTime Den, int? Nam, int? Thang, int? Tuan, string Id, int CodeInt, int TrangThai, int Trang, string SapXep, string ThuTu)
+        [Route(Constants.LinkTimeKeeper.Overtime + "/" + Constants.LinkTimeKeeper.Security)]
+        public async Task<IActionResult> OvertimeSecurity(DateTime Tu, DateTime Den, int? Nam, int? Thang, int? Tuan, string Id, string Pb, int CodeInt, int TrangThai, int Trang, string SapXep, string ThuTu)
         {
             var now = DateTime.Now;
             var linkCurrent = string.Empty;
@@ -2666,7 +3017,7 @@ namespace erp.Controllers
             var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
             ViewData["LoginUserName"] = loginUserName;
             var securityPosition = dbContext.ChucVus.Find(m => m.Code.Equals("CHUCVU86")).FirstOrDefault();
-            var loginE = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(login) && m.ChucVu.Equals(securityPosition.Id)).FirstOrDefault();
+            var loginE = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.Id.Equals(login) && m.ChucVu.Equals(securityPosition.Id)).FirstOrDefault();
             if (loginE == null)
             {
                 #region snippet1
@@ -2677,32 +3028,18 @@ namespace erp.Controllers
             #endregion
 
             #region Dropdownlist
+            var phongbans = dbContext.PhongBans.Find(m => m.Enable.Equals(true)).ToList();
+
             var listDirector = new string[] { "C.01", "C.02", "C.03" };
             var employees = dbContext.Employees.Find(m => m.Enable.Equals(true) && !listDirector.Contains(m.NgachLuongCode)).ToList();
-
-            var nams = new List<int>();
-            for (int year = 2018; year <= now.Year; year++)
-            {
-                nams.Add(year);
-            };
-            var thangs = new List<int>();
-            for (int m = 1; m <= 12; m++)
-            {
-                thangs.Add(m);
-            };
-            var tuans = new List<int>();
-            var maxTuan = DateWeek.GetWeeksInYear(now.Year);
-            for (int w = 1; w <= maxTuan; w++)
-            {
-                tuans.Add(w);
-            };
             #endregion
 
             #region Filter
             var builder = Builders<OvertimeEmployee>.Filter;
-            Tu = Tu.Year < 1990 ? now.Date.Add(new TimeSpan(0, 0, 0)) : Tu.Date.Add(new TimeSpan(0, 0, 0));
+            Tu = Tu.Year < 1990 ? new DateTime(now.Year, now.Month, 1).Add(new TimeSpan(0, 0, 0)) : Tu.Date.Add(new TimeSpan(0, 0, 0));
             Den = Den.Year < 1990 ? now.Date.Add(new TimeSpan(23, 59, 59)) : Den.Date.Add(new TimeSpan(23, 59, 59));
             var filter = builder.Eq(m => m.Enable, true)
+                        & (builder.Eq(m => m.Status, (int)EOvertime.Ok) | builder.Gte(m => m.Status, (int)EOvertime.Secutity))
                         & builder.Gte(m => m.Date, Tu)
                         & builder.Lte(m => m.Date, Den);
             if (!string.IsNullOrEmpty(Id))
@@ -2712,11 +3049,20 @@ namespace erp.Controllers
                 linkCurrent += "Id=" + Id;
             }
 
-            CodeInt = CodeInt == 0 ? (int)EOvertime.Ok : CodeInt;
-            filter = filter & builder.Eq(m => m.Code, CodeInt);
-            linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "?";
-            linkCurrent += "Code=" + CodeInt;
-            
+            if (!string.IsNullOrEmpty(Pb))
+            {
+                filter = filter & builder.Eq(m => m.PhongBanId, Pb);
+                linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "?";
+                linkCurrent += "Pb=" + Pb;
+            }
+
+            if (CodeInt != 0)
+            {
+                filter = filter & builder.Eq(m => m.Code, CodeInt);
+                linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "?";
+                linkCurrent += "Code=" + CodeInt;
+            }
+
             if (TrangThai != 0)
             {
                 filter = filter & builder.Eq(m => m.Status, TrangThai);
@@ -2770,6 +3116,7 @@ namespace erp.Controllers
             {
                 Name = "Quản lý tăng ca",
                 OvertimeEmployees = list,
+                PhongBans = phongbans,
                 Employees = employees,
                 Id = Id,
                 CodeInt = CodeInt,
@@ -2788,80 +3135,107 @@ namespace erp.Controllers
             return View(viewModel);
         }
 
-        [Route(Constants.LinkTimeKeeper.OvertimeSecurityData)]
+        [Route(Constants.LinkTimeKeeper.Overtime + "/" + Constants.LinkTimeKeeper.Security + "/" + Constants.ActionLink.Data)]
         [HttpPost]
         public async Task<IActionResult> OvertimeSecurityData(TimeKeeperViewModel dataModel)
         {
-            #region Authorization
-            var login = User.Identity.Name;
-            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
-            ViewData["LoginUserName"] = loginUserName;
-            var securityPosition = dbContext.ChucVus.Find(m => m.Code.Equals("CHUCVU86")).FirstOrDefault();
-            var loginE = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(login) && m.ChucVu.Equals(securityPosition.Id)).FirstOrDefault();
-            if (loginE == null)
+            try
             {
-                #region snippet1
-                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                #endregion
-                return RedirectToAction("login", "account");
-            }
-            #endregion
-
-            var now = DateTime.Now;
-            var timestamp = now.ToString("yyyyMMddHHmmssfff");
-            var data = dataModel.OvertimeEmployees;
-            foreach (var item in data)
-            {
-                if (!string.IsNullOrEmpty(item.Id) && item.CheckOnUI)
+                #region Authorization
+                var login = User.Identity.Name;
+                var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+                ViewData["LoginUserName"] = loginUserName;
+                var securityPosition = dbContext.ChucVus.Find(m => m.Code.Equals("CHUCVU86")).FirstOrDefault();
+                var loginE = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.Id.Equals(login) && m.ChucVu.Equals(securityPosition.Id)).FirstOrDefault();
+                if (loginE == null)
                 {
-                    var filter = Builders<OvertimeEmployee>.Filter.Eq(m => m.Id, item.Id);
-                    var update = Builders<OvertimeEmployee>.Update
-                        .Set(m => m.HourSecurity, item.HourSecurity)
-                        .Set(m => m.Status, (int)EOvertime.Secutity)
-                        .Set(m => m.Timestamp, timestamp)
-                        .Set(m => m.UpdatedOn, DateTime.Now);
-                    dbContext.OvertimeEmployees.UpdateOne(filter, update);
+                    #region snippet1
+                    await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                    #endregion
+                    return RedirectToAction("login", "account");
+                }
+                #endregion
 
-                    // Update Timer
-                    var timeWork = dbContext.EmployeeWorkTimeLogs.Find(m => m.Enable.Equals(true) 
-                                        && m.EmployeeId.Equals(item.EmployeeId) 
-                                        && m.Date.Equals(item.Date)).FirstOrDefault();
-                    if (timeWork != null)
+                var now = DateTime.Now;
+                var timestamp = now.ToString("yyyyMMddHHmmssfff");
+                var data = dataModel.OvertimeEmployees;
+
+                //if (data.Count(m => m.HourSecurity <= 0) > 0)
+                //{
+                //    return Json(new { result = false, message = "Lỗi: Dữ liệu không đúng." });
+                //}
+
+                foreach (var item in data)
+                {
+                    if (!string.IsNullOrEmpty(item.Id) && item.CheckOnUI)
                     {
-                        var filterT = Builders<EmployeeWorkTimeLog>.Filter.Eq(m => m.Id, timeWork.Id);
-                        var updateT = Builders<EmployeeWorkTimeLog>.Update
-                            .Set(m => m.StatusTangCa, (int)ETangCa.DongY)
-                            .Set(m => m.TangCaDaXacNhan, TimeSpan.FromHours(item.HourSecurity))
+                        var filter = Builders<OvertimeEmployee>.Filter.Eq(m => m.Id, item.Id);
+                        var update = Builders<OvertimeEmployee>.Update
+                            .Set(m => m.StartSecurity, item.StartSecurity)
+                            .Set(m => m.EndSecurity, item.EndSecurity)
+                            .Set(m => m.HourSecurity, item.HourSecurity)
+                            .Set(m => m.Status, (int)EOvertime.Secutity)
+                            .Set(m => m.Timestamp, timestamp)
                             .Set(m => m.UpdatedOn, DateTime.Now);
-                        dbContext.EmployeeWorkTimeLogs.UpdateOne(filterT, updateT);
+                        dbContext.OvertimeEmployees.UpdateOne(filter, update);
 
-                        // UPDATE SUMMARY
-                        var builderS = Builders<EmployeeWorkTimeMonthLog>.Filter;
-                        var filterS = builderS.Eq(m => m.EmployeeId, timeWork.EmployeeId) & builderS.Eq(m => m.EnrollNumber, timeWork.EnrollNumber)
-                            & builderS.Eq(m => m.Month, timeWork.Month) & builderS.Eq(m => m.Year, timeWork.Year);
+                        // Update Timer
+                        var timeWork = dbContext.EmployeeWorkTimeLogs.Find(m => m.Enable.Equals(true)
+                                            && m.EmployeeId.Equals(item.EmployeeId)
+                                            && m.Date.Equals(item.Date)).FirstOrDefault();
+                        if (timeWork != null)
+                        {
+                            var filterT = Builders<EmployeeWorkTimeLog>.Filter.Eq(m => m.Id, timeWork.Id);
+                            var updateT = Builders<EmployeeWorkTimeLog>.Update
+                                .Set(m => m.StatusTangCa, (int)ETangCa.DongY)
+                                .Set(m => m.TangCaDaXacNhan, TimeSpan.FromHours(item.HourSecurity))
+                                .Set(m => m.UpdatedOn, DateTime.Now);
+                            dbContext.EmployeeWorkTimeLogs.UpdateOne(filterT, updateT);
 
-                        var updateS = Builders<EmployeeWorkTimeMonthLog>.Update
-                            .Set(m => m.LastUpdated, now);
-                        if (timeWork.Mode == (int)ETimeWork.Normal)
-                        {
-                            updateS = updateS.Set(m => m.CongTangCaNgayThuongGio, item.HourSecurity);
+                            // UPDATE SUMMARY
+                            var builderS = Builders<EmployeeWorkTimeMonthLog>.Filter;
+                            var filterS = builderS.Eq(m => m.EmployeeId, timeWork.EmployeeId) & builderS.Eq(m => m.EnrollNumber, timeWork.EnrollNumber)
+                                & builderS.Eq(m => m.Month, timeWork.Month) & builderS.Eq(m => m.Year, timeWork.Year);
+
+                            var updateS = Builders<EmployeeWorkTimeMonthLog>.Update
+                                .Set(m => m.LastUpdated, now);
+                            if (timeWork.Mode == (int)ETimeWork.Normal)
+                            {
+                                updateS = updateS.Set(m => m.CongTangCaNgayThuongGio, item.HourSecurity);
+                            }
+                            else if (timeWork.Mode == (int)ETimeWork.Sunday)
+                            {
+                                updateS = updateS.Set(m => m.CongCNGio, item.HourSecurity);
+                            }
+                            else
+                            {
+                                updateS = updateS.Set(m => m.CongLeTet, item.HourSecurity);
+                            }
+                            dbContext.EmployeeWorkTimeMonthLogs.UpdateOne(filterS, updateS);
+
+                            // COM
+                            var overtimehourfood = Convert.ToDouble(Utility.GetSetting("overtime-food-hour"));
+                            if (item.HourSecurity >= overtimehourfood)
+                            {
+                                var builderF = Builders<EmployeeCong>.Filter;
+                                var filterF = builderF.Eq(m => m.EmployeeId, timeWork.EmployeeId)
+                                    & builderF.Eq(m => m.Month, timeWork.Month) & builderF.Eq(m => m.Year, timeWork.Year);
+                                var updateF = Builders<EmployeeCong>.Update
+                                            .Set(m => m.Com, (double)1);
+                                dbContext.EmployeeCongs.UpdateOne(filterF, updateF);
+                            }
                         }
-                        else if (timeWork.Mode == (int)ETimeWork.Sunday)
-                        {
-                            updateS = updateS.Set(m => m.CongCNGio, item.HourSecurity);
-                        }
-                        else
-                        {
-                            updateS = updateS.Set(m => m.CongLeTet, item.HourSecurity);
-                        }
-                        dbContext.EmployeeWorkTimeMonthLogs.UpdateOne(filterS, updateS);
                     }
                 }
+
+                var href = "/" + Constants.LinkTimeKeeper.Main + "/" + Constants.LinkTimeKeeper.Overtime + "/" + Constants.LinkTimeKeeper.Security;
+                return Json(new { result = true, source = "create", href, message = "Khởi tạo thành công" });
             }
-
-            return Redirect("/" + Constants.LinkTimeKeeper.Main +"/" + Constants.LinkTimeKeeper.OvertimeSecurityList);
+            catch (Exception ex)
+            {
+                return Json(new { result = false, message = "Lỗi: " + ex.Message });
+            }
         }
-
         #endregion
 
         #region IMPORT DATA: TANG CA, CHAM CONG,...
@@ -3505,6 +3879,46 @@ namespace erp.Controllers
             }
             return Json(new { result = true });
         }
+
+        //[HttpPost]
+        //[Route(Constants.LinkTimeKeeper.XacNhanTangCa)]
+        //public IActionResult XacNhanTangCa(string id, double thoigian, int trangthai)
+        //{
+        //    var now = DateTime.Now;
+        //    int status = trangthai == 1 ? (int)ETangCa.DongY : (int)ETangCa.TuChoi;
+
+        //    var timeWork = dbContext.EmployeeWorkTimeLogs.Find(m => m.Enable.Equals(true) && m.Id.Equals(id)).FirstOrDefault();
+
+        //    var filter = Builders<EmployeeWorkTimeLog>.Filter.Eq(m => m.Id, id);
+        //    var update = Builders<EmployeeWorkTimeLog>.Update
+        //        .Set(m => m.StatusTangCa, status)
+        //        .Set(m => m.TangCaDaXacNhan, TimeSpan.FromHours(thoigian))
+        //        .Set(m => m.UpdatedOn, DateTime.Now);
+        //    dbContext.EmployeeWorkTimeLogs.UpdateOne(filter, update);
+
+        //    // UPDATE SUMMARY
+        //    var builderS = Builders<EmployeeWorkTimeMonthLog>.Filter;
+        //    var filterS = builderS.Eq(m => m.EmployeeId, timeWork.EmployeeId) & builderS.Eq(m => m.EnrollNumber, timeWork.EnrollNumber)
+        //        & builderS.Eq(m => m.Month, timeWork.Month) & builderS.Eq(m => m.Year, timeWork.Year);
+
+        //    var updateS = Builders<EmployeeWorkTimeMonthLog>.Update
+        //        .Set(m => m.LastUpdated, now);
+        //    if (timeWork.Mode == (int)ETimeWork.Normal)
+        //    {
+        //        updateS = updateS.Set(m => m.CongTangCaNgayThuongGio, thoigian);
+        //    }
+        //    else if (timeWork.Mode == (int)ETimeWork.Sunday)
+        //    {
+        //        updateS = updateS.Set(m => m.CongCNGio, thoigian);
+        //    }
+        //    else
+        //    {
+        //        updateS = updateS.Set(m => m.CongLeTet, thoigian);
+        //    }
+        //    dbContext.EmployeeWorkTimeMonthLogs.UpdateOne(filterS, updateS);
+
+        //    return Json(new { error = 0, id, trangthai, thoigian });
+        //}
         #endregion
 
         #region SUB
@@ -3591,7 +4005,7 @@ namespace erp.Controllers
                     }
                 }
 
-                var approveEntity = dbContext.Employees.Find(m => m.Id.Equals(employeeE.ManagerId)).FirstOrDefault();
+                var approveEntity = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.Leave.Equals(false) && m.ChucVu.Equals(employeeE.ManagerId)).FirstOrDefault();
                 if (approveEntity != null)
                 {
                     approves.Add(new IdName
@@ -3613,13 +4027,13 @@ namespace erp.Controllers
             return Json(new { error = 0, reason, result, approves, lastLogForget, lastLogOther });
         }
 
-        private string RenderExcel(DateTime Ngay, int Code, string ManagerId)
+        private string RenderExcel(DateTime Ngay, int Code, string LoginId)
         {
-            var list = dbContext.OvertimeEmployees.Find(m => m.Code.Equals(Code) && m.Date.Equals(Ngay) && m.ManagerId.Equals(ManagerId)).ToList();
+            var list = dbContext.OvertimeEmployees.Find(m => m.Code.Equals(Code) && m.Date.Equals(Ngay) && m.EmployeeId.Equals(LoginId)).ToList();
 
-            var sFileName = "bang-tang-ca-ngay-" + Ngay.ToString("dd-MM-yyyy") + "-code-" + Code;
-            var root = @"C:\Projects\App.Schedule";
-            string exportFolder = Path.Combine(root, "exports", "overtime", Ngay.ToString("yyyyMMdd"));
+            var sFileName = "bang-tang-ca-code-" + Code + ".xlsx";
+            var root = _env.WebRootPath;
+            string exportFolder = Path.Combine(root, "documents", "overtimes", Ngay.ToString("yyyyMMdd"));
             FileInfo file = new FileInfo(Path.Combine(exportFolder, sFileName));
             file.Directory.Create(); // If the directory already exists, this method does nothing.
             using (var fs = new FileStream(Path.Combine(exportFolder, sFileName), FileMode.Create, FileAccess.Write))
@@ -3722,7 +4136,7 @@ namespace erp.Controllers
                 styleSmall.SetFont(fontSmall);
                 #endregion
 
-                ISheet sheet1 = workbook.CreateSheet("Bảng tăng ca ngày " + Ngay.ToString("dd-MM-yyyy"));
+                ISheet sheet1 = workbook.CreateSheet("TC" + Code + "-" + Ngay.ToString("dd-MM-yyyy"));
 
                 #region Introduce
                 var rowIndex = 0;
@@ -3756,7 +4170,7 @@ namespace erp.Controllers
                 CellRangeAddress cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex, columnIndex, columnIndex + 9);
                 sheet1.AddMergedRegion(cellRangeAddress);
                 cell = row.CreateCell(columnIndex, CellType.String);
-                cell.SetCellValue("BẢNG TĂNG CA NGÀY" + Ngay.ToString("dd/MM/yyyy"));
+                cell.SetCellValue("BẢNG TĂNG CA NGÀY " + Ngay.ToString("dd/MM/yyyy") + " (" + Code + ")");
                 cell.CellStyle = styleTitle;
                 rowIndex++;
 
@@ -3789,17 +4203,27 @@ namespace erp.Controllers
                 columnIndex++;
 
                 cell = row.CreateCell(columnIndex, CellType.String);
-                cell.SetCellValue("Giờ tăng ca");
+                cell.SetCellValue("Giờ bắt đầu");
                 cell.CellStyle = styleHeader;
                 columnIndex++;
 
                 cell = row.CreateCell(columnIndex, CellType.String);
-                cell.SetCellValue("Suất cơm");
+                cell.SetCellValue("Giờ kết thúc");
+                cell.CellStyle = styleHeader;
+                columnIndex++;
+
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Số giờ");
                 cell.CellStyle = styleHeader;
                 columnIndex++;
 
                 cell = row.CreateCell(columnIndex, CellType.String);
                 cell.SetCellValue("Loại tăng ca");
+                cell.CellStyle = styleHeader;
+                columnIndex++;
+
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Ghi chú");
                 cell.CellStyle = styleHeader;
                 columnIndex++;
 
@@ -3840,18 +4264,304 @@ namespace erp.Controllers
                     cell.CellStyle = styleDedault;
                     columnIndex++;
 
+                    cell = row.CreateCell(columnIndex, CellType.String);
+                    cell.SetCellValue(item.Start.ToString(@"hh\:mm"));
+                    cell.CellStyle = styleDedault;
+                    columnIndex++;
+
+                    cell = row.CreateCell(columnIndex, CellType.String);
+                    cell.SetCellValue(item.End.ToString(@"hh\:mm"));
+                    cell.CellStyle = styleDedault;
+                    columnIndex++;
+
                     cell = row.CreateCell(columnIndex, CellType.Numeric);
                     cell.SetCellValue(item.Hour);
                     cell.CellStyle = styleDedault;
                     columnIndex++;
 
+                    cell = row.CreateCell(columnIndex, CellType.String);
+                    cell.SetCellValue(Constants.TimeWork(item.Type));
+                    cell.CellStyle = styleDedault;
+                    columnIndex++;
+
+                    cell = row.CreateCell(columnIndex, CellType.String);
+                    cell.SetCellValue(item.Description);
+                    cell.CellStyle = styleDedault;
+                    columnIndex++;
+
+                    cell = row.CreateCell(columnIndex, CellType.String);
+                    cell.SetCellValue(string.Empty);
+                    cell.CellStyle = styleDedault;
+                    columnIndex++;
+                    rowIndex++;
+                    i++;
+                }
+
+                workbook.Write(fs);
+            }
+
+            return Path.Combine(exportFolder, sFileName);
+        }
+
+        private string RenderExcelManager(DateTime Ngay, int Code, string ManagerId)
+        {
+            var list = dbContext.OvertimeEmployees.Find(m => m.Code.Equals(Code) && m.Date.Equals(Ngay) && m.ManagerId.Equals(ManagerId)).ToList();
+
+            var sFileName = "bang-tang-ca-code-" + Code + ".xlsx";
+            var root = _env.WebRootPath;
+            string exportFolder = Path.Combine(root, "documents", "overtimes", Ngay.ToString("yyyyMMdd"));
+            FileInfo file = new FileInfo(Path.Combine(exportFolder, sFileName));
+            file.Directory.Create(); // If the directory already exists, this method does nothing.
+            using (var fs = new FileStream(Path.Combine(exportFolder, sFileName), FileMode.Create, FileAccess.Write))
+            {
+                IWorkbook workbook = new XSSFWorkbook();
+                #region Styling
+                var font = workbook.CreateFont();
+                font.FontHeightInPoints = 8;
+                font.FontName = "Arial";
+
+                var fontSmall = workbook.CreateFont();
+                fontSmall.FontHeightInPoints = 5;
+                fontSmall.FontName = "Arial";
+
+                var fontbold = workbook.CreateFont();
+                fontbold.FontHeightInPoints = 8;
+                fontbold.FontName = "Arial";
+                fontbold.Boldweight = (short)FontBoldWeight.Bold;
+
+                var fontbold8 = workbook.CreateFont();
+                fontbold8.FontHeightInPoints = 8;
+                fontbold8.FontName = "Arial";
+                fontbold8.Boldweight = (short)FontBoldWeight.Bold;
+
+                var fontbold10 = workbook.CreateFont();
+                fontbold10.FontHeightInPoints = 10;
+                fontbold10.FontName = "Arial";
+                fontbold10.Boldweight = (short)FontBoldWeight.Bold;
+
+                var fontbold12 = workbook.CreateFont();
+                fontbold12.FontHeightInPoints = 12;
+                fontbold12.FontName = "Arial";
+                fontbold12.Boldweight = (short)FontBoldWeight.Bold;
+
+                var styleBorder = workbook.CreateCellStyle();
+                styleBorder.BorderBottom = BorderStyle.Thin;
+                styleBorder.BorderLeft = BorderStyle.Thin;
+                styleBorder.BorderRight = BorderStyle.Thin;
+                styleBorder.BorderTop = BorderStyle.Thin;
+
+                var styleBorderDot = workbook.CreateCellStyle();
+                styleBorderDot.BorderBottom = BorderStyle.Dotted;
+                styleBorderDot.BorderLeft = BorderStyle.Thin;
+                styleBorderDot.BorderRight = BorderStyle.Thin;
+                styleBorderDot.BorderTop = BorderStyle.Thin;
+
+                var styleCenter = workbook.CreateCellStyle();
+                styleCenter.Alignment = HorizontalAlignment.Center;
+                styleCenter.VerticalAlignment = VerticalAlignment.Center;
+
+                var styleCenterBorder = workbook.CreateCellStyle();
+                styleCenterBorder.CloneStyleFrom(styleBorder);
+                styleCenterBorder.Alignment = HorizontalAlignment.Center;
+                styleCenterBorder.VerticalAlignment = VerticalAlignment.Center;
+
+                var cellStyleBorderAndColorGreen = workbook.CreateCellStyle();
+                cellStyleBorderAndColorGreen.CloneStyleFrom(styleBorder);
+                cellStyleBorderAndColorGreen.CloneStyleFrom(styleCenter);
+                cellStyleBorderAndColorGreen.FillPattern = FillPattern.SolidForeground;
+                ((XSSFCellStyle)cellStyleBorderAndColorGreen).SetFillForegroundColor(new XSSFColor(new byte[] { 198, 239, 206 }));
+
+                var cellStyleBorderAndColorYellow = workbook.CreateCellStyle();
+                cellStyleBorderAndColorYellow.CloneStyleFrom(styleBorder);
+                cellStyleBorderAndColorYellow.FillPattern = FillPattern.SolidForeground;
+                ((XSSFCellStyle)cellStyleBorderAndColorYellow).SetFillForegroundColor(new XSSFColor(new byte[] { 255, 235, 156 }));
+
+                var styleDedault = workbook.CreateCellStyle();
+                styleDedault.CloneStyleFrom(styleBorder);
+                styleDedault.SetFont(font);
+
+                var styleDot = workbook.CreateCellStyle();
+                styleDot.CloneStyleFrom(styleBorderDot);
+                styleDot.SetFont(font);
+
+                var styleTitle = workbook.CreateCellStyle();
+                styleTitle.CloneStyleFrom(styleCenter);
+                styleTitle.SetFont(fontbold12);
+
+                var styleSubTitle = workbook.CreateCellStyle();
+                styleSubTitle.CloneStyleFrom(styleCenter);
+                styleSubTitle.SetFont(fontbold8);
+
+                var styleHeader = workbook.CreateCellStyle();
+                styleHeader.CloneStyleFrom(styleCenterBorder);
+                styleHeader.SetFont(fontbold8);
+
+                var styleDedaultMerge = workbook.CreateCellStyle();
+                styleDedaultMerge.CloneStyleFrom(styleCenter);
+                styleDedaultMerge.SetFont(font);
+
+                var styleFullText = workbook.CreateCellStyle();
+                styleDedaultMerge.SetFont(font);
+                styleFullText.WrapText = true;
+
+                var styleBold = workbook.CreateCellStyle();
+                styleBold.SetFont(fontbold8);
+
+                var styleSmall = workbook.CreateCellStyle();
+                styleSmall.CloneStyleFrom(styleBorder);
+                styleSmall.SetFont(fontSmall);
+                #endregion
+
+                ISheet sheet1 = workbook.CreateSheet("TC" + Code + "-" + Ngay.ToString("dd-MM-yyyy"));
+
+                #region Introduce
+                var rowIndex = 0;
+                var columnIndex = 0;
+                IRow row = sheet1.CreateRow(rowIndex);
+                var cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Công ty TNHH CNSH SÀI GÒN XANH");
+                cell.CellStyle = styleBold;
+                rowIndex++;
+
+                row = sheet1.CreateRow(rowIndex);
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Địa chỉ: 127 Nguyễn Trọng Tuyển - P.15 - Q.Phú Nhuận - Tp HCM");
+                cell.CellStyle = styleBold;
+                rowIndex++;
+
+                row = sheet1.CreateRow(rowIndex);
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Điện thoại: (08)-39971869 - 38442457 - Fax: 08-39971869");
+                cell.CellStyle = styleBold;
+                rowIndex++;
+
+                row = sheet1.CreateRow(rowIndex);
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("MST: 0302519810");
+                cell.CellStyle = styleBold;
+                rowIndex++;
+                #endregion
+
+                row = sheet1.CreateRow(rowIndex);
+                CellRangeAddress cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex, columnIndex, columnIndex + 9);
+                sheet1.AddMergedRegion(cellRangeAddress);
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("BẢNG TĂNG CA NGÀY " + Ngay.ToString("dd/MM/yyyy") + " (" + Code + ")");
+                cell.CellStyle = styleTitle;
+                rowIndex++;
+
+                #region Header
+                rowIndex++;
+                row = sheet1.CreateRow(rowIndex);
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("#");
+                cell.CellStyle = styleHeader;
+                columnIndex++;
+
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Ngày");
+                cell.CellStyle = styleHeader;
+                columnIndex++;
+
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Mã NV");
+                cell.CellStyle = styleHeader;
+                columnIndex++;
+
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Họ và tên");
+                cell.CellStyle = styleHeader;
+                columnIndex++;
+
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Chức vụ");
+                cell.CellStyle = styleHeader;
+                columnIndex++;
+
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Giờ bắt đầu");
+                cell.CellStyle = styleHeader;
+                columnIndex++;
+
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Giờ kết thúc");
+                cell.CellStyle = styleHeader;
+                columnIndex++;
+
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Số giờ");
+                cell.CellStyle = styleHeader;
+                columnIndex++;
+
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Loại tăng ca");
+                cell.CellStyle = styleHeader;
+                columnIndex++;
+
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Ghi chú");
+                cell.CellStyle = styleHeader;
+                columnIndex++;
+
+                cell = row.CreateCell(columnIndex, CellType.String);
+                cell.SetCellValue("Chữ ký");
+                cell.CellStyle = styleHeader;
+                columnIndex++;
+                rowIndex++;
+                #endregion
+
+                var i = 1;
+                foreach (var item in list)
+                {
+                    row = sheet1.CreateRow(rowIndex);
+                    columnIndex = 0;
                     cell = row.CreateCell(columnIndex, CellType.Numeric);
-                    cell.SetCellValue(item.Food);
+                    cell.SetCellValue(i);
+                    cell.CellStyle = styleDedault;
+                    columnIndex++;
+
+                    cell = row.CreateCell(columnIndex, CellType.String);
+                    cell.SetCellValue(item.Date.ToString("dd/MM/yyyy"));
+                    cell.CellStyle = styleDedault;
+                    columnIndex++;
+
+                    cell = row.CreateCell(columnIndex, CellType.String);
+                    cell.SetCellValue(item.EmployeeCode);
+                    cell.CellStyle = styleDedault;
+                    columnIndex++;
+
+                    cell = row.CreateCell(columnIndex, CellType.String);
+                    cell.SetCellValue(item.EmployeeName);
+                    cell.CellStyle = styleDedault;
+                    columnIndex++;
+
+                    cell = row.CreateCell(columnIndex, CellType.String);
+                    cell.SetCellValue(item.ChucVuName);
+                    cell.CellStyle = styleDedault;
+                    columnIndex++;
+
+                    cell = row.CreateCell(columnIndex, CellType.String);
+                    cell.SetCellValue(item.Start.ToString(@"hh\:mm"));
+                    cell.CellStyle = styleDedault;
+                    columnIndex++;
+
+                    cell = row.CreateCell(columnIndex, CellType.String);
+                    cell.SetCellValue(item.End.ToString(@"hh\:mm"));
+                    cell.CellStyle = styleDedault;
+                    columnIndex++;
+
+                    cell = row.CreateCell(columnIndex, CellType.Numeric);
+                    cell.SetCellValue(item.Hour);
                     cell.CellStyle = styleDedault;
                     columnIndex++;
 
                     cell = row.CreateCell(columnIndex, CellType.String);
                     cell.SetCellValue(Constants.TimeWork(item.Type));
+                    cell.CellStyle = styleDedault;
+                    columnIndex++;
+
+                    cell = row.CreateCell(columnIndex, CellType.String);
+                    cell.SetCellValue(item.Description);
                     cell.CellStyle = styleDedault;
                     columnIndex++;
 

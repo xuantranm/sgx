@@ -74,6 +74,10 @@ namespace ViewModels
         public bool RightRequest { get; set; } = false;
 
         public bool RightManager { get; set; } = false;
+
+        public bool IsManager { get; set; } = false;
+
+        public bool IsSecurity { get; set; } = false;
         #endregion
 
         public bool Error { get; set; } = false;
@@ -86,6 +90,10 @@ namespace ViewModels
         public int CodeInt { get; set; }
 
         public IList<OvertimeEmployee> OvertimeEmployees { get; set; }
+
+        public OvertimeEmployee OvertimeEmployee { get; set; }
         #endregion
+
+        public Employee Manager { get; set; }
     }
 }

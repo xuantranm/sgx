@@ -4,7 +4,7 @@
 @model HomeErpViewModel;
 
 @{
-    Layout = "~/Views/Shared/_LayoutSocialFb.cshtml";
+    
     var login = User.Identity.Name;
     var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
     var rightHr = false;

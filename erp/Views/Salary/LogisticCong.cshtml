@@ -3,7 +3,7 @@
 @using ViewModels;
 @model BangLuongViewModel
 @{
-    Layout = "~/Views/Shared/_LayoutSocialFbFS.cshtml";
+    
     var login = User.Identity.Name;
     var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
 

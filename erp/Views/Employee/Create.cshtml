@@ -3,7 +3,7 @@
 @model ViewModels.EmployeeViewModel
 
 @{
-    Layout = "~/Views/Shared/_LayoutSocialFb.cshtml";
+    ViewData["title"] = "NHÂN SỰ | TẠO MỚI";
 }
 
 <div class="main-container">
@@ -41,7 +41,7 @@
             <div class="row">
                 <div class="col-12" id="cover">
                     <div class="media flex-wrap mb-0 align-items-center" id="avatar-upload">
-                        <img id="avatarShow" alt="Hình ảnh người dùng" src="holder.js/120x120" class="avatar avatar-lg mb-3 mb-md-0" />
+                        <img id="avatarShow" alt="Hình ảnh người dùng" src="~/images/placeholder/120x120.png" class="avatar avatar-lg mb-3 mb-md-0" />
                         <div class="media-body">
                             <label class="custom-file mb-2" for="file2">
                                 <input type="file" id="avatar-input" name="avatar" class="custom-file-input height-0">
@@ -189,8 +189,8 @@
                                         <input type="hidden" asp-for="Employee.CongTyChiNhanhName" />
                                     </div>
                                     @*<div class="col-2 align-middle">
-                        <button class="btn btn-sm btn-add-ctcn" type="button" data-toggle="modal" data-target="#newCongTyChiNhanh" title="Tạo mới Công ty/chi nhánh"><i class="fas fa-plus"></i></button>
-                    </div>*@
+                                            <button class="btn btn-sm btn-add-ctcn" type="button" data-toggle="modal" data-target="#newCongTyChiNhanh" title="Tạo mới Công ty/chi nhánh"><i class="fas fa-plus"></i></button>
+                                        </div>*@
                                 </div>
                             </div>
                         </div>
@@ -300,7 +300,12 @@
                                     @{
                                         foreach (var item in Model.ChucVus)
                                         {
-                                            <option value="@item.Id">@item.Name</option>
+                                            var display = item.Name;
+                                            if (!string.IsNullOrEmpty(item.Employee))
+                                            {
+                                                display += " ( " + item.Employee + " )";
+                                            }
+                                            <option value="@item.Id">@display</option>
                                         }
                                     }
                                 </select>
@@ -1111,7 +1116,7 @@
                         <div class="col-12">
                             <div class="form-group">
                                 <label class="control-label">Bậc lương</label>
-                                <select asp-for="Employee.NgachLuongCode" class="form-control form-control-lg">
+                                <select asp-for="Employee.NgachLuongLevel" class="form-control form-control-lg">
                                     <option value="">Chọn</option>
                                     @for (var bac = 1; bac <= 10; bac++)
                                     {
@@ -1177,11 +1182,15 @@
             </div>
         </div>
     </form>
+
+    <hr />
+    <div class="row mb-3">
+        <div class="col-12">
+            <a asp-action="Index" class="btn btn-primary"><i class="icon icon-back"></i> Trở về</a>
+        </div>
+    </div>
 </div>
 
-<div>
-    <a asp-action="Index"><i class="icon icon-back"></i>Trở về</a>
-</div>
 
 <partial name="Common/_ExtendPartial" />
 
@@ -1189,7 +1198,7 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
         <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC7PCKw6JWnv5YTgKQbl-mi2wsxAXQTPeM&libraries=places&region=vn&language=vi" defer></script>
-        <script src="~/js/employee-data.js?@Constants.VersionJs"></script>
+        <script src="~/js/hr/employee-data.js?@Constants.VersionJs"></script>
     }
 }
 

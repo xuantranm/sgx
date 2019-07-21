@@ -4,6 +4,7 @@ using MongoDB.Bson.Serialization.Attributes;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.IO;
 
 namespace Models
 {
@@ -57,11 +58,23 @@ namespace Models
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime Date { get; set; }
 
+        public TimeSpan Start { get; set; }
+
+        public TimeSpan End { get; set; }
+
         public double Hour { get; set; }
+
+        public TimeSpan StartSecurity { get; set; }
+
+        public TimeSpan EndSecurity { get; set; }
 
         public double HourSecurity { get; set; }
 
         public int Food { get; set; } = 0;
+
+        public string Description { get; set; }
+
+        public bool Agreement { get; set; } = true;
 
         public int Status{ get; set; } = (int)EOvertime.Create;
 
@@ -77,5 +90,14 @@ namespace Models
 
         // Not use, use UI only
         public bool CheckOnUI { get; set; } = true;
+
+        public string Document
+        {
+            get
+            {
+                var sFileName = "bang-tang-ca-code-" + Code + ".xlsx";
+                return Path.Combine("documents", "overtimes", Date.ToString("yyyyMMdd"), sFileName);
+            }
+        }
     }
 }

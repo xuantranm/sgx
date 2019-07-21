@@ -775,6 +775,9 @@
     <Content Update="Views\Factory\DinhMucXCG.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
+    <Content Update="Views\Factory\Index.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
     <Content Update="Views\File\SaleChucVu.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
@@ -882,9 +885,6 @@
     <Content Update="Views\Shared\_LayoutDocument.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
-    <Content Update="Views\Shared\_LayoutSocialFbFS.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
     <Content Update="Views\TimeKeeper\Approve.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
@@ -897,10 +897,16 @@
     <Content Update="Views\TimeKeeper\OvertimeData.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
-    <Content Update="Views\TimeKeeper\OvertimeSecurityList.cshtml">
+    <Content Update="Views\TimeKeeper\OvertimeEmployeeData.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
-    <Content Update="Views\TimeKeeper\OvertimeList.cshtml">
+    <Content Update="Views\TimeKeeper\Overtime.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\TimeKeeper\OvertimeSecurity.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\TimeKeeper\OvertimeEmployee.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
     <Content Update="Views\TimeKeeper\Manage.cshtml">
@@ -913,9 +919,6 @@
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
     <Content Update="Views\Shared\_LayoutSocial.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Shared\_LayoutSocialFb.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
     <Content Update="Views\XacNhan\TangCa.cshtml">

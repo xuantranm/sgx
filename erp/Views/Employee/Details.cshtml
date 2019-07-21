@@ -4,7 +4,7 @@
 @model ViewModels.EmployeeViewModel
 
 @{
-    Layout = "~/Views/Shared/_LayoutSocialFb.cshtml";
+    ViewData["title"] = "NHÂN SỰ | THÔNG TIN " + Model.Employee.FullName.ToUpper();
 
     var login = User.Identity.Name;
     var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
@@ -1517,16 +1517,19 @@
                 <!-- NGUOI CHECK -->
             </div>
         </div>
-    </div>
 
-    <div>
-        <a asp-action="Index"><i class="icon icon-back"></i>Trở về</a>
+        <hr />
+        <div class="row mb-3">
+            <div class="col-12">
+                <a asp-action="Index" class="btn btn-primary"><i class="icon icon-back"></i> Trở về</a>
+            </div>
+        </div>
     </div>
 </div>
 @section scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
-        <script src="~/js/employee-data.js?@Constants.VersionJs"></script>
+        <script src="~/js/hr/employee-data.js?@Constants.VersionJs"></script>
     }
 }
 

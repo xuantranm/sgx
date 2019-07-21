@@ -6,7 +6,7 @@
 @model TimeKeeperViewModel
 
 @{
-    Layout = "~/Views/Shared/_LayoutSocialFb.cshtml";
+
     CultureInfo culture = CultureInfo.CreateSpecificCulture("en-US");
     var login = User.Identity.Name;
 }
@@ -20,9 +20,12 @@
                         <li class="breadcrumb-item">
                             <a href="/">Trang chủ</a>
                         </li>
-                        @*<li class="breadcrumb-item">
-                                <a href="/@Constants.KeHoachTongHopLink.Main">Kho</a>
-                            </li>*@
+                        <li class="breadcrumb-item">
+                            <a href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Index">Công</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Overtime">Tăng ca</a>
+                        </li>
                         <li class="breadcrumb-item active" aria-current="page">
                             @Model.Name
                         </li>
@@ -59,14 +62,14 @@
                             }
                             else
                             {
-                                <a href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.OvertimeData" class="btn btn-link btn-outline-info">
+                                <a href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.OvertimeEmployee/@Constants.ActionLink.Data" class="btn btn-link btn-outline-info">
                                     <i class="fas fa-user-plus"></i> Cập nhật tăng ca nhân viên
                                 </a>
                             }
                         }
                         else
                         {
-                            <a href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.OvertimeData" class="btn btn-link btn-outline-info">
+                            <a href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.OvertimeEmployee/@Constants.ActionLink.Data" class="btn btn-link btn-outline-info">
                                 <i class="fas fa-user-plus"></i> Cập nhật tăng ca nhân viên
                             </a>
                         }
@@ -74,7 +77,7 @@
                 </div>
             </div>
             <!-- FILTER -->
-            <form method="get" action="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.OvertimeList" id="form-main">
+            <form method="get" action="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.OvertimeEmployee" id="form-main">
                 <input asp-for="Trang" type="hidden" value="1" />
                 <input asp-for="SapXep" class="sap-xep" type="hidden" />
                 <input asp-for="ThuTu" class="thu-tu" type="hidden" />
@@ -101,11 +104,11 @@
                     <div class="col-md-3 col-sm-6 col-xs-12">
                         <span class="mr-2 text-muted text-small text-nowrap">Trạng thái</span>
                         <select asp-for="TrangThai" class="form-control form-control-lg custom-select" onchange="formSubmit();">
-                            <option value="@EOvertime.None">Tất cả</option>
-                            <option value="@EOvertime.Create">Chờ duyệt</option>
-                            <option value="@EOvertime.Ok">Đã duyệt, chờ An Ninh xác nhận</option>
-                            <option value="@EOvertime.Cancel">Không duyệt</option>
-                            <option value="@EOvertime.Secutity">An ninh đã xác nhận</option>
+                            <option value="@((int)EOvertime.None)">Tất cả</option>
+                            <option value="@((int)EOvertime.Create)">Chờ duyệt</option>
+                            <option value="@((int)EOvertime.Ok)">Đã duyệt, chờ An Ninh xác nhận</option>
+                            <option value="@((int)EOvertime.Cancel)">Không duyệt</option>
+                            <option value="@((int)EOvertime.Secutity)">An ninh đã xác nhận</option>
                         </select>
                     </div>
 
@@ -174,18 +177,26 @@
                                     <tr>
                                         @if (!isDirector)
                                         {
-                                            <th scope="col"></th>
+                                            <th scope="col" rowspan="2"></th>
                                         }
-                                        <th scope="col">#</th>
-                                        <th scope="col">Ngày</th>
-                                        <th scope="col">Mã NV</th>
-                                        <th scope="col">Họ và Tên</th>
-                                        <th scope="col">Chức vụ</th>
-                                        <th scope="col">Giờ tăng ca</th>
-                                        <th scope="col">Giờ thực tế (A.N xác nhận)</th>
-                                        <th scope="col">Suất cơm</th>
-                                        <th scope="col">Loại tăng ca</th>
-                                        <th scope="col">Trạng thái duyệt</th>
+                                        <th scope="col" rowspan="2">#</th>
+                                        <th scope="col" rowspan="2">Ngày</th>
+                                        <th scope="col" rowspan="2">Mã NV</th>
+                                        <th scope="col" rowspan="2">Họ và Tên</th>
+                                        <th scope="col" rowspan="2">Chức vụ</th>
+                                        <th scope="col" colspan="3" class="text-center text-uppercase">Tăng ca</th>
+                                        <th scope="col" colspan="3" class="text-center text-uppercase">Xác nhận</th>
+                                        <th scope="col" rowspan="2">Suất cơm</th>
+                                        <th scope="col" rowspan="2">Loại tăng ca</th>
+                                        <th scope="col" rowspan="2">Trạng thái duyệt</th>
+                                    </tr>
+                                    <tr>
+                                        <td>Bắt đầu</td>
+                                        <td>Kết thúc</td>
+                                        <td>Tổng giờ</td>
+                                        <td>Bắt đầu</td>
+                                        <td>Kết thúc</td>
+                                        <td>Tổng giờ</td>
                                     </tr>
                                 </thead>
                                 <tbody class="font-14">
@@ -193,11 +204,17 @@
                                         int i = 1;
                                         foreach (var item in Model.OvertimeEmployees)
                                         {
+                                            var securityConfirm = false;
+                                            if (item.Status == (int)EOvertime.Secutity)
+                                            {
+                                                securityConfirm = true;
+                                            }
                                             <tr>
                                                 @if (!isDirector)
                                                 {
                                                     <td>
-                                                        <a href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.OvertimeData?Ngay=@item.Date.ToString("MM-dd-yyyy")"><i class="far fa-edit"></i> Sửa</a>
+                                                        <a href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.OvertimeEmployee/@Constants.ActionLink.Data?Ngay=@item.Date.ToString("MM-dd-yyyy")">
+                                                        <i class="far fa-edit"></i></a>
                                                     </td>
                                                 }
                                                 <th scope="row">@i</th>
@@ -213,17 +230,21 @@
                                                 <td nowrap>
                                                     @item.ChucVuName
                                                 </td>
+                                                <td>@item.Start.ToString(@"hh\:mm")</td>
+                                                <td>@item.End.ToString(@"hh\:mm")</td>
                                                 <td>@item.Hour</td>
-                                                <td>
-                                                    @{
-                                                        var hourSecurity = "Chờ xác nhận";
-                                                        if (item.Status == (int)EOvertime.Secutity)
-                                                        {
-                                                            hourSecurity = item.HourSecurity.ToString();
-                                                        }
-                                                    }
-                                                    <span>@hourSecurity</span>
-                                                </td>
+                                                @if (securityConfirm)
+                                                {
+                                                    <td>@item.StartSecurity.ToString(@"hh\:mm")</td>
+                                                    <td>@item.EndSecurity.ToString(@"hh\:mm")</td>
+                                                    <td>@item.HourSecurity</td>
+                                                }
+                                                else
+                                                {
+                                                    <td colspan="3">
+                                                        Chờ xác nhận
+                                                    </td>
+                                                }
                                                 <td>@item.Food</td>
                                                 <td>@Constants.TimeWork(item.Type)</td>
                                                 <td>@Constants.OvertimeStatus(item.Status)</td>
@@ -252,8 +273,10 @@
 
 @section scripts {
     @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-        <script type="text/javascript" src="~/js/timer/overtime-list.js?@DateTime.Now.Ticks"></script>
+            /**/
+
+            await Html.RenderPartialAsync("_ValidationScriptsPartial");
+            <script type="text/javascript" src="~/js/timer/overtime-list.js?@DateTime.Now.Ticks"></script>
     }
 }
 

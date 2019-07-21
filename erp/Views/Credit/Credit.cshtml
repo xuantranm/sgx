@@ -5,7 +5,7 @@
 @using ViewModels;
 @model BangLuongViewModel
 @{
-    Layout = "~/Views/Shared/_LayoutSocialFbFS.cshtml";
+    
     CultureInfo culture = CultureInfo.CreateSpecificCulture("en-US");
     var login = User.Identity.Name;
     var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
