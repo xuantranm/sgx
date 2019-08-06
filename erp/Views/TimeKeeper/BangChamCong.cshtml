@@ -9,6 +9,12 @@
     var login = User.Identity.Name;
     var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
     var calDate = Convert.ToInt32((Model.Den - Model.Tu).TotalDays) + 1;
+
+    bool isMonth = false;
+    if (Model.Den.Year == DateTime.Now.Year && Model.Den.Month == DateTime.Now.Month)
+    {
+        isMonth = true;
+    }
 }
 
 <div class="main-container">
@@ -204,7 +210,6 @@
                             {
                                 var timesSort = employee.EmployeeWorkTimeLogs.OrderBy(m => m.Date).ToList();
                                 double ngayCongNT = 0;
-                                double ngayCongCT = 0;
                                 var vaoTreLan = 0;
                                 double vaoTrePhut = 0;
                                 var raSomLan = 0;
@@ -215,9 +220,6 @@
                                 double vangKP = 0;
                                 double ngayNghiP = 0;
                                 double letet = 0;
-                                double ngayNghiOM = 0;
-                                double ngayNghiTS = 0;
-                                double ngayNghiR = 0;
 
                                 <tr>
                                     <td>@iNo</td>
@@ -228,37 +230,50 @@
                                     @for (DateTime date = Model.Tu; date <= Model.Den; date = date.AddDays(1.0))
                                     {
                                         var item = timesSort.Where(m => m.Date.Equals(date)).FirstOrDefault();
-                                        if (item == null)
+                                        if (item != null)
                                         {
-                                            <td nowrap>
-                                                <span class="badge badge-info">@Constants.NA</span>
-                                            </td>
-                                        }
-                                        else
-                                        {
-                                            var modeMiss = false;
+                                            var dayString = string.Empty;
+                                            var displayInOut = string.Empty;
+                                            var noilamviec = !string.IsNullOrEmpty(item.WorkplaceCode) ? item.WorkplaceCode : string.Empty;
+                                            var reason = !string.IsNullOrEmpty(item.Reason) ? item.Reason : string.Empty;
+                                            var detail = !string.IsNullOrEmpty(item.ReasonDetail) ? item.ReasonDetail : string.Empty;
+                                            var statusTangCa = item.StatusTangCa;
+                                            var statusBag = statusTangCa == (int)ETangCa.TuChoi ? "badge-pill" : "badge-info";
+                                            var giotangcathucte = Math.Round(item.TangCaThucTe.TotalHours, 2);
+                                            var giotangcaxacnhan = Math.Round(item.TangCaDaXacNhan.TotalHours, 2);
+
+                                            var isMiss = false;
                                             if (item.Mode == (int)ETimeWork.Normal)
                                             {
                                                 switch (item.Status)
                                                 {
                                                     case (int)EStatusWork.XacNhanCong:
                                                         {
-                                                            modeMiss = true;
+                                                            isMiss = true;
                                                             break;
                                                         }
                                                     case (int)EStatusWork.DaGuiXacNhan:
                                                         {
-                                                            modeMiss = true;
+                                                            //if (isMonth)
+                                                            //{
+                                                            //    isMiss = true;
+                                                            //}
+                                                            //else
+                                                            //{
+                                                            item.WorkDay = 1;
+                                                            ngayCongNT++;
+                                                            //}
                                                             break;
                                                         }
                                                     case (int)EStatusWork.DongY:
                                                         {
+                                                            item.WorkDay = 1;
                                                             ngayCongNT++;
                                                             break;
                                                         }
                                                     case (int)EStatusWork.TuChoi:
                                                         {
-                                                            modeMiss = true;
+                                                            isMiss = true;
                                                             break;
                                                         }
                                                     default:
@@ -269,178 +284,151 @@
                                                 }
                                             }
 
-                                            if (modeMiss)
+                                            // Calculator = hour
+                                            if (item.Mode == (int)ETimeWork.Sunday || item.Mode == (int)ETimeWork.Holiday)
                                             {
-                                                if (item.Late.TotalMinutes > 1)
+                                                if (item.WorkTime.TotalHours > 0)
                                                 {
-                                                    vaoTreLan++;
-                                                    vaoTrePhut += item.Late.TotalMinutes;
-                                                }
-                                                if (item.Early.TotalMinutes > 1)
-                                                {
-                                                    raSomLan++;
-                                                    raSomPhut += item.Early.TotalMinutes;
-                                                }
-                                                // First, không tính 15p
-                                                var timeoutin = item.Out - item.In;
-                                                if (timeoutin.HasValue && timeoutin.Value.TotalHours > 6)
-                                                {
-                                                    item.WorkDay = 1;
-                                                    ngayCongNT++;
-                                                }
-                                                else
-                                                {
-                                                    ngayCongNT += item.WorkDay;
+                                                    dayString = Math.Round(item.WorkTime.TotalHours, 2) + " giờ";
                                                 }
                                             }
 
-                                            if (item.Mode > (int)ETimeWork.Normal && item.Logs == null)
+                                            if (item.Mode == (int)ETimeWork.LeavePhep)
                                             {
-                                                if (item.Mode == (int)ETimeWork.LeavePhep)
+                                                ngayNghiP += item.SoNgayNghi;
+                                                if (item.SoNgayNghi < 1)
                                                 {
-                                                    ngayNghiP += item.SoNgayNghi;
+                                                    item.WorkDay = 0.5;
+                                                    ngayCongNT += 0.5;
                                                 }
-                                                if (item.Mode == (int)ETimeWork.Holiday)
-                                                {
-                                                    letet += 1;
-                                                }
-                                                <td nowrap>
-                                                    <span class="badge badge-info">@item.Reason</span>
-                                                </td>
                                             }
-                                            else
+                                            if (item.Mode == (int)ETimeWork.Holiday)
                                             {
-                                                <td nowrap>
-                                                    <!-- IN-OUT -->
-                                                    <div>
-                                                        @{
-                                                            var displayInOut = string.Empty;
-                                                            if (item.In.HasValue)
-                                                            {
-                                                                displayInOut += item.In.Value.ToString(@"hh\:mm");
-                                                            }
-                                                            if (item.Out.HasValue)
-                                                            {
-                                                                if (!string.IsNullOrEmpty(displayInOut))
-                                                                {
-                                                                    displayInOut += " - ";
-                                                                }
-                                                                displayInOut += item.Out.Value.ToString(@"hh\:mm");
-                                                            }
+                                                letet += 1;
+                                            }
+
+                                            if (item.Logs != null)
+                                            {
+                                                if (isMiss)
+                                                {
+                                                    if (item.Late.TotalMinutes > 1)
+                                                    {
+                                                        vaoTreLan++;
+                                                        vaoTrePhut += item.Late.TotalMinutes;
+                                                    }
+                                                    if (item.Early.TotalMinutes > 1)
+                                                    {
+                                                        raSomLan++;
+                                                        raSomPhut += item.Early.TotalMinutes;
+                                                    }
+                                                    var timeoutin = item.Out - item.In;
+                                                    if (timeoutin.HasValue && timeoutin.Value.TotalHours > 6)
+                                                    {
+                                                        // First, không tính 15p
+                                                        item.WorkDay = 1;
+                                                        ngayCongNT++;
+                                                    }
+                                                    else
+                                                    {
+                                                        if (item.Out.HasValue || item.In.HasValue)
+                                                        {
+                                                            item.WorkDay = 0.5;
                                                         }
-                                                        <span>@displayInOut</span>
-                                                    </div>
-                                                    <!-- DETAIL -->
-                                                    <div>
-                                                        @{
-                                                            if (item.Logs != null && item.Logs.Count > 0)
-                                                            {
-                                                                <small>Chi tiết:</small>
-                                                                foreach (var log in item.Logs)
-                                                                {
-                                                                    <p style="margin-bottom: 0;"><small>@log.Date.ToString("dd/MM/yyyy HH:mm:ss")</small></p>
-                                                                }
-                                                            }
+                                                        ngayCongNT += item.WorkDay;
+                                                    }
+                                                }
+                                                displayInOut = item.In.HasValue ? item.In.Value.ToString(@"hh\:mm") : string.Empty;
+                                                if (item.Out.HasValue)
+                                                {
+                                                    displayInOut += !string.IsNullOrEmpty(displayInOut) ? " - " + item.Out.Value.ToString(@"hh\:mm") : item.Out.Value.ToString(@"hh\:mm");
+                                                }
 
-                                                            <!-- CALCULATOR & REASON -->
-                                                            var detail = string.Empty;
-                                                            if (item.Mode < (int)ETimeWork.Sunday)
-                                                            {
-                                                                if (item.Mode == (int)ETimeWork.LeavePhep
-                                                                || item.Mode == (int)ETimeWork.LeaveHuongLuong
-                                                                || item.Mode == (int)ETimeWork.LeaveKhongHuongLuong)
-                                                                {
-                                                                    if (item.WorkTime.TotalHours > 6)
-                                                                    {
-                                                                        item.WorkDay = 1;
-                                                                        item.TangCaThucTe = new TimeSpan(0, 0, 0);
-                                                                        item.TangCaDaXacNhan = new TimeSpan(0, 0, 0);
-                                                                        ngayCongNT++;
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        ngayCongNT += item.WorkDay;
-                                                                    }
-                                                                }
+                                                // TANG CA
+                                                if (statusTangCa == (int)ETangCa.DongY)
+                                                {
+                                                    if (item.Mode == (int)ETimeWork.Normal)
+                                                    {
+                                                        tangCaNgayThuong += item.TangCaDaXacNhan.TotalHours;
+                                                    }
+                                                    if (item.Mode == (int)ETimeWork.Sunday)
+                                                    {
+                                                        tangCaChuNhat += item.TangCaDaXacNhan.TotalHours;
+                                                    }
+                                                    if (item.Mode == (int)ETimeWork.Holiday)
+                                                    {
+                                                        tangCaLeTet += item.TangCaDaXacNhan.TotalHours;
+                                                    }
+                                                }
+                                            }
 
-                                                                detail += item.WorkDay + " ngày";
-                                                            }
-                                                            else
-                                                            {
-                                                                if (item.WorkTime.TotalHours > 0)
-                                                                {
-                                                                    detail += Math.Round(item.WorkTime.TotalHours, 2) + " giờ";
-                                                                }
-                                                            }
+                                            dayString = item.WorkDay + " ngày";
 
-                                                            // NOI LAM VIEC
-                                                            if (item.Logs != null && !string.IsNullOrEmpty(item.WorkplaceCode))
-                                                            {
-                                                                if (!string.IsNullOrEmpty(detail))
-                                                                {
-                                                                    detail += ";";
-                                                                }
-                                                                detail += item.WorkplaceCode;
-                                                            }
-                                                            // LY DO
-                                                            if (!string.IsNullOrEmpty(item.Reason))
-                                                            {
-                                                                if (!string.IsNullOrEmpty(detail))
-                                                                {
-                                                                    detail += ";";
-                                                                }
-                                                                detail += item.Reason;
-                                                            }
+                                            <td nowrap>
+                                                <div>
+                                                    @if (item.Mode != (int)ETimeWork.Normal)
+                                                    {
+                                                        <span class="badge badge-info">@Constants.WorkTimeMode(item.Mode)</span>
+                                                    }
+                                                    @if (item.WorkDay > 0)
+                                                    {
+                                                        <small>Công: <code>@dayString</code></small>
+                                                    }
+                                                    @if (!string.IsNullOrEmpty(displayInOut))
+                                                    {
+                                                        <br />
+                                                        <small>Vào-ra: @displayInOut</small>
+                                                    }
+                                                    @if (item.Logs != null && item.Logs.Count > 0)
+                                                    {
+                                                        <br />
+                                                        <small>Chi tiết:</small>
+                                                        foreach (var log in item.Logs)
+                                                        {
+                                                            <br />
+                                                            <small>@log.Date.ToString("dd/MM/yyyy HH:mm:ss")</small>
+                                                        }
+                                                    }
 
-                                                            <small>@detail</small>
-                                                            @if (!string.IsNullOrEmpty(item.ReasonDetail))
-                                                            {
+                                                    @if (!string.IsNullOrEmpty(reason))
+                                                    {
+                                                        <br />
+                                                        <small>Lý do: @reason</small>
+                                                    }
+                                                    @if (!string.IsNullOrEmpty(detail))
+                                                    {
+                                                        <br />
+                                                        <small data-toggle="tooltip" title="@detail">Ghi chú: @Constants.Truncate(detail, 12)</small>
+                                                    }
+                                                    @if (isMiss && item.Status == (int)EStatusWork.DaGuiXacNhan && item.WorkDay < 1)
+                                                    {
+                                                        <br />
+                                                        <small class="badge badge-info">@Constants.TimeKeeper(item.Status)</small>
+                                                    }
+
+                                                    @if (giotangcathucte > 0 && giotangcaxacnhan > 0)
+                                                    {
+                                                        <div class="card">
+                                                            <div class="card-body">
+                                                                <span>Thông tin tăng ca:</span>
                                                                 <br />
-                                                                <small data-toggle="tooltip" title="@item.ReasonDetail">@Constants.Truncate(item.ReasonDetail, 12)</small>
-                                                            }
-
-                                                            <!-- TANG CA -->
-                                                            var statusTangCa = item.StatusTangCa;
-                                                            var giotangcathucte = Math.Round(item.TangCaThucTe.TotalHours, 2);
-                                                            var giotangcaxacnhan = Math.Round(item.TangCaDaXacNhan.TotalHours, 2);
-                                                            if (statusTangCa == (int)ETangCa.DongY)
-                                                            {
-                                                                if (item.Mode == (int)ETimeWork.Normal)
-                                                                {
-                                                                    tangCaNgayThuong += item.TangCaDaXacNhan.TotalHours;
-                                                                }
-                                                                if (item.Mode == (int)ETimeWork.Sunday)
-                                                                {
-                                                                    tangCaChuNhat += item.TangCaDaXacNhan.TotalHours;
-                                                                }
-                                                                if (item.Mode == (int)ETimeWork.Holiday)
-                                                                {
-                                                                    tangCaLeTet += item.TangCaDaXacNhan.TotalHours;
-                                                                }
-                                                            }
-
-                                                            var statusBag = statusTangCa == (int)ETangCa.TuChoi ? "badge-pill" : "badge-info";
-                                                            if (giotangcathucte > 0 && giotangcaxacnhan > 0)
-                                                            {
-                                                                <div class="card">
-                                                                    <div class="card-body">
-                                                                        <span>Thông tin tăng ca:</span>
-                                                                        <br />
-                                                                        <span class="badge badge-danger">@Constants.CTSTimeWork(item.Mode)</span>
-                                                                        <br />
-                                                                        <small>Giờ tăng ca (AN duyệt): <span class="badge @statusBag">@giotangcaxacnhan</span></small>
-                                                                        <br />
-                                                                        <small>(Giờ chấm công: <span class="badge @statusBag">@giotangcathucte</span>)</small>
-                                                                    </div>
-                                                                </div>
-                                                            }
-                                                        }
-                                                    </div>
-                                                </td>
-                                            }
+                                                                <span class="badge badge-danger">@Constants.CTSTimeWork(item.Mode)</span>
+                                                                <br />
+                                                                <small>Giờ tăng ca (AN duyệt): <span class="badge @statusBag">@giotangcaxacnhan</span></small>
+                                                                <br />
+                                                                <small>(Giờ chấm công: <span class="badge @statusBag">@giotangcathucte</span>)</small>
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                </div>
+                                            </td>
+                                        }
+                                        else
+                                        {
+                                            <td nowrap>
+                                                <span class="badge badge-info">@Constants.NA</span>
+                                            </td>
                                         }
                                     }
-
                                     <td>@Math.Round(ngayCongNT, 2)</td>
                                     <td>@letet</td>
                                     <td>@vaoTreLan</td>

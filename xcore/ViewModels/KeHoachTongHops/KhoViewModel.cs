@@ -46,20 +46,30 @@ namespace ViewModels
 
         public IList<KhoNguyenVatLieu> KhoNguyenVatLieus { get; set; }
 
+        public KhoNguyenVatLieu KhoNguyenVatLieu { get; set; }
+
         public IList<KhoThanhPham> KhoThanhPhams { get; set; }
+
+        public KhoThanhPham KhoThanhPham { get; set; }
 
         public IList<KhoHangTraVe> KhoHangTraVes { get; set; }
 
+        public KhoHangTraVe KhoHangTraVe { get; set; }
+
         public IList<KhoBun> KhoBuns { get; set; }
+
+        public KhoBun KhoBun { get; set; }
 
         public IList<TramCan> TramCans { get; set; }
 
-        //public IList<DuAnCong> DuAnCongs { get; set; }
+        public TramCan TramCan { get; set; }
 
         public IList<Customer> ThiCongs { get; set; }
 
         public IList<Customer> GiamSats { get; set; }
 
         public IList<Customer> ChuDauTus { get; set; }
+
+        public Customer Customer { get; set; }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Common.Enums;
+using System;
 
 namespace Common.Utilities
 {
@@ -623,6 +624,70 @@ namespace Common.Utilities
                     return "T7";
                 default:
                     return "CN";
+            }
+        }
+
+        public static string CTSTimeWork(int input)
+        {
+            switch (input)
+            {
+                case (int)ETimeWork.Sunday:
+                    return "Chủ nhật";
+                case (int)ETimeWork.Holiday:
+                    return "Lễ tết";
+                default:
+                    return "Ngày thường";
+            }
+        }
+
+        public static string TimeWork(int input)
+        {
+            switch (input)
+            {
+                case (int)EDateType.Sunday:
+                    return "Chủ nhật";
+                case (int)EDateType.PublicHoliday:
+                    return "Lễ tết";
+                default:
+                    return "Ngày thường";
+            }
+        }
+
+        public static string OvertimeStatus(int input)
+        {
+            switch (input)
+            {
+                case (int)EOvertime.Create:
+                    return "Chờ duyệt";
+                case (int)EOvertime.Ok:
+                    return "Đã duyệt, chờ An Ninh xác nhận";
+                case (int)EOvertime.Cancel:
+                    return "Không duyệt";
+                case (int)EOvertime.Secutity:
+                    return "An ninh đã xác nhận";
+                default:
+                    return string.Empty;
+            }
+        }
+
+        public static string WorkTimeMode(int input)
+        {
+            switch (input)
+            {
+                case (int)ETimeWork.Normal:
+                    return "Ngày thường";
+                case (int)ETimeWork.LeavePhep:
+                    return "Nghỉ phép";
+                case (int)ETimeWork.LeaveHuongLuong:
+                    return "Nghỉ hưởng lương";
+                case (int)ETimeWork.LeaveKhongHuongLuong:
+                    return "Nghỉ không hưởng lương";
+                case (int)ETimeWork.Sunday:
+                    return "Chủ nhật";
+                case (int)ETimeWork.Holiday:
+                    return "Lễ / tết";
+                default:
+                    return string.Empty;
             }
         }
     }

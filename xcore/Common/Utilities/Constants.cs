@@ -78,6 +78,8 @@ namespace Common.Utilities
 
         public const string NewDataSuccess = "Tạo mới dữ liệu thành công";
 
+        public const string DataSuccess = "Dữ liệu cập nhật thành công";
+
         public const string DataDuplicate = "Dữ liệu đã tồn tại. Không thể tạo nhiều dữ liệu cùng tên.";
 
         public const string ErrorParameter = "Có lỗi truyền tham số xác thực thông tin hoặc thông tin đã được xử lý!";
@@ -174,6 +176,7 @@ namespace Common.Utilities
         {
             public const string Main = "hr";
             public const string Human = "nhan-su";
+            public const string CoCauChucNang = "co-cau-chuc-nang";
             public const string Information = "thong-tin";
             public const string List = "danh-sach";
             public const string Create = "nhap-lieu";
@@ -926,6 +929,27 @@ namespace Common.Utilities
                     return "Không duyệt";
                 case (int)EOvertime.Secutity:
                     return "An ninh đã xác nhận";
+                default:
+                    return string.Empty;
+            }
+        }
+
+        public static string WorkTimeMode(int input)
+        {
+            switch (input)
+            {
+                case (int)ETimeWork.Normal:
+                    return "Ngày thường";
+                case (int)ETimeWork.LeavePhep:
+                    return "Nghỉ phép";
+                case (int)ETimeWork.LeaveHuongLuong:
+                    return "Nghỉ hưởng lương";
+                case (int)ETimeWork.LeaveKhongHuongLuong:
+                    return "Nghỉ không hưởng lương";
+                case (int)ETimeWork.Sunday:
+                    return "Chủ nhật";
+                case (int)ETimeWork.Holiday:
+                    return "Lễ / tết";
                 default:
                     return string.Empty;
             }

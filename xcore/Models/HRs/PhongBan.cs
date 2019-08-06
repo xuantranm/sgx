@@ -8,6 +8,7 @@ namespace Models
 {
     /// <summary>
     /// Tuong tu KhoiChucNang
+    /// Phong ban / bo phan
     /// </summary>
     public class PhongBan
     {

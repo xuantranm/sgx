@@ -772,6 +772,9 @@
     <Content Update="Views\Employee\Edit.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
+    <Content Update="Views\Employee\CoCauChucNang.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
     <Content Update="Views\Factory\DinhMucXCG.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
@@ -800,6 +803,9 @@
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
     <Content Update="Views\KeHoachTongHop\Index.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\KeHoachTongHop\DuLieuKhoNguyenVatLieuData.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
     <Content Update="Views\Leave\Approvement.cshtml">

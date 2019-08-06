@@ -21,27 +21,32 @@ namespace xtime
             #region setting
             var location = ConfigurationSettings.AppSettings.Get("location").ToString();
             var modeData = ConfigurationSettings.AppSettings.Get("modeData").ToString() == "1" ? true : false; // true: Get all data | false get by date
-            var day = Convert.ToInt32(ConfigurationSettings.AppSettings.Get("day").ToString());
             var isMail = ConfigurationSettings.AppSettings.Get("isMail").ToString() == "1" ? true : false;
             var debug = ConfigurationSettings.AppSettings.Get("debug").ToString() == "1" ? true : false;
             var connection = "mongodb://localhost:27017";
             var database = "tribat";
             #endregion
 
-            UpdateTimeKeeper(location, modeData, day, isMail, connection, database, debug);
+            UpdateTimeKeeper(location, modeData, isMail, connection, database, debug);
         }
 
-        static void UpdateTimeKeeper(string location, bool modeData, int day, bool isMail, string connection, string database, bool debug)
+        static void UpdateTimeKeeper(string location, bool modeData, bool isMail, string connection, string database, bool debug)
         {
             #region Connection, Setting & Filter
             MongoDBContext.ConnectionString = connection;
             MongoDBContext.DatabaseName = database;
             MongoDBContext.IsSSL = true;
             MongoDBContext dbContext = new MongoDBContext();
+            var monthConfig = Convert.ToInt32(ConfigurationSettings.AppSettings.Get("month").ToString());
 
-            var dateCrawled = DateTime.Now.AddDays(day);
+            var today = DateTime.Now.Date;
+            var dateCrawled = today.Day > 25? new DateTime(today.Year, today.Month, 26): new DateTime(today.AddMonths(-1).Year, today.AddMonths(-1).Month, 26);
+            if (monthConfig < 0)
+            {
+                dateCrawled = dateCrawled.AddMonths(monthConfig);
+            }
             var builder = Builders<AttLog>.Filter;
-            var filter = builder.Gt(m => m.Date, dateCrawled.AddDays(-1));
+            var filter = builder.Gte(m => m.Date, dateCrawled);
 
             if (debug)
             {
@@ -74,16 +79,28 @@ namespace xtime
                 attlogs = modeData ? dbContext.X628CVPAttLogs.Find(m => true).ToList() : dbContext.X628CVPAttLogs.Find(filter).ToList();
             }
 
-            Proccess(dbContext, location, modeData, day, isMail, attlogs, debug);
+            Proccess(dbContext, location, modeData, isMail, attlogs, debug);
         }
 
-        private static void Proccess(MongoDBContext dbContext, string location, bool modeData, int day, bool isMail, List<AttLog> attlogs, bool debug)
+        private static void Proccess(MongoDBContext dbContext, string location, bool modeData, bool isMail, List<AttLog> attlogs, bool debug)
         {
             #region Config
+            var monthConfig = Convert.ToInt32(ConfigurationSettings.AppSettings.Get("month").ToString());
             var linkChamCong = Constants.System.domain + "/" + Constants.LinkTimeKeeper.Main + "/" + Constants.LinkTimeKeeper.Index;
             var dateNewPolicy = new DateTime(2018, 10, 01);
             var lunch = TimeSpan.FromHours(1);
-            var now = DateTime.Now.Date;
+            var today = DateTime.Now.Date;
+            var startDate = today.Day > 25 ? new DateTime(today.Year, today.Month, 26) : new DateTime(today.AddMonths(-1).Year, today.AddMonths(-1).Month, 26);
+            var endDate = new DateTime(startDate.AddMonths(1).Year, startDate.AddMonths(1).Month, 25);
+            if (modeData)
+            {
+                startDate = today.AddMonths(-4);
+            }
+            if (monthConfig < 0)
+            {
+                startDate = startDate.AddMonths(monthConfig);
+            }
+
             var startWorkingScheduleTime = new TimeSpan(7, 30, 0);
             var endWorkingScheduleTime = new TimeSpan(16, 30, 0);
             #endregion
@@ -138,9 +155,6 @@ namespace xtime
                              times = d.ToList()
                          }).OrderBy(m => m.Date).ToList();
 
-            var today = DateTime.Now.Date;
-            var endDay = today.Day > 25 ? new DateTime(today.AddMonths(1).Year, today.AddMonths(1).Month, 25) : new DateTime(today.Year, today.Month, 25);
-
             var filterEmp = Builders<Employee>.Filter.Eq(m => m.Enable, true) & Builders<Employee>.Filter.Eq(m => m.Leave, false)
                     & Builders<Employee>.Filter.ElemMatch(z => z.Workplaces, a => a.Code == location);
             var employees = dbContext.Employees.Find(filterEmp).ToList();
@@ -151,9 +165,9 @@ namespace xtime
             }
 
             // FUTURE SET CAP BAC. QUÉT HẾT CHỪA BGĐ....
-
             foreach (var employee in employees)
             {
+                #region Employee Information
                 Console.WriteLine("Employee Name: " + employee.FullName);
                 var employeeLocation = employee.Workplaces.FirstOrDefault(a => a.Code == location);
                 if (string.IsNullOrEmpty(employeeLocation.Fingerprint))
@@ -192,50 +206,37 @@ namespace xtime
                 }
 
                 var linkFinger = linkChamCong + employee.Id;
+                #endregion
 
                 var leaves = dbContext.Leaves.Find(m => m.EmployeeId.Equals(employeeId)).ToList();
 
-                var startDate = today.AddDays(day);
-                if (modeData)
-                {
-                    startDate = today.AddMonths(-4);
-                }
-                var conditionDate = startDate;
-
-                Console.WriteLine("End date +: " + endDay);
+                var flagDate = startDate;
                 #region PROCESS
-                while (startDate <= endDay)
+                while (flagDate <= endDate)
                 {
-                    Console.WriteLine("Start date: " + startDate);
-                    int year = startDate.Day > 25 ? startDate.AddMonths(1).Year : startDate.Year;
-                    int month = startDate.Day > 25 ? startDate.AddMonths(1).Month : startDate.Month;
+                    Console.WriteLine("Date: " + flagDate);
+                    int year = flagDate.Day > 25 ? flagDate.AddMonths(1).Year : flagDate.Year;
+                    int month = flagDate.Day > 25 ? flagDate.AddMonths(1).Month : flagDate.Month;
                     var endDateMonth = new DateTime(year, month, 25);
                     var startDateMonth = endDateMonth.AddMonths(-1).AddDays(1);
 
-                    // Phan tich truong hop ca dem. Vd: ca 1: 6h-14h ; 14h-22h ; 22h-6h
-                    // Later
-                    var timekeepings = times.Where(m => m.groupCode.Equals(fingerInt.ToString()) && m.Date >= startDateMonth && m.Date <= endDateMonth).OrderBy(m => m.Date).ToList();
+                    var timekeepings = times.Where(m => m.groupCode.Equals(fingerInt.ToString()) 
+                                    && m.Date >= startDateMonth && m.Date <= endDateMonth)
+                                    .OrderBy(m => m.Date).ToList();
                     for (DateTime date = startDateMonth; date <= endDateMonth; date = date.AddDays(1))
                     {
                         Console.WriteLine("Date: " + date);
-                        if (!modeData)
-                        {
-                            if (date < conditionDate)
-                            {
-                                continue;
-                            }
-                        }
                         if (date > today)
                         {
                             continue;
                         }
 
-                        // debug
-                        //if (date == new DateTime(2019, 5, 21))
+                        //// debug
+                        //if (date == new DateTime(2019, 7, 19))
                         //{
                         //    var dd = "here";
                         //}
-                        //end
+                        ////end
                         var employeeWorkTimeLog = new EmployeeWorkTimeLog
                         {
                             EmployeeId = employee.Id,
@@ -268,7 +269,6 @@ namespace xtime
                         {
                             employeeWorkTimeLog.Mode = (int)ETimeWork.Sunday;
                             employeeWorkTimeLog.Reason = "Chủ nhật";
-                            // ChuNhat++;
                         }
 
                         if (holiday != null)
@@ -276,7 +276,6 @@ namespace xtime
                             employeeWorkTimeLog.Mode = (int)ETimeWork.Holiday;
                             employeeWorkTimeLog.Reason = holiday.Name;
                             employeeWorkTimeLog.ReasonDetail = holiday.Detail;
-                            //NghiLe++;
                         }
 
                         if (existLeave != null)
@@ -288,17 +287,14 @@ namespace xtime
                             {
                                 if (leaveType.Alias == "phep-nam")
                                 {
-                                    //NghiPhepNam += (double)numberLeave;
                                     employeeWorkTimeLog.Mode = (int)ETimeWork.LeavePhep;
                                 }
                                 else if (leaveType.Alias == "phep-khong-huong-luong")
                                 {
-                                    //NghiViecRieng += (double)numberLeave;
                                     employeeWorkTimeLog.Mode = (int)ETimeWork.LeaveKhongHuongLuong;
                                 }
                                 else if (leaveType.Alias == "nghi-huong-luong")
                                 {
-                                    //NghiHuongLuong += (double)numberLeave;
                                     employeeWorkTimeLog.Mode = (int)ETimeWork.LeaveHuongLuong;
                                 }
                                 else if (leaveType.Alias == "nghi-bu")
@@ -340,10 +336,6 @@ namespace xtime
                         double workDay = 1;
                         var late = new TimeSpan(0);
                         var early = new TimeSpan(0);
-                        //var status = (int)EStatusWork.DuCong;
-                        //var statusLate = (int)EStatusWork.DuCong;
-                        //var statusEarly = (int)EStatusWork.DuCong;
-
                         var timekeeping = timekeepings.FirstOrDefault(item => item.Date == date);
                         if (timekeeping == null)
                         {
@@ -387,6 +379,7 @@ namespace xtime
                                 workDay = 0.5;
                                 if (incheck == startWorkingScheduleTime.Hours)
                                 {
+                                    employeeWorkTimeLog.In = inLogTime;
                                     employeeWorkTimeLog.StatusEarly = (int)EStatusWork.XacNhanCong;
                                     if (inLogTime > startWorkingScheduleTime)
                                     {
@@ -407,6 +400,7 @@ namespace xtime
                                 }
                                 if (incheck == endWorkingScheduleTime.Hours)
                                 {
+                                    employeeWorkTimeLog.Out = outLogTime;
                                     employeeWorkTimeLog.StatusLate = (int)EStatusWork.XacNhanCong;
                                     if (outLogTime < endWorkingScheduleTime)
                                     {
@@ -433,6 +427,8 @@ namespace xtime
                             }
                             else
                             {
+                                employeeWorkTimeLog.In = inLogTime;
+                                employeeWorkTimeLog.Out = outLogTime;
                                 workTime = (outLogTime - inLogTime) - lunch;
                                 if (workTime.TotalHours > 8)
                                 {
@@ -499,8 +495,7 @@ namespace xtime
                             }
                             employeeWorkTimeLog.VerifyMode = records[0].VerifyMode;
                             employeeWorkTimeLog.InOutMode = records[0].InOutMode;
-                            employeeWorkTimeLog.In = inLogTime;
-                            employeeWorkTimeLog.Out = outLogTime;
+                            
                             employeeWorkTimeLog.WorkTime = workTime;
                             employeeWorkTimeLog.TangCaThucTe = tangcathucte;
                             employeeWorkTimeLog.WorkDay = workDay;
@@ -581,6 +576,16 @@ namespace xtime
                                         .Set(m => m.SoNgayNghi, employeeWorkTimeLog.SoNgayNghi)
                                         .Set(m => m.StatusTangCa, employeeWorkTimeLog.StatusTangCa)
                                         .Set(m => m.TangCaThucTe, employeeWorkTimeLog.TangCaThucTe)
+                                        .Set(m => m.Reason, employeeWorkTimeLog.Reason)
+                                        .Set(m => m.UpdatedOn, DateTime.Now);
+                                    dbContext.EmployeeWorkTimeLogs.UpdateOne(filter, update);
+                                }
+                                else
+                                {
+                                    var filter = Builders<EmployeeWorkTimeLog>.Filter.Eq(m => m.Id, workTimeLogDb.Id);
+                                    var update = Builders<EmployeeWorkTimeLog>.Update
+                                        .Set(m => m.Mode, employeeWorkTimeLog.Mode)
+                                        .Set(m => m.SoNgayNghi, employeeWorkTimeLog.SoNgayNghi)
                                         .Set(m => m.Reason, employeeWorkTimeLog.Reason)
                                         .Set(m => m.UpdatedOn, DateTime.Now);
                                     dbContext.EmployeeWorkTimeLogs.UpdateOne(filter, update);
@@ -786,7 +791,7 @@ namespace xtime
 
                     Summary(dbContext, employee, location, month, year, modeData, debug);
 
-                    startDate = startDate.AddMonths(1);
+                    flagDate = flagDate.AddMonths(1);
                 }
                 #endregion
             }

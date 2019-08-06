@@ -27,9 +27,9 @@ namespace xdatafix
             var database = "tribat";
             #endregion
 
-            UpdateLeave(connection, database);
+            //UpdateLeave(connection, database);
 
-            //UpdateChucVuEmployee(connection, database);
+            UpdateChucVuEmployee(connection, database);
 
             //UpdateManager(connection, database);
 

@@ -2,6 +2,34 @@
 @using Common.Enums;
 @model ViewModels.EmployeeViewModel
 
+<div class="modal fade" id="newKhoiChucNangModal" tabindex="-1" role="dialog" aria-labelledby="newKhoiChucNangLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editItemModalLabel">Thêm mới Khối chức năng</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Đóng">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form class="data-form" method="post" action="/api/khoichucnang" enctype="multipart/form-data">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <span class="result"></span>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="control-label">Khối chức năng mới</label>
+                        <input name="Name" class="form-control form-control-lg" />
+                    </div>
+                    <div class="form-group existData"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy & Đóng</button>
+                    <button type="button" class="btn btn-primary btn-save-khoichucnang"><i class="icon-save"></i>&nbsp;Lưu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="newChucVuModal" tabindex="-1" role="dialog" aria-labelledby="newChucVuLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -60,7 +88,6 @@
     </div>
 </div>
 
-
 <div class="modal fade" id="newPhongBanModal" tabindex="-1" role="dialog" aria-labelledby="newPhongBanLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -74,17 +101,6 @@
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                 <span class="result"></span>
                 <div class="modal-body">
-                    <div class="form-group">
-                        <label class="control-label">Nơi làm việc</label>
-                        <select name="CongTyChiNhanhId" class="form-control form-control-lg CongTyChiNhanhIdModal">
-                            @{
-                                foreach (var item in Model.CongTyChiNhanhs)
-                                {
-                                    <option value="@item.Id">@item.Name</option>
-                                }
-                            }
-                        </select>
-                    </div>
                     <div class="form-group">
                         <label class="control-label">Khối chức năng</label>
                         <select name="KhoiChucNangId" class="form-control form-control-lg KhoiChucNangId">
@@ -114,7 +130,6 @@
         </div>
     </div>
 </div>
-
 
 <div class="modal fade" id="newTitle" tabindex="-1" role="dialog" aria-labelledby="newTitleLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
@@ -230,6 +245,7 @@
         <a href="/hr/nhan-su" class="btn btn-cyan">Danh sách</a>
     </div>
 </script>
+
 @*
     For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
 *@

@@ -277,9 +277,9 @@ namespace erp.Controllers
                     });
                 }
             }
-            
+
             var tohtml = string.Empty;
-            foreach(var to in tos)
+            foreach (var to in tos)
             {
                 tohtml += string.IsNullOrEmpty(tohtml) ? to.Address : "; " + to.Address;
             }
@@ -310,62 +310,103 @@ namespace erp.Controllers
             return Json(new { result = true, message = "Cập nhật thành công" });
         }
 
-        public JsonResult GetByCongTyChiNhanh(string congtychinhanh)
+        public JsonResult GetByKhoiChucNang(string id, string removes)
         {
-            var watch = System.Diagnostics.Stopwatch.StartNew();
-
-            var khoichucnangs = dbContext.KhoiChucNangs.Find(m => m.Enable.Equals(true) && m.CongTyChiNhanhId.Equals(congtychinhanh)).ToList();
-            //var khoichucnangsts = khoichucnangs.Select(x => x.Id).ToList();
-            //var phongbans = dbContext.PhongBans.Find(m => m.Enable.Equals(true) && khoichucnangsts.Contains(m.KhoiChucNangId)).ToList();
-            //var phongbansts = phongbans.Select(x => x.Id).ToList();
-            //var bophans = dbContext.BoPhans.Find(m => m.Enable.Equals(true) && phongbansts.Contains(m.PhongBanId)).ToList();
-            //var bophansts = bophans.Select(x => x.Id).ToList();
-            //var bophancons = dbContext.BoPhans.Find(m => m.Enable.Equals(true) && bophansts.Contains(m.Parent)).ToList();
-            watch.Stop();
-            var elapsedMs = watch.ElapsedMilliseconds;
-            return Json(new { elapsedMs = elapsedMs + "ms", result = true, khoichucnangs });
-           // return Json(new { elapsedMs = elapsedMs + "ms", result = true, khoichucnangs, phongbans, bophans, bophancons });
-        }
-
-        public JsonResult GetByKhoiChucNang(string khoichucnang, string removes)
-        {
-            var watch = System.Diagnostics.Stopwatch.StartNew();
-            var elapsedMs = watch.ElapsedMilliseconds;
-
-            var khoichucnangEntity = dbContext.KhoiChucNangs.Find(m => m.Id.Equals(khoichucnang)).FirstOrDefault();
-            if (khoichucnangEntity == null)
+            try
             {
+                var watch = System.Diagnostics.Stopwatch.StartNew();
+                var elapsedMs = watch.ElapsedMilliseconds;
+
+                var congtychinhanhE = dbContext.CongTyChiNhanhs.Find(m => m.Code.Equals("CT1")).FirstOrDefault();
+
+                var khoichucnangs = dbContext.KhoiChucNangs.Find(m => m.Enable.Equals(true) && m.CongTyChiNhanhId.Equals(congtychinhanhE.Id)).SortBy(m => m.Order).ToList();
+
+                var khoichucnangE = new KhoiChucNang();
+                if (!string.IsNullOrEmpty(id))
+                {
+                    khoichucnangE = khoichucnangs.Where(m => m.Id.Equals(id)).FirstOrDefault();
+                    if (khoichucnangE != null)
+                    {
+                        var listPBRemove = string.IsNullOrEmpty(removes) ? new List<string>() : removes.Split(",").ToList();
+                        var phongbans = dbContext.PhongBans.Find(m => m.Enable.Equals(true) && m.KhoiChucNangId.Equals(id) && !listPBRemove.Contains(m.Id)).ToList();
+
+                        watch.Stop();
+                        elapsedMs = watch.ElapsedMilliseconds;
+                        return Json(new { elapsedMs = elapsedMs + "ms", result = true, khoichucnang = khoichucnangE, khoichucnangs, phongbans });
+                    }
+                }
+                var lastestE = dbContext.KhoiChucNangs.Find(m => m.Enable.Equals(true)).SortByDescending(m => m.Order).Limit(1).FirstOrDefault();
+                var lastestCode = lastestE != null ? lastestE.Order + 1 : 1;
+                khoichucnangE = new KhoiChucNang()
+                {
+                    CongTyChiNhanhId = congtychinhanhE.Id,
+                    Order = lastestCode,
+                    Enable = true
+                };
                 watch.Stop();
                 elapsedMs = watch.ElapsedMilliseconds;
-                return Json(new { elapsedMs = elapsedMs + "ms", result = false });
+                return Json(new { elapsedMs = elapsedMs + "ms", result = true, khoichucnang = khoichucnangE, khoichucnangs });
             }
-            var listPBRemove = string.IsNullOrEmpty(removes) ? new List<string>() : removes.Split(",").ToList();
-            var phongbans = dbContext.PhongBans.Find(m => m.Enable.Equals(true) && m.KhoiChucNangId.Equals(khoichucnang) && !listPBRemove.Contains(m.Id)).ToList();
-
-            watch.Stop();
-            elapsedMs = watch.ElapsedMilliseconds;
-            return Json(new { elapsedMs = elapsedMs + "ms", result = true, phongbans, khoichucnangEntity.CongTyChiNhanhId });
+            catch (Exception ex)
+            {
+                return Json(new { result = false, message = ex.Message });
+            }
         }
 
-        public JsonResult GetByPhongBan(string phongban)
+        public JsonResult GetByPhongBan(string id, string kcn)
         {
-            var watch = System.Diagnostics.Stopwatch.StartNew();
-            var elapsedMs = watch.ElapsedMilliseconds;
-            var phongbanEntity = dbContext.PhongBans.Find(m => m.Id.Equals(phongban)).FirstOrDefault();
-            if (phongbanEntity == null)
+            try
             {
+                var watch = System.Diagnostics.Stopwatch.StartNew();
+                var elapsedMs = watch.ElapsedMilliseconds;
+                var khoichucnangE = new KhoiChucNang();
+                //if (!string.IsNullOrEmpty(kcn))
+                //{
+                //    khoichucnangE = dbContext.KhoiChucNangs.Find(m => m.Enable.Equals(true) && m.Id.Equals(kcn)).FirstOrDefault();
+                //    if (khoichucnangE == null)
+                //    {
+                //        khoichucnangE = dbContext.KhoiChucNangs.Find(m => m.Enable.Equals(true)).FirstOrDefault();
+                //    }
+                //}
+                //else
+                //{
+                //    khoichucnangE = dbContext.KhoiChucNangs.Find(m => m.Enable.Equals(true)).FirstOrDefault();
+                //}
+
+                //var phongbans = dbContext.PhongBans.Find(m => m.Enable.Equals(true) && m.KhoiChucNangId.Equals(khoichucnangE.Id)).SortBy(m => m.Order).ToList();
+                var phongBanE = new PhongBan();
+                if (!string.IsNullOrEmpty(id))
+                {
+                    phongBanE = dbContext.PhongBans.Find(m => m.Id.Equals(id)).FirstOrDefault();
+                    if (phongBanE != null)
+                    {
+                        var phongbans = dbContext.PhongBans.Find(m => m.KhoiChucNangId.Equals(phongBanE.KhoiChucNangId)).ToList();
+
+                        var bophans = dbContext.BoPhans.Find(m => m.Enable.Equals(true) && m.PhongBanId.Equals(phongBanE.Id)).ToList();
+
+                        var managers = dbContext.ChucVus.Find(m => m.Enable.Equals(true) && m.PhongBanId.Equals(phongBanE.Id)).ToList();
+
+                        watch.Stop();
+                        elapsedMs = watch.ElapsedMilliseconds;
+                        return Json(new { elapsedMs = elapsedMs + "ms", result = true, phongban = phongBanE, phongbans, bophans, managers });
+                    }
+                }
+                
+                var lastestE = dbContext.PhongBans.Find(m => m.Enable.Equals(true)).SortByDescending(m => m.Order).Limit(1).FirstOrDefault();
+                var lastestCode = lastestE != null ? lastestE.Order + 1 : 1;
+                phongBanE = new PhongBan()
+                {
+                    Order = lastestCode,
+                    Enable = true
+                };
                 watch.Stop();
                 elapsedMs = watch.ElapsedMilliseconds;
-                return Json(new { elapsedMs = elapsedMs + "ms", result = false });
+                return Json(new { elapsedMs = elapsedMs + "ms", result = true, phongban = phongBanE });
             }
-
-            var bophans = dbContext.BoPhans.Find(m => m.Enable.Equals(true) && m.PhongBanId.Equals(phongban)).ToList();
-
-            var managers = dbContext.ChucVus.Find(m => m.Enable.Equals(true) && m.PhongBanId.Equals(phongban)).ToList();
-
-            watch.Stop();
-            elapsedMs = watch.ElapsedMilliseconds;
-            return Json(new { elapsedMs = elapsedMs + "ms", result = true, bophans, managers });
+            catch (Exception ex)
+            {
+                return Json(new { result = false, message = ex.Message });
+            }
         }
 
         public JsonResult GetByBoPhan(string bophan)
@@ -396,6 +437,23 @@ namespace erp.Controllers
             watch.Stop();
             elapsedMs = watch.ElapsedMilliseconds;
             return Json(new { elapsedMs = elapsedMs + "ms", result = true, congtychinhanhs });
+        }
+
+        public JsonResult GetByCongTyChiNhanh(string congtychinhanh)
+        {
+            var watch = System.Diagnostics.Stopwatch.StartNew();
+
+            var khoichucnangs = dbContext.KhoiChucNangs.Find(m => m.Enable.Equals(true) && m.CongTyChiNhanhId.Equals(congtychinhanh)).ToList();
+            //var khoichucnangsts = khoichucnangs.Select(x => x.Id).ToList();
+            //var phongbans = dbContext.PhongBans.Find(m => m.Enable.Equals(true) && khoichucnangsts.Contains(m.KhoiChucNangId)).ToList();
+            //var phongbansts = phongbans.Select(x => x.Id).ToList();
+            //var bophans = dbContext.BoPhans.Find(m => m.Enable.Equals(true) && phongbansts.Contains(m.PhongBanId)).ToList();
+            //var bophansts = bophans.Select(x => x.Id).ToList();
+            //var bophancons = dbContext.BoPhans.Find(m => m.Enable.Equals(true) && bophansts.Contains(m.Parent)).ToList();
+            watch.Stop();
+            var elapsedMs = watch.ElapsedMilliseconds;
+            return Json(new { elapsedMs = elapsedMs + "ms", result = true, khoichucnangs });
+            // return Json(new { elapsedMs = elapsedMs + "ms", result = true, khoichucnangs, phongbans, bophans, bophancons });
         }
 
         public JsonResult GetKhoiChucNang(string congtychinhanh)
@@ -459,27 +517,111 @@ namespace erp.Controllers
                 elapsedMs = watch.ElapsedMilliseconds;
                 return Json(new { elapsedMs = elapsedMs + "ms", result = true, chucvus });
             }
-            
+
             chucvus = dbContext.ChucVus.Find(m => m.Enable.Equals(true) && m.CongTyChiNhanhId.Equals(congtychinhanh)).ToList();
             watch.Stop();
             elapsedMs = watch.ElapsedMilliseconds;
             return Json(new { elapsedMs = elapsedMs + "ms", result = true, chucvus });
         }
 
+        public IActionResult KhoiChucNang(KhoiChucNang entity)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(entity.Name))
+                {
+                    return Json(new { result = false, source = "create", entity, message = "Tên không để trống! Vui lòng kiểm tra tên." });
+                }
+
+                entity.Alias = Utility.AliasConvert(entity.Name);
+                if (string.IsNullOrEmpty(entity.Id))
+                {
+                    var existE = dbContext.KhoiChucNangs.Find(m => m.Alias.Equals(entity.Alias)).FirstOrDefault();
+                    if (existE == null)
+                    {
+                        //var lastestE = dbContext.KhoiChucNangs.Find(m => m.Enable.Equals(true)).SortByDescending(m => m.Order).Limit(1).FirstOrDefault();
+                        //var lastestCode = lastestE != null ? lastestE.Order + 1 : 1;
+                        entity.Code = "KHOI" + entity.Order;
+                        entity.Order = entity.Order;
+                        dbContext.KhoiChucNangs.InsertOne(entity);
+                        return Json(new { result = true, source = "create", entity, message = Constants.DataSuccess });
+                    }
+                    entity.Id = existE.Id;
+                }
+
+                var filter = Builders<KhoiChucNang>.Filter.Eq(m => m.Id, entity.Id);
+                var update = Builders<KhoiChucNang>.Update
+                    .Set(m => m.CongTyChiNhanhId, entity.CongTyChiNhanhId)
+                    .Set(m => m.Name, entity.Name)
+                    .Set(m => m.Alias, entity.Alias)
+                    .Set(m => m.Description, entity.Description)
+                    .Set(m => m.Order, entity.Order)
+                    .Set(m => m.Code, "KHOI" + entity.Order)
+                    .Set(m => m.Enable, entity.Enable);
+                dbContext.KhoiChucNangs.UpdateOne(filter, update);
+
+                #region Relations
+                var filterEmployee = Builders<Employee>.Filter.Eq(m => m.KhoiChucNang, entity.Id);
+                var updateEmployee = Builders<Employee>.Update
+                    .Set(m => m.KhoiChucNangName, entity.Name);
+                dbContext.Employees.UpdateMany(filterEmployee, updateEmployee);
+                #endregion
+
+                return Json(new { result = true, source = "create", entity, message = Constants.DataSuccess });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { result = false, source = "create", entity, message = ex.Message });
+            }
+        }
+
         public IActionResult PhongBan(PhongBan entity)
         {
-            entity.Alias = Utility.AliasConvert(entity.Name);
-            bool exist = dbContext.PhongBans.CountDocuments(m => m.Alias.Equals(entity.Alias)) > 0;
-            if (!exist)
+            try
             {
-                var lastestPhongBan = dbContext.PhongBans.Find(m => m.Enable.Equals(true)).SortByDescending(m => m.Order).Limit(1).FirstOrDefault();
-                var lastestCode = lastestPhongBan != null ? lastestPhongBan.Order + 1 : 1;
-                entity.Code = "PHONGBAN" + lastestCode;
-                entity.Order = lastestCode;
-                dbContext.PhongBans.InsertOne(entity);
-                return Json(new { result = true, source = "create", entity, message = Constants.NewDataSuccess });
+                if (string.IsNullOrEmpty(entity.Name))
+                {
+                    return Json(new { result = false, source = "create", entity, message = "Tên không để trống! Vui lòng kiểm tra tên." });
+                }
+
+                entity.Alias = Utility.AliasConvert(entity.Name);
+                if (string.IsNullOrEmpty(entity.Id))
+                {
+                    var existE = dbContext.PhongBans.Find(m => m.Alias.Equals(entity.Alias) && m.KhoiChucNangId.Equals(entity.KhoiChucNangId)).FirstOrDefault();
+                    if (existE == null)
+                    {
+                        entity.Code = "PHONGBAN" + entity.Order;
+                        entity.Order = entity.Order;
+                        dbContext.PhongBans.InsertOne(entity);
+                        return Json(new { result = true, source = "create", entity, message = Constants.DataSuccess });
+                    }
+                    entity.Id = existE.Id;
+                }
+
+                var filter = Builders<PhongBan>.Filter.Eq(m => m.Id, entity.Id);
+                var update = Builders<PhongBan>.Update
+                    .Set(m => m.KhoiChucNangId, entity.KhoiChucNangId)
+                    .Set(m => m.Name, entity.Name)
+                    .Set(m => m.Alias, entity.Alias)
+                    .Set(m => m.Description, entity.Description)
+                    .Set(m => m.Order, entity.Order)
+                    .Set(m => m.Code, "PHONGBAN" + entity.Order)
+                    .Set(m => m.Enable, entity.Enable);
+                dbContext.PhongBans.UpdateOne(filter, update);
+
+                #region Relations
+                var filterEmployee = Builders<Employee>.Filter.Eq(m => m.PhongBan, entity.Id);
+                var updateEmployee = Builders<Employee>.Update
+                    .Set(m => m.PhongBanName, entity.Name);
+                dbContext.Employees.UpdateMany(filterEmployee, updateEmployee);
+                #endregion
+
+                return Json(new { result = true, source = "create", entity, message = Constants.DataSuccess });
             }
-            return Json(new { result = false, source = "create", entity, message = Constants.DataDuplicate });
+            catch (Exception ex)
+            {
+                return Json(new { result = false, source = "create", entity, message = ex.Message });
+            }
         }
 
         public IActionResult BoPhan(Part entity)

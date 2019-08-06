@@ -1,5 +1,44 @@
 ﻿namespace Common.Enums
 {
+    public enum ETangCa
+    {
+        None = 0,
+        CanXacNhan = 1,
+        GuiXacNhan = 2,
+        DongY = 3,
+        TuChoi = 4
+    }
+
+    public enum EOvertime
+    {
+        None = 0,
+        Create = 1,
+        Ok = 2,
+        Cancel = 3,
+        Secutity = 4,
+        Signed = 5
+    }
+
+    public enum EDateType
+    {
+        Normal = 1,
+        Sunday = 2,
+        PublicHoliday = 3
+    }
+
+    public enum ETimeWork
+    {
+        None = 0,
+        Normal = 1,
+        LeavePhep = 3,
+        LeaveHuongLuong = 4,
+        LeaveKhongHuongLuong = 5,
+        Other = 7,
+        Wait = 8,
+        Sunday = 20,
+        Holiday = 60
+    }
+
     public enum ESetting
     {
         System = 1,
@@ -139,29 +178,6 @@
         DongY = 3,
         TuChoi = 4,
         Wait = 5
-    }
-
-    public enum ETangCa
-    {
-        None = 0,
-        CanXacNhan = 1,
-        GuiXacNhan = 2,
-        DongY = 3,
-        TuChoi = 4
-    }
-
-    public enum ETimeWork
-    {
-        None = 0,
-        Normal = 1,
-        LeavePhep = 3,
-        LeaveHuongLuong = 4,
-        LeaveKhongHuongLuong = 5,// tinh cong ngày thường nếu có
-        Other = 7,
-        Wait = 8,
-
-        Sunday = 20,
-        Holiday = 60,
     }
 
     public enum ETexts

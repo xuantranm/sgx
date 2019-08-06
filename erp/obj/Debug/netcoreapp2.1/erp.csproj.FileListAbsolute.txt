@@ -425,3 +425,5 @@ D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\TimeKeepe
 D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\TimeKeeper\OvertimeEmployeeData.g.cshtml.cs
 D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\TimeKeeper\OvertimeSecurity.g.cshtml.cs
 D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Factory\Index.g.cshtml.cs
+D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\KeHoachTongHop\DuLieuKhoNguyenVatLieuData.g.cshtml.cs
+D:\Projects\Sgx\sourcecode\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Employee\CoCauChucNang.g.cshtml.cs

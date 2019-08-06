@@ -100,10 +100,10 @@
         $('input[name="Employee.EmployeeBank.BankHolder"]').val($(this).val());
     });
 
-    $('#Employee_CongTyChiNhanh').on('change', function () {
-        $('#Employee_CongTyChiNhanhName').val($('#Employee_CongTyChiNhanh option:selected').text());
-        changeByCongTyChiNhanh($(this).val());
-    });
+    //$('#Employee_CongTyChiNhanh').on('change', function () {
+    //    $('#Employee_CongTyChiNhanhName').val($('#Employee_CongTyChiNhanh option:selected').text());
+    //    changeByCongTyChiNhanh($(this).val());
+    //});
 
     $('#Employee_KhoiChucNang').on('change', function () {
         $('#Employee_KhoiChucNangName').val($('#Employee_KhoiChucNang option:selected').text());
@@ -131,9 +131,38 @@
         eventModal(modal, "phongban");
     });
 
+    $('#newKhoiChucNangModal').on('show.bs.modal', function (event) {
+        var modal = $(this);
+        eventModal(modal, "khoichucnang");
+    });
+
     $('#newChucVuModal').on('show.bs.modal', function (event) {
         var modal = $(this);
         eventModal(modal, "chucvu");
+    });
+
+    $('.btn-save-khoichucnang').on('click', function () {
+        var form = $(this).closest('form');
+        var frmValues = form.serialize();
+        $.ajax({
+            type: form.attr('method'),
+            url: form.attr('action'),
+            data: frmValues,
+            success: function (data) {
+                if (data.result === true) {
+                    toastr.info(data.message);
+                    $('select[name="Employee.KhoiChucNang"] option:first').after('<option value="' + data.entity.id + '">' + data.entity.name + '</option>');
+                    $('select[name="Employee.KhoiChucNang"]').val(data.entity.id);
+                    $('select[name="Employee.KhoiChucNangName"]').val(data.entity.name);
+                    $('input', form).val('');
+                    $('textarea', form).val('');
+                    $('#newKhoiChucNangModal').modal('hide');
+                }
+                else {
+                    toastr.error(data.message);
+                }
+            }
+        });
     });
 
     $('.btn-save-phongban').on('click', function () {

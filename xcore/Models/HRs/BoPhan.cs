@@ -7,7 +7,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Models
 {
     /// <summary>
-    /// Tuong tu PhongBan
+    /// Dung cho Co cau Nha May
     /// </summary>
     public class BoPhan
     {

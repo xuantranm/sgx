@@ -1,5 +1,17 @@
 ﻿$(function () {
-    registerAutoNumeric();
+    //registerAutoNumeric();
+
+    $('.btn-add-hour').on('click', function () {
+        var lastNo = $('.no-time').last().val();
+        $('.btn-time-remove-' + lastNo).addClass('d-none');
+        var newNo = parseInt(lastNo) + 1;
+        var data = [];
+        data.push({ no: newNo });
+        var newHtml = $.templates("#tmplTimes").render(data);
+        $(newHtml).insertBefore(this);
+        registerTimePicker(newNo);
+        removeElementTime(newNo);
+    });
 
     $('.from-date').on('changeDate', function () {
         if ($('.isChange').val() === 1) {
@@ -19,7 +31,7 @@
         }
     });
 
-    $('#OvertimeEmployee_Agreement').change(function () {
+    $('.check-agreement').change(function () {
         if (this.checked) {
             $('.btn-submit').prop('disabled', false);
         }
@@ -30,11 +42,11 @@
 
     $(".data-form").on("submit", function (event) {
         event.preventDefault();
-        if (!confirm("Bạn chắc chắn thông tin đã được kiểm tra và muốn cập nhật!")) {
+        if (!confirm("Bạn chắc chắn thông tin đã được kiểm tra và muốn cập nhật! LƯU Ý KHÔNG CHỈNH SỬA SAU KHI BẤM ĐỒNG Ý!")) {
             return false;
         }
 
-        if ($('#hHour-0').val() <= 0) {
+        if ($('.hour-total').val() <= 0) {
             toastr.error("Dữ liệu không đúng: Số giờ 0");
             return false;
         }
@@ -68,40 +80,49 @@
         });
     });
 
-
-    registerTimePicker();
+    for (i = 0; i <= parseInt($('.iE-value:last').val()); ++i) {
+        console.log(i);
+        registerTimePicker(i);
+    }
 
     loadValue();
 
-    function registerTimePicker() {
-        var no = $('.iE-value:last').val();
-        for (i = 0; i <= no; ++i) {
-            $('#start-' + i).val($('#hiddenStart-'+ i).val());
-            $('#end-' + i).val($('#hiddenEnd-' + i).val());
+    function removeElementTime(no) {
+        $('.btn-time-remove-' + no).on('click', function () {
+            var currentNo = parseInt($('.no-time', this.closest('.form-group')).val());
+            if (currentNo > 1) {
+                var previous = currentNo - 1;
+                $('.btn-time-remove-' + previous).removeClass('d-none');
+            }
+            $(this.closest('.form-group')).remove();
+        });
+    }
 
-            $('#start-' + i).datetimepicker({
-                use24hours: true,
-                format: 'HH:mm',
-                widgetPositioning: {
-                    horizontal: 'auto',
-                    vertical: 'bottom'
-                }
-            });
-            $('#start-' + i).on('change.datetimepicker', function () {
-                calOvertime($(this));
-            });
-            $('#end-' + i).datetimepicker({
-                use24hours: true,
-                format: 'HH:mm',
-                widgetPositioning: {
-                    horizontal: 'auto',
-                    vertical: 'bottom'
-                }
-            });
-            $('#end-' + i).on('change.datetimepicker', function () {
-                calOvertime($(this));
-            });
-        }
+    function registerTimePicker(no) {
+        $('#start-' + no).val($('#hiddenStart-'+ no).val());
+        $('#end-' + no).val($('#hiddenEnd-' + no).val());
+        $('#start-' + no).datetimepicker({
+            use24hours: true,
+            format: 'HH:mm',
+            widgetPositioning: {
+                horizontal: 'auto',
+                vertical: 'bottom'
+            }
+        });
+        $('#start-' + no).on('change.datetimepicker', function () {
+            calOvertime($(this));
+        });
+        $('#end-' + no).datetimepicker({
+            use24hours: true,
+            format: 'HH:mm',
+            widgetPositioning: {
+                horizontal: 'auto',
+                vertical: 'bottom'
+            }
+        });
+        $('#end-' + no).on('change.datetimepicker', function () {
+            calOvertime($(this));
+        });
     }
 
     function calOvertime(element) {
@@ -134,6 +155,11 @@
         hours = hours.toFixed(2);
         $('.hour-' + i).text(hours);
         $('#hHour-' + i).val(hours);
+        var hourtotal = 0.0;
+        $('.hour-item').each(function (i, obj) {
+            hourtotal += parseFloat($(obj).val());
+        });
+        $('.hour-total').val(hourtotal);
     }
 
     function loadDataByDate() {
@@ -156,7 +182,7 @@
     }
 
     function loadValue() {
-        var no = $('.iE-value:last').val();
+        var no = parseInt($('.iE-value:last').val());
         for (i = 0; i <= no; ++i) {
             $('#start-' + i).val($('#hiddenStart-' + i).val());
             $('#end-' + i).val($('#hiddenEnd-' + i).val());

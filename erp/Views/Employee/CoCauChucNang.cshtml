@@ -1,0 +1,162 @@
+﻿@using Common.Utilities;
+@model ViewModels.EmployeeViewModel
+@{
+    ViewData["title"] = "CƠ CẤU CHỨC NĂNG | CÔNG TY TNHH CNSH SÀI GÒN XANH";
+    var login = User.Identity.Name;
+}
+
+
+<div class="main-container">
+    <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="/">Trang chủ</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">
+                            <a asp-action="CoCauChucNang">Cơ cấu chức năng</a>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="space-sm">
+        <div class="container">
+            <div class="row mb-3">
+                <div class="col-md-3 col-sm-4 col-xs-6">
+                    <button type="button" data-toggle="modal" data-target="#khoiChucNangModal" data-id="" class="btn btn-info"><i class="fas fa-stream"></i> TẠO KHỐI</button>
+                </div>
+                <div class="col-md-3 col-sm-4 col-xs-6">
+                    <button type="button" data-toggle="modal" data-target="#phongBanBoPhanModal" data-id="" data-kcn="" class="btn btn-info"><i class="fas fa-stream"></i> TẠO PHÒNG BAN/BỘ PHẬN</button>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-12">
+                    <ul>
+                        @foreach (var item in Model.KhoiChucNangs)
+                        {
+                        <li>
+                            <span>@item.Name.ToUpper()</span> &nbsp; <button type="button" data-toggle="modal" data-target="#khoiChucNangModal" data-id="@item.Id" class="btn btn-sm btn-outline-primary"><i class="icon icon-edit"></i> Sửa</button>
+                            <ul>
+                                @foreach (var phongban in Model.PhongBans.Where(m=>m.KhoiChucNangId.Equals(item.Id)).ToList())
+                                {
+                                    <li>@phongban.Name &nbsp; <button type="button" data-toggle="modal" data-target="#phongBanBoPhanModal" data-id="@phongban.Id" class="btn btn-sm btn-outline-primary"><i class="icon icon-edit"></i> Sửa</button></li>
+                                }
+                            </ul>
+                        </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<div class="modal fade" id="khoiChucNangModal" tabindex="-1" role="dialog" aria-labelledby="khoiChucNangLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editItemModalLabel">Thêm mới Khối chức năng</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Đóng">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form class="data-form" method="post" action="/api/khoichucnang" enctype="multipart/form-data">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <input type="hidden" name="Id" class="id-modal" />
+                <input type="hidden" name="CongTyChiNhanhId" class="congtychinhanhid-modal" />
+                <span class="result"></span>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="control-label">Tên</label>
+                        <input name="Name" class="form-control form-control-lg name-modal" />
+                    </div>
+                    <div class="form-group existData"></div>
+                    <div class="form-group">
+                        <label class="control-label">Mô tả</label>
+                        <textarea name="Description" class="form-control form-control-lg js-auto-size description-modal"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Vị trí hiển thị</label>
+                        <input type="number" name="Order" class="form-control form-control-lg order-modal" />
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Trạng thái</label>
+                        <select name="Enable" class="form-control form-control-lg enable-modal">
+                            <option value="true">Sử dụng</option>
+                            <option value="false">Vô hiệu hóa</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy & Đóng</button>
+                    <button type="button" class="btn btn-primary btn-save-khoichucnang"><i class="icon-save"></i>&nbsp;Lưu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="phongBanBoPhanModal" tabindex="-1" role="dialog" aria-labelledby="phongBanBoPhanLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editItemModalLabel">Thêm mới Phòng ban/ Bộ phận</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Đóng">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form class="data-form" method="post" action="/api/phongban" enctype="multipart/form-data">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <input type="hidden" name="Id" class="id-modal" />
+                <span class="result"></span>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="control-label">Khối chức năng</label>
+                        <select name="KhoiChucNangId" class="form-control form-control-lg khoichucnangid-modal">
+                            <option value="">Chọn</option>
+                            @foreach (var item in Model.KhoiChucNangs)
+                            {
+                                <option value="@item.Id">@item.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Phòng ban/ bộ phận</label>
+                        <input name="Name" class="form-control form-control-lg name-modal" />
+                    </div>
+                    <div class="form-group existData"></div>
+                    <div class="form-group">
+                        <label class="control-label">Mô tả</label>
+                        <textarea name="Description" class="form-control form-control-lg js-auto-size description-modal"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Vị trí hiển thị</label>
+                        <input type="number" name="Order" class="form-control form-control-lg order-modal" />
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Trạng thái</label>
+                        <select name="Enable" class="form-control form-control-lg enable-modal">
+                            <option value="true">Sử dụng</option>
+                            <option value="false">Vô hiệu hóa</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy & Đóng</button>
+                    <button type="button" class="btn btn-primary btn-save-phongban"><i class="icon-save"></i>&nbsp;Lưu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script type="text/javascript" src="~/js/hr/co-cau-chuc-nang.js?@Constants.VersionJs"></script>
+}
+

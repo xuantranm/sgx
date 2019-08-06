@@ -235,6 +235,7 @@ namespace xmailtimer
 
             #region Step 1: Employee have email
             var listEmail = results.Where(m => !string.IsNullOrEmpty(m.Email)).ToList();
+            listEmail = new List<TimeKeeperDisplay>();
             foreach (var employee in listEmail)
             {
                 string sFileName = @"bang-cham-cong";
@@ -409,7 +410,7 @@ namespace xmailtimer
 
                 if (!string.IsNullOrEmpty(manager.ManageId))
                 {
-                    var managerE = dbContext.Employees.Find(m => m.Id.Equals(manager.ManageId)).FirstOrDefault();
+                    var managerE = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.ChucVu.Equals(manager.ManageId)).FirstOrDefault();
                     if (managerE != null && !string.IsNullOrEmpty(managerE.Email))
                     {
                         string sFileName = @"bang-cham-cong";
@@ -905,12 +906,8 @@ namespace xmailtimer
                 foreach (var employee in list)
                 {
                     var timers = employee.EmployeeWorkTimeLogs;
-                    var timesSort = timers.OrderBy(m => m.Date).ToList();
-
+                    var timesSort = employee.EmployeeWorkTimeLogs.OrderBy(m => m.Date).ToList();
                     ngayCongNT = 0;
-                    ngayNghiP = 0;
-                    double letet = 0;
-                    double ngayCongCT = 0;
                     var vaoTreLan = 0;
                     double vaoTrePhut = 0;
                     var raSomLan = 0;
@@ -919,9 +916,8 @@ namespace xmailtimer
                     double tangCaChuNhat = 0;
                     double tangCaLeTet = 0;
                     double vangKP = 0;
-                    double ngayNghiOM = 0;
-                    double ngayNghiTS = 0;
-                    double ngayNghiR = 0;
+                    ngayNghiP = 0;
+                    double letet = 0;
 
                     var rowEF = rowIndex;
                     var rowET = rowIndex + 4;
@@ -995,29 +991,48 @@ namespace xmailtimer
                         var item = timesSort.Where(m => m.Date.Equals(date)).FirstOrDefault();
                         if (item != null)
                         {
-                            var modeMiss = false;
+                            var dayString = string.Empty;
+                            var displayInOut = string.Empty;
+                            var noilamviec = !string.IsNullOrEmpty(item.WorkplaceCode) ? item.WorkplaceCode : string.Empty;
+                            var reason = !string.IsNullOrEmpty(item.Reason) ? item.Reason : string.Empty;
+                            var detail = !string.IsNullOrEmpty(item.ReasonDetail) ? item.ReasonDetail : string.Empty;
+                            var statusTangCa = item.StatusTangCa;
+                            var statusBag = statusTangCa == (int)ETangCa.TuChoi ? "badge-pill" : "badge-info";
+                            var giotangcathucte = Math.Round(item.TangCaThucTe.TotalHours, 2);
+                            var giotangcaxacnhan = Math.Round(item.TangCaDaXacNhan.TotalHours, 2);
+
+                            var isMiss = false;
                             if (item.Mode == (int)ETimeWork.Normal)
                             {
                                 switch (item.Status)
                                 {
                                     case (int)EStatusWork.XacNhanCong:
                                         {
-                                            modeMiss = true;
+                                            isMiss = true;
                                             break;
                                         }
                                     case (int)EStatusWork.DaGuiXacNhan:
                                         {
-                                            modeMiss = true;
+                                            //if (isMonth)
+                                            //{
+                                            //    isMiss = true;
+                                            //}
+                                            //else
+                                            //{
+                                            item.WorkDay = 1;
+                                            ngayCongNT++;
+                                            //}
                                             break;
                                         }
                                     case (int)EStatusWork.DongY:
                                         {
+                                            item.WorkDay = 1;
                                             ngayCongNT++;
                                             break;
                                         }
                                     case (int)EStatusWork.TuChoi:
                                         {
-                                            modeMiss = true;
+                                            isMiss = true;
                                             break;
                                         }
                                     default:
@@ -1028,45 +1043,100 @@ namespace xmailtimer
                                 }
                             }
 
-                            if (modeMiss)
+                            // Calculator = hour
+                            if (item.Mode == (int)ETimeWork.Sunday || item.Mode == (int)ETimeWork.Holiday)
                             {
-                                if (item.Late.TotalMinutes > 1)
+                                if (item.WorkTime.TotalHours > 0)
                                 {
-                                    vaoTreLan++;
-                                    vaoTrePhut += item.Late.TotalMinutes;
-                                }
-                                if (item.Early.TotalMinutes > 1)
-                                {
-                                    raSomLan++;
-                                    raSomPhut += item.Early.TotalMinutes;
-                                }
-                                // First, không tính 15p
-                                var timeoutin = item.Out - item.In;
-                                if (timeoutin.HasValue && timeoutin.Value.TotalHours > 6)
-                                {
-                                    item.WorkDay = 1;
-                                    ngayCongNT++;
-                                }
-                                else
-                                {
-                                    ngayCongNT += item.WorkDay;
+                                    dayString = Math.Round(item.WorkTime.TotalHours, 2) + " giờ";
                                 }
                             }
 
-                            if (item.Mode > (int)ETimeWork.Normal && item.Logs == null)
+                            if (item.Mode == (int)ETimeWork.LeavePhep)
                             {
-                                if (item.Mode == (int)ETimeWork.LeavePhep)
+                                ngayNghiP += item.SoNgayNghi;
+                                if (item.SoNgayNghi < 1)
                                 {
-                                    ngayNghiP += item.SoNgayNghi;
+                                    item.WorkDay = 0.5;
+                                    ngayCongNT += 0.5;
                                 }
-                                if (item.Mode == (int)ETimeWork.Holiday)
+                            }
+                            if (item.Mode == (int)ETimeWork.Holiday)
+                            {
+                                letet += 1;
+                            }
+
+                            if (item.Logs != null)
+                            {
+                                if (isMiss)
                                 {
-                                    letet += 1;
+                                    if (item.Late.TotalMinutes > 1)
+                                    {
+                                        vaoTreLan++;
+                                        vaoTrePhut += item.Late.TotalMinutes;
+                                    }
+                                    if (item.Early.TotalMinutes > 1)
+                                    {
+                                        raSomLan++;
+                                        raSomPhut += item.Early.TotalMinutes;
+                                    }
+                                    var timeoutin = item.Out - item.In;
+                                    if (timeoutin.HasValue && timeoutin.Value.TotalHours > 6)
+                                    {
+                                        // First, không tính 15p
+                                        item.WorkDay = 1;
+                                        ngayCongNT++;
+                                    }
+                                    else
+                                    {
+                                        if (item.Out.HasValue || item.In.HasValue)
+                                        {
+                                            item.WorkDay = 0.5;
+                                        }
+                                        ngayCongNT += item.WorkDay;
+                                    }
+                                }
+                                displayInOut = item.In.HasValue ? item.In.Value.ToString(@"hh\:mm") : string.Empty;
+                                if (item.Out.HasValue)
+                                {
+                                    displayInOut += !string.IsNullOrEmpty(displayInOut) ? " - " + item.Out.Value.ToString(@"hh\:mm") : item.Out.Value.ToString(@"hh\:mm");
+                                }
+
+                                // TANG CA
+                                if (statusTangCa == (int)ETangCa.DongY)
+                                {
+                                    if (item.Mode == (int)ETimeWork.Normal)
+                                    {
+                                        tangCaNgayThuong += item.TangCaDaXacNhan.TotalHours;
+                                    }
+                                    if (item.Mode == (int)ETimeWork.Sunday)
+                                    {
+                                        tangCaChuNhat += item.TangCaDaXacNhan.TotalHours;
+                                    }
+                                    if (item.Mode == (int)ETimeWork.Holiday)
+                                    {
+                                        tangCaLeTet += item.TangCaDaXacNhan.TotalHours;
+                                    }
+                                }
+                            }
+
+                            dayString = item.WorkDay + " ngày";
+
+                            if (item.Logs == null)
+                            {
+                                var text = item.Reason;
+                                if (item.Mode == (int)ETimeWork.Normal)
+                                {
+                                    text += ";" + Constants.TimeKeeper(item.Status);
+                                    if (!string.IsNullOrEmpty(item.ReasonDetail))
+                                    {
+                                        text += ";" + item.ReasonDetail;
+                                    }
                                 }
                                 cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
                                 sheet1.AddMergedRegion(cellRangeAddress);
                                 cell = row.CreateCell(columnIndex, CellType.String);
-                                cell.SetCellValue(item.Reason);
+                                cell.SetCellValue(text);
                                 cell.CellStyle = styleDedaultMerge;
                                 var rowCellRangeAddress = new CellRangeAddress(rowEF, rowET, columnIndex, columnIndex);
                                 sheet1.AddMergedRegion(rowCellRangeAddress);
@@ -1077,7 +1147,6 @@ namespace xmailtimer
                             }
                             else
                             {
-
                                 var displayIn1 = string.Empty;
                                 var displayIn2 = string.Empty;
                                 var displayOut1 = string.Empty;
@@ -1115,51 +1184,21 @@ namespace xmailtimer
                                 cell.CellStyle = styleDedault;
 
                                 cell = rowreason.CreateCell(columnIndex, CellType.String);
-                                var detail = string.Empty;
-
-                                if (item.Mode < (int)ETimeWork.Sunday)
+                                var detailText = dayString;
+                                if (item.Status > (int)EStatusWork.DuCong)
                                 {
-                                    detail += item.WorkDay + " ngày";
-                                    tangCaNgayThuong += item.TangCaDaXacNhan.TotalHours;
-                                    if (item.TangCaDaXacNhan.TotalHours > 0)
-                                    {
-                                        detail += ", TC:" + Math.Round(item.TangCaDaXacNhan.TotalHours, 2) + " giờ";
-                                    }
+                                    detailText += ";" + Constants.TimeKeeper(item.Status);
                                 }
-                                else
+                                if (item.Mode != (int)ETimeWork.Normal && item.WorkDay < 1)
                                 {
-                                    if (item.WorkTime.TotalHours > 0)
-                                    {
-                                        detail += Math.Round(item.WorkTime.TotalHours, 2) + " giờ";
-                                        if (item.Mode == (int)ETimeWork.Sunday)
-                                        {
-                                            tangCaChuNhat += item.WorkTime.TotalHours;
-                                        }
-                                        else
-                                        {
-                                            tangCaLeTet += item.WorkTime.TotalHours;
-                                        }
-                                    }
+                                    detailText += ";" + Constants.WorkTimeMode(item.Mode);
+                                    detailText += ":" + item.SoNgayNghi;
                                 }
-                                // NOI LAM VIEC
-                                if (item.Logs != null && !string.IsNullOrEmpty(item.WorkplaceCode))
+                                if (!string.IsNullOrEmpty(detail))
                                 {
-                                    if (!string.IsNullOrEmpty(detail))
-                                    {
-                                        detail += ";";
-                                    }
-                                    detail += item.WorkplaceCode;
+                                    detailText += ";" + detail;
                                 }
-                                // LY DO
-                                if (!string.IsNullOrEmpty(item.Reason))
-                                {
-                                    if (!string.IsNullOrEmpty(detail))
-                                    {
-                                        detail += ";";
-                                    }
-                                    detail += item.Reason;
-                                }
-                                cell.SetCellValue(detail);
+                                cell.SetCellValue(detailText);
                                 cell.CellStyle = styleSmall;
                             }
 

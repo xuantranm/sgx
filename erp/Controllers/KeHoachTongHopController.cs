@@ -1358,6 +1358,74 @@ namespace erp.Controllers
 
             return Json(new { result = true, Errors });
         }
+
+        [Route(Constants.KeHoachTongHopLink.DuLieuKhoNguyenVatLieu+ "/" + Constants.ActionLink.Data)]
+        public async Task<IActionResult> DuLieuKhoNguyenVatLieuData(string Id)
+        {
+            #region Authorization
+            var login = User.Identity.Name;
+            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+            ViewData["LoginUserName"] = loginUserName;
+
+            var loginInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
+            if (loginInformation == null)
+            {
+                #region snippet1
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                #endregion
+                return RedirectToAction("login", "account");
+            }
+
+            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.KhoNguyenVatLieuDuLieu, (int)ERights.View)))
+            {
+                return RedirectToAction("AccessDenied", "Account");
+            }
+            #endregion
+
+            var viewModel = new KhoViewModel()
+            {
+                Name = "Kho nguyên vật liệu"
+            };
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        [Route(Constants.KeHoachTongHopLink.DuLieuKhoNguyenVatLieu + "/" + Constants.ActionLink.Data)]
+        public async Task<IActionResult> DuLieuKhoNguyenVatLieuData(KhoViewModel viewModel)
+        {
+            try
+            {
+                #region Authorization
+                var login = User.Identity.Name;
+                var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+                ViewData["LoginUserName"] = loginUserName;
+
+                var loginInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
+                if (loginInformation == null)
+                {
+                    #region snippet1
+                    await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                    #endregion
+                    return RedirectToAction("login", "account");
+                }
+
+                if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.KhoNguyenVatLieuDuLieu, (int)ERights.View)))
+                {
+                    return RedirectToAction("AccessDenied", "Account");
+                }
+                #endregion
+
+                var data = viewModel.KhoNguyenVatLieu;
+                dbContext.KhoNguyenVatLieus.InsertOne(data);
+
+                var href = "/" + Constants.KeHoachTongHopLink.Main + "/" + Constants.KeHoachTongHopLink.DuLieuKhoNguyenVatLieu;
+                return Json(new { result = true, source = "create", href, message = "Khởi tạo thành công" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { result = false, message = "Lỗi: " + ex.Message });
+            }
+        }
         #endregion
 
         #region KHO THANH PHAM

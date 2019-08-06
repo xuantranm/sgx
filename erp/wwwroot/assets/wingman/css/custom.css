@@ -1,4 +1,7 @@
-﻿.toplink .hotline {
+﻿.text-primary {
+    color: #f12639 !important;
+}
+.toplink .hotline {
     background: url("/images/phone.png") 0 0 no-repeat;
     padding-left: 25px;
     text-transform: uppercase;

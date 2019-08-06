@@ -21,6 +21,8 @@ namespace ViewModels
 
         public IList<PhongBan> PhongBans { get; set; }
 
+        public IList<PhongBanBoPhanDisplay> CoCaus { get; set; }
+
         public IList<BoPhan> BoPhans { get; set; }
 
         public IList<BoPhan> BoPhanCons { get; set; }
@@ -53,6 +55,8 @@ namespace ViewModels
         public string Kcn { get; set; }
 
         public string Pb { get; set; }
+
+        public string PbBp { get; set; }
 
         public string Bp { get; set; }
 

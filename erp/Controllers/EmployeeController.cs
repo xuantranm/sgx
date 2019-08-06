@@ -110,7 +110,7 @@ namespace erp.Controllers
             #region Dropdownlist
             var congtychinhanhs = dbContext.CongTyChiNhanhs.Find(m => m.Enable.Equals(true)).ToList();
             var khoichucnangs = dbContext.KhoiChucNangs.Find(m => m.Enable.Equals(true)).ToList();
-            var phongbans = dbContext.PhongBans.Find(m => m.Enable.Equals(true)).ToList();
+            var phongbans = dbContext.PhongBans.Find(m => m.Enable.Equals(true) && !string.IsNullOrEmpty(m.KhoiChucNangId)).ToList();
             var bophans = dbContext.BoPhans.Find(m => m.Enable.Equals(true) && string.IsNullOrEmpty(m.Parent)).ToList();
             var chucvus = dbContext.ChucVus.Find(m => m.Enable.Equals(true)).ToList();
             var employeeDdl = await dbContext.Employees.Find(m => m.Enable.Equals(true) && !m.UserName.Equals(Constants.System.account)).SortBy(m => m.FullName).ToListAsync();
@@ -503,7 +503,7 @@ namespace erp.Controllers
                     var trinhdo = string.Empty;
                     if (data.Certificates != null && data.Certificates.Count > 0)
                     {
-                        foreach(var item in data.Certificates)
+                        foreach (var item in data.Certificates)
                         {
                             if (!string.IsNullOrEmpty(item.Type))
                             {
@@ -778,7 +778,8 @@ namespace erp.Controllers
 
             #region Dropdownlist
             var congtychinhanhs = dbContext.CongTyChiNhanhs.Find(m => m.Enable.Equals(true)).ToList();
-            var khoichucnangs = dbContext.KhoiChucNangs.Find(m => m.Enable.Equals(true)).ToList();
+            var congtyE = congtychinhanhs.Where(m => m.Code.Equals("CT1")).FirstOrDefault();
+            var khoichucnangs = dbContext.KhoiChucNangs.Find(m => m.Enable.Equals(true) && m.CongTyChiNhanhId.Equals(congtyE.Id)).ToList();
             var phongbans = dbContext.PhongBans.Find(m => m.Enable.Equals(true)).ToList();
             var bophans = dbContext.BoPhans.Find(m => m.Enable.Equals(true) && string.IsNullOrEmpty(m.Parent)).ToList();
             var bophancons = dbContext.BoPhans.Find(m => m.Enable.Equals(true) && !string.IsNullOrEmpty(m.Parent)).ToList();
@@ -1144,7 +1145,8 @@ namespace erp.Controllers
 
             #region Dropdownlist
             var congtychinhanhs = dbContext.CongTyChiNhanhs.Find(m => m.Enable.Equals(true)).ToList();
-            var khoichucnangs = dbContext.KhoiChucNangs.Find(m => m.Enable.Equals(true)).ToList();
+            var congtyE = congtychinhanhs.Where(m => m.Code.Equals("CT1")).FirstOrDefault();
+            var khoichucnangs = dbContext.KhoiChucNangs.Find(m => m.Enable.Equals(true) && m.CongTyChiNhanhId.Equals(congtyE.Id)).ToList();
             var phongbans = dbContext.PhongBans.Find(m => m.Enable.Equals(true)).ToList();
             var bophans = dbContext.BoPhans.Find(m => m.Enable.Equals(true) && string.IsNullOrEmpty(m.Parent)).ToList();
             var bophancons = dbContext.BoPhans.Find(m => m.Enable.Equals(true) && !string.IsNullOrEmpty(m.Parent)).ToList();
@@ -1168,9 +1170,9 @@ namespace erp.Controllers
                 var chucvuE = dbContext.ChucVus.Find(m => m.Id.Equals(entity.ManagerId)).FirstOrDefault();
                 entity.ManagerInformation = chucvuE.Name;
                 var managerEmployee = dbContext.Employees.Find(m => m.ChucVu.Equals(entity.ManagerId)).FirstOrDefault();
-                if (managerEmployee!= null)
+                if (managerEmployee != null)
                 {
-                    entity.ManagerInformation += " (anh/chị " + managerEmployee.FullName +")";
+                    entity.ManagerInformation += " (anh/chị " + managerEmployee.FullName + ")";
                 }
             }
 
@@ -2734,5 +2736,94 @@ namespace erp.Controllers
             }
             return entity.Usage > 0 ? false : true;
         }
+
+        #region SO DO CO CAU CHUC NANG
+        [Route(Constants.LinkHr.CoCauChucNang)]
+        public async Task<IActionResult> CoCauChucNang(string Kcn, string PbBp, string Sortby)
+        {
+            var linkCurrent = string.Empty;
+
+            #region Authorization
+            var login = User.Identity.Name;
+            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+            ViewData["LoginUserName"] = loginUserName;
+
+            var loginInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
+            if (loginInformation == null)
+            {
+                #region snippet1
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                #endregion
+                return RedirectToAction("login", "account");
+            }
+
+            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.NhanSu, (int)ERights.View)))
+            {
+                return RedirectToAction("AccessDenied", "Account");
+            }
+
+            #endregion
+
+            #region Dropdownlist
+            var congtychinhanhs = dbContext.CongTyChiNhanhs.Find(m => m.Enable.Equals(true)).ToList();
+            var congtyE = congtychinhanhs.Where(m => m.Code.Equals("CT1")).FirstOrDefault();
+
+            var khoichucnangs = dbContext.KhoiChucNangs.Find(m => m.Enable.Equals(true) && m.CongTyChiNhanhId.Equals(congtyE.Id)).SortBy(m => m.Order).ToList();
+            var phongbans = dbContext.PhongBans.Find(m => m.Enable.Equals(true) && !string.IsNullOrEmpty(m.KhoiChucNangId)).ToList();
+            #endregion
+
+            #region Filter
+            //var builder = Builders<PhongBan>.Filter;
+            //var filter = builder.Eq(m => m.Enable, true);
+            //if (!string.IsNullOrEmpty(Kcn))
+            //{
+            //    filter = filter & builder.Eq(m => m.KhoiChucNangId, Kcn);
+            //    linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "";
+            //    linkCurrent += "Kcn=" + Kcn;
+            //}
+            //if (!string.IsNullOrEmpty(PbBp))
+            //{
+            //    filter = filter & builder.Eq(m => m.Id, PbBp);
+            //    linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "";
+            //    linkCurrent += "PbBp=" + PbBp;
+            //}
+            #endregion
+
+            #region Sort
+            //var sortBuilder = Builders<PhongBan>.Sort.Ascending(m => m.Code);
+            //if (!string.IsNullOrEmpty(Sortby))
+            //{
+            //    var sortField = Sortby.Split("-")[0];
+            //    var sort = Sortby.Split("-")[1];
+            //    switch (sortField)
+            //    {
+            //        case "code":
+            //            sortBuilder = sort == "asc" ? Builders<PhongBan>.Sort.Ascending(m => m.Code) : Builders<PhongBan>.Sort.Descending(m => m.Code);
+            //            break;
+            //        case "name":
+            //            sortBuilder = sort == "asc" ? Builders<PhongBan>.Sort.Ascending(m => m.Name) : Builders<PhongBan>.Sort.Descending(m => m.Name);
+            //            break;
+            //        default:
+            //            sortBuilder = sort == "asc" ? Builders<PhongBan>.Sort.Ascending(m => m.Code) : Builders<PhongBan>.Sort.Descending(m => m.Code);
+            //            break;
+            //    }
+            //}
+            #endregion
+
+            linkCurrent = !string.IsNullOrEmpty(linkCurrent) ? "?" + linkCurrent : linkCurrent;
+            var viewModel = new EmployeeViewModel
+            {
+                KhoiChucNangs = khoichucnangs,
+                PhongBans = phongbans,
+                CongTyChiNhanhs = congtychinhanhs,
+                Kcn = Kcn,
+                PbBp = PbBp,
+                LinkCurrent = linkCurrent
+            };
+
+            return View(viewModel);
+        }
+
+        #endregion
     }
 }
