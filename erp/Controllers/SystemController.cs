@@ -6,7 +6,6 @@ using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Hosting;
-using System.IO;
 using MongoDB.Driver;
 using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
@@ -14,11 +13,7 @@ using Data;
 using Models;
 using Common.Utilities;
 using ViewModels;
-using OfficeOpenXml;
-using Common.Enums;
 using Microsoft.AspNetCore.Authorization;
-using MimeKit;
-using MimeKit.Text;
 using Services;
 
 namespace erp.Controllers
@@ -51,8 +46,86 @@ namespace erp.Controllers
 
         #region UI
         [Route(Constants.LinkSystem.Mail)]
-        public ActionResult Email(string Status, string Id, string MaNv, string ToEmail, int Page, int Size)
+        public ActionResult Email(string PhongBan, string Status, string Id, string MaNv, string ToEmail, int Page, int Size)
         {
+            var phongbans = dbContext.PhongBans.Find(m => m.Enable.Equals(true)).ToList();
+            #region CC: HR & Boss (if All)
+            var tos = new List<EmailAddress>();
+            var ccs = new List<EmailAddress>();
+            var idsBoss = new List<string>();
+            var ngachLuongBoss = Constants.NgachLuongBoss.Split(';').Select(p => p.Trim()).ToList();
+            var builderBoss = Builders<Employee>.Filter;
+            var filterBoss = builderBoss.Eq(m => m.Enable, true)
+                        & builderBoss.Eq(m => m.Leave, false)
+                        & !builderBoss.Eq(m => m.UserName, Constants.System.account)
+                        & builderBoss.In(c => c.NgachLuongCode, ngachLuongBoss)
+                        & !builderBoss.Eq(m => m.Email, null)
+                        & !builderBoss.Eq(m => m.Email, string.Empty);
+            var fieldBoss = Builders<Employee>.Projection.Include(p => p.Id).Include(p => p.FullName).Include(p => p.Email);
+            var boss = dbContext.Employees.Find(filterBoss).Project<Employee>(fieldBoss).ToList();
+            foreach (var item in boss)
+            {
+                ccs.Add(new EmailAddress
+                {
+                    Name = item.FullName,
+                    Address = item.Email
+                });
+            }
+            idsBoss = boss.Select(m => m.Id).ToList();
+           
+
+            var hrs = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false)
+                            && !m.UserName.Equals(Constants.System.account)
+                            && m.PhongBan.Equals("5c88d094d59d56225c432414")
+                            && !string.IsNullOrEmpty(m.Email)).ToList();
+            // get ids right nhan su && (m.Expired.Equals(null) || m.Expired > DateTime.Now)
+            var builderR = Builders<RoleUser>.Filter;
+            var filterR = builderR.Eq(m => m.Enable, true)
+                        & builderR.Eq(m => m.Role, Constants.Rights.HR)
+                        & builderR.Eq(m => m.Action, Convert.ToInt32(Constants.Action.Edit))
+                        & builderR.Eq(m => m.Expired, null)
+                        | builderR.Gt(m => m.Expired, DateTime.Now);
+            var fieldR = Builders<RoleUser>.Projection.Include(p => p.User);
+            var idsR = dbContext.RoleUsers.Find(filterR).Project<RoleUser>(fieldR).ToList().Select(m => m.User).ToList();
+            foreach (var hr in hrs)
+            {
+                if (idsR.Contains(hr.Id))
+                {
+                    ccs.Add(new EmailAddress
+                    {
+                        Name = hr.FullName,
+                        Address = hr.Email
+                    });
+                }
+            }
+
+            idsR.AddRange(idsBoss);
+
+            var builderAll = Builders<Employee>.Filter;
+            var filterAll = builderAll.Eq(m => m.Enable, true)
+                        & builderAll.Eq(m => m.Leave, false)
+                        & !builderAll.Eq(m => m.UserName, Constants.System.account)
+                        & !builderAll.Eq(m => m.Email, null)
+                        & !builderAll.Eq(m => m.Email, string.Empty)
+                        & !builderAll.In(c => c.Id, idsR);
+            var fieldAll = Builders<Employee>.Projection.Include(p => p.FullName).Include(p => p.Email);
+            var allEmail = dbContext.Employees.Find(filterAll).Project<Employee>(fieldAll).ToList();
+            foreach (var item in allEmail)
+            {
+                tos.Add(new EmailAddress
+                {
+                    Name = item.FullName,
+                    Address = item.Email,
+                });
+            }
+
+            #endregion
+
+            var employees = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && !string.IsNullOrEmpty(m.Email)).ToList();
+
+            var kinhdoanhs = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && !string.IsNullOrEmpty(m.Email) && m.PhongBan.Equals("5c88d094d59d56225c43244b")).ToList();
+            var nhamays = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && !string.IsNullOrEmpty(m.Email) && m.CongTyChiNhanh.Equals("5c88d094d59d56225c43240b")).ToList();
+
             #region Filter
             var builder = Builders<ScheduleEmail>.Filter;
             var filter = builder.Eq(m => m.Enable, true);
@@ -94,15 +167,14 @@ namespace erp.Controllers
             {
                 list = dbContext.ScheduleEmails.Find(filter).ToList();
             }
-
-            var employees = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && !string.IsNullOrEmpty(m.Email)).ToList();
-            var kinhdoanhs = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && !string.IsNullOrEmpty(m.Email) && m.PhongBan.Equals("5c88d094d59d56225c43244b")).ToList();
-            var nhamays = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && !string.IsNullOrEmpty(m.Email) && m.CongTyChiNhanh.Equals("5c88d094d59d56225c43240b")).ToList();
+            
             var viewModel = new MailViewModel
             {
-                KinhDoanhs = kinhdoanhs,
+                PhongBans = phongbans,
+                PhongBan = PhongBan,
                 Employees = employees,
-                NhaMays = nhamays,
+                TOs = tos,
+                CCs = ccs,
                 ScheduleEmails = list,
                 Records = (int)records,
                 Pages = pages,

@@ -132,8 +132,10 @@ namespace xmailtimer
                 {
                     if (location == "NM")
                     {
-                        employees = employeesHrNM;
-                        employeesId = employeesIdHrNM;
+                        //employees = employeesHrNM;
+                        //employeesId = employeesIdHrNM;
+                        employees = employeesNM;
+                        employeesId = employeesIdNM;
                     }
                     else
                     {
@@ -235,7 +237,7 @@ namespace xmailtimer
 
             #region Step 1: Employee have email
             var listEmail = results.Where(m => !string.IsNullOrEmpty(m.Email)).ToList();
-            listEmail = new List<TimeKeeperDisplay>();
+            //listEmail = new List<TimeKeeperDisplay>();
             foreach (var employee in listEmail)
             {
                 string sFileName = @"bang-cham-cong";

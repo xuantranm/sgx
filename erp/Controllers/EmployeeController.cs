@@ -278,7 +278,7 @@ namespace erp.Controllers
 
             #region Filter
             var builder = Builders<Employee>.Filter;
-            var filter = !builder.Eq(i => i.UserName, Constants.System.account) & builder.Eq(m => m.Enable, true);
+            var filter = !builder.Eq(i => i.UserName, Constants.System.account) & builder.Eq(m => m.Enable, true) & builder.Eq(m => m.Leave, false);
             if (!string.IsNullOrEmpty(Ten))
             {
                 filter = filter & (builder.Eq(x => x.Email, Ten.Trim()) | builder.Regex(x => x.FullName, Ten.Trim()));

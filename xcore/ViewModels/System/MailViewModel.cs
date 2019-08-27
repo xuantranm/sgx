@@ -7,11 +7,13 @@ namespace ViewModels
 {
     public class MailViewModel
     {
-        public IList<Employee> KinhDoanhs { get; set; }
+        // Search email by phongban
+        public IList<PhongBan> PhongBans { get; set; }
 
         public IList<Employee> Employees { get; set; }
 
-        public IList<Employee> NhaMays { get; set; }
+        public IList<EmailAddress> TOs { get; set; }
+        public IList<EmailAddress> CCs { get; set; }
 
         public IList<ScheduleEmail> ScheduleEmails { get; set; }
 
@@ -20,6 +22,8 @@ namespace ViewModels
         public string Status { get; set; }
 
         public string Id { get; set; }
+
+        public string PhongBan { get; set; }
 
         public string MaNv { get; set; }
 
