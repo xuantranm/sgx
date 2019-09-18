@@ -29,7 +29,7 @@ namespace xdatafix
 
             //UpdateLeave(connection, database);
 
-            UpdateChucVuEmployee(connection, database);
+            //UpdateChucVuEmployee(connection, database);
 
             //UpdateManager(connection, database);
 
@@ -66,7 +66,7 @@ namespace xdatafix
             //UpdateEmployeeDepartmentAlias(connection, database);
             //UpdateTimerDepartmentAlias(connection, database);
             //UpdateTimekeepingCode(connection, database);
-            //AddHoliday(connection, database);
+            AddHoliday(connection, database);
             //UpdateTetTay(connection, database);
             //UpdateLocationTimer(connection, database);
             //UpdateUpperCaseTimer(connection, database);
@@ -1706,31 +1706,31 @@ namespace xdatafix
 
             dbContext.Holidays.InsertOne(new Holiday
             {
-                Date = new DateTime(2019, 4, 14),
-                Name = "Giỗ Tổ Hùng Vương",
-                Detail = "Mùng 10 tháng 3"
+                Date = new DateTime(2019, 9, 2),
+                Name = "Ngày Quốc khánh",
+                Detail = "Ngày Quốc khánh"
             });
 
-            dbContext.Holidays.InsertOne(new Holiday
-            {
-                Date = new DateTime(2019, 4, 15),
-                Name = "Nghỉ bù Giỗ Tổ Hùng Vương",
-                Detail = "Nghỉ bù chủ nhật"
-            });
+            //dbContext.Holidays.InsertOne(new Holiday
+            //{
+            //    Date = new DateTime(2019, 4, 15),
+            //    Name = "Nghỉ bù Giỗ Tổ Hùng Vương",
+            //    Detail = "Nghỉ bù chủ nhật"
+            //});
 
-            dbContext.Holidays.InsertOne(new Holiday
-            {
-                Date = new DateTime(2019, 4, 30),
-                Name = "Ngày Giải phóng miền Nam thống nhất Đất nước 30/04",
-                Detail = ""
-            });
+            //dbContext.Holidays.InsertOne(new Holiday
+            //{
+            //    Date = new DateTime(2019, 4, 30),
+            //    Name = "Ngày Giải phóng miền Nam thống nhất Đất nước 30/04",
+            //    Detail = ""
+            //});
 
-            dbContext.Holidays.InsertOne(new Holiday
-            {
-                Date = new DateTime(2019, 5, 1),
-                Name = "Ngày Quốc tê Lao động 01/05",
-                Detail = ""
-            });
+            //dbContext.Holidays.InsertOne(new Holiday
+            //{
+            //    Date = new DateTime(2019, 5, 1),
+            //    Name = "Ngày Quốc tê Lao động 01/05",
+            //    Detail = ""
+            //});
         }
 
         static void UpdateTimekeepingCode(string connection, string database)
