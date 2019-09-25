@@ -442,6 +442,14 @@ namespace Data
             }
         }
 
+        public IMongoCollection<Right> Rights
+        {
+            get
+            {
+                return _database.GetCollection<Right>("Rights");
+            }
+        }
+
         // Store all change employee
         // Get newest by [UpdatedOn]
         // Check chance base current Employee vs newest history.

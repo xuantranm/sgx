@@ -7,6 +7,23 @@ namespace Common.Utilities
     {
         public static string VersionJs = "v-" + DateTime.Now.Ticks;
 
+        public static class Controllers
+        {
+            public const string Account = "account";
+        }
+
+        public static class ActionViews
+        {
+            public const string Login = "login";
+            public const string IsLogin = "isLogin";
+            public const string IsRight = "isRight"; // login as
+            public const string IsSystem = "isSys"; // login as
+            public const string Domain = "domain";
+            public const string ImagesFolder = "imagesFolder";
+            public const string UserName = "userName";
+            public const string GodMode = "godmode";
+        }
+
         public static decimal RoundOff(this decimal i)
         {
             return Convert.ToDecimal((Math.Round((double)i / 10.0)) * 10);

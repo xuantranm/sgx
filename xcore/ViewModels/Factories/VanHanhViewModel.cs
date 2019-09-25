@@ -7,43 +7,43 @@ namespace ViewModels
 {
     public class VanHanhViewModel : ExtensionViewModel
     {
-        public IList<FactoryVanHanh> List { get; set; }
+        public IList<FactoryVanHanh> FactoryVanHanhs { get; set; }
 
         #region Dropdownlist
-        public IList<FactoryWork> Works { get; set; }
-        public IList<FactoryStage> Stages { get; set; }
-        public IList<FactoryMotorVehicle> Vehicles { get; set; }
-        public IList<FactoryProduct> Products { get; set; }
+        public IList<Category> Works { get; set; }
+        public IList<Category> Stages { get; set; }
+        public IList<Category> Vehicles { get; set; }
+        public IList<Category> Products { get; set; }
         #endregion
 
         #region Search
-        public string ca { get; set; }
+        public string Ca { get; set; }
 
-        public string calamviec { get; set; }
+        public string Calamviec { get; set; }
 
-        public string cv { get; set; }
+        public string Cv { get; set; }
 
-        public string cd { get; set; }
+        public string Cd { get; set; }
 
-        public string xm { get; set; }
+        public string Xm { get; set; }
 
-        public string nvl { get; set; }
+        public string Nvl { get; set; }
 
-        public string lot { get; set; }
+        public string Lot { get; set; }
 
-        public string phieuinca { get; set; }
+        public string Phieuinca { get; set; }
 
-        public DateTime? from { get; set; }
+        public DateTime? Tu { get; set; }
 
-        public DateTime? to { get; set; }
+        public DateTime? Den { get; set; }
 
-        public int page { get; set; }
+        public int Trang { get; set; }
 
-        public int size { get; set; }
+        public int Dong { get; set; }
 
-        public string sortField { get; set; }
+        public string SapXep { get; set; }
 
-        public string sort { get; set; }
+        public string ThuTu { get; set; }
         #endregion
 
         public int Records { get; set; }

@@ -1,6 +1,21 @@
 ﻿
 namespace Common.Enums
 {
+    public enum ERightType
+    {
+        User = 1,
+        ChucVu = 2
+    }
+
+    public enum ECategory
+    {
+        Ca = 1,
+        CongDoan = 2,
+        CongViec = 3,
+        Xe = 4,
+        PhanLoaiXe = 5
+    }
+
     public enum ENotification
     {
         None = 0,

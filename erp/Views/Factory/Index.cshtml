@@ -12,6 +12,7 @@
     var rightDataKhoHangTraVe = false;
     var rightDataKhoBun = false;
     var rightDataTramCan = false;
+    var rightDataVanHanh = false;
     if (!string.IsNullOrEmpty(login))
     {
         rightDataKhoNguyenVatLieu = Utility.IsRight(login, Constants.Rights.KhoNguyenVatLieuDuLieu, (int)ERights.View);
@@ -19,6 +20,7 @@
         rightDataKhoHangTraVe = Utility.IsRight(login, Constants.Rights.KhoHangTraVeDuLieu, (int)ERights.View);
         rightDataKhoBun = Utility.IsRight(login, Constants.Rights.KhoBunDuLieu, (int)ERights.View);
         rightDataTramCan = Utility.IsRight(login, Constants.Rights.TramCanDuLieu, (int)ERights.View);
+        rightDataVanHanh = true;
     }
 }
 
@@ -27,7 +29,17 @@
         <div class="container">
             <div class="row">
                 <div class="col-12 col-md-4">
-                    <h3>Lối tắt</h3>
+                    <h3>Đường dẫn</h3>
+                    @if (rightDataVanHanh)
+                    {
+                        <div class="row mb-2">
+                            <div class="col-12">
+                                <a href="/@Constants.LinkFactory.Main/@Constants.LinkFactory.VanHanh" class="btn btn-block btn-outline-info">
+                                    DỮ LIỆU VẬN HÀNH
+                                </a>
+                            </div>
+                        </div>
+                    }
                     @if (rightDataKhoNguyenVatLieu)
                     {
                         <div class="row mb-2">

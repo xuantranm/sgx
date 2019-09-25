@@ -16,3 +16,12 @@ D:\Projects\Sgx\sourcecode\sgx\xcore\obj\Debug\netcoreapp2.1\xcore.AssemblyInfo.
 D:\Projects\Sgx\sourcecode\sgx\xcore\obj\Debug\netcoreapp2.1\xcore.dll
 D:\Projects\Sgx\sourcecode\sgx\xcore\obj\Debug\netcoreapp2.1\xcore.pdb
 D:\Projects\Sgx\sourcecode\sgx\xcore\obj\Debug\netcoreapp2.1\xcore.csprojAssemblyReference.cache
+D:\projects\sgx\xcore\bin\Debug\netcoreapp2.1\xcore.deps.json
+D:\projects\sgx\xcore\bin\Debug\netcoreapp2.1\xcore.dll
+D:\projects\sgx\xcore\bin\Debug\netcoreapp2.1\xcore.pdb
+D:\projects\sgx\xcore\obj\Debug\netcoreapp2.1\xcore.csprojAssemblyReference.cache
+D:\projects\sgx\xcore\obj\Debug\netcoreapp2.1\xcore.csproj.CoreCompileInputs.cache
+D:\projects\sgx\xcore\obj\Debug\netcoreapp2.1\xcore.AssemblyInfoInputs.cache
+D:\projects\sgx\xcore\obj\Debug\netcoreapp2.1\xcore.AssemblyInfo.cs
+D:\projects\sgx\xcore\obj\Debug\netcoreapp2.1\xcore.dll
+D:\projects\sgx\xcore\obj\Debug\netcoreapp2.1\xcore.pdb

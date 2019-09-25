@@ -30,11 +30,12 @@ using System.Threading;
 using Common.Enums;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using MongoDB.Bson;
+using Controllers;
 
 namespace erp.Controllers
 {
     [Route(Constants.LinkFactory.Main)]
-    public class FactoryController : Controller
+    public class FactoryController : BaseController
     {
         MongoDBContext dbContext = new MongoDBContext();
         private readonly IDistributedCache _cache;
@@ -417,22 +418,38 @@ namespace erp.Controllers
         [Route(Constants.LinkFactory.VanHanh)]
         public async Task<IActionResult> VanHanh(string ca, string calamviec, string cv, string cd, string xm, string lot, string phieuinca, string nvl, DateTime? from, DateTime? to, int? page, int? size, string sortField, string sort)
         {
-            if (!page.HasValue)
+            #region Login Information
+            LoginInit("van-hanh", (int)ERights.View);
+            if (!(bool)ViewData[Constants.ActionViews.IsLogin])
             {
-                page = 1;
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                return RedirectToAction(Constants.ActionViews.Login, Constants.Controllers.Account);
             }
-            if (!size.HasValue)
+            if (!(bool)ViewData[Constants.ActionViews.IsRight])
             {
-                size = 10;
+                return RedirectToAction("Index", "Home");
             }
-            if (!from.HasValue)
-            {
-                from = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1).AddMonths(-4); ;
-            }
-            if (!to.HasValue)
-            {
-                to = from.Value.AddMonths(1).AddDays(-1);
-            }
+            #endregion
+
+            var linkCurrent = string.Empty;
+
+            //if (!page.HasValue)
+            //{
+            //    page = 1;
+            //}
+            //if (!size.HasValue)
+            //{
+            //    size = 10;
+            //}
+            //if (!from.HasValue)
+            //{
+            //    from = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1).AddMonths(-4); ;
+            //}
+            //if (!to.HasValue)
+            //{
+            //    to = from.Value.AddMonths(1).AddDays(-1);
+            //}
+
             #region Filter
             var builder = Builders<FactoryVanHanh>.Filter;
             var filter = builder.Eq(m => m.Enable, true);
@@ -498,15 +515,15 @@ namespace erp.Controllers
 
             var viewModel = new VanHanhViewModel
             {
-                List = await dbContext.FactoryVanHanhs.Find(filter).Skip((page - 1) * size).Limit(size).Sort(sortBuilder).ToListAsync(),
+                FactoryVanHanhs = await dbContext.FactoryVanHanhs.Find(filter).Skip((page - 1) * size).Limit(size).Sort(sortBuilder).ToListAsync(),
                 Works = works,
                 Stages = stages,
                 Vehicles = vehicles,
                 Products = products,
                 Records = (int)records,
                 Pages = pages,
-                from = from,
-                to = to
+                Tu = from,
+                Den = to
             };
 
             return View(viewModel);
