@@ -7,7 +7,13 @@
 
 @{
     ViewData["title"] = "CÔNG | CÔNG TY TNHH CNSH SÀI GÒN XANH";
-    var login = User.Identity.Name;
+    var currentcrumb = "Công";
+    var approvecheck = string.Empty;
+    if (!Model.IsMe)
+    {
+        currentcrumb = "Công " + Model.Employee.FullName;
+        approvecheck = "d-none";
+    }
     var lastUpdated = DateTime.Now.ToString("dd/MM/yyyy");
     double dayworking = ViewBag.DayWorking;
     double workday = ViewBag.DayWorking;
@@ -55,8 +61,11 @@
                         <li class="breadcrumb-item">
                             <a href="/">Trang chủ</a>
                         </li>
+                        <li class="breadcrumb-item">
+                            <a href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Index">Công</a>
+                        </li>
                         <li class="breadcrumb-item active" aria-current="page">
-                            Công
+                            @currentcrumb
                         </li>
                     </ol>
                 </div>
@@ -165,23 +174,42 @@
                     </div>
                 </div>
                 <div class="col-12 col-md-6">
+                    @if (Model.RightRequest)
+                    {
+                        <form method="get" action="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Index" id="form-main">
+                            <div class="form-group">
+                                <label class="col-form-label">Nhân viên</label>
+                                <select asp-for="Id" class="form-control form-control-lg js-select2-basic-single ddl-employees">
+                                    <option value="">Chọn</option>
+                                    @foreach (var employee in Model.Employees)
+                                    {
+                                        string displayTitle = string.Empty;
+                                        if (!string.IsNullOrEmpty(employee.Email))
+                                        {
+                                            displayTitle += "- " + employee.Email + "";
+                                        }
+                                        <option value="@employee.Id">@employee.FullName @displayTitle</option>
+                                    }
+                                </select>
+                                </div>
+                            <div class="form-group">
+                                <label class="col-sm-1 col-form-label">Tháng</label>
+                                <select asp-for="Thang" class="form-control form-control-lg js-select2-basic-single ddl-times">
+                                    @foreach (var item in Model.MonthYears)
+                                    {
+                                        <option value="@item.Month-@item.Year">@item.Month/@item.Year</option>
+                                    }
+                                </select>
+                            </div>
+                        </form>
+                    }
+
                     @if (Model.RightManager)
                     {
                         <div class="row mb-2">
                             <div class="col-12">
-                                <a href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Timer" class="btn btn-block btn-outline-info" data-toggle="tooltip" title="Bấm vô xác nhận công cho nhân viên khác.">
+                                <a href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Timer" class="btn btn-block btn-lg btn-outline-info" data-toggle="tooltip" title="Bấm vô xác nhận công cho nhân viên khác.">
                                     <i class="fas fa-calculator"></i> BẢNG CÔNG
-                                </a>
-                            </div>
-                        </div>
-                    }
-
-                    @if (Model.RightRequest)
-                    {
-                        <div class="row mb-2">
-                            <div class="col-12">
-                                <a href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.HelpTime" class="btn btn-block btn-outline-info" data-toggle="tooltip" title="Bấm vô xác nhận công cho nhân viên khác.">
-                                    <i class="fas fa-hands-helping"></i> CÔNG NHÂN VIÊN KHÁC
                                 </a>
                             </div>
                         </div>
@@ -200,7 +228,7 @@
 
                     <div class="row mb-2">
                         <div class="col-12">
-                            <a href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Overtime" class="btn btn-block btn-outline-info"><i class="fas fa-user-clock"></i> TĂNG CA</a>
+                            <a href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Overtime" class="btn btn-block btn-lg btn-outline-info"><i class="fas fa-user-clock"></i> TĂNG CA</a>
                         </div>
                     </div>
 
@@ -208,7 +236,7 @@
                     {
                         <div class="row mb-2">
                             <div class="col-12">
-                                <a href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.OvertimeEmployee" class="btn btn-block btn-outline-info" data-toggle="tooltip" title="Tăng ca cho nhân viên.">
+                                <a href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.OvertimeEmployee" class="btn btn-block btn-lg btn-outline-info" data-toggle="tooltip" title="Tăng ca cho nhân viên.">
                                     <i class="fas fa-user-clock"></i> TĂNG CA NHÂN VIÊN
                                 </a>
                             </div>
@@ -219,7 +247,7 @@
                     {
                         <div class="row mb-2">
                             <div class="col-12">
-                                <a href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Overtime/@Constants.LinkTimeKeeper.Security" class="btn btn-block btn-outline-info" data-toggle="tooltip" title="Tăng ca cho nhân viên.">
+                                <a href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Overtime/@Constants.LinkTimeKeeper.Security" class="btn btn-block btn-lg btn-outline-info" data-toggle="tooltip" title="Tăng ca cho nhân viên.">
                                     <i class="fas fa-user-clock"></i> KIỂM SOÁT TĂNG CA
                                 </a>
                             </div>
@@ -233,17 +261,18 @@
                     <div>
                         <h6>Lịch sử chấm công</h6>
                     </div>
-                    <form class="d-flex align-items-center" method="get" action="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Index" id="form-main">
-                        <span class="mr-2 text-muted text-small text-nowrap">Tháng:</span>
-                        <select asp-for="Thang" class="custom-select ddl-times">
-                            @{
-                                foreach (var item in Model.MonthYears)
+                    @if (Model.IsMe)
+                    {
+                        <form class="d-flex align-items-center" method="get" action="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Index" id="form-main">
+                            <span class="mr-2 text-muted text-small text-nowrap">Tháng:</span>
+                            <select asp-for="Thang" class="custom-select ddl-times">
+                                @foreach (var item in Model.MonthYears)
                                 {
                                     <option value="@item.Month-@item.Year">@item.Month/@item.Year</option>
                                 }
-                            }
-                        </select>
-                    </form>
+                            </select>
+                        </form>
+                    }
                 </div>
             </div>
 
@@ -301,10 +330,6 @@
                                                         if (log.Status == (int)EStatusWork.XacNhanCong)
                                                         {
                                                             if (log.Month == currentMonth || today <= endDateRequest)
-                                                            {
-                                                                <input type="button" class="btn btn-sm btn-danger" value="Xác nhận công" data-toggle="modal" data-target="#requestTimeKeeperModal" data-id="@log.Id" />
-                                                            }
-                                                            else if (login == "5b6bb22fe73a301f941c5885")
                                                             {
                                                                 <input type="button" class="btn btn-sm btn-danger" value="Xác nhận công" data-toggle="modal" data-target="#requestTimeKeeperModal" data-id="@log.Id" />
                                                             }
@@ -478,8 +503,13 @@
             }
             else
             {
-                <div class="alert alert-light" role="alert">
-                    Không có dữ liệu hoặc bạn thuộc danh sách không chấm công.
+                <div class="row">
+                    <div class="col-12">
+                        <i class="far fa-clock"></i>
+                        <span>
+                            Không có dữ liệu hoặc bạn thuộc danh sách không chấm công.
+                        </span>
+                    </div>
                 </div>
             }
 
@@ -500,6 +530,7 @@
 
 <script id="tmplDataItem" type="text/x-jsrender">
     <input type="hidden" class="hidLogId" name="EmployeeWorkTimeLog.Id" value="{{:id}}" />
+    <input type="hidden" name="EmployeeWorkTimeLog.EmployeeId" value="@Model.Id" />
     <div class="from-group">
         <label class="control-label">Thông tin xác nhận công</label>
     </div>
@@ -546,7 +577,8 @@
         <label class="control-label">Chi tiết</label>
         <textarea name="EmployeeWorkTimeLog.ReasonDetail" class="form-control js-auto-size">{{:reasonDetail}}</textarea>
     </div>
-    <div class="form-group">
+
+    <div class="form-group approve-item @approvecheck">
         <label class="control-label">Người xác nhận</label>
         <select name="EmployeeWorkTimeLog.ConfirmId" class="form-control ddl-approve-xac-nhan-cong">
             <option value="">Chọn</option>
@@ -582,7 +614,7 @@
 @section scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
-        <script type="text/javascript" src="~/js/timer/timekeeper.js?@DateTime.Now.Ticks"></script>
+        <script type="text/javascript" src="~/js/timer/timekeeper.js?@Constants.VersionJs"></script>
     }
 }
 

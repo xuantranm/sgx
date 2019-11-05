@@ -1,0 +1,164 @@
+﻿@using System.Globalization;
+@using Common.Utilities;
+@using ViewModels
+@model ContentViewModel
+
+@{
+
+}
+
+@Html.ValidationSummary()
+
+<div class="main-container">
+    <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="/">Home</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">
+                            <a href="/content">Nội dung</a>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section>
+        <div class="container">
+            <div class="row mb-3">
+                <div class="col-12">
+                    <a href="/content/data" class="btn btn-success">
+                        <i class="icon-add-to-list mr-1"></i> Tạo mới
+                    </a>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-12">
+                    <a href="/content/logo" class="btn btn-success">
+                        <i class="icon-add-to-list mr-1"></i> Logo
+                    </a>
+                </div>
+            </div>
+
+            <!-- FILTER  & SORTER -->
+            <form method="get" action="/content" id="form-main">
+                <input asp-for="PageCurrent" type="hidden" value="1" />
+                <input asp-for="SapXep" class="sap-xep" type="hidden" />
+                <input asp-for="ThuTu" class="thu-tu" type="hidden" />
+                <div class="row">
+                    <div class="col-12">
+                        <span class="badge badge-primary">Tìm kiếm:</span>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4 col-sm-6 col-xs-12">
+                        <span class="mr-2 text-muted text-small text-nowrap">Doanh mục</span>
+                        <select class="form-control form-control-lg js-select2-basic-single" asp-for="Category">
+                            <option value="">Tất cả</option>
+                            @foreach (var item in Model.Categories)
+                            {
+                                <option value="@item.Id">@item.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-4 col-sm-6 col-xs-12">
+                        <span class="mr-2 text-muted text-small text-nowrap">Từ khóa:</span>
+                        <input asp-for="Name" class="form-control form-control-lg" onfocusout="formSubmit();" />
+                        <small>[Enter], [Tab] hoặc rê chuột ra để tìm kiếm</small>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12">
+                        <span>Sắp xếp theo: </span>
+                        @{
+                            var sortFlagKeyDesc = "badge-default";
+                            if (Model.SapXep == "key" && Model.ThuTu == "desc")
+                            {
+                                sortFlagKeyDesc = "badge-success";
+                            }
+                            var sortFlagKeyAsc = "badge-default";
+                            if (Model.SapXep == "key" && Model.ThuTu == "asc")
+                            {
+                                sortFlagKeyAsc = "badge-success";
+                            }
+                            <a href="javascript:;" data-sortby="ton" data-sortorder="asc" class="btn-sort">
+                                <span class="badge @sortFlagKeyAsc"><i class="fas fa-sort-alpha-up"></i> Từ khóa tăng dần</span>
+                            </a>
+                            <a href="javascript:;" data-sortby="ton" data-sortorder="desc" class="btn-sort">
+                                <span class="badge @sortFlagKeyDesc"><i class="fas fa-sort-alpha-down"></i> Từ khóa giảm dần</span>
+                            </a>
+                        }
+                    </div>
+                </div>
+            </form>
+
+            <div class="row">
+                <div class="col-12">Tìm thấy <span class="badge badge-info">@Model.Records</span> kết quả.</div>
+                <div class="col-12 table-responsive mb-1">
+                    <table class="table table-sm table-striped table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th scope="col"></th>
+                                <th scope="col">Hình ảnh</th>
+                                <th scope="col">Code</th>
+                                <th scope="col">Link</th>
+                                <th scope="col">Doanh mục</th>
+                                <th scope="col">Mô tả</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.Contents)
+                            {
+                                var link = Constants.https + item.Domain + "/" + item.Alias;
+                                <tr>
+                                    <td>
+                                        <a href="/content/data?Id=@item.Id"><i class="fas fa-edit"></i></a>
+                                    </td>
+                                    <td>
+                                        <a class="media align-items-center" href="@link" target="_blank">
+                                            @{
+                                                var src = "http://via.placeholder.com/48x30";
+                                                if (item.Contents != null && item.Contents.Count > 0)
+                                                {
+                                                    var content = item.Contents.FirstOrDefault();
+                                                    if (content != null)
+                                                    {
+                                                        var images = content.Imgs;
+                                                        if (images != null && images.Count > 0)
+                                                        {
+                                                            var image = images.Where(m => m.Main.Equals(true)).FirstOrDefault();
+                                                            if (image != null)
+                                                            {
+                                                                src = "/" + image.Path.Replace("\\", "/") + "/" + image.FileName;
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            <img src="@src" class="thumbnail" />
+                                        </a>
+                                    </td>
+                                    <td>@item.Code</td>
+                                    <td><a href="@link" target="_blank">@item.Alias</a></td>
+                                    <td>@item.CategoryName</td>
+                                    <td>@Constants.Truncate(item.Description, 100)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+@section scripts {
+    <script type="text/javascript" src="~/js/content.js?@Constants.VersionJs"></script>
+}
+

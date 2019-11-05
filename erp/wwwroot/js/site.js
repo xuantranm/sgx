@@ -142,7 +142,7 @@ function loadCommonData() {
             }
             else {
                 if (data.length !== 0) {
-                    $('.card-info').html($.templates("#tmplCardInfo").render(data.userInformation));
+                    $('.card-info').html($.templates("#tmplCardInfo").render(data));
                     $('#ownerInfo li').html($.templates("#tmplOwnerInfo").render(data));
                 }
             }
@@ -169,39 +169,54 @@ function registerDatePicker() {
     });
 }
 
-//const num2Word2 = function () {
-//    var t = ["không", "một", "hai", "ba", "bốn", "năm", "sáu", "bảy", "tám", "chín"],
-//        r = function (r, n) {
-//            var o = "",
-//                a = Math.floor(r / 10),
-//                e = r % 10;
-//            return a > 1 ? (o = " " + t[a] + " mươi", 1 == e && (o += " mốt")) : 1 == a ? (o = " mười", 1 == e && (o += " một")) : n && e > 0 && (o = " lẻ"), 5 == e && a >= 1 ? o += " lăm" : 4 == e && a >= 1 ? o += " tư" : (e > 1 || 1 == e && 0 == a) && (o += " " + t[e]), o
-//        },
-//        n = function (n, o) {
-//            var a = "",
-//                e = Math.floor(n / 100),
-//                n = n % 100;
-//            return o || e > 0 ? (a = " " + t[e] + " trăm", a += r(n, !0)) : a = r(n, !1), a;
-//        },
-//        o = function (t, r) {
-//            var o = "",
-//                a = Math.floor(t / 1e6),
-//                t = t % 1e6;
-//            a > 0 && (o = n(a, r) + " triệu", r = !0);
-//            var e = Math.floor(t / 1e3),
-//                t = t % 1e3;
-//            return e > 0 && (o += n(e, r) + " ngàn", r = !0), t > 0 && (o += n(t, r)), o
-//        };
-//    return {
-//        convert: function (r) {
-//            if (0 == r) return t[0];
-//            var n = "",
-//                a = "";
-//            do ty = r % 1e9, r = Math.floor(r / 1e9), n = r > 0 ? o(ty, !0) + a + n : o(ty, !1) + a + n, a = " tỷ"; while (r > 0);
-//            return n.trim()
-//        }
-//    };
-//}();
+function setValueDatePicker() {
+    $('.datepicker').each(function (i, obj) {
+        var date = moment($(obj).datepicker('getFormattedDate'), 'DD-MM-YYYY');
+        $('.hidedatepicker', $(obj).closest('.form-group')).val(
+            date.format('MM-DD-YYYY')
+        );
+    });
+}
+
+function eventAutocomplete() {
+    // https://www.devbridge.com/sourcery/components/jquery-autocomplete/
+    //$('#autocomplete').autocomplete({
+    //    serviceUrl: '/autocomplete/countries',
+    //    onSelect: function (suggestion) {
+    //        alert('You selected: ' + suggestion.value + ', ' + suggestion.data);
+    //    }
+    //});
+
+    $('.autocomplete').on("focus", function () {
+        $(this).autocomplete({
+            source: function (request, response) {
+                $.ajax({
+                    url: "/api/employees/",
+                    data: {
+                        type: $(this).data('type'),
+                        term: request.term
+                    },
+                    success: function (data) {
+                        response(data.outputs);
+                    }
+                });
+            },
+            minLength: 2,
+            focus: function (event, ui) {
+                $(this).val(ui.item.fullName);
+                return false;
+            },
+            select: function (event, ui) {
+                //$('#name').val(ui.item.name);
+                return false;
+            }
+        }).autocomplete("instance")._renderItem = function (ul, item) {
+            return $("<li>")
+                .append("<div>" + item.fullName + "<br>" + item.email + " - " + item.title + "</div>")
+                .appendTo(ul);
+        };
+    });
+}
 
 function capitalizeFirstLetter(string) {
     return string[0].toUpperCase() + string.slice(1);
@@ -342,44 +357,244 @@ function resetFormUpload(parent) {
     $('input', parent).prop('disabled', false);
     $('.btn-upload-process', parent).addClass('d-none');
 }
-// END UPLOAD FILE
 
-function eventAutocomplete() {
-    // https://www.devbridge.com/sourcery/components/jquery-autocomplete/
-    //$('#autocomplete').autocomplete({
-    //    serviceUrl: '/autocomplete/countries',
-    //    onSelect: function (suggestion) {
-    //        alert('You selected: ' + suggestion.value + ', ' + suggestion.data);
-    //    }
-    //});
+// UPLOAD FILE
+function changeImg(element, entity) {
+    var parent = $(element).closest('.content');
+    var eCode = $('.hid-newE', parent).val();
+    imagesPreview(entity, element, eCode, '.list-' + eCode, 11);
+}
 
-    $('.autocomplete').on("focus", function () {
-        $(this).autocomplete({
-            source: function (request, response) {
-                $.ajax({
-                    url: "/api/employees/",
-                    data: {
-                        type: $(this).data('type'),
-                        term: request.term
-                    },
-                    success: function (data) {
-                        response(data.outputs);
-                    }
-                });
-            },
-            minLength: 2,
-            focus: function (event, ui) {
-                $(this).val(ui.item.fullName);
-                return false;
-            },
-            select: function (event, ui) {
-                //$('#name').val(ui.item.name);
+function changeImgSingle(element, entity) {
+    var parent = $(element).closest('.image-single-div');
+    var eCode = $('.hid-no-single', parent).val();
+    var typeSize = $('.hid-type-size-single', parent).val();
+    imagesPreviewSingle(entity, element, eCode, '.image-single-' + eCode, typeSize);
+}
+
+function changeImgProfile(element) {
+    var parent = $(element).closest('.custom-file');
+    var typeSize = $('.hid-type-size-file', parent).val();
+    console.log(typeSize);
+    imagesProfile(element, typeSize);
+}
+
+var imagesPreview = function (model, input, entity, placeToInsertImagePreview, imageControlType) {
+    if (input.files) {
+        var filesLenght = input.files.length;
+        for (i = 0; i < filesLenght; i++) {
+            if (!input.files[i].type.match('image.*')) {
+                continue;
+            }
+            var name = input.files[i].name;
+            var size = input.files[i].size;
+            var typeFile = input.files[i].type;
+            if (size > 2000000) {
+                alert("Please upload file less than 2MB. Thanks!!");
                 return false;
             }
-        }).autocomplete("instance")._renderItem = function (ul, item) {
-            return $("<li>")
-                .append("<div>" + item.fullName + "<br>" + item.email + " - " + item.title + "</div>")
-                .appendTo(ul);
-        };
+
+            var lengthElement = $('.codeNum', placeToInsertImagePreview).length;
+            var newcodenum = lengthElement;
+            var reader = new FileReader();
+            reader.onload = function (event) {
+                var dataimg = event.target.result;
+                var data = { model: model, entity: entity, codeNum: newcodenum, type: imageControlType, dataimg: dataimg, name, size, typeFile };
+                $(placeToInsertImagePreview).prepend($.templates("#tmplImage").render(data));
+                newcodenum++;
+                autoGenNumber(placeToInsertImagePreview);
+                mainDefault(placeToInsertImagePreview);
+                mainImg();
+                deleteImg();
+            };
+
+            reader.readAsDataURL(input.files[i]);
+        }
+    }
+};
+
+var imagesPreviewSingle = function (model, input, entity, placeToInsertImagePreview, imageControlType) {
+    if (input.files) {
+        var filesLenght = input.files.length;
+        for (i = 0; i < filesLenght; i++) {
+            if (!input.files[i].type.match('image.*')) {
+                continue;
+            }
+            var name = input.files[i].name;
+            var size = input.files[i].size;
+            var typeFile = input.files[i].type;
+            if (size > 2000000) {
+                alert("Please upload file less than 2MB. Thanks!!");
+                return false;
+            }
+            var lengthElement = $('.hid-no-single').length;
+            console.log(lengthElement);
+            var newcodenum = lengthElement;
+
+            var reader = new FileReader();
+            reader.onload = function (event) {
+                var dataimg = event.target.result;
+                var data = { model: model, entity: entity, codeNum: newcodenum, type: imageControlType, dataimg: dataimg, name, size, typeFile };
+                $(placeToInsertImagePreview).prepend($.templates("#tmplImageSingle").render(data));
+                newcodenum++;
+                autoGenNumber(placeToInsertImagePreview);
+                mainDefault(placeToInsertImagePreview);
+                mainImg();
+                deleteImg();
+            };
+
+            reader.readAsDataURL(input.files[i]);
+        }
+    }
+};
+
+var imagesProfile = function (input, imageControlType) {
+    if (input.files) {
+        var filesLenght = input.files.length;
+        for (i = 0; i < filesLenght; i++) {
+            if (!input.files[i].type.match('image.*')) {
+                continue;
+            }
+            var name = input.files[i].name;
+            var size = input.files[i].size;
+            var typeFile = input.files[i].type;
+            if (size > 2000000) {
+                alert("Please upload file less than 2MB. Thanks!!");
+                return false;
+            }
+
+            var reader = new FileReader();
+            reader.onload = function (event) {
+                var dataimg = event.target.result;
+                // AVATAR
+                if (parseInt(imageControlType) === 6) {
+                    var parentAvatar = $('.img-' + 6);
+                    $('#avatarShow').attr('src', dataimg);
+                    $('.img-size', parentAvatar).val(size);
+                    $('.img-orginal', parentAvatar).val(name);
+                    $('.img-type', parentAvatar).val(6);
+                    $('.img-typefile', parentAvatar).val(size);
+                    $('.img-temp', parentAvatar).val(dataimg);
+                }
+                else {
+                    var parentCover = $('.img-' + 16);
+                    $('#cover').css('background-image', 'url(' + dataimg + ')');
+                    $('.img-size', parentCover).val(size);
+                    $('.img-orginal', parentCover).val(name);
+                    $('.img-type', parentCover).val(16);
+                    $('.img-typefile', parentCover).val(size);
+                    $('.img-temp', parentCover).val(dataimg);
+                }
+            };
+
+            reader.readAsDataURL(input.files[i]);
+        }
+    }
+};
+
+var imagesPreviewCustom = function (model, input, entity, placeToInsertImagePreview, imageControlType) {
+    if (input.files) {
+        // update delete true
+        $('li', placeToInsertImagePreview).each(function () {
+            $(this).addClass('d-none');
+        });
+        $('.delete-flag', placeToInsertImagePreview).each(function () {
+            $(this).val(true);
+        });
+
+        var lengthElement = $('.codeNum', $('#images')).length;
+        var newcodenum = lengthElement;
+        var filesAmount = input.files.length;
+        for (i = 0; i < filesAmount; i++) {
+            if (!input.files[i].type.match('image.*')) {
+                continue;
+            }
+            var name = input.files[i].name;
+            var size = input.files[i].size;
+            var typeFile = input.files[i].type;
+            var reader = new FileReader();
+            reader.onload = function (event) {
+                var dataimg = event.target.result;
+                var data = { model: model, entity: entity, codeNum: newcodenum, type: imageControlType, dataimg: dataimg, name, size, typeFile };
+                $(placeToInsertImagePreview).prepend($.templates("#tmplImage").render(data));
+                newcodenum++;
+                autoGenNumber(placeToInsertImagePreview);
+                mainDefault(placeToInsertImagePreview);
+                mainImg();
+                deleteImg();
+            };
+
+            reader.readAsDataURL(input.files[i]);
+        }
+    }
+};
+
+var imagesPreviewBK = function (model, input, entity, placeToInsertImagePreview, imageControlType) {
+    if (input.files) {
+        var lengthElement = $('.codeNum', placeToInsertImagePreview).length;
+        var newcodenum = lengthElement;
+        var filesAmount = input.files.length;
+        for (i = 0; i < filesAmount; i++) {
+            if (!input.files[i].type.match('image.*')) {
+                continue;
+            }
+            var name = input.files[i].name;
+            var size = input.files[i].size;
+            var typeFile = input.files[i].type;
+            var reader = new FileReader();
+            reader.onload = function (event) {
+                var dataimg = event.target.result;
+                var data = { model: model, entity: entity, codeNum: newcodenum, type: imageControlType, dataimg: dataimg, name, size, typeFile };
+                $(placeToInsertImagePreview).prepend($.templates("#tmplImage").render(data));
+                newcodenum++;
+                autoGenNumber(placeToInsertImagePreview);
+                mainDefault(placeToInsertImagePreview);
+                mainImg();
+                deleteImg();
+            };
+
+            reader.readAsDataURL(input.files[i]);
+        }
+    }
+};
+
+function autoGenNumber(placeToInsertImagePreview) {
+    var current = 1;
+    $('.code', placeToInsertImagePreview).each(function () {
+        $(this).val(current);
+        current++;
     });
 }
+
+function mainDefault(placeToInsertImagePreview) {
+    var lengthElement = $('.codeNum', placeToInsertImagePreview).length;
+    if (lengthElement === 1) {
+        $('.chk-main-img', placeToInsertImagePreview).prop('checked', true);
+        $('.chk-main-img', placeToInsertImagePreview).val(true);
+    }
+    else {
+        $('.chk-main-img', placeToInsertImagePreview).prop('checked', false);
+        $('.chk-main-img', placeToInsertImagePreview).val(false);
+        $('.chk-main-img', placeToInsertImagePreview).first().prop('checked', true);
+        $('.chk-main-img', placeToInsertImagePreview).first().val(true);
+    }
+}
+
+function mainImg() {
+    $('.chk-main-img').on('click', function () {
+        if ($(this).is(':checked')) {
+            $(this).val(true);
+        }
+        else {
+            $(this).val(false);
+        }
+    });
+}
+
+function deleteImg() {
+    $('.btn-delete-img').on('click', function () {
+        $(this.closest('li')).addClass('d-none');
+        $('.delete-flag', this.closest('li')).val(true);
+    });
+}
+// END UPLOAD FILE

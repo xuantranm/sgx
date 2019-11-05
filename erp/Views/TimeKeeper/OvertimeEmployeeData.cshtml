@@ -97,11 +97,11 @@
                                                 </td>
                                                 <td>
                                                     <input type="text" name="OvertimeEmployees[@iE].Start" class="form-control datetimepicker-input" id="start-@iE" data-toggle="datetimepicker" data-target="#start-@iE" data-id="@iE" />
-                                                    <input type="hidden" value="@item.Start.ToString(@"hh\:mm")" id="hiddenStart-@iE" />
+                                                    <input type="hidden" value="@item.StartOvertime.ToString(@"hh\:mm")" id="hiddenStart-@iE" />
                                                 </td>
                                                 <td>
                                                     <input type="text" name="OvertimeEmployees[@iE].End" class="form-control datetimepicker-input" id="end-@iE" data-toggle="datetimepicker" data-target="#end-@iE" data-id="@iE" />
-                                                    <input type="hidden" value="@item.End.ToString(@"hh\:mm")" id="hiddenEnd-@iE" />
+                                                    <input type="hidden" value="@item.EndOvertime.ToString(@"hh\:mm")" id="hiddenEnd-@iE" />
                                                 </td>
                                                 <td>
                                                     <code class="hour-@iE">@item.Hour</code>

@@ -202,7 +202,7 @@ namespace erp.Controllers
             #endregion
 
             Trang = Trang == 0 ? 1 : Trang;
-            var settingPage = dbContext.Settings.Find(m => m.Type.Equals((int)ESetting.System) && m.Key.Equals("page-size-khth")).FirstOrDefault();
+            var settingPage = dbContext.Settings.Find(m => m.Type.Equals((int)EData.System) && m.Key.Equals("page-size-khth")).FirstOrDefault();
             int Size = settingPage != null ? Convert.ToInt32(settingPage.Value) : 100;
             int pages = 1;
             var records = dbContext.KhoNguyenVatLieus.CountDocuments(filter);
@@ -269,8 +269,8 @@ namespace erp.Controllers
                 SapXep = SapXep,
                 Records = (int)records,
                 PageSize = Size,
-                SoTrang = pages,
-                Trang = Trang
+                PageTotal = pages,
+                PageCurrent = Trang
             };
             return View(viewModel);
         }
@@ -1515,7 +1515,7 @@ namespace erp.Controllers
             #endregion
 
             Trang = Trang == 0 ? 1 : Trang;
-            var settingPage = dbContext.Settings.Find(m => m.Type.Equals((int)ESetting.System) && m.Key.Equals("page-size-khth")).FirstOrDefault();
+            var settingPage = dbContext.Settings.Find(m => m.Type.Equals((int)EData.System) && m.Key.Equals("page-size-khth")).FirstOrDefault();
             int Size = settingPage != null ? Convert.ToInt32(settingPage.Value) : 100;
             int pages = 1;
 
@@ -1572,8 +1572,8 @@ namespace erp.Controllers
                 SapXep = SapXep,
                 Records = (int)records,
                 PageSize = Size,
-                SoTrang = pages,
-                Trang = Trang
+                PageTotal = pages,
+                PageCurrent = Trang
             };
             return View(viewModel);
         }
@@ -2640,7 +2640,7 @@ namespace erp.Controllers
             #endregion
 
             Trang = Trang == 0 ? 1 : Trang;
-            var settingPage = dbContext.Settings.Find(m => m.Type.Equals((int)ESetting.System) && m.Key.Equals("page-size-khth")).FirstOrDefault();
+            var settingPage = dbContext.Settings.Find(m => m.Type.Equals((int)EData.System) && m.Key.Equals("page-size-khth")).FirstOrDefault();
             int Size = settingPage != null ? Convert.ToInt32(settingPage.Value) : 100;
             int pages = 1;
             var records = dbContext.KhoHangTraVes.CountDocuments(filter);
@@ -2696,8 +2696,8 @@ namespace erp.Controllers
                 SapXep = SapXep,
                 Records = (int)records,
                 PageSize = Size,
-                SoTrang = pages,
-                Trang = Trang
+                PageTotal = pages,
+                PageCurrent = Trang
             };
             return View(viewModel);
         }
@@ -3692,7 +3692,7 @@ namespace erp.Controllers
             #endregion
 
             Trang = Trang == 0 ? 1 : Trang;
-            var settingPage = dbContext.Settings.Find(m => m.Type.Equals((int)ESetting.System) && m.Key.Equals("page-size-khth")).FirstOrDefault();
+            var settingPage = dbContext.Settings.Find(m => m.Type.Equals((int)EData.System) && m.Key.Equals("page-size-khth")).FirstOrDefault();
             int Size = settingPage != null ? Convert.ToInt32(settingPage.Value) : 100;
             int pages = 1;
             var records = dbContext.KhoBuns.CountDocuments(filter);
@@ -3748,8 +3748,8 @@ namespace erp.Controllers
                 SapXep = SapXep,
                 Records = (int)records,
                 PageSize = Size,
-                SoTrang = pages,
-                Trang = Trang
+                PageTotal = pages,
+                PageCurrent = Trang
             };
             return View(viewModel);
         }
@@ -4834,7 +4834,7 @@ namespace erp.Controllers
             #endregion
 
             Trang = Trang == 0 ? 1 : Trang;
-            var settingPage = dbContext.Settings.Find(m => m.Type.Equals((int)ESetting.System) && m.Key.Equals("page-size-khth")).FirstOrDefault();
+            var settingPage = dbContext.Settings.Find(m => m.Type.Equals((int)EData.System) && m.Key.Equals("page-size-khth")).FirstOrDefault();
             int Size = settingPage != null ? Convert.ToInt32(settingPage.Value) : 100;
             int pages = 1;
             var records = dbContext.TramCans.CountDocuments(filter);
@@ -4889,8 +4889,8 @@ namespace erp.Controllers
                 SapXep = SapXep,
                 Records = (int)records,
                 PageSize = Size,
-                SoTrang = pages,
-                Trang = Trang
+                PageTotal = pages,
+                PageCurrent = Trang
             };
             return View(viewModel);
         }

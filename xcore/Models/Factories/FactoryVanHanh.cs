@@ -1,4 +1,5 @@
-﻿using MongoDB.Bson;
+﻿using Common.Enums;
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System;
 using System.ComponentModel.DataAnnotations;
@@ -21,6 +22,10 @@ namespace Models
 
         public string Ca { get; set; }
 
+        public string CaId { get; set; }
+
+        public string CaAlias { get; set; }
+
         public string CongDoanId { get; set; }
 
         public string CongDoanCode { get; set; }
@@ -35,6 +40,8 @@ namespace Models
 
         public string XeCoGioiMayId { get; set; }
 
+        public string XeCoGioiMayCode { get; set; }
+
         public string XeCoGioiMayName { get; set; }
 
         public string XeCoGioiMayAlias { get; set; }
@@ -47,13 +54,18 @@ namespace Models
 
         public string ProductType { get; set; }
 
+        public string EmployeeId { get; set; }
+
         public string Employee { get; set; } // Can be "thuê ngoài,..."
+
+        public string EmployeeAlias { get; set; }
 
         public string CaLamViec { get; set; }
 
-        public string CaAlias { get; set; }
+        public string CaLamViecId { get; set; }
 
-        [Display(Name = "Thời gian bắt đâu")]
+        public string CaLamViecAlias { get; set; }
+
         public TimeSpan Start { get; set; }
 
         public TimeSpan End { get; set; }
@@ -64,32 +76,26 @@ namespace Models
 
         public TimeSpan ThoiGianNghi { get; set; }
 
-        [Display(Name = "Thời gian CV khác")]
         public TimeSpan ThoiGianCVKhac { get; set; }
 
         public TimeSpan ThoiGianLamViec { get; set; }
 
-        [BsonRepresentation(BsonType.Decimal128)]
-        public decimal SoLuongThucHien { get; set; } = 0;
+        public double SoLuongThucHien { get; set; } = 0;
 
-        [BsonRepresentation(BsonType.Decimal128)]
-        public decimal Dau { get; set; } = 0;
+        public double Dau { get; set; } = 0;
 
-        [BsonRepresentation(BsonType.Decimal128)]
-        public decimal Nhot10 { get; set; } = 0;
+        public double Nhot10 { get; set; } = 0;
 
-        [BsonRepresentation(BsonType.Decimal128)]
-        public decimal Nhot50 { get; set; } = 0;
+        public double Nhot50 { get; set; } = 0;
 
-        [BsonRepresentation(BsonType.Decimal128)]
-        public decimal Nhot90 { get; set; } = 0;
+        public double Nhot90 { get; set; } = 0;
 
-        [BsonRepresentation(BsonType.Decimal128)]
-        public decimal Nhot140 { get; set; } = 0;
+        public double Nhot140 { get; set; } = 0;
 
-        [Display(Name = "Nguyên nhân")]
         public string NguyenNhan { get; set; }
 
         public string PhieuInCa { get; set; }
+
+        public int Status { get; set; } = (int)EVanHanhStatus.DangXuLy;
     }
 }

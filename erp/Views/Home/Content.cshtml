@@ -1,0 +1,38 @@
+﻿@using System.Globalization;
+@using Common.Utilities;
+@using Common.Enums;
+@using ViewModels;
+@using Models;
+@model HomeViewModel
+
+@{
+    var language = "vi-VN";
+    CultureInfo culture = CultureInfo.CreateSpecificCulture(language);
+    //bool goldmode = (bool)ViewData[Constants.ActionViews.GodMode];
+
+}
+
+<div class="main-container">
+    <nav aria-label="breadcrumb" role="navigation" class="text-white position-absolute">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col">
+                    <ol class="breadcrumb">
+                        @*<li class="breadcrumb-item">
+                            <a href="/@Constants.LinkDocument.Main/@Constants.LinkDocument.GettingStarted">Hướng dẫn</a>
+                        </li>*@
+                        <li class="breadcrumb-item active" aria-current="page">Current</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section>
+        <div class="container">
+            <div class="row">
+
+            </div>
+        </div>
+    </section>
+</div>

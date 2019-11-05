@@ -1,4 +1,18 @@
-﻿//22.07.2018
+﻿// 14.10.2019
+1. Db: Rename Settings to SettingsTemp
+2. Run /tai-lieu/update-setting
+3. Run /tai-lieu/update-role
+4. Run /tai-lieu/update-category
+5. Run /tai-lieu/update-employee
+6. Run /tai-lieu/update-employee-leave
+7. Drop OvertimeEmployees
+
+
+
+// 26.09.2019
+db.FactoryShifts.drop()
+
+//22.07.2018
 db.Employees.update({}, {$rename:{"EmployeeModifySalarys":"Salaries"}}, false, true);
 db.Employees.update({},
                           {$set : {"Salary":0}},

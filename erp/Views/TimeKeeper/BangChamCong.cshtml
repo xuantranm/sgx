@@ -104,7 +104,11 @@
                                     string displayTitle = string.Empty;
                                     if (!string.IsNullOrEmpty(employee.Email))
                                     {
-                                        displayTitle += "- " + employee.Email + "";
+                                        displayTitle += " - " + employee.Email;
+                                    }
+                                    if (employee.Leave)
+                                    {
+                                         displayTitle += " (đã nghỉ, còn công)";
                                     }
                                     <option value="@employee.Id">@employee.FullName @displayTitle</option>
                                 }

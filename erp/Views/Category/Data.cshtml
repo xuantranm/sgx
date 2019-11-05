@@ -1,0 +1,233 @@
+﻿@using System.Globalization;
+@using Common.Utilities;
+@using ViewModels;
+@using Models;
+@model CategoryViewModel
+
+@{
+    var domain = ViewData[Constants.ActionViews.Domain].ToString();
+    
+    var actionForm = "/category/data";
+    var isEdit = false;
+    var breadcrumbActive = "Tạo mới";
+    var submitLabel = "Tạo mới";
+    var sizeImage = "Size: " + Utility.GetSetting(Constants.Texts.ImageSize, domain);
+    if (Model.Category != null && !string.IsNullOrEmpty(Model.Category.Id))
+    {
+        isEdit = true;
+        breadcrumbActive = "Cập nhật";
+        submitLabel = "Cập nhật";
+    }
+}
+
+@Html.ValidationSummary()
+
+<div class="main-container">
+    <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="/">Home</a>
+                        </li>
+                        <li class="breadcrumb-item" aria-current="page">
+                            <a href="/category">Doanh mục</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">
+                            @breadcrumbActive
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section>
+        <div class="container">
+            <form action="@actionForm" method="post" class="data-form">
+                <input type="hidden" asp-for="Category.Domain" />
+                @if (isEdit)
+                {
+                    <input type="hidden" asp-for="Category.Id" />
+                    <input type="hidden" asp-for="Category.Code" />
+                    <input type="hidden" asp-for="Category.CodeInt" />
+                }
+                <div class="form-group">
+                    <label class="control-label">Doanh mục</label>
+                    <input asp-for="Category.Name" class="form-control form-control-lg" autofocus />
+                </div>
+                <div class="form-group">
+                    <label class="form-check-label">Thuộc doanh mục</label>
+                    <select asp-for="Category.ParentId" class="form-control form-control-lg js-select2-basic-single">
+                        <option value="">Chọn</option>
+                        @foreach (var item in Model.CategoriesDisplay)
+                        {
+                            var name = item.Category.Name;
+                            if (!string.IsNullOrEmpty(item.ParentName))
+                            {
+                                name = item.ParentName + " > " + name;
+                            }
+                            <option value="@item.Category.Id">@name</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="control-label">Mô tả</label>
+                    <textarea asp-for="Category.Description" class="form-control js-auto-size meta-text"></textarea>
+                </div>
+
+                <!-- PROPERTY -->
+                @if (Model.Properties != null && Model.Properties.Count > 0)
+                {
+                    <div class="property">
+                        <div class="form-group row">
+                            <div class="col-sm-2 col-xs-12">Thuộc tính</div>
+                            <div class="col-sm-10 col-xs-12">
+                                <div class="row">
+                                    @{
+                                        var iP = 0;
+                                        foreach (var item in Model.Properties)
+                                        {
+                                            var propertyChecked = item.IsChoose ? "checked" : string.Empty;
+                                            <div class="form-check col-md-4 col-sm-6 col-xs-12">
+                                                <input type="hidden" name="Category.Properties[@iP].Id" value="@item.Id" class="property-id" />
+                                                <input type="hidden" name="Category.Properties[@iP].Key" value="@item.Key" class="property-key" />
+                                                <input type="hidden" name="Category.Properties[@iP].IsChoose" value="@item.IsChoose.ToString().ToLower()" class="property-ischoose" />
+                                                <input class="form-check-input check-property" type="checkbox" id="gridCheck-@iP" @propertyChecked />
+                                                <label class="form-check-label" for="gridCheck-@iP">
+                                                    @Html.Raw(item.Key)
+                                                </label>
+                                            </div>
+                                            iP++;
+                                        }
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+                <!-- END PROPERTY -->
+                <!-- CONTENT -->
+                <div class="content-area">
+                    <input type="hidden" value="@sizeImage" class="hid-size-image" />
+                    @if (Model.Category.Contents != null && Model.Category.Contents.Count > 0)
+                    {
+                        foreach (var item in Model.Category.Contents)
+                        {
+                            var iC = 0;
+                            var iCD = 1;
+                            <div class="content">
+                                <input type="hidden" value="@iC" class="hid-newE" />
+                                <div class="form-group">
+                                    <label class="control-label">Nội dung @iCD</label>
+                                    <textarea name="Category.Contents[@iC].Detail" class="form-control content-text">@item.Detail</textarea>
+                                </div>
+                                <div class="form-group row">
+                                    <label class="form-check-label col-4">Hình <span class="badge badge-info badge-image">@sizeImage</span></label>
+                                    <div class="col-12">
+                                        <input type="file" class="images" multiple />
+                                        <ul class="list-group list-group-flush img-list list-@iC">
+                                            @{
+                                                var i = 0;
+                                                if (item.Imgs != null && item.Imgs.Count > 0)
+                                                {
+                                                    foreach (var img in item.Imgs)
+                                                    {
+                                                        var checkedImg = img.Main ? "checked" : string.Empty;
+                                                                                        <li class="list-group-item">
+                                                                                            <input name="Category.Contents[@iC].Imgs[@i].Path" type="hidden" value="@img.Path" />
+                                                                                            <input name="Category.Contents[@iC].Imgs[@i].FileName" type="hidden" value="@img.FileName" />
+                                                                                            <input name="Category.Contents[@iC].Imgs[@i].Orginal" type="hidden" value="@img.Orginal" />
+                                                                                            <input name="Category.Contents[@iC].Imgs[@i].Type" type="hidden" value="@img.Type" />
+                                                                                            <input name="Category.Contents[@iC].Imgs[@i].Size" type="hidden" value="@img.Size" />
+                                                                                            <input name="Category.Contents[@iC].Imgs[@i].TypeFile" type="hidden" value="@img.TypeFile" />
+                                                                                            <input name="Category.Contents[@iC].Imgs[@i].IsDelete" type="hidden" value="@img.IsDelete" class="delete-flag" />
+                                                                                            <div class="media align-items-center">
+                                                                                                <div class="col-12 col-md-4">
+                                                                                                    <img alt="@img.Title" src="/@img.Path.Replace("\\","/")/@img.FileName" class="img-fluid rounded" />
+                                                                                                </div>
+                                                                                                <div class="col-12 col-md-8">
+                                                                                                    <div class="media-body">
+                                                                                                        <div class="row mb-2">
+                                                                                                            <div class="col-2">
+                                                                                                                Thứ tự:
+                                                                                                                <input name="Category.Contents[@iC].Imgs[@i].Code" type="number" value="@img.Code" class="form-control" />
+                                                                                                            </div>
+                                                                                                            <div class="col-10">
+                                                                                                                Tiêu đề:
+                                                                                                                <input name="Category.Contents[@iC].Imgs[@i].Title" type="text" value="@img.Title" class="form-control" />
+                                                                                                            </div>
+                                                                                                        </div>
+                                                                                                        <div class="row">
+                                                                                                            <div class="col-2">
+                                                                                                                <div class="form-check">
+                                                                                                                    <input type="checkbox" name="Category.Contents[@iC].Imgs[@i].Main" value="@img.Main.ToString().ToLower()" class="form-check-input chk-main-img" id="images-main-@iC-@i" @checkedImg />
+                                                                                                                    <label for="images-main-@iC-@i" class="form-check-label">Đặt chính</label>
+                                                                                                                </div>
+                                                                                                            </div>
+                                                                                                            <div class="col-10">
+                                                                                                                <button class="btn btn-sm btn-danger btn-delete-img" type="button"><i class="far fa-trash-alt"></i> Xóa</button>
+                                                                                                            </div>
+                                                                                                        </div>
+                                                                                                    </div>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        </li>
+                                                        i++;
+                                                    }
+                                                }
+                                            }
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            iC++;
+                            iCD++;
+                        }
+                    }
+                    else
+                    {
+                        <div class="content">
+                            <input type="hidden" value="0" class="hid-newE" />
+                            <div class="form-group">
+                                <label class="control-label">Nội dung 1</label>
+                                <textarea name="Category.Contents[0].Detail" class="form-control content-text"></textarea>
+                            </div>
+                            <div class="form-group row">
+                                <label class="form-check-label col-4">Hình <span class="badge badge-info badge-image">@sizeImage</span></label>
+                                <div class="col-12">
+                                    <input type="file" class="images" multiple />
+                                    <ul class="list-group list-group-flush img-list list-0"></ul>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div class="form-group">
+                    <button type="button" class="btn btn-sm btn-content-add"><i class="fas fa-plus"></i> Thêm</button>
+                </div>
+                <!-- END CONTENT -->
+
+                @if (isEdit)
+                {
+                    <div class="form-group alert alert-danger">
+                        <label class="control-label">Trạng thái</label>
+                        <select asp-for="Category.Enable" class="form-control form-control-lg">
+                            <option value="true">Hoạt động</option>
+                            <option value="false">Ẩn</option>
+                        </select>
+                    </div>
+                }
+
+                <button type="submit" class="btn btn-block btn-primary" title="@submitLabel"><i class="far fa-save"></i> @submitLabel</button>
+            </form>
+        </div>
+    </section>
+</div>
+
+@section scripts {
+    <script type="text/javascript" src="~/js/category-data.js?@Constants.VersionJs"></script>
+}
+

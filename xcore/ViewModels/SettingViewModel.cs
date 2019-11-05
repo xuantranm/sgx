@@ -5,14 +5,13 @@ using ViewModels;
 
 namespace ViewModels
 {
-    public class SettingViewModel : ExtensionViewModel
+    public class SettingViewModel : CommonViewModel
     {
-        // data display
-        public IList<Setting> Settings { get; set; }
-
-        public IList<Setting> SettingsDisable { get; set; }
-
-        // show title
         public Setting Setting { get; set; }
+        public IList<Setting> Settings { get; set; }
+        public string Domain { get; set; }
+        public string Key { get; set; }
+
+        public int? Type { get; set; }
     }
 }

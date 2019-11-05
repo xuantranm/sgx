@@ -24,6 +24,7 @@ using MimeKit;
 using Services;
 using Microsoft.AspNetCore.Authorization;
 using System.Drawing;
+using Common.Enums;
 
 namespace erp.Controllers
 {
@@ -51,7 +52,7 @@ namespace erp.Controllers
             _logger = logger;
         }
 
-        [Route("/tai-lieu/")]
+        [Route("tai-lieu")]
         public IActionResult Index()
         {
             return View();
@@ -774,7 +775,7 @@ namespace erp.Controllers
 
                         if (employee != null)
                         {
-                            if(employee.Id == "5b6bfc463ee8461ee48cbbea")
+                            if (employee.Id == "5b6bfc463ee8461ee48cbbea")
                             {
                                 var phoo = phepcon;
                             }
@@ -885,7 +886,7 @@ namespace erp.Controllers
 
                             var filter = Builders<Employee>.Filter.Eq(m => m.Id, employee.Id);
                             var update = Builders<Employee>.Update
-                                .Set(m=> m.Workplaces, workPlaces);
+                                .Set(m => m.Workplaces, workPlaces);
                             dbContext.Employees.UpdateOne(filter, update);
                         }
                         else
@@ -1010,15 +1011,15 @@ namespace erp.Controllers
         #endregion
 
         #region Factory
-        [Route("/tai-lieu/nha-may/thong-ke/")]
-        public IActionResult FactoryReport()
+        [Route("/tai-lieu/nha-may")]
+        public IActionResult Factory()
         {
             return View();
         }
 
-        [Route("/tai-lieu/nha-may/thong-ke/bao-cao-tk")]
+        [Route("/tai-lieu/nha-may/ma-so-van-hanh")]
         [HttpPost]
-        public ActionResult FactoryReportImport()
+        public ActionResult FactoryMaSoVanHanh()
         {
             IFormFile file = Request.Form.Files[0];
             string folderName = Constants.Storage.Factories;
@@ -1039,31 +1040,44 @@ namespace erp.Controllers
                     int headerCal = 0;
                     ISheet sheet0;
                     ISheet sheet1;
-                    ISheet sheet2;
                     if (sFileExtension == ".xls")
                     {
                         HSSFWorkbook hssfwb = new HSSFWorkbook(stream); //This will read the Excel 97-2000 formats  
                         sheet0 = hssfwb.GetSheetAt(0); //get first sheet from workbook  
                         sheet1 = hssfwb.GetSheetAt(1);
-                        sheet2 = hssfwb.GetSheetAt(2);
+                        //sheet2 = hssfwb.GetSheetAt(2);
                     }
                     else
                     {
                         XSSFWorkbook hssfwb = new XSSFWorkbook(stream); //This will read 2007 Excel format  
                         sheet0 = hssfwb.GetSheetAt(0); //get first sheet from workbook   
                         sheet1 = hssfwb.GetSheetAt(1);
-                        sheet2 = hssfwb.GetSheetAt(2);
+                        //sheet2 = hssfwb.GetSheetAt(2);
                     }
                     #region Read & Insert Data
 
                     #region Sheet 0 Ma so
-                    dbContext.FactoryProducts.DeleteMany(m => true);
-                    dbContext.FactoryShifts.DeleteMany(m => true);
-                    dbContext.FactoryStages.DeleteMany(m => true);
-                    dbContext.FactoryTruckTypes.DeleteMany(m => true);
-                    dbContext.FactoryMotorVehicles.DeleteMany(m => true);
-                    dbContext.FactoryWorks.DeleteMany(m => true);
+                    var vanHanh = "Vận hành";
+                    var vanHanhE = dbContext.Categories.Find(m => m.Name.Equals(vanHanh)).FirstOrDefault();
+                    if (vanHanhE == null)
+                    {
+                        vanHanhE = new Category()
+                        {
+                            Name = "Vận hành",
+                            Alias = "van-hanh",
+                            ModeData = (int)EModeData.File
+                        };
+                        dbContext.Categories.InsertOne(vanHanhE);
+                    }
+                    var parentId = vanHanhE.Id;
+
+                    dbContext.Categories.DeleteMany(m => m.Type.Equals((int)ECategory.Ca));
+                    dbContext.Categories.DeleteMany(m => m.Type.Equals((int)ECategory.CongDoan));
+                    dbContext.Categories.DeleteMany(m => m.Type.Equals((int)ECategory.XeCoGioivsMayMoc));
+                    dbContext.Categories.DeleteMany(m => m.Type.Equals((int)ECategory.PhanLoaiXe));
+                    dbContext.Categories.DeleteMany(m => m.Type.Equals((int)ECategory.NVLvsBTPvsTP));
                     headerCal = 2;
+                    int codeInt = 1;
                     for (int i = headerCal; i <= sheet0.LastRowNum; i++)
                     {
                         IRow row = sheet0.GetRow(i);
@@ -1073,64 +1087,156 @@ namespace erp.Controllers
                         if (row.Cells.All(d => d.CellType == CellType.Unknown)) continue;
 
                         var ca = GetFormattedCellValue(row.GetCell(0));
-                        var mangcongviec = GetFormattedCellValue(row.GetCell(1));
+                        var macongdoan = GetFormattedCellValue(row.GetCell(1));
                         var congdoan = GetFormattedCellValue(row.GetCell(2));
-                        var xe = GetFormattedCellValue(row.GetCell(3));
-                        var loaixe = GetFormattedCellValue(row.GetCell(4));
-                        var nvl = GetFormattedCellValue(row.GetCell(5));
+                        var noidungcongdoan = GetFormattedCellValue(row.GetCell(3));
+                        var xecogioivsmaymoc = GetFormattedCellValue(row.GetCell(4));
+                        var phanloaixe = GetFormattedCellValue(row.GetCell(5));
+                        var chungloaixe = GetFormattedCellValue(row.GetCell(6));
+                        var nhathau = GetFormattedCellValue(row.GetCell(7));
+                        var mangcongviec = GetFormattedCellValue(row.GetCell(8));
+                        var maxe = GetFormattedCellValue(row.GetCell(9));
 
+                        var nvlvsbtpvstp = GetFormattedCellValue(row.GetCell(10));
 
                         if (!string.IsNullOrEmpty(ca))
                         {
-                            dbContext.FactoryShifts.InsertOne(new FactoryShift
+                            dbContext.Categories.InsertOne(new Category()
                             {
+                                Type = (int)ECategory.Ca,
                                 Name = ca,
-                                Alias = Utility.AliasConvert(ca)
+                                Alias = Utility.AliasConvert(ca),
+                                ParentId = parentId,
+                                ModeData = (int)EModeData.File
                             });
                         }
 
-                        if (!string.IsNullOrEmpty(mangcongviec))
+                        if (!string.IsNullOrEmpty(macongdoan))
                         {
-                            dbContext.FactoryWorks.InsertOne(new FactoryWork
+                            dbContext.Categories.InsertOne(new Category()
                             {
-                                Name = mangcongviec,
-                                Alias = Utility.AliasConvert(mangcongviec)
-                            });
-                        }
-
-                        if (!string.IsNullOrEmpty(congdoan))
-                        {
-                            dbContext.FactoryStages.InsertOne(new FactoryStage
-                            {
+                                Type = (int)ECategory.CongDoan,
+                                Code = macongdoan,
                                 Name = congdoan,
-                                Alias = Utility.AliasConvert(congdoan)
+                                Alias = Utility.AliasConvert(congdoan),
+                                //Content = noidungcongdoan,
+                                ParentId = parentId,
+                                ModeData = (int)EModeData.File
                             });
                         }
 
-                        if (!string.IsNullOrEmpty(xe))
+                        if (!string.IsNullOrEmpty(xecogioivsmaymoc))
                         {
-                            dbContext.FactoryMotorVehicles.InsertOne(new FactoryMotorVehicle
+                            var phanloaixeId = string.Empty;
+                            var chungloaiId = string.Empty;
+                            var nhathauId = string.Empty;
+                            var mangcongviecId = string.Empty;
+                            if (!string.IsNullOrEmpty(phanloaixe))
                             {
-                                Name = xe,
-                                Alias = Utility.AliasConvert(xe),
-                                Type = loaixe,
-                                TypeAlias = Utility.AliasConvert(loaixe)
+                                var phanloaiE = dbContext.Categories.Find(m => m.Type.Equals((int)ECategory.PhanLoaiXe) && m.Name.Equals(phanloaixe)).FirstOrDefault();
+                                if (phanloaiE == null)
+                                {
+                                    phanloaiE = new Category
+                                    {
+                                        Type = (int)ECategory.PhanLoaiXe,
+                                        Name = phanloaixe,
+                                        Alias = Utility.AliasConvert(phanloaixe),
+                                        ParentId = parentId,
+                                        ModeData = (int)EModeData.File
+                                    };
+                                    dbContext.Categories.InsertOne(phanloaiE);
+                                }
+                                phanloaixeId = phanloaiE.Id;
+                            }
+                            if (!string.IsNullOrEmpty(chungloaixe))
+                            {
+                                var chungloaiE = dbContext.Categories.Find(m => m.Type.Equals((int)ECategory.ChungLoaiXe) && m.Name.Equals(chungloaixe)).FirstOrDefault();
+                                if (chungloaiE == null)
+                                {
+                                    chungloaiE = new Category
+                                    {
+                                        Type = (int)ECategory.ChungLoaiXe,
+                                        Name = chungloaixe,
+                                        Alias = Utility.AliasConvert(chungloaixe),
+                                        ParentId = parentId,
+                                        ModeData = (int)EModeData.File
+                                    };
+                                    dbContext.Categories.InsertOne(chungloaiE);
+                                }
+                                chungloaiId = chungloaiE.Id;
+                            }
+                            if (!string.IsNullOrEmpty(nhathau))
+                            {
+                                var nhathauE = dbContext.Categories.Find(m => m.Type.Equals((int)ECategory.NhaThau) && m.Name.Equals(nhathau)).FirstOrDefault();
+                                if (nhathauE == null)
+                                {
+                                    nhathauE = new Category
+                                    {
+                                        Type = (int)ECategory.NhaThau,
+                                        Name = nhathau,
+                                        Alias = Utility.AliasConvert(nhathau),
+                                        ParentId = parentId,
+                                        ModeData = (int)EModeData.File
+                                    };
+                                    dbContext.Categories.InsertOne(nhathauE);
+                                }
+                                nhathauId = nhathauE.Id;
+                            }
+                            if (!string.IsNullOrEmpty(mangcongviec))
+                            {
+                                var mangcongviecE = dbContext.Categories.Find(m => m.Type.Equals((int)ECategory.MangCongViec) && m.Name.Equals(mangcongviec)).FirstOrDefault();
+                                if (mangcongviecE == null)
+                                {
+                                    mangcongviecE = new Category
+                                    {
+                                        Type = (int)ECategory.MangCongViec,
+                                        Name = mangcongviec,
+                                        Alias = Utility.AliasConvert(mangcongviec),
+                                        ParentId = parentId,
+                                        ModeData = (int)EModeData.File
+                                    };
+                                    dbContext.Categories.InsertOne(mangcongviecE);
+                                }
+                                mangcongviecId = mangcongviecE.Id;
+                            }
+
+                            if (!string.IsNullOrEmpty(maxe))
+                            {
+                                codeInt = Convert.ToInt32(maxe.Substring(maxe.Length - 2));
+                            }
+                            dbContext.Categories.InsertOne(new Category
+                            {
+                                Type = (int)ECategory.XeCoGioivsMayMoc,
+                                Code = maxe,
+                                CodeInt = codeInt,
+                                Name = xecogioivsmaymoc,
+                                Alias = Utility.AliasConvert(xecogioivsmaymoc),
+                                ParentId = parentId,
+                                //ChungLoaiId = chungloaiId,
+                                //NhaThauId = nhathauId,
+                                //MangCongViecId = mangcongviecId,
+                                ModeData = (int)EModeData.File
                             });
                         }
 
-                        if (!string.IsNullOrEmpty(nvl))
+                        if (!string.IsNullOrEmpty(nvlvsbtpvstp))
                         {
-                            dbContext.FactoryProducts.InsertOne(new FactoryProduct
+                            dbContext.Categories.InsertOne(new Category
                             {
-                                Name = nvl,
-                                Alias = Utility.AliasConvert(nvl)
+                                Type = (int)ECategory.NVLvsBTPvsTP,
+                                Name = nvlvsbtpvstp,
+                                Alias = Utility.AliasConvert(nvlvsbtpvstp),
+                                ParentId = parentId,
+                                ModeData = (int)EModeData.File
                             });
                         }
+
+                        codeInt++;
                     }
                     #endregion
 
-                    #region Sheet 1 DATA ton SX
-                    dbContext.FactoryTonSXs.DeleteMany(m => true);
+                    #region Sheet 1 DATA Van Hanh
+                    dbContext.FactoryVanHanhs.DeleteMany(m => true);
                     headerCal = 2;
                     for (int i = headerCal; i <= sheet1.LastRowNum; i++)
                     {
@@ -1140,238 +1246,165 @@ namespace erp.Controllers
                         if (row.Cells.All(d => d.CellType == CellType.Error)) continue;
                         if (row.Cells.All(d => d.CellType == CellType.Unknown)) continue;
 
-                        var date = GetDateCellValue(row.GetCell(1));
-                        var product = GetFormattedCellValue(row.GetCell(2));
-                        var unit = GetFormattedCellValue(row.GetCell(3));
-                        var productAlias = Utility.AliasConvert(product);
-                        var productId = string.Empty;
-                        var productEntity = dbContext.FactoryProducts.Find(m => m.Alias.Equals(productAlias)).FirstOrDefault();
-                        if (productEntity != null)
-                        {
-                            productId = productEntity.Id;
-                        }
-                        else
-                        {
-                            var newProduct = new FactoryProduct
-                            {
-                                Name = product,
-                                Alias = productAlias,
-                                Unit = unit
-                            };
-                            dbContext.FactoryProducts.InsertOne(newProduct);
-                            productId = newProduct.Id;
-                        }
-
-                        var lot = GetFormattedCellValue(row.GetCell(4));
-                        decimal tondaungay = 0;
-                        if (!string.IsNullOrEmpty(GetFormattedCellValue(row.GetCell(5))))
-                        {
-                            tondaungay = Convert.ToDecimal(GetFormattedCellValue(row.GetCell(5)));
-                        }
-                        decimal nhaptusanxuat = 0;
-                        if (!string.IsNullOrEmpty(GetFormattedCellValue(row.GetCell(6))))
-                        {
-                            nhaptusanxuat = Convert.ToDecimal(GetFormattedCellValue(row.GetCell(6)));
-                        }
-                        decimal nhaptukho = 0;
-                        if (!string.IsNullOrEmpty(GetFormattedCellValue(row.GetCell(7))))
-                        {
-                            nhaptukho = Convert.ToDecimal(GetFormattedCellValue(row.GetCell(7)));
-                        }
-                        decimal xuatchokho = 0;
-                        if (!string.IsNullOrEmpty(GetFormattedCellValue(row.GetCell(8))))
-                        {
-                            xuatchokho = Convert.ToDecimal(GetFormattedCellValue(row.GetCell(8)));
-                        }
-                        decimal xuatchosanxuat = 0;
-                        if (!string.IsNullOrEmpty(GetFormattedCellValue(row.GetCell(9))))
-                        {
-                            xuatchosanxuat = Convert.ToDecimal(GetFormattedCellValue(row.GetCell(9)));
-                        }
-                        decimal xuathaohut = 0;
-                        if (!string.IsNullOrEmpty(GetFormattedCellValue(row.GetCell(10))))
-                        {
-                            xuathaohut = Convert.ToDecimal(GetFormattedCellValue(row.GetCell(10)));
-                        }
-                        decimal toncuoingay = 0;
-                        if (!string.IsNullOrEmpty(GetFormattedCellValue(row.GetCell(11))))
-                        {
-                            toncuoingay = Convert.ToDecimal(GetFormattedCellValue(row.GetCell(11)));
-                        }
-
-                        dbContext.FactoryTonSXs.InsertOne(new FactoryTonSX
-                        {
-                            Year = date.Year,
-                            Month = date.Month,
-                            Week = Utility.GetIso8601WeekOfYear(date),
-                            Day = date.Day,
-                            Date = date,
-                            ProductId = productId,
-                            Product = product,
-                            ProductAlias = Utility.AliasConvert(product),
-                            Unit = unit,
-                            LOT = lot,
-                            TonDauNgay = tondaungay,
-                            NhapTuSanXuat = nhaptusanxuat,
-                            XuatChoSanXuat = xuatchosanxuat,
-                            NhapTuKho = nhaptukho,
-                            XuatChoKho = xuatchokho,
-                            XuatHaoHut = xuathaohut,
-                            TonCuoiNgay = toncuoingay
-                        });
-
-                        // Update Quantity Product
-                        var builderUpdateQuantityProduct = Builders<FactoryProduct>.Filter;
-                        var filterUpdateQuantityProduct = builderUpdateQuantityProduct.Eq(m => m.Id, productId);
-                        var updateQuantityProduct = Builders<FactoryProduct>.Update
-                            .Set(m => m.Quantity, toncuoingay);
-                        dbContext.FactoryProducts.UpdateOne(filterUpdateQuantityProduct, updateQuantityProduct);
-                    }
-
-                    // Update Unit Product & create Unit collections
-                    var tonsxs = dbContext.FactoryTonSXs.Find(m => true).ToList();
-                    var groups = (from p in tonsxs
-                                  group p by new
-                                  {
-                                      p.ProductAlias,
-                                      p.Unit
-                                  }
-                              into d
-                                  select new
-                                  {
-                                      Product = d.Key.ProductAlias,
-                                      d.Key.Unit
-                                  }).ToList();
-                    foreach (var group in groups)
-                    {
-                        var builderUpdateProduct = Builders<FactoryProduct>.Filter;
-                        var filterUpdateProduct = builderUpdateProduct.Eq(m => m.Alias, group.Product);
-                        var updateProduct = Builders<FactoryProduct>.Update
-                            .Set(m => m.Unit, group.Unit);
-                        dbContext.FactoryProducts.UpdateOne(filterUpdateProduct, updateProduct);
-
-                        var aliasUnit = Utility.AliasConvert(group.Unit);
-                        if (dbContext.Units.CountDocuments(m => m.Type.Equals(Constants.UnitType.Factory) & m.Alias.Equals(aliasUnit)) == 0)
-                        {
-                            dbContext.Units.InsertOne(new Unit
-                            {
-                                Type = Constants.UnitType.Factory,
-                                Name = group.Unit,
-                                Alias = aliasUnit
-                            });
-                        }
-                    }
-
-                    #endregion
-
-                    #region Sheet 2 DATA Van Hanh
-                    dbContext.FactoryVanHanhs.DeleteMany(m => true);
-                    headerCal = 2;
-                    for (int i = headerCal; i <= sheet2.LastRowNum; i++)
-                    {
-                        IRow row = sheet2.GetRow(i);
-                        if (row == null) continue;
-                        if (row.Cells.All(d => d.CellType == CellType.Blank)) continue;
-                        if (row.Cells.All(d => d.CellType == CellType.Error)) continue;
-                        if (row.Cells.All(d => d.CellType == CellType.Unknown)) continue;
-
+                        var month = GetNumbericCellValue(row.GetCell(0));
                         var date = GetDateCellValue(row.GetCell(1));
                         var ca = GetFormattedCellValue(row.GetCell(2));
-                        var mangcongviec = GetFormattedCellValue(row.GetCell(3));
-                        var congdoan = GetFormattedCellValue(row.GetCell(4));
-                        if (string.IsNullOrEmpty(mangcongviec) && string.IsNullOrEmpty(congdoan)) continue;
-                        var lot = GetFormattedCellValue(row.GetCell(5));
-                        var xecogioiMay = GetFormattedCellValue(row.GetCell(6));
-                        var xecogioiMayAlias = Utility.AliasConvert(GetFormattedCellValue(row.GetCell(6)));
-                        var product = GetFormattedCellValue(row.GetCell(7));
-                        var productAlias = Utility.AliasConvert(product);
+                        var congdoan = GetFormattedCellValue(row.GetCell(3));
+                        var noidungcongdoan = GetFormattedCellValue(row.GetCell(4));
+                        var macongdoan = GetFormattedCellValue(row.GetCell(5));
+                        var lot = GetFormattedCellValue(row.GetCell(6));
+                        var xecogioiMay = GetFormattedCellValue(row.GetCell(7));
+                        var nvlTp = GetFormattedCellValue(row.GetCell(8));
+                        var tenCongNhan = GetFormattedCellValue(row.GetCell(9));
+                        var caLamViec = GetFormattedCellValue(row.GetCell(10));
+                        var thoigianbatdau = row.GetCell(11) != null ? DateTime.FromOADate(row.GetCell(11).NumericCellValue).TimeOfDay : TimeSpan.Zero;
+                        var thoigianketthuc = row.GetCell(12) != null ? DateTime.FromOADate(row.GetCell(12).NumericCellValue).TimeOfDay : TimeSpan.Zero;
+                        var thoigianbttq = row.GetCell(13) != null ? DateTime.FromOADate(row.GetCell(13).NumericCellValue).TimeOfDay : TimeSpan.Zero;
+                        var thoigianxehu = row.GetCell(14) != null ? DateTime.FromOADate(row.GetCell(14).NumericCellValue).TimeOfDay : TimeSpan.Zero;
+                        var thoigiannghi = row.GetCell(15) != null ? DateTime.FromOADate(row.GetCell(15).NumericCellValue).TimeOfDay : TimeSpan.Zero;
+                        var thoigiancongvieckhac = row.GetCell(16) != null ? DateTime.FromOADate(row.GetCell(16).NumericCellValue).TimeOfDay : TimeSpan.Zero;
+                        var thoigianlamviec = thoigianketthuc.Subtract(thoigianbatdau).Subtract(thoigianbttq).Subtract(thoigianxehu).Subtract(thoigiannghi).Subtract(thoigiancongvieckhac);
+                        double soluongthuchien = GetNumbericCellValue(row.GetCell(18));
+                        double dau = GetNumbericCellValue(row.GetCell(19));
+                        double nhot10 = GetNumbericCellValue(row.GetCell(20));
+                        double nhot50 = GetNumbericCellValue(row.GetCell(21));
+                        double nhot90 = GetNumbericCellValue(row.GetCell(22));
+                        double nhot140 = GetNumbericCellValue(row.GetCell(23));
+                        var nguyennhan = GetFormattedCellValue(row.GetCell(24));
+
+                        var caId = string.Empty;
+                        var caAlias = string.Empty;
+                        if (!string.IsNullOrEmpty(ca))
+                        {
+                            var caE = dbContext.Categories.Find(m => m.Type.Equals((int)ECategory.Ca) && m.Name.Equals(ca)).FirstOrDefault();
+                            if (caE == null)
+                            {
+                                caE = new Category()
+                                {
+                                    Type = (int)ECategory.Ca,
+                                    Name = ca,
+                                    Alias = Utility.AliasConvert(ca),
+                                    ParentId = parentId,
+                                    ModeData = (int)EModeData.File
+                                };
+                                dbContext.Categories.InsertOne(caE);
+                            }
+                            caId = caE.Id;
+                            caAlias = caE.Alias;
+                        }
+                        var congDoanId = string.Empty;
+                        var congDoanAlias = string.Empty;
+                        if (!string.IsNullOrEmpty(macongdoan))
+                        {
+                            var congdoanE = dbContext.Categories.Find(m => m.Type.Equals((int)ECategory.CongDoan) && m.Code.Equals(macongdoan)).FirstOrDefault();
+                            if (congdoanE == null)
+                            {
+                                congdoanE = new Category()
+                                {
+                                    Type = (int)ECategory.CongDoan,
+                                    Code = macongdoan,
+                                    Name = congdoan,
+                                    Alias = Utility.AliasConvert(congdoan),
+                                    //Content = noidungcongdoan,
+                                    ParentId = parentId,
+                                    ModeData = (int)EModeData.File
+                                };
+                                dbContext.Categories.InsertOne(congdoanE);
+                            }
+                            congDoanId = congdoanE.Id;
+                            congDoanAlias = congdoanE.Alias;
+                            congdoan = congdoanE.Name;
+                            //noidungcongdoan = congdoanE.Content;
+                        }
+
+                        var xeCoGioiMayId = string.Empty;
+                        var xeCoGioiMayCode = string.Empty;
+                        var xeCoGioiMayAlias = string.Empty;
+                        if (!string.IsNullOrEmpty(xecogioiMay))
+                        {
+                            var xeCoGioiMayE = dbContext.Categories.Find(m => m.Type.Equals((int)ECategory.XeCoGioivsMayMoc) && m.Name.Equals(xecogioiMay)).FirstOrDefault();
+                            if (xeCoGioiMayE == null)
+                            {
+                                var code = "NON01";
+                                var codeInt2 = 1;
+                                var lastestE = dbContext.Categories.Find(m => m.Type.Equals((int)ECategory.XeCoGioivsMayMoc)).SortByDescending(m => m.CodeInt).FirstOrDefault();
+                                if (lastestE != null)
+                                {
+                                    codeInt2 = lastestE.CodeInt + 1;
+                                    code = "NON" + codeInt2.ToString("D2");
+                                }
+                                xeCoGioiMayE = new Category
+                                {
+                                    Type = (int)ECategory.XeCoGioivsMayMoc,
+                                    Code = code,
+                                    CodeInt = codeInt2,
+                                    Name = xecogioiMay,
+                                    Alias = Utility.AliasConvert(xecogioiMay),
+                                    ParentId = parentId,
+                                    ModeData = (int)EModeData.File
+                                };
+                                dbContext.Categories.InsertOne(xeCoGioiMayE);
+                            }
+                            xeCoGioiMayId = xeCoGioiMayE.Id;
+                            xeCoGioiMayCode = xeCoGioiMayE.Code;
+                            xeCoGioiMayAlias = xeCoGioiMayE.Alias;
+                        }
+
                         var productId = string.Empty;
-                        var productEntity = dbContext.FactoryProducts.Find(m => m.Alias.Equals(productAlias)).FirstOrDefault();
-                        if (productEntity != null)
+                        var productAlias = string.Empty;
+                        if (!string.IsNullOrEmpty(nvlTp))
                         {
-                            productId = productEntity.Id;
-                        }
-                        else
-                        {
-                            var newProduct = new FactoryProduct
+                            var nvlE = dbContext.Categories.Find(m => m.Type.Equals((int)ECategory.NVLvsBTPvsTP) && m.Name.Equals(nvlTp)).FirstOrDefault();
+                            if (nvlE == null)
                             {
-                                Name = product,
-                                Alias = productAlias
-                            };
-                            dbContext.FactoryProducts.InsertOne(newProduct);
-                            productId = newProduct.Id;
-                        }
-
-                        int slNhanCong = 0;
-                        if (!string.IsNullOrEmpty(GetFormattedCellValue(row.GetCell(8))))
-                        {
-                            slNhanCong = Convert.ToInt32(GetFormattedCellValue(row.GetCell(8)));
-                        }
-                        var calamviec = GetFormattedCellValue(row.GetCell(9));
-
-                        var thoigianbatdau = DateTime.FromOADate(row.GetCell(10).NumericCellValue).TimeOfDay;
-                        var thoigianketthuc = DateTime.FromOADate(row.GetCell(11).NumericCellValue).TimeOfDay;
-                        var thoigianbttq = DateTime.FromOADate(row.GetCell(12).NumericCellValue).TimeOfDay;
-                        var thoigianxehu = DateTime.FromOADate(row.GetCell(13).NumericCellValue).TimeOfDay;
-                        var thoigiannghi = DateTime.FromOADate(row.GetCell(14).NumericCellValue).TimeOfDay;
-                        var thoigiancongvieckhac = DateTime.FromOADate(row.GetCell(15).NumericCellValue).TimeOfDay;
-                        var thoigiandaymobac = DateTime.FromOADate(row.GetCell(16).NumericCellValue).TimeOfDay;
-                        var thoigianbochang = DateTime.FromOADate(row.GetCell(17).NumericCellValue).TimeOfDay;
-                        var thoigiankhautru = thoigianbttq.Add(thoigianxehu).Add(thoigiannghi).Add(thoigiancongvieckhac).Add(thoigiandaymobac).Add(thoigianbochang);
-                        var thoigianlamviec = thoigianketthuc.Subtract(thoigianbatdau).Subtract(thoigiankhautru);
-                        decimal soluongthuchien = 0;
-                        if (!string.IsNullOrEmpty(GetFormattedCellValue(row.GetCell(19))))
-                        {
-                            try
-                            {
-                                soluongthuchien = Convert.ToDecimal(GetFormattedCellValue(row.GetCell(19)));
+                                nvlE = new Category
+                                {
+                                    Type = (int)ECategory.NVLvsBTPvsTP,
+                                    Name = nvlTp,
+                                    Alias = Utility.AliasConvert(nvlTp),
+                                    ParentId = parentId,
+                                    ModeData = (int)EModeData.File
+                                };
+                                dbContext.Categories.InsertOne(nvlE);
                             }
-                            catch (Exception ex)
-                            {
+                            productId = nvlE.Id;
+                            productAlias = nvlE.Alias;
+                        }
 
+                        var employeeId = string.Empty;
+                        var employeeAlias = string.Empty;
+                        if (!string.IsNullOrEmpty(tenCongNhan))
+                        {
+                            var employeeE = dbContext.Employees.Find(m => m.FullName.Equals(tenCongNhan)).FirstOrDefault();
+                            if (employeeE != null)
+                            {
+                                employeeId = employeeE.Id;
+                                employeeAlias = employeeE.AliasFullName;
                             }
                         }
-                        decimal soluongdonggoi = 0;
-                        if (!string.IsNullOrEmpty(GetFormattedCellValue(row.GetCell(20))))
-                        {
-                            soluongdonggoi = Convert.ToDecimal(GetFormattedCellValue(row.GetCell(20)));
-                        }
-                        decimal soluongbochang = 0;
-                        if (!string.IsNullOrEmpty(GetFormattedCellValue(row.GetCell(21))))
-                        {
-                            soluongbochang = Convert.ToDecimal(GetFormattedCellValue(row.GetCell(21)));
-                        }
-                        decimal dau = 0;
-                        if (!string.IsNullOrEmpty(GetFormattedCellValue(row.GetCell(22))))
-                        {
-                            dau = Convert.ToDecimal(GetFormattedCellValue(row.GetCell(22)));
-                        }
-                        decimal nhot10 = 0;
-                        if (!string.IsNullOrEmpty(GetFormattedCellValue(row.GetCell(23))))
-                        {
-                            nhot10 = Convert.ToDecimal(GetFormattedCellValue(row.GetCell(23)));
-                        }
-                        decimal nhot50 = 0;
-                        if (!string.IsNullOrEmpty(GetFormattedCellValue(row.GetCell(24))))
-                        {
-                            try
-                            {
-                                nhot50 = Convert.ToDecimal(GetFormattedCellValue(row.GetCell(24)));
-                            }
-                            catch (Exception ex)
-                            {
 
+                        var caLamViecId = string.Empty;
+                        var caLamViecAlias = string.Empty;
+                        if (!string.IsNullOrEmpty(caLamViec))
+                        {
+                            var caLamViecE = dbContext.Categories.Find(m => m.Type.Equals((int)ECategory.CaLamViec) && m.Name.Equals(caLamViec)).FirstOrDefault();
+                            if (caLamViecE == null)
+                            {
+                                caLamViecE = new Category
+                                {
+                                    Type = (int)ECategory.CaLamViec,
+                                    Name = caLamViec,
+                                    Alias = Utility.AliasConvert(caLamViec),
+                                    ParentId = parentId,
+                                    ModeData = (int)EModeData.File
+                                };
+                                dbContext.Categories.InsertOne(caLamViecE);
                             }
+                            caLamViecId = caLamViecE.Id;
+                            caLamViecAlias = caLamViecE.Alias;
                         }
-                        var nhot90 = GetNumbericCellValue(row.GetCell(25));
-                        var nhot140 = GetNumbericCellValue(row.GetCell(26));
-                        var nguyennhan = GetFormattedCellValue(row.GetCell(27));
-                        var tongthoigianbochang = thoigianbochang.TotalSeconds * slNhanCong;
-                        var tongthoigiandonggoi = thoigianlamviec.TotalSeconds * slNhanCong;
-                        var tongthoigiancongvieckhac = thoigiancongvieckhac.TotalSeconds * slNhanCong;
-                        var tongthoigiandaymobac = thoigiandaymobac.TotalSeconds * slNhanCong;
 
-                        var phieuInCa = Utility.NoPhieuInCa(date, xecogioiMayAlias);
+                        var phieuInCa = Utility.NoPhieuInCa(date, xeCoGioiMayCode);
 
                         dbContext.FactoryVanHanhs.InsertOne(new FactoryVanHanh
                         {
@@ -1381,62 +1414,182 @@ namespace erp.Controllers
                             Day = date.Day,
                             Date = date,
                             Ca = ca,
-                            CaAlias = Utility.AliasConvert(ca),
-                            MangCongViec = mangcongviec,
-                            MangCongViecAlias = Utility.AliasConvert(mangcongviec),
-                            CongDoan = congdoan,
-                            CongDoanAlias = Utility.AliasConvert(congdoan),
+                            CaId = caId,
+                            CaAlias = caAlias,
+                            CongDoanId = congDoanId,
+                            CongDoanCode = macongdoan,
+                            CongDoanName = congdoan,
+                            CongDoanAlias = congDoanAlias,
+                            CongDoanNoiDung = noidungcongdoan,
                             LOT = lot,
-                            XeCoGioiMay = xecogioiMay,
-                            XeCoGioiMayAlias = xecogioiMayAlias,
+                            XeCoGioiMayId = xeCoGioiMayId,
+                            XeCoGioiMayCode = xeCoGioiMayCode,
+                            XeCoGioiMayName = xecogioiMay,
+                            XeCoGioiMayAlias = xeCoGioiMayAlias,
                             ProductId = productId,
-                            NVLTP = product,
-                            NVLTPAlias = productAlias,
-                            SLNhanCong = slNhanCong,
+                            ProductName = nvlTp,
+                            ProductAlias = productAlias,
+                            Employee = tenCongNhan,
+                            EmployeeId = employeeId,
+                            EmployeeAlias = employeeAlias,
+                            CaLamViec = caLamViec,
+                            CaLamViecId = caLamViecId,
+                            CaLamViecAlias = caLamViecAlias,
                             Start = thoigianbatdau,
                             End = thoigianketthuc,
                             ThoiGianBTTQ = thoigianbttq,
                             ThoiGianXeHu = thoigianxehu,
                             ThoiGianNghi = thoigiannghi,
                             ThoiGianCVKhac = thoigiancongvieckhac,
-                            ThoiGianDayMoBat = thoigiandaymobac,
-                            ThoiGianBocHang = thoigianbochang,
                             ThoiGianLamViec = thoigianlamviec,
                             SoLuongThucHien = soluongthuchien,
-                            SoLuongDongGoi = soluongdonggoi,
-                            SoLuongBocHang = soluongbochang,
                             Dau = dau,
                             Nhot10 = nhot10,
                             Nhot50 = nhot50,
+                            Nhot90 = nhot90,
+                            Nhot140 = nhot140,
                             NguyenNhan = nguyennhan,
-                            TongThoiGianBocHang = tongthoigianbochang,
-                            TongThoiGianDongGoi = tongthoigiandonggoi,
-                            TongThoiGianCVKhac = tongthoigiancongvieckhac,
-                            TongThoiGianDayMoBat = tongthoigiandaymobac,
-                            PhieuInCa = phieuInCa
+                            PhieuInCa = phieuInCa,
+                            ModeData = (int)EModeData.File
                         });
                     }
                     #endregion
 
-                    #region Sheet 3 BC ton SX
-                    // GET DIRECT FROM FactoryTonSX
-                    //dbContext.FactoryReportTonSXs.DeleteMany(m => true);
-                    //var groupReportTonSxs = (from p in tonsxs
-                    //                         group p by new
-                    //                         {
-                    //                             p.Date,
-                    //                             p.Product
-                    //                         }
-                    //          into d
-                    //                         select new
-                    //                         {
-                    //                             Date = d.Key.Date,
-                    //                             d.Key.Product
-                    //                         }).ToList();
-                    //foreach (var group in groupReportTonSxs)
+                    #region Sheet 2 DATA ton SX
+                    //dbContext.FactoryTonSXs.DeleteMany(m => true);
+                    //headerCal = 2;
+                    //for (int i = headerCal; i <= sheet1.LastRowNum; i++)
                     //{
+                    //    IRow row = sheet1.GetRow(i);
+                    //    if (row == null) continue;
+                    //    if (row.Cells.All(d => d.CellType == CellType.Blank)) continue;
+                    //    if (row.Cells.All(d => d.CellType == CellType.Error)) continue;
+                    //    if (row.Cells.All(d => d.CellType == CellType.Unknown)) continue;
 
+                    //    var date = GetDateCellValue(row.GetCell(1));
+                    //    var product = GetFormattedCellValue(row.GetCell(2));
+                    //    var unit = GetFormattedCellValue(row.GetCell(3));
+                    //    var productAlias = Utility.AliasConvert(product);
+                    //    var productId = string.Empty;
+                    //    var productEntity = dbContext.FactoryProducts.Find(m => m.Alias.Equals(productAlias)).FirstOrDefault();
+                    //    if (productEntity != null)
+                    //    {
+                    //        productId = productEntity.Id;
+                    //    }
+                    //    else
+                    //    {
+                    //        var newProduct = new FactoryProduct
+                    //        {
+                    //            Name = product,
+                    //            Alias = productAlias,
+                    //            Unit = unit
+                    //        };
+                    //        dbContext.FactoryProducts.InsertOne(newProduct);
+                    //        productId = newProduct.Id;
+                    //    }
+
+                    //    var lot = GetFormattedCellValue(row.GetCell(4));
+                    //    decimal tondaungay = 0;
+                    //    if (!string.IsNullOrEmpty(GetFormattedCellValue(row.GetCell(5))))
+                    //    {
+                    //        tondaungay = Convert.ToDecimal(GetFormattedCellValue(row.GetCell(5)));
+                    //    }
+                    //    decimal nhaptusanxuat = 0;
+                    //    if (!string.IsNullOrEmpty(GetFormattedCellValue(row.GetCell(6))))
+                    //    {
+                    //        nhaptusanxuat = Convert.ToDecimal(GetFormattedCellValue(row.GetCell(6)));
+                    //    }
+                    //    decimal nhaptukho = 0;
+                    //    if (!string.IsNullOrEmpty(GetFormattedCellValue(row.GetCell(7))))
+                    //    {
+                    //        nhaptukho = Convert.ToDecimal(GetFormattedCellValue(row.GetCell(7)));
+                    //    }
+                    //    decimal xuatchokho = 0;
+                    //    if (!string.IsNullOrEmpty(GetFormattedCellValue(row.GetCell(8))))
+                    //    {
+                    //        xuatchokho = Convert.ToDecimal(GetFormattedCellValue(row.GetCell(8)));
+                    //    }
+                    //    decimal xuatchosanxuat = 0;
+                    //    if (!string.IsNullOrEmpty(GetFormattedCellValue(row.GetCell(9))))
+                    //    {
+                    //        xuatchosanxuat = Convert.ToDecimal(GetFormattedCellValue(row.GetCell(9)));
+                    //    }
+                    //    decimal xuathaohut = 0;
+                    //    if (!string.IsNullOrEmpty(GetFormattedCellValue(row.GetCell(10))))
+                    //    {
+                    //        xuathaohut = Convert.ToDecimal(GetFormattedCellValue(row.GetCell(10)));
+                    //    }
+                    //    decimal toncuoingay = 0;
+                    //    if (!string.IsNullOrEmpty(GetFormattedCellValue(row.GetCell(11))))
+                    //    {
+                    //        toncuoingay = Convert.ToDecimal(GetFormattedCellValue(row.GetCell(11)));
+                    //    }
+
+                    //    dbContext.FactoryTonSXs.InsertOne(new FactoryTonSX
+                    //    {
+                    //        Year = date.Year,
+                    //        Month = date.Month,
+                    //        Week = Utility.GetIso8601WeekOfYear(date),
+                    //        Day = date.Day,
+                    //        Date = date,
+                    //        ProductId = productId,
+                    //        Product = product,
+                    //        ProductAlias = Utility.AliasConvert(product),
+                    //        Unit = unit,
+                    //        LOT = lot,
+                    //        TonDauNgay = tondaungay,
+                    //        NhapTuSanXuat = nhaptusanxuat,
+                    //        XuatChoSanXuat = xuatchosanxuat,
+                    //        NhapTuKho = nhaptukho,
+                    //        XuatChoKho = xuatchokho,
+                    //        XuatHaoHut = xuathaohut,
+                    //        TonCuoiNgay = toncuoingay
+                    //    });
+
+                    //    // Update Quantity Product
+                    //    var builderUpdateQuantityProduct = Builders<FactoryProduct>.Filter;
+                    //    var filterUpdateQuantityProduct = builderUpdateQuantityProduct.Eq(m => m.Id, productId);
+                    //    var updateQuantityProduct = Builders<FactoryProduct>.Update
+                    //        .Set(m => m.Quantity, toncuoingay);
+                    //    dbContext.FactoryProducts.UpdateOne(filterUpdateQuantityProduct, updateQuantityProduct);
                     //}
+
+                    //// Update Unit Product & create Unit collections
+                    //var tonsxs = dbContext.FactoryTonSXs.Find(m => true).ToList();
+                    //var groups = (from p in tonsxs
+                    //              group p by new
+                    //              {
+                    //                  p.ProductAlias,
+                    //                  p.Unit
+                    //              }
+                    //          into d
+                    //              select new
+                    //              {
+                    //                  Product = d.Key.ProductAlias,
+                    //                  d.Key.Unit
+                    //              }).ToList();
+                    //foreach (var group in groups)
+                    //{
+                    //    var builderUpdateProduct = Builders<FactoryProduct>.Filter;
+                    //    var filterUpdateProduct = builderUpdateProduct.Eq(m => m.Alias, group.Product);
+                    //    var updateProduct = Builders<FactoryProduct>.Update
+                    //        .Set(m => m.Unit, group.Unit);
+                    //    dbContext.FactoryProducts.UpdateOne(filterUpdateProduct, updateProduct);
+
+                    //    var aliasUnit = Utility.AliasConvert(group.Unit);
+                    //    if (dbContext.Units.CountDocuments(m => m.Type.Equals(Constants.UnitType.Factory) & m.Alias.Equals(aliasUnit)) == 0)
+                    //    {
+                    //        dbContext.Units.InsertOne(new Unit
+                    //        {
+                    //            Type = Constants.UnitType.Factory,
+                    //            Name = group.Unit,
+                    //            Alias = aliasUnit
+                    //        });
+                    //    }
+                    //}
+
+                    #endregion
+                    #region Sheet 3 BC ton SX
 
                     #endregion
 
@@ -1459,7 +1612,7 @@ namespace erp.Controllers
                     #endregion
                 }
             }
-            return Json(new { url = "/" + Constants.LinkFactory.Main + "/" + Constants.LinkFactory.TonSx });
+            return Json(new { url = "/" + Constants.LinkFactory.VanHanh });
         }
 
         [Route("/tai-lieu/nha-may/thong-ke/tuan")]
@@ -1837,7 +1990,7 @@ namespace erp.Controllers
                             dbContext.Misss.InsertOne(new Miss
                             {
                                 Type = "sale-title",
-                                Object = code + "-" + fullName +"-" + title,
+                                Object = code + "-" + fullName + "-" + title,
                                 Error = "No get data",
                                 DateTime = DateTime.Now.ToString()
                             });
@@ -1855,7 +2008,7 @@ namespace erp.Controllers
         {
             return View();
         }
-       
+
         #region Reference code
         //[Route("/tai-lieu/nhan-vien/import/")]
         //public ActionResult NhanVienImport()
@@ -1942,7 +2095,7 @@ namespace erp.Controllers
                 switch (cell.CellType)
                 {
                     case CellType.String:
-                        return cell.StringCellValue;
+                        return cell.StringCellValue.Trim();
 
                     case CellType.Numeric:
                         if (DateUtil.IsCellDateFormatted(cell))
@@ -1957,7 +2110,7 @@ namespace erp.Controllers
                         }
                         else
                         {
-                            return cell.NumericCellValue.ToString();
+                            return cell.NumericCellValue.ToString().Trim();
                         }
 
                     case CellType.Boolean:
@@ -1967,7 +2120,7 @@ namespace erp.Controllers
                         switch (cell.CachedFormulaResultType)
                         {
                             case CellType.String:
-                                return cell.StringCellValue;
+                                return cell.StringCellValue.Trim();
                             case CellType.Boolean:
                                 return cell.BooleanCellValue ? "TRUE" : "FALSE";
                             case CellType.Numeric:
@@ -1981,7 +2134,7 @@ namespace erp.Controllers
                                 }
                                 else
                                 {
-                                    return cell.NumericCellValue.ToString();
+                                    return cell.NumericCellValue.ToString().Trim();
                                 }
                         }
                         return cell.CellFormula;
@@ -2059,7 +2212,11 @@ namespace erp.Controllers
             {
                 if (cell.CellType == CellType.Numeric)
                 {
-                    if (DateUtil.IsCellDateFormatted(cell))
+                    if (cell.DateCellValue != null)
+                    {
+                        return cell.DateCellValue;
+                    }
+                    else if (DateUtil.IsCellDateFormatted(cell))
                     {
                         return cell.DateCellValue;
                     }

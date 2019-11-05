@@ -9,17 +9,24 @@ namespace ViewModels
     {
         public IList<FactoryVanHanh> FactoryVanHanhs { get; set; }
 
+        public FactoryVanHanh Entity { get; set; }
+
+        public CategoryDisplay Vehicle { get; set; }
+
         #region Dropdownlist
-        public IList<Category> Works { get; set; }
+        public IList<Category> Shifts { get; set; }
+        public IList<Category> ShiftSubs { get; set; }
         public IList<Category> Stages { get; set; }
         public IList<Category> Vehicles { get; set; }
         public IList<Category> Products { get; set; }
+        public IList<Employee> Employees { get; set; }
+        public IList<MonthYear> MonthYears { get; set; }
         #endregion
 
         #region Search
         public string Ca { get; set; }
 
-        public string Calamviec { get; set; }
+        public string CaLamViec { get; set; }
 
         public string Cv { get; set; }
 
@@ -31,7 +38,9 @@ namespace ViewModels
 
         public string Lot { get; set; }
 
-        public string Phieuinca { get; set; }
+        public string Phieu { get; set; }
+
+        public string Thang { get; set; }
 
         public DateTime? Tu { get; set; }
 
@@ -41,9 +50,9 @@ namespace ViewModels
 
         public int Dong { get; set; }
 
-        public string SapXep { get; set; }
+        public string Truong { get; set; }
 
-        public string ThuTu { get; set; }
+        public string SapXep { get; set; }
         #endregion
 
         public int Records { get; set; }

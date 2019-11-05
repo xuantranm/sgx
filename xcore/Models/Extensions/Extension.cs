@@ -22,6 +22,8 @@ namespace Models
 
         public long Timestamp { get; set; } = DateTime.Now.Ticks;
 
+        public string Secure { get; set; } = DateTime.Now.ToString("yyyyMMddHHmmssfff");
+
         public bool Publish { get; set; } = true;
 
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
@@ -46,6 +48,12 @@ namespace Models
         public string Language { get; set; } = Constants.Languages.Vietnamese;
 
         public string Domain { get; set; }
+
+        public int ModeData { get; set; } = (int)EModeData.Input;
+
+        public DateTime Start { get; set; } = DateTime.Now;
+
+        public DateTime? Expired { get; set; }
     }
 
     public class Tag

@@ -1,4 +1,5 @@
 ﻿@using Common.Utilities;
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -43,16 +44,6 @@
     <link href="~/assets/wingman/css/screen.css" rel="stylesheet" type="text/css" media="all" />
 
     @RenderSection("css", required: false)
-
-    <!-- Global site tag (gtag.js) - Google Analytics -->
-    @*<script async src="https://www.googletagmanager.com/gtag/js?id=UA-52115242-13"></script>
-        <script>
-            window.dataLayer = window.dataLayer || [];
-            function gtag() { dataLayer.push(arguments); }
-            gtag('js', new Date());
-
-            gtag('config', 'UA-52115242-13');
-        </script>*@
     <script type="text/javascript" src="~/lib/jquery3.2.1/dist/jquery-3.2.1.min.js"></script>
     <script type="text/javascript" src="~/lib/imsky-holder-8220898/holder.min.js"></script>
 </head>
@@ -70,7 +61,6 @@
             <div class="container">
                 <nav class="navbar navbar-expand-lg">
                     <a class="navbar-brand" href="/">
-                        @*<img alt="Tribat" src="~/assets/wingman/img/logo-white.svg" />*@
                         <img alt="Tribat" src="~/images/logo.png" style="width:120px; height:30px" />
                     </a>
                     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">

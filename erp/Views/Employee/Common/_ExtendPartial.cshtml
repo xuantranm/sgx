@@ -246,6 +246,192 @@
     </div>
 </script>
 
+<script id="tmplMobile" type="text/x-jsrender">
+    <div class="col-md-3 col-sm-6 col-xs-12 nodeMobile node">
+        <div class="form-group">
+            <i class="icon icon-phone"></i>
+            <label>Mobile</label>
+            <button type="button" class="btn btn-link btn-sm remove-item"><i class="icon-squared-cross"></i>Xóa</button>
+            <input name="Employee.Mobiles[{{:code}}].Number" class="form-control form-control-lg" />
+        </div>
+        <input type="hidden" class="codeMobile" value="{{:code}}" />
+    </div>
+</script>
+
+<script id="tmplEducation" type="text/x-jsrender">
+    <div class="col-12 nodeEducation node">
+        <div class="row bd-example">
+            <div class="form-group col-10">
+                <label class="control-label">Lần {{:code+1}} - Nội dung</label>
+                <textarea name="Employee.EmployeeEducations[{{:code}}].Content" class="form-control form-control-lg js-auto-size"></textarea>
+            </div>
+            <div class="col-2">
+                <button type="button" class="btn btn-danger btn-sm remove-item"><i class="glyphicon-remove"></i>Xóa</button>
+            </div>
+        </div>
+        <input type="hidden" class="codeEducation" value="{{:code}}" />
+    </div>
+</script>
+
+<script id="tmplBHXH" type="text/x-jsrender">
+    <div class="col-12 nodeBHXH node">
+        <div class="row bd-example">
+            <div class="form-group col-md-3 col-sm-6 col-xs-12">
+                <label class="control-label">Tác vụ</label>
+                <select name="Employee.BhxhHistories[{{:code}}].Task" class="form-control form-control-lg task-bhxh">
+                    <option value="tang-bhxh">Tăng BHXH</option>
+                    <option value="giam-bhxh">Giảm BHXH</option>
+                    <option value="the-bhyt">Thẻ BHYT</option>
+                    <option value="ghi-che-do-thai-san">Ghi chế độ thai sản</option>
+                    <option value="ghi-che-do-om-dau">Ghi chế độ ốm đau</option>
+                    <option value="ghi-che-do-tai-nan-lao-dong">Ghi chế độ tai nan lao động</option>
+                </select>
+            </div>
+            <div class="form-group col-md-3 col-sm-6 col-xs-12">
+                <label class="control-label">Ngày thực hiện</label>
+                <input class="form-control form-control-lg datepicker datepicker-lg" value="@DateTime.Now.ToString("dd/MM/yyyy")" />
+                <input type="hidden" name="Employee.BhxhHistories[{{:code}}].DateAction" class="form-control form-control-lg hidedatepicker" value="false" />
+            </div>
+            <div class="form-group col-md-3 col-sm-6 col-xs-12">
+                <label class="control-label">Ngày trả kết quả</label>
+                <input class="form-control form-control-lg datepicker datepicker-lg" value="@DateTime.Now.ToString("dd/MM/yyyy")" />
+                <input type="hidden" name="Employee.BhxhHistories[{{:code}}].DateResult" class="form-control form-control-lg hidedatepicker" value="false" />
+            </div>
+            <div class="form-group col-md-2 col-sm-4 col-xs-6">
+                <label class="control-label">Tình trạng</label>
+                <select name="Employee.BhxhHistories[{{:code}}].Status" class="form-control form-control-lg">
+                    <option value="0">Chờ</option>
+                    <option value="1">Hoàn thành</option>
+                    <option value="2">Không xác định</option>
+                </select>
+            </div>
+            <div class="col-6 col-md-1 col-sm-2 col-xs-6">
+                <button type="button" class="btn btn-danger btn-sm remove-item"><i class="note-icon-col-remove"></i>Xóa</button>
+            </div>
+        </div>
+        <input type="hidden" class="codeBHXH" value="{{:code}}" />
+        <input type="hidden" name="Employee.BhxhHistories[{{:code}}].TaskDisplay" class="task-bhxh-display" />
+    </div>
+</script>
+
+<script id="tmplCertificate" type="text/x-jsrender">
+    <div class="col-12 nodeCertificate node">
+        <div class="row bd-example">
+            <div class="form-group col-md-3 col-sm-6 col-xs-12">
+                <label class="control-label">Học vấn</label>
+                <input name="Employee.Certificates[{{:code}}].Type" class="form-control form-control-lg" />
+            </div>
+            <div class="form-group col-md-3 col-sm-6 col-xs-12">
+                <label class="control-label">Nơi cấp</label>
+                <input name="Employee.Certificates[{{:code}}].Location" class="form-control form-control-lg" />
+            </div>
+            <div class="form-group col-12">
+                <label class="control-label">Mô tả</label>
+                <textarea name="Employee.Certificates[{{:code}}].Description" class="form-control form-control-lg js-auto-size"></textarea>
+            </div>
+            <div class="col-md-3 col-sm-6 col-xs-12">
+                <button type="button" class="btn btn-danger btn-sm remove-item"><i class="glyphicon-remove"></i>Xóa</button>
+            </div>
+        </div>
+        <input type="hidden" class="codeCertificate" value="{{:code}}" />
+    </div>
+</script>
+
+<script id="tmplFamily" type="text/x-jsrender">
+    <div class="col-12 nodeFamily node">
+        <div class="row bd-example">
+            <div class="form-group col-md-3 col-sm-6 col-xs-12">
+                <label class="control-label">Quan hệ</label>
+                <select name="Employee.EmployeeFamilys[{{:code}}].Relation" class="form-control form-control-lg">
+                    <option value="3">Con</option>
+                    <option value="2">Vợ/chồng</option>
+                    <option value="1">Cha/mẹ</option>
+                </select>
+            </div>
+            <div class="form-group col-md-3 col-sm-6 col-xs-12">
+                <label class="control-label">Họ và tên</label>
+                <input name="Employee.EmployeeFamilys[{{:code}}].FullName" class="form-control form-control-lg" />
+            </div>
+            <div class="form-group col-md-3 col-sm-6 col-xs-12">
+                <label class="control-label">Ngày sinh nhật</label>
+                <input class="form-control form-control-lg datepicker datepicker-lg" />
+                <input type="hidden" name="Employee.EmployeeFamilys[{{:code}}].Birthday" class="hidedatepicker" />
+            </div>
+            <div class="col-md-3 col-sm-6 col-xs-12">
+                <button type="button" class="btn btn-danger btn-sm remove-item"><i class="icon-remove-user"></i>Xóa</button>
+            </div>
+        </div>
+        <input type="hidden" class="codeFamily" value="{{:code}}" />
+    </div>
+</script>
+
+<script id="tmplContract" type="text/x-jsrender">
+    <div class="col-12 nodeContract node">
+        <div class="row bd-example">
+            <div class="form-group col-md-3 col-sm-6 col-xs-12">
+                <label class="control-label">Loại hợp đồng</label>
+                <select name="Employee.Contracts[{{:code}}].Type" class="form-control form-control-lg contract-type">
+                    @{
+                        foreach (var item in Model.Contracts)
+                        {
+                            <option value="@item.Id">@item.Name</option>
+                        }
+                    }
+                </select>
+                <input type="hidden" name="Employee.Contracts[{{:code}}].TypeName" class="contract-type-name" />
+            </div>
+            <div class="form-group col-md-3 col-sm-6 col-xs-12">
+                <label class="control-label">Số hợp đồng</label>
+                <input name="Employee.Contracts[{{:code}}].Code" class="form-control form-control-lg" />
+            </div>
+            <div class="form-group col-md-3 col-sm-6 col-xs-12">
+                <label class="control-label">PLHĐ</label>
+                <input name="Employee.Contracts[{{:code}}].PLHD" class="form-control form-control-lg" />
+            </div>
+            <div class="form-group col-md-3 col-sm-6 col-xs-12">
+                <label class="control-label">Phụ lục điều chỉnh lương</label>
+                <input name="Employee.Contracts[{{:code}}].PhuLucDieuChinhLuong" class="form-control form-control-lg" />
+            </div>
+            <div class="form-group col-md-3 col-sm-6 col-xs-12">
+                <label class="control-label">Ngày hiệu lực</label>
+                <input class="form-control form-control-lg datepicker datepicker-lg" value="@DateTime.Now.ToString("dd/MM/yyyy")" />
+                <input type="hidden" name="Employee.Contracts[{{:code}}].Start" class="hidedatepicker" />
+            </div>
+            <div class="form-group col-md-3 col-sm-6 col-xs-12">
+                <label class="control-label">Ngày hết hiệu lực</label>
+                <input class="form-control form-control-lg datepicker datepicker-lg" value="@DateTime.Now.AddYears(1).ToString("dd/MM/yyyy")" />
+                <input type="hidden" name="Employee.Contracts[{{:code}}].End" class="hidedatepicker" />
+            </div>
+            <div class="form-group col-xs-12">
+                <label class="control-label">Ghi chú</label>
+                <input name="Employee.Contracts[{{:code}}].Description" class="form-control form-control-lg" />
+            </div>
+            <div class="col-md-3 col-sm-6 col-xs-12">
+                <button type="button" class="btn btn-danger btn-sm remove-item"><i class="note-icon-col-remove"></i>Xóa</button>
+            </div>
+        </div>
+        <input type="hidden" class="codeContract" value="{{:code}}" />
+    </div>
+</script>
+
+<script id="tmplStorePaper" type="text/x-jsrender">
+    <div class="col-12 nodeStorePaper node">
+        <div class="row bd-example">
+            <div class="form-group col-md-3 col-sm-6 col-xs-12">
+                <label class="control-label">Loại bảng lưu</label>
+                <input name="Employee.StorePapers[{{:code}}].Type" class="form-control form-control-lg" />
+            </div>
+            <div class="form-group col-md-3 col-sm-6 col-xs-12">
+                <label class="control-label">Số lượng</label>
+                <input name="Employee.StorePapers[{{:code}}].Count" class="form-control form-control-lg" />
+            </div>
+            <div class="col-md-3 col-sm-6 col-xs-12">
+                <button type="button" class="btn btn-danger btn-sm remove-item"><i class="glyphicon-remove"></i>Xóa</button>
+            </div>
+        </div>
+        <input type="hidden" class="codeStorePaper" value="{{:code}}" />
+    </div>
+</script>
 @*
     For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
 *@

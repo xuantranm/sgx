@@ -13,6 +13,9 @@ using MongoDB.Driver;
 using Models;
 using System.Reflection;
 using NPOI.SS.UserModel;
+using ViewModels;
+using Microsoft.AspNetCore.Http;
+using System.Xml.Linq;
 //using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 
 namespace Common.Utilities
@@ -25,7 +28,94 @@ namespace Common.Utilities
         {
         }
 
+        public static void SiteMapAuto(string domain, string webRootPath)
+        {
+            try
+            {
+                var domainCode = 1;
+                var domainE = dbContext.Domains.Find(m => m.Enable.Equals(true) && m.Name.Equals(domain)).FirstOrDefault();
+                if (domainE != null)
+                {
+                    domainCode = domainE.Code;
+                }
+
+                var contents = dbContext.Contents.Find(m => m.Enable.Equals(true) && m.Domain.Equals(domain)).ToList();
+                string fileName = "sitemap.xml";
+                string DOMAIN = domain;
+                string LAST_MODIFY = String.Format("{0:yyyy-MM-dd}", DateTime.Now);
+                string CHANGE_FREQ = "monthly";
+                string TOP_PRIORITY = "0.5";
+                string MEDIUM_PRIORITY = "0.8";
+
+                XNamespace ns = "https://www.sitemaps.org/schemas/sitemap/0.9";
+                XNamespace xsiNs = "https://www.w3.org/2001/XMLSchema-instance";
+
+                //XDocument Start
+                XDocument xDoc = new XDocument(
+                    new XDeclaration("1.0", "UTF-8", "no"),
+                    new XElement(ns + "urlset",
+                    new XAttribute(XNamespace.Xmlns + "xsi", xsiNs),
+                    new XAttribute(xsiNs + "schemaLocation",
+                        "https://www.sitemaps.org/schemas/sitemap/0.9 https://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd"),
+                    new XElement(ns + "url",
+                        // Root Element
+                        new XElement(ns + "loc", "https://" + DOMAIN),
+                        new XElement(ns + "lastmod", LAST_MODIFY),
+                        new XElement(ns + "changefreq", "weekly"),
+                        new XElement(ns + "priority", TOP_PRIORITY)),
+                        //Level0 Menu
+                        from item in contents
+                        select new XElement(ns + "url",
+                            new XElement(ns + "loc", "https://" + DOMAIN + "/" + item.Alias),
+                            new XElement(ns + "lastmod", LAST_MODIFY),
+                            new XElement(ns + "changefreq", CHANGE_FREQ),
+                            new XElement(ns + "priority", MEDIUM_PRIORITY)
+                        )
+                        ////Level2 Menu
+                        //from level0 in GetParentCMSMenu()
+                        //from level1 in GetLevel1Menu(Util.Parse<int>(level0.MENU_ID))
+                        //from level2 in GetLevel2Menu(Util.Parse<int>(level1.MENU_ID))
+                        //select new
+                        //    XElement(ns + "url",
+                        //    new XElement(ns + "loc", String.Concat(DOMAIN, WebsiteHelpers.GetMenuRouteURL(Util.Parse<string>(level2.Menu), Util.Parse<string>(level2.Level1), Util.Parse<int>(level2.AppID), Util.Parse<string>(level2.Level2)))),
+                        //    new XElement(ns + "lastmod", LAST_MODIFY),
+                        //    new XElement(ns + "changefreq", CHANGE_FREQ),
+                        //    new XElement(ns + "priority", MEDIUM_PRIORITY)
+                        //)
+
+                ));
+                //XDocument End
+
+                var folder = Path.Combine(webRootPath, Constants.Folder.Resource, domainCode.ToString());
+                if (!Directory.Exists(folder))
+                {
+                    Directory.CreateDirectory(folder);
+                }
+
+                xDoc.Save(Path.Combine(folder, fileName));
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        public static bool IsInteger(double number)
+        {
+            return (number % 1 == 0);
+        }
+
         public static string GetSetting(string Key)
+        {
+            string result = string.Empty;
+            var settingE = dbContext.Settings.Find(m => m.Enable.Equals(true) && m.Key.Equals(Key)).FirstOrDefault();
+            if (settingE != null)
+            {
+                result = settingE.Value;
+            }
+            return result;
+        }
+
+        public static string GetSetting(string Key, string domain)
         {
             string result = string.Empty;
             var settingE = dbContext.Settings.Find(m => m.Enable.Equals(true) && m.Key.Equals(Key)).FirstOrDefault();
@@ -108,7 +198,7 @@ namespace Common.Utilities
             var congtychinhanhs = dbContext.CongTyChiNhanhs.Find(m => m.Enable.Equals(true)).ToList();
             var ctcnvp = congtychinhanhs.First(x => x.Code.Equals("CT1"));
             var ctcnnm = congtychinhanhs.First(x => x.Code.Equals("CT2"));
-            var settings = dbContext.Settings.Find(m => m.Type.Equals((int)ESetting.Salary) && m.Enable.Equals(true)).ToList();
+            var settings = dbContext.Settings.Find(m => m.Type.Equals((int)EData.Salary) && m.Enable.Equals(true)).ToList();
 
             #region Filter Salary Data
             var builder = Builders<SalaryEmployeeMonth>.Filter;
@@ -364,8 +454,8 @@ namespace Common.Utilities
             decimal tongthunhapVP = 0;
             if (salary.Type == (int)ESalaryType.VP)
             {
-                decimal luongcobanbaogomphucap = salary.LuongCanBan 
-                                            + salary.NangNhocDocHai + salary.TrachNhiem + salary.ThamNien + salary.ThuHut 
+                decimal luongcobanbaogomphucap = salary.LuongCanBan
+                                            + salary.NangNhocDocHai + salary.TrachNhiem + salary.ThamNien + salary.ThuHut
                                             + salary.Xang + salary.Com + salary.KiemNhiem + salary.BhytDacBiet
                                             + salary.ViTriCanKnNhieuNam + salary.ViTriDacThu;
                 salary.LuongCoBanBaoGomPhuCap = luongcobanbaogomphucap;
@@ -374,7 +464,7 @@ namespace Common.Utilities
                 decimal luongtheodoanhthudoanhso = 0;
                 double tongbunboc = 0;
                 decimal thanhtienbunboc = 0;
-                
+
                 var logisticData = dbContext.LogisticEmployeeCongs.Find(m => m.EmployeeId.Equals(employeeId) && m.Year.Equals(salary.YearLogistic) && m.Month.Equals(salary.MonthLogistic)).FirstOrDefault();
                 var saleData = dbContext.SaleKPIEmployees.Find(m => m.EmployeeId.Equals(employeeId) && m.Year.Equals(salary.YearSale) && m.Month.Equals(salary.MonthSale)).FirstOrDefault();
                 if (logisticData != null)
@@ -401,7 +491,7 @@ namespace Common.Utilities
                         luongtheodoanhthudoanhso = saleData.ThuViec;
                     }
                 }
-                
+
                 salary.CongTacXa = congtacxa;
                 salary.MucDatTrongThang = mucdattrongthang;
                 salary.LuongTheoDoanhThuDoanhSo = luongtheodoanhthudoanhso;
@@ -420,17 +510,17 @@ namespace Common.Utilities
                 //UAT
                 salary.MauSo = 26;
                 //END
-                tongthunhapVP = Convert.ToDecimal((double)luongcobanbaogomphucap / salary.MauSo * (salary.NgayCongLamViec 
-                                    + salary.CongCNGio / 8 * 2 
-                                    + salary.CongTangCaNgayThuongGio / 8 * 1.5 
+                tongthunhapVP = Convert.ToDecimal((double)luongcobanbaogomphucap / salary.MauSo * (salary.NgayCongLamViec
+                                    + salary.CongCNGio / 8 * 2
+                                    + salary.CongTangCaNgayThuongGio / 8 * 1.5
                                     + salary.CongLeTet * 3)
                                     + (double)salary.LuongCanBan / salary.MauSo * (salary.NgayNghiPhepNam + salary.NgayNghiLeTetHuongLuong)
-                                    + (double)congtacxa 
+                                    + (double)congtacxa
                                     + (double)salary.DienThoai
-                                    + (double)luongtheodoanhthudoanhso 
-                                    + (double)thanhtienbunboc 
-                                    + (double)luongkhac 
-                                    + (double)thidua 
+                                    + (double)luongtheodoanhthudoanhso
+                                    + (double)thanhtienbunboc
+                                    + (double)luongkhac
+                                    + (double)thidua
                                     + (double)hotrongoailuong);
                 if (logisticData != null && logisticData.ChucVu != "Tài xế")
                 {
@@ -612,8 +702,175 @@ namespace Common.Utilities
             return sortTimes;
         }
 
+        public static bool IsManager(Employee loginE)
+        {
+            var result = dbContext.Employees.CountDocuments(m => m.Enable.Equals(true) && m.Leave.Equals(false)
+            && (m.ManagerEmployeeId.Equals(loginE.Id) || m.ManagerId.Equals(loginE.ChucVu))) > 0;
+            return result;
+        }
+        // extend: true: allow role. false: only manager direct
+        public static List<IdName> Approves(Employee account, bool extend, string role, int action)
+        {
+            var approves = new List<IdName>();
+            var today = DateTime.Now.Date;
+
+            if (!string.IsNullOrEmpty(account.ManagerEmployeeId))
+            {
+                var managerE = dbContext.Employees.Find(m => m.Id.Equals(account.ManagerEmployeeId) && m.Enable.Equals(true) && m.Leave.Equals(false)).FirstOrDefault();
+                if (managerE == null)
+                {
+                    var nextManagerE = dbContext.Employees.Find(m => m.ChucVu.Equals(account.ManagerId) && m.Enable.Equals(true) && m.Leave.Equals(false)).FirstOrDefault();
+                    if (nextManagerE != null)
+                    {
+                        approves.Add(new IdName
+                        {
+                            Id = nextManagerE.Id,
+                            Name = nextManagerE.ChucVuName + " - " + nextManagerE.FullName
+                        });
+                    }
+                }
+                else
+                {
+                    approves.Add(new IdName
+                    {
+                        Id = managerE.Id,
+                        Name = managerE.ChucVuName + " - " + managerE.FullName
+                    });
+                }
+            }
+
+            if (extend && !string.IsNullOrEmpty(role) && (approves == null || approves.Count == 0))
+            {
+                var roleE = dbContext.Categories.Find(m => m.Type.Equals((int)ECategory.Role) && m.Alias.Equals(role)).FirstOrDefault();
+                if (roleE != null)
+                {
+                    var rights = dbContext.Rights.Find(m => m.Enable.Equals(true)
+                                    && m.RoleId.Equals(roleE.Id) && m.Action <= action
+                                    && (m.Start == null || m.Start <= today)
+                                    && (m.Expired == null || m.Expired > today)).ToList();
+
+                    foreach (var item in rights)
+                    {
+                        // Define chucvu | accountId
+                        var accounts = dbContext.Employees.Find(m => m.ChucVu.Equals(item.ObjectId) && m.Enable.Equals(true) && m.Leave.Equals(false)).ToList();
+                        if (accounts != null && accounts.Count > 0)
+                        {
+                            foreach (var accountE in accounts)
+                            {
+                                approves.Add(new IdName
+                                {
+                                    Id = accountE.Id,
+                                    Name = accountE.ChucVuName + " - " + accountE.FullName
+                                });
+                            }
+                        }
+                        else
+                        {
+                            var accountE = dbContext.Employees.Find(m => m.Id.Equals(item.ObjectId) && m.Enable.Equals(true) && m.Leave.Equals(false)).FirstOrDefault();
+                            if (accountE != null)
+                            {
+                                approves.Add(new IdName
+                                {
+                                    Id = accountE.Id,
+                                    Name = accountE.ChucVuName + " - " + accountE.FullName
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+
+            return approves.Distinct().ToList();
+        }
+
+        public static List<Employee> EmployeesBase(bool isSystem, string managerId)
+        {
+            var builder = Builders<Employee>.Filter;
+            var filter = builder.Eq(m => m.Enable, true) & builder.Eq(m => m.Leave, false);
+            filter &= !builder.Eq(m => m.UserName, Constants.System.account);
+            if (isSystem)
+            {
+                // Remove cấp cao ra (theo mã số lương)
+                filter &= !builder.In(m => m.NgachLuongCode, new string[] { "C.01", "C.02", "C.03" });
+            }
+            else
+            {
+                filter &= builder.Eq(m => m.ManagerEmployeeId, managerId);
+            }
+            return dbContext.Employees.Find(filter).SortBy(m => m.FullName).ToList();
+        }
+
+        public static List<EmailAddress> EmailGet(string role, int action)
+        {
+            var result = new List<EmailAddress>();
+            var today = DateTime.Now.Date;
+            if (!string.IsNullOrEmpty(role))
+            {
+                var roleE = dbContext.Categories.Find(m => m.Type.Equals((int)ECategory.Role) && m.Alias.Equals(role)).FirstOrDefault();
+                if (roleE != null)
+                {
+                    //var rights = dbContext.Rights.Find(m => m.Enable.Equals(true)
+                    //&& m.RoleId.Equals(roleE.Id) && m.Action <= action
+                    //&& (m.Start.Equals(null) || m.Start <= today)
+                    //&& (m.Expired.Equals(null) || m.Expired > today)).ToList();
+
+                    var rights = dbContext.Rights.Find(m => m.Enable.Equals(true)
+                   && m.RoleId.Equals(roleE.Id) && m.Action.Equals(action)).ToList();
+
+                    foreach (var item in rights)
+                    {
+                        // Define chucvu | accountId
+                        var accounts = dbContext.Employees.Find(m => m.ChucVu.Equals(item.ObjectId) && m.Enable.Equals(true) && m.Leave.Equals(false)).ToList();
+                        if (accounts != null && accounts.Count > 0)
+                        {
+                            foreach (var accountE in accounts)
+                            {
+                                result.Add(new EmailAddress { Name = accountE.FullName, Address = accountE.Email });
+                            }
+                        }
+                        else
+                        {
+                            var accountE = dbContext.Employees.Find(m => m.Id.Equals(item.ObjectId) && m.Enable.Equals(true) && m.Leave.Equals(false)).FirstOrDefault();
+                            if (accountE != null)
+                            {
+                                result.Add(new EmailAddress { Name = accountE.FullName, Address = accountE.Email });
+                            }
+                        }
+                    }
+                }
+            }
+
+            return result.Distinct().ToList();
+        }
+
         #region Rights
         public static bool IsRight(string userId, string role, int action)
+        {
+            var isRight = false;
+            if (userId == Constants.System.accountId)
+            {
+                isRight = true;
+            }
+            else
+            {
+                var loginE = dbContext.Employees.Find(m => m.Id.Equals(userId) && m.Enable.Equals(true) && m.Leave.Equals(false)).FirstOrDefault();
+                var roleE = dbContext.Categories.Find(m => m.Alias.Equals(role) && m.Type.Equals((int)ECategory.Role)).FirstOrDefault();
+                if (roleE != null)
+                {
+                    var rightExist = dbContext.Rights.CountDocuments(m => m.RoleId.Equals(roleE.Id)
+                                && (m.ObjectId.Equals(loginE.ChucVu) || m.ObjectId.Equals(loginE.Id))
+                                && m.Action >= action);
+                    if (rightExist > 0)
+                    {
+                        isRight = true;
+                    }
+                }
+            }
+
+            return isRight;
+        }
+
+        public static bool IsRightBK(string userId, string role, int action)
         {
             // check system
             if (userId == Constants.System.accountId)
@@ -642,7 +899,7 @@ namespace Common.Utilities
             {
                 return true;
             }
-            var loginE = dbContext.Employees.Find(m=>m.Id.Equals(login)).FirstOrDefault();
+            var loginE = dbContext.Employees.Find(m => m.Id.Equals(login)).FirstOrDefault();
             if (loginE == null)
             {
                 return false;
@@ -650,22 +907,22 @@ namespace Common.Utilities
             if (function == Constants.Rights.NhaMay)
             {
 
-//                -Xem hết các thông tin trong hệ thống kho: Mr Huy, Mr Thái, Trưởng bộ phận kho, Trưởng bộ phận kế hoạch, nhân viên thống kê kho.
+                //                -Xem hết các thông tin trong hệ thống kho: Mr Huy, Mr Thái, Trưởng bộ phận kho, Trưởng bộ phận kế hoạch, nhân viên thống kê kho.
 
 
-//-Thủ kho thành phẩm->xem kho thành phẩm
+                //-Thủ kho thành phẩm->xem kho thành phẩm
 
-//- Thủ kho nguyên liệu->xem kho nguyên vật liệu
-
-
-//-Thủ kho bùn -> xem kho bùn
-
-//- Nhập liệu->Nv thống kê kho, Trưởng bộ phận kho, Mr Thái
-
-//->Chỉnh sửa thông tin trong kho->Trưởng bộ phận kho, Mr Thái
+                //- Thủ kho nguyên liệu->xem kho nguyên vật liệu
 
 
-//Ngoài Mr Huy, Mr Thái thì những phân quyền còn lại thì chỉ là chức vụ thôi.
+                //-Thủ kho bùn -> xem kho bùn
+
+                //- Nhập liệu->Nv thống kê kho, Trưởng bộ phận kho, Mr Thái
+
+                //->Chỉnh sửa thông tin trong kho->Trưởng bộ phận kho, Mr Thái
+
+
+                //Ngoài Mr Huy, Mr Thái thì những phân quyền còn lại thì chỉ là chức vụ thôi.
 
             }
 
@@ -756,6 +1013,27 @@ namespace Common.Utilities
             }
             #endregion
             return text;
+        }
+
+        public static string UserNameConvert(string text)
+        {
+            if (string.IsNullOrEmpty(text)) return string.Empty;
+
+            text = text.ToLower();
+            RegexOptions options = RegexOptions.None;
+            Regex regex = new Regex("[ ]{2,}", options);
+            text = regex.Replace(text, " ");
+            text = NonUnicode(text);
+            var inputs = text.Split(new string[] { " ", "-" },
+                            StringSplitOptions.RemoveEmptyEntries).ToList();
+            var last = inputs.Last();
+            inputs.RemoveAt(inputs.Count - 1);
+            var output = ".";
+            foreach (var item in inputs)
+            {
+                output += item[0];
+            }
+            return last + output;
         }
 
         public static string EmailConvert(string text)
@@ -1388,28 +1666,18 @@ namespace Common.Utilities
         }
 
         #region FACTORY
-        public static string NoPhieuInCa(DateTime date, string xe)
+        public static string NoPhieuInCa(DateTime date, string maxe)
         {
-            if (string.IsNullOrEmpty(xe))
+            // Mỗi xe tối đa 1 phiếu/ngày.
+            // Rule [MA]:YYYY-MM-DD
+            if (string.IsNullOrEmpty(maxe))
             {
-                return "";
+                return string.Empty;
             }
-
             int month = date.Month;
             int year = date.Year;
-            // check db if exist date vs xe
-            var phieu = dbContext.FactoryVanHanhs.Find(m => m.XeCoGioiMayAlias.Equals(xe) && m.Date.Equals(date.Date)).FirstOrDefault();
-            if (phieu != null)
-            {
-                return phieu.PhieuInCa;
-            }
-            // [no] increase by month.
-            if (dbContext.FactoryVanHanhs.CountDocuments(m => m.Month.Equals(month)) > 0)
-            {
-                var max = dbContext.FactoryVanHanhs.Find(m => m.Year.Equals(year) && m.Month.Equals(month) && !m.PhieuInCa.Equals("")).SortByDescending(m => m.CreatedOn).First();
-                return year + month.ToString("D2") + "-" + (Convert.ToInt32(max.PhieuInCa.Split("-")[1]) + 1).ToString("D4");
-            }
-            return year + month.ToString("D2") + "-" + 1.ToString("D4");
+            int day = date.Day;
+            return maxe + ":" + year + "-" + month.ToString("D2") + "-" + day.ToString("D2");
         }
         #endregion
 
@@ -1745,19 +2013,19 @@ namespace Common.Utilities
                     {
                         return DateTime.ParseExact(cell.StringCellValue, "MM/dd/yyyy", CultureInfo.InvariantCulture);
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
                         try
                         {
                             return DateTime.ParseExact(cell.StringCellValue, "M/d/yyyy", CultureInfo.InvariantCulture);
                         }
-                        catch (Exception ex2)
+                        catch (Exception)
                         {
                             try
                             {
                                 return DateTime.ParseExact(cell.StringCellValue, "M/dd/yyyy", CultureInfo.InvariantCulture);
                             }
-                            catch (Exception ex3)
+                            catch (Exception)
                             {
                                 return DateTime.Now;
                             }
@@ -1813,6 +2081,260 @@ namespace Common.Utilities
             }
 
             return double.TryParse(date, out double oaDate) ? DateTime.FromOADate(oaDate) : DateTime.MinValue;
+        }
+        #endregion
+
+        #region FILES
+        public static FileViewModel DocumentProcess(Content entity, IFormFileCollection Files, string webRootPath, string Folder)
+        {
+            var domain = 1;
+            //var domainE = dbContext.Domains.Find(m => m.Enable.Equals(true) && m.Name.Equals(entity.Domain)).FirstOrDefault();
+            //if (domainE != null)
+            //{
+            //    domain = domainE.Code;
+            //}
+            var NameFormat = entity.Alias;
+            var Title = entity.Name;
+            var result = new FileViewModel();
+            var documents = new List<Document>();
+
+            int codeDoc = 1;
+            var entityPass = new Content();
+            if (!string.IsNullOrEmpty(entity.Id))
+            {
+                entityPass = dbContext.Contents.Find(m => m.Id.Equals(entity.Id)).FirstOrDefault();
+            }
+
+            #region DELETE File Physical : isDelete = true
+            var currentDocuments = new List<Document>();
+            // IMPLEMENT LATER
+            #endregion
+
+            if (Files != null && Files.Count > 0)
+            {
+                var documentFiles = Files.Where(m => m.Name.Equals("documents")).ToList();
+
+                if (documentFiles != null && documentFiles.Count > 0)
+                {
+                    var documentsFolder = Path.Combine(Constants.Folder.Image, domain.ToString(), Folder);
+                    var fullDocumentsFolder = Path.Combine(webRootPath, documentsFolder);
+                    if (!Directory.Exists(fullDocumentsFolder))
+                    {
+                        Directory.CreateDirectory(fullDocumentsFolder);
+                    }
+                    foreach (var item in documentFiles)
+                    {
+                        if (item != null && item.Length > 0)
+                        {
+                            var extension = Path.GetExtension(item.FileName);
+                            var fileName = string.IsNullOrEmpty(NameFormat) ? AliasConvert(item.FileName) : NameFormat + "-" + codeDoc + extension;
+                            var document = new Document()
+                            {
+                                Code = codeDoc,
+                                Path = documentsFolder,
+                                FileName = fileName,
+                                Orginal = item.FileName,
+                                Title = Title,
+                                Extension = extension
+                            };
+                            using (var fileStream = new FileStream(Path.Combine(fullDocumentsFolder, document.FileName), FileMode.Create))
+                            {
+                                item.CopyTo(fileStream);
+                            }
+                            documents.Add(document);
+                            codeDoc++;
+                        }
+                    }
+                }
+            }
+
+            if (documents != null && documents.Count > 0)
+            {
+                result.Documents = documents;
+            }
+            return result;
+        }
+
+        public static List<ContentIn> ImageProcess(List<ContentIn> entities, string webRootPath, string folder, string title, string code)
+        {
+            var result = new List<ContentIn>();
+            var alias = AliasConvert(title);
+            var entityCode = code;
+
+            #region Directory
+            var fullImagesFolder = Path.Combine(webRootPath, folder);
+            if (!Directory.Exists(fullImagesFolder))
+            {
+                Directory.CreateDirectory(fullImagesFolder);
+            }
+            #endregion
+
+            var imagesDelete = new List<Img>();
+            var iE = 1;
+            foreach (var entity in entities)
+            {
+                var imgsNew = new List<Img>();
+                if (entity.Imgs != null && entity.Imgs.Count > 0)
+                {
+                    int codeImg = 1;
+                    var currents = entity.Imgs.Where(m => m.IsDelete.Equals(false) && string.IsNullOrEmpty(m.Temp)).ToList();
+                    if (currents != null && currents.Count > 0)
+                    {
+                        foreach (var item in currents)
+                        {
+                            item.Code = codeImg;
+                            imgsNew.Add(item);
+                            codeImg++;
+                        }
+                    }
+
+                    #region New File
+                    var newImages = entity.Imgs.Where(m => !string.IsNullOrEmpty(m.Temp) && m.IsDelete.Equals(false)).ToList();
+                    foreach (var item in newImages)
+                    {
+                        //item.Code = item.Code > 1 ? item.Code : codeImg;
+                        var source = item.Temp;
+                        var base64Data = Regex.Match(source, @"data:image/(?<type>.+?),(?<data>.+)").Groups["data"].Value;
+                        byte[] imageBytes = Convert.FromBase64String(base64Data);
+                        string imageType = item.Orginal.Split('.').Last();
+
+                        #region Generate image, future for resize
+                        //Image image = null;
+                        //using (MemoryStream stream = new MemoryStream(imageBytes))
+                        //{
+                        //    image = Image.FromStream(stream);
+                        //}
+                        //if (ImageFormat.Jpeg.Equals(image.RawFormat))
+                        //{
+                        //    imageType = "jpg";
+                        //}
+                        //else if (ImageFormat.Png.Equals(image.RawFormat))
+                        //{
+                        //    // PNG
+                        //}
+                        //else if (ImageFormat.Gif.Equals(image.RawFormat))
+                        //{
+                        //    // GIF
+                        //}
+                        #endregion
+
+                        // set and save the image
+                        var imageName = alias + "-" + entityCode + "-" + item.Type + "-" + iE + "-" + codeImg + "." + imageType;
+                        var imagePath = Path.Combine(fullImagesFolder, imageName);
+                        File.WriteAllBytes(imagePath, imageBytes);
+
+                        imgsNew.Add(new Img()
+                        {
+                            Path = folder,
+                            FileName = imageName,
+                            Title = title,
+                            Main = item.Main,
+                            Type = item.Type,
+                            Code = codeImg,
+                            Orginal = item.Orginal,
+                            Size = item.Size,
+                            TypeFile = item.TypeFile
+                        });
+                        codeImg++;
+                    }
+                    #endregion
+
+                    var deletes = entity.Imgs.Where(m => m.IsDelete.Equals(true) && string.IsNullOrEmpty(m.Temp)).ToList();
+                    if (deletes != null && deletes.Count > 0)
+                    {
+                        imagesDelete.AddRange(deletes);
+                    }
+                }
+
+                entity.Imgs = imgsNew;
+                result.Add(entity);
+                iE++;
+            }
+
+            #region Delete File Physical : isDelete = true
+            if (imagesDelete != null)
+            {
+                foreach (var item in imagesDelete)
+                {
+                    var pathDelete = Path.Combine(webRootPath, item.Path, item.FileName);
+                    if (File.Exists(pathDelete))
+                    {
+                        File.Delete(pathDelete);
+                    }
+                }
+            }
+            #endregion
+
+            return result;
+        }
+
+        public static List<Img> ImageProfileProcess(List<Img> images, string webRootPath, string folder, string title, string code)
+        {
+            var result = new List<Img>();
+            var alias = AliasConvert(title);
+            var entityCode = code;
+
+            if (images != null && images.Count > 0)
+            {
+                #region Directory
+                var fullImagesFolder = Path.Combine(webRootPath, folder);
+                if (!Directory.Exists(fullImagesFolder))
+                {
+                    Directory.CreateDirectory(fullImagesFolder);
+                }
+                #endregion
+
+                foreach (var item in images)
+                {
+                    if (!string.IsNullOrEmpty(item.Temp))
+                    {
+                        var source = item.Temp;
+                        var base64Data = Regex.Match(source, @"data:image/(?<type>.+?),(?<data>.+)").Groups["data"].Value;
+                        byte[] imageBytes = Convert.FromBase64String(base64Data);
+                        string imageType = item.Orginal.Split('.').Last();
+
+                        #region Generate image, future for resize
+                        //Image image = null;
+                        //using (MemoryStream stream = new MemoryStream(imageBytes))
+                        //{
+                        //    image = Image.FromStream(stream);
+                        //}
+                        //if (ImageFormat.Jpeg.Equals(image.RawFormat))
+                        //{
+                        //    imageType = "jpg";
+                        //}
+                        //else if (ImageFormat.Png.Equals(image.RawFormat))
+                        //{
+                        //    // PNG
+                        //}
+                        //else if (ImageFormat.Gif.Equals(image.RawFormat))
+                        //{
+                        //    // GIF
+                        //}
+                        #endregion
+
+                        // set and save the image
+                        // no delete current
+                        var imageName = alias + "-" + entityCode + "-" + DateTime.Now.ToString("ddMMyyyyHHmmss") + "." + imageType;
+                        var imagePath = Path.Combine(fullImagesFolder, imageName);
+                        File.WriteAllBytes(imagePath, imageBytes);
+
+                        result.Add(new Img()
+                        {
+                            Path = folder,
+                            FileName = imageName,
+                            Title = title,
+                            Main = item.Main,
+                            Type = item.Type,
+                            Orginal = item.Orginal,
+                            Size = item.Size,
+                            TypeFile = item.TypeFile
+                        });
+                    }
+                }
+            }
+
+            return result;
         }
         #endregion
     }

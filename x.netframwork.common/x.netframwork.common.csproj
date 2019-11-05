@@ -72,12 +72,19 @@
     <Compile Include="Common\Utilities\LoggingEvents.cs" />
     <Compile Include="Common\Utilities\Utility.cs" />
     <Compile Include="Data\MongoDBContext.cs" />
+    <Compile Include="Models\Category.cs" />
+    <Compile Include="Models\Content.cs" />
     <Compile Include="Models\Email\ScheduleEmail.cs" />
     <Compile Include="Models\Email\EmailAddress.cs" />
     <Compile Include="Models\Email\EmailMessage.cs" />
     <Compile Include="Models\Extensions\Common.cs" />
+    <Compile Include="Models\Extensions\ContentIn.cs" />
+    <Compile Include="Models\Extensions\Document.cs" />
     <Compile Include="Models\Extensions\ExtensionNew.cs" />
     <Compile Include="Models\Extensions\Extension.cs" />
+    <Compile Include="Models\Extensions\IdName.cs" />
+    <Compile Include="Models\Extensions\Img.cs" />
+    <Compile Include="Models\Extensions\Seo.cs" />
     <Compile Include="Models\Extensions\Tracking.cs" />
     <Compile Include="Models\Factories\FactoryCongViec.cs" />
     <Compile Include="Models\Factories\FactoryProduct.cs" />
@@ -106,6 +113,7 @@
     <Compile Include="Models\HRs\PhongBan.cs" />
     <Compile Include="Models\HRs\WorkTimeType.cs" />
     <Compile Include="Models\Image.cs" />
+    <Compile Include="Models\Rights\Right.cs" />
     <Compile Include="Models\Rights\Role.cs" />
     <Compile Include="Models\Rights\RoleUser.cs" />
     <Compile Include="Models\CreditEmployee.cs" />

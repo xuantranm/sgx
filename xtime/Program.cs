@@ -50,7 +50,7 @@ namespace xtime
 
             if (debug)
             {
-                filter = filter & builder.Eq(m => m.EnrollNumber, Convert.ToInt32(ConfigurationSettings.AppSettings.Get("debugString")).ToString());
+                filter &= builder.Eq(m => m.EnrollNumber, Convert.ToInt32(ConfigurationSettings.AppSettings.Get("debugString")).ToString());
             }
             #endregion
 
@@ -106,33 +106,33 @@ namespace xtime
             #endregion
 
             #region Get Hrs: For case empty Email of user and manager
-            var hrsCongTy = new List<Employee>();
-            var hrsNhaMay = new List<Employee>();
+            //var hrsCongTy = new List<Employee>();
+            //var hrsNhaMay = new List<Employee>();
 
-            var listHrRoles = dbContext.RoleUsers.Find(m => m.Role.Equals(Constants.Rights.NhanSu) && (m.Expired.Equals(null) || m.Expired > DateTime.Now)).ToList();
-            if (listHrRoles != null && listHrRoles.Count > 0)
-            {
-                foreach (var item in listHrRoles)
-                {
-                    if (item.Action == 3)
-                    {
-                        var fieldHrs = Builders<Employee>.Projection.Include(p => p.Email).Include(p => p.FullName).Include(p => p.CongTyChiNhanh);
-                        var employeeHr = dbContext.Employees.Find(m => m.Id.Equals(item.User) && !string.IsNullOrEmpty(m.Email)).Project<Employee>(fieldHrs).FirstOrDefault();
-                        if (employeeHr != null)
-                        {
-                            // Because data not good, set hand
-                            if (employeeHr.Id == "5b6bb22fe73a301f941c5887") // Anh
-                            {
-                                hrsCongTy.Add(employeeHr);
-                            }
-                            else if (employeeHr.Id == "5b6bb231e73a301f941c58dd") //Thoa
-                            {
-                                hrsNhaMay.Add(employeeHr);
-                            }
-                        }
-                    }
-                }
-            }
+            //var listHrRoles = dbContext.RoleUsers.Find(m => m.Role.Equals(Constants.Rights.NhanSu) && (m.Expired.Equals(null) || m.Expired > DateTime.Now)).ToList();
+            //if (listHrRoles != null && listHrRoles.Count > 0)
+            //{
+            //    foreach (var item in listHrRoles)
+            //    {
+            //        if (item.Action == 3)
+            //        {
+            //            var fieldHrs = Builders<Employee>.Projection.Include(p => p.Email).Include(p => p.FullName).Include(p => p.CongTyChiNhanh);
+            //            var employeeHr = dbContext.Employees.Find(m => m.Id.Equals(item.User) && !string.IsNullOrEmpty(m.Email)).Project<Employee>(fieldHrs).FirstOrDefault();
+            //            if (employeeHr != null)
+            //            {
+            //                // Because data not good, set hand
+            //                if (employeeHr.Id == "5b6bb22fe73a301f941c5887") // Anh
+            //                {
+            //                    hrsCongTy.Add(employeeHr);
+            //                }
+            //                else if (employeeHr.Id == "5b6bb231e73a301f941c58dd") //Thoa
+            //                {
+            //                    hrsNhaMay.Add(employeeHr);
+            //                }
+            //            }
+            //        }
+            //    }
+            //}
             #endregion
 
             var holidays = dbContext.Holidays.Find(m => m.Enable.Equals(true)).ToEnumerable().Where(m => m.Year.Equals(DateTime.Now.Year)).ToList();
@@ -164,7 +164,12 @@ namespace xtime
                 employees = dbContext.Employees.Find(m => m.Workplaces.Any(w => w.Code.Equals(location) && w.Fingerprint.Equals(debugString))).ToList();
             }
 
-            // FUTURE SET CAP BAC. QUÉT HẾT CHỪA BGĐ....
+            // FUTURE SET CAP BAC. QUÉT HẾT CHỪA BGĐ ...
+            //var hrVP = Utility.GetApprove(Constants.Rights.NhanSuVP, (int)ERights.Edit).FirstOrDefault();
+            //var hrNM = Utility.GetApprove(Constants.Rights.NhanSuNM, (int)ERights.Edit).FirstOrDefault();
+            // FIX ASAP
+            var hrVP = dbContext.Employees.Find(m => m.Id.Equals("5b6bb22fe73a301f941c5887")).FirstOrDefault();
+            var hrNM = dbContext.Employees.Find(m => m.Id.Equals("5d6ddce1d529b01868a6650a")).FirstOrDefault();
             foreach (var employee in employees)
             {
                 #region Employee Information
@@ -190,19 +195,10 @@ namespace xtime
                     phone = employee.Mobiles[0].Number;
                 }
 
-                var approveE = new Employee();
-                if (!string.IsNullOrEmpty(employee.ManagerId))
+                var approveE = Utility.GetManager(employee, false, string.Empty, 1).FirstOrDefault();
+                if (approveE == null)
                 {
-                    approveE = dbContext.Employees.Find(m => m.ChucVu.Equals(employee.ManagerId)).FirstOrDefault();
-                    if (approveE == null || string.IsNullOrEmpty(approveE.Email))
-                    {
-                        approveE = location == "VP" ? hrsCongTy[0] : hrsNhaMay[0];
-                    }
-                }
-                else
-                {
-                    // Get HR, same same send mail monthly timer
-                    approveE = location == "VP" ? hrsCongTy[0] : hrsNhaMay[0];
+                    approveE = location == "VP" ? hrVP : hrNM;
                 }
 
                 var linkFinger = linkChamCong + employee.Id;
@@ -280,7 +276,7 @@ namespace xtime
 
                         if (existLeave != null)
                         {
-                            double numberLeave = (double)existLeave.Number;
+                            double numberLeave = existLeave.Number;
 
                             var leaveType = leaveTypes.Where(m => m.Id.Equals(existLeave.TypeId)).FirstOrDefault();
                             if (leaveType != null)
@@ -311,16 +307,28 @@ namespace xtime
                             {
                                 if (date == dateL.Date)
                                 {
-                                    var leaveTimeSpan = endWorkingScheduleTime - dateL.Date.Add(startWorkingScheduleTime).TimeOfDay;
-                                    if (dateL == leaveFrom)
-                                    {
-                                        leaveTimeSpan = endWorkingScheduleTime - dateL.TimeOfDay;
-                                    }
-                                    if (dateL == leaveTo.Date)
+                                    var leaveTimeSpan = TimeSpan.FromHours(8);
+                                    //if (dateL == leaveFrom)
+                                    //{
+                                    leaveTimeSpan = endWorkingScheduleTime - dateL.TimeOfDay;
+                                    // check 0.5
+                                    if (leaveTimeSpan.TotalHours > 5 && leaveTo.Date == dateL.Date)
                                     {
                                         leaveTimeSpan = leaveTo.TimeOfDay - startWorkingScheduleTime;
                                     }
-                                    if (leaveTimeSpan.TotalHours <= 4)
+                                    //}
+
+                                    //if (dateL == leaveTo.Date)
+                                    //{
+                                    //    leaveTimeSpan = leaveTo.TimeOfDay - startWorkingScheduleTime;
+                                    //    // check 0.5
+                                    //    if (leaveFrom.Date == dateL.Date)
+                                    //    {
+                                    //        leaveTimeSpan = leaveTo.TimeOfDay - startWorkingScheduleTime;
+                                    //    }
+                                    //}
+
+                                    if (leaveTimeSpan.TotalHours <= 5)
                                     {
                                         employeeWorkTimeLog.SoNgayNghi = 0.5;
                                     }
@@ -595,7 +603,7 @@ namespace xtime
                         #endregion
 
                         #region Send Mail
-                        if (isMail && !employeeWorkTimeLog.IsSendMail)
+                        if (isMail && !employeeWorkTimeLog.IsSendMail && !employee.Leave)
                         {
                             var iDateSent = -1;
                             if (DateTime.Now.Date.AddDays(iDateSent).DayOfWeek == DayOfWeek.Sunday)

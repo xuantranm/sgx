@@ -130,7 +130,7 @@ namespace xleave
                         Department = employee.PhongBanName,
                         Part = employee.BoPhanName,
                         Title = employee.ChucVuName,
-                        LeaveLevel = employee.LeaveLevelYear,
+                        LeaveLevel = Convert.ToDouble(employee.LeaveLevelYear),
                         NumberUsed = 0,
                         UseFlag = useFlag,
                         Year = DateTime.Now.Year

@@ -1,5 +1,66 @@
 ﻿namespace Common.Enums
 {
+    public enum EPosition
+    {
+        Normal = 1,
+        Feature = 2,
+        Top = 3,
+        Sticky = 4
+    }
+
+    public enum ECategory
+    {
+        Ca = 1,
+        CongDoan = 2,
+        MangCongViec = 3,
+        XeCoGioivsMayMoc = 4,
+        PhanLoaiXe = 5,
+        Role = 6,
+        NVLvsBTPvsTP = 7,
+        CaLamViec = 8,
+        ChungLoaiXe = 9,
+        NhaThau = 10,
+        DinhMucVanHanh = 11,
+        Company = 12,
+        KhoiChucNang = 13,
+        PhongBan = 14,
+        BoPhan = 15,
+        ChucVu = 16,
+        Contract = 17,
+        TimeWork = 18,
+        Bank = 19,
+        Hospital = 20
+    }
+
+    public enum EPropertyValue
+    {
+        String = 1,
+        Interger = 2,
+        Double = 3,
+        Decimal = 4,
+        Bool = 5
+    }
+
+    public enum EImageSize
+    {
+        Desktop = 1,
+        Tablet = 2,
+        Mobile = 3,
+        Thumb = 4,
+        Icon = 5,
+        Avatar = 6,
+        x300x300 = 7,
+        x600x400 = 8,
+        x720x480 = 9, // GG | FB
+        x1110x576 = 10,
+        x1200x800 = 11,
+        x1600x1050 = 12,
+        x1980x600 = 13,
+        x1600x375 = 14,
+        Logo = 15, // size get in setting
+        Cover = 16
+    }
+
     public enum ETangCa
     {
         None = 0,
@@ -185,6 +246,20 @@
         None = 1,
         ErrorSystem = 2
         // up to 10
+    }
+
+    public enum EModeData
+    {
+        Input = 1,
+        File = 2,
+        Merge = 3
+    }
+
+
+    public enum ERightType
+    {
+        User = 1,
+        ChucVu = 2
     }
 
     public enum ERights

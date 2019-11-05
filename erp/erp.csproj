@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <Compile Remove="Controllers\OrderController.cs" />
+    <Compile Remove="Controllers\PhanQuyenController.cs" />
     <Compile Remove="Controllers\ReceiveController.cs" />
     <Compile Remove="Controllers\ReleaseController.cs" />
     <Compile Remove="Controllers\RequestController.cs" />
@@ -25,10 +26,16 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Remove="Views\Employee\Create.cshtml" />
+    <Content Remove="Views\Employee\Edit.cshtml" />
     <Content Remove="Views\Factory\PhieuInCa - A4.cshtml" />
+    <Content Remove="Views\Factory\ReportDG.cshtml" />
     <Content Remove="Views\KeHoachTongHop\DuLieuDuAnCong.cshtml" />
+    <Content Remove="Views\PhanQuyen\Create.cshtml" />
+    <Content Remove="Views\PhanQuyen\Index.cshtml" />
     <Content Remove="Views\SalaryProduction\CongTong.cshtml" />
     <Content Remove="Views\SalaryProduction\CongTongUpdate.cshtml" />
+    <Content Remove="Views\Shared\_LayoutData.cshtml" />
     <Content Remove="Views\TimeKeeper\BangChamCong - Copy.cshtml" />
   </ItemGroup>
 
@@ -52,6 +59,10 @@
     <None Include="Views\Account\ResetPasswordConfirmation.cshtml" />
     <None Include="Views\Account\SignedOut.cshtml" />
     <None Include="Views\Account\UpdatePwd.cshtml" />
+    <None Include="Views\Category\Data.cshtml" />
+    <None Include="Views\Category\Index.cshtml" />
+    <None Include="Views\Content\Data.cshtml" />
+    <None Include="Views\Content\Index.cshtml" />
     <None Include="Views\Employee\Import.cshtml" />
     <None Include="Views\Employee\Index.cshtml" />
     <None Include="Views\File\Index.cshtml" />
@@ -65,7 +76,12 @@
     <None Include="Views\Salary\SaleKPIUpdate.cshtml" />
     <None Include="Views\Salary\ThangLuong.cshtml" />
     <None Include="Views\Salary\ThangLuongUpdate.cshtml" />
+    <None Include="Views\Setting\Data.cshtml" />
+    <None Include="Views\Setting\Disable.cshtml" />
     <None Include="Views\Setting\Index.cshtml" />
+    <None Include="Views\Text\Data.cshtml" />
+    <None Include="Views\Text\Disable.cshtml" />
+    <None Include="Views\Text\Index.cshtml" />
     <None Include="wwwroot\hr\DANH SACH NHAN SU 2017.xlsx" />
     <None Include="wwwroot\hr\DANH SACH NHAN SU 2018_X.xlsx" />
     <None Include="wwwroot\hr\KCB BHYT 2017_X.xls" />
@@ -769,7 +785,7 @@
     <Content Update="Views\Doc\Information.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
-    <Content Update="Views\Employee\Edit.cshtml">
+    <Content Update="Views\Employee\Data.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
     <Content Update="Views\Employee\CoCauChucNang.cshtml">
@@ -809,21 +825,6 @@
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
     <Content Update="Views\Leave\Approvement.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Leave\Manage.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Leave\HelpLeave.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Notification\Create.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\PhanQuyen\Create.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\PhanQuyen\Index.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
     <Content Update="Views\RoleUser\Index.cshtml">
@@ -885,16 +886,10 @@
     <Content Update="Views\TimeKeeper\BangChamCong.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
-    <Content Update="Views\Shared\_LayoutData.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
     <Content Update="Views\Shared\_LayoutDocument.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
     <Content Update="Views\TimeKeeper\Approve.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\TimeKeeper\HelpTime.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
     <Content Update="Views\TimeKeeper\Approvement.cshtml">
@@ -921,9 +916,6 @@
     <Content Update="Views\TimeKeeper\Index.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
-    <Content Update="Views\Notification\Index.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
     <Content Update="Views\Shared\_LayoutSocial.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
@@ -934,6 +926,7 @@
 
   <ItemGroup>
     <Folder Include="Areas\Identity\Services\" />
+    <Folder Include="Views\PhanQuyen\" />
     <Folder Include="wwwroot\lib\entypo-master\support\font-builder\" />
     <Folder Include="wwwroot\lib\paper-css-master\" />
   </ItemGroup>

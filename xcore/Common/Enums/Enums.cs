@@ -1,6 +1,56 @@
 ﻿
 namespace Common.Enums
 {
+    public enum EModeDirect
+    {
+        Content = 1,
+        Category = 2
+    }
+
+    public enum EVanHanhStatus
+    {
+        DangXuLy = 1,
+        HoanThanh = 2,
+        ChinhSua = 3,
+        ChotBaoCao = 4,
+        SuaBaoCao = 5
+    }
+
+    public enum EPosition
+    {
+        Normal = 1,
+        Feature = 2,
+        Top = 3,
+        Sticky = 4
+    }
+
+    public enum EModeData
+    {
+        Input = 1,
+        File = 2,
+        Merge = 3
+    }
+
+    public enum EImageSize
+    {
+        Desktop = 1,
+        Tablet = 2,
+        Mobile = 3,
+        Thumb = 4,
+        Icon = 5,
+        Avatar = 6,
+        x300x300 = 7,
+        x600x400 = 8,
+        x720x480 = 9, // GG | FB
+        x1110x576 = 10,
+        x1200x800 = 11,
+        x1600x1050 = 12,
+        x1980x600 = 13,
+        x1600x375 = 14,
+        Logo = 15, // size get in setting
+        Cover = 16
+    }
+
     public enum ERightType
     {
         User = 1,
@@ -11,26 +61,67 @@ namespace Common.Enums
     {
         Ca = 1,
         CongDoan = 2,
-        CongViec = 3,
-        Xe = 4,
-        PhanLoaiXe = 5
+        MangCongViec = 3,
+        XeCoGioivsMayMoc = 4,
+        PhanLoaiXe = 5,
+        Role = 6,
+        NVLvsBTPvsTP = 7,
+        CaLamViec = 8,
+        ChungLoaiXe = 9,
+        NhaThau = 10,
+        DinhMucVanHanh = 11,
+        Company = 12,
+        KhoiChucNang = 13,
+        PhongBan = 14,
+        BoPhan = 15,
+        ChucVu = 16,
+        Contract = 17,
+        TimeWork = 18,
+        Bank = 19,
+        Hospital = 20
     }
 
+    public enum EPropertyValue
+    {
+        String = 1,
+        Interger = 2,
+        Double = 3,
+        Decimal = 4,
+        Bool = 5
+    }
     public enum ENotification
     {
         None = 0,
         System = 1,
-        HrChange = 2,
+        Hr = 2,
         ExpireDocument = 3,
         TaskBHXH = 4,
         Company = 5
     }
 
-    public enum ESetting
+    public enum EData
     {
         System = 1,
         Hcns = 2,
-        Salary = 3
+        Salary = 3,
+        Setting = 4,
+        Content = 5,
+        Property = 6
+    }
+
+    public enum EValueType
+    {
+        String = 1,
+        Interger = 2,
+        Double = 3,
+        Decimal = 4,
+        Bool = 5
+    }
+
+    public enum EText
+    {
+        System = 1,
+        Error = 2
     }
 
     public enum ESalaryType
@@ -172,6 +263,14 @@ namespace Common.Enums
         Wait = 5
     }
 
+    public enum EStatusLeave
+    {
+        New = 0,
+        Accept = 1,
+        Cancel = 2,
+        Pending = 3
+    }
+
     public enum ETangCa
     {
         None = 0,
@@ -239,7 +338,10 @@ namespace Common.Enums
         Edit = 3,
         Disable = 4,
         Delete = 5,
-        History = 6
+        History = 6,
+        Boss = 7,
+        BossLv2 = 8,
+        BossLv3 = 9
     }
 
     public enum EStatus

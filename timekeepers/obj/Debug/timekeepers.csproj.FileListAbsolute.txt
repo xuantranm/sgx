@@ -13,3 +13,15 @@ C:\Projects\Tribat\sourcecode\timekeepers\obj\Debug\timekeepers.pdb
 C:\Projects\Tribat\sourcecode\timekeepers\obj\Debug\timekeepers.csprojAssemblyReference.cache
 C:\Projects\Tribat\sourcecode\timekeepers\obj\Debug\Interop.zkemkeeper.dll
 C:\Projects\Tribat\sourcecode\timekeepers\obj\Debug\timekeepers.csproj.ResolveComReference.cache
+D:\projects\sgx\timekeepers\obj\Debug\timekeepers.csproj.CoreCompileInputs.cache
+D:\projects\sgx\timekeepers\obj\Debug\timekeepers.exe
+D:\projects\sgx\timekeepers\obj\Debug\timekeepers.pdb
+D:\projects\sgx\timekeepers\bin\Debug\timekeepers.exe.config
+D:\projects\sgx\timekeepers\bin\Debug\timekeepers.exe
+D:\projects\sgx\timekeepers\bin\Debug\timekeepers.pdb
+D:\projects\sgx\timekeepers\bin\Debug\MongoDB.Bson.dll
+D:\projects\sgx\timekeepers\bin\Debug\MongoDB.Driver.dll
+D:\projects\sgx\timekeepers\bin\Debug\MongoDB.Bson.xml
+D:\projects\sgx\timekeepers\bin\Debug\MongoDB.Driver.xml
+D:\projects\sgx\timekeepers\obj\Debug\timekeepers.csproj.CopyComplete
+D:\projects\sgx\timekeepers\obj\Debug\timekeepers.csprojAssemblyReference.cache

@@ -1,0 +1,224 @@
+﻿@using Common.Utilities;
+@using ViewModels;
+@model VanHanhViewModel
+
+@{
+    ViewData["Title"] = "Dữ liệu vận hành";
+    var isEdit = false;
+    var date = DateTime.Now;
+    var entity = Model.Entity;
+    if (entity != null && !string.IsNullOrEmpty(entity.Id))
+    {
+        isEdit = true;
+        date = entity.Date;
+    }
+    entity.Start = TimeSpan.FromHours(6);
+}
+
+<div class="main-container">
+    <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="/">Trang chủ</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="/@Constants.LinkFactory.Index">Nhà máy</a>
+                        </li>
+                        <li class="breadcrumb-item" aria-current="page">
+                            <a href="/@Constants.LinkFactory.VanHanh">Vận hành</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">
+                            Dữ liệu vận hành
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="space-sm">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <form action="/@Constants.LinkFactory.VanHanh/@Constants.ActionLink.Data" method="post" class="data-form">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <input type="hidden" id="mode" value="@isEdit.ToString()"/>
+                        @if (isEdit)
+                        {
+                            <input type="hidden" id="hidStart" value="@entity.Start.ToString(@"hh\:mm")" />
+                            <input type="hidden" id="hidEnd" value="@entity.End.ToString(@"hh\:mm")" />
+                            <input type="hidden" id="hidTgBTTQ" value="@entity.ThoiGianBTTQ.ToString(@"hh\:mm")" />
+                            <input type="hidden" id="hidTgNghi" value="@entity.ThoiGianNghi.ToString(@"hh\:mm")" />
+                            <input type="hidden" id="hidTgXeHu" value="@entity.ThoiGianXeHu.ToString(@"hh\:mm")" />
+                            <input type="hidden" id="hidTgCVKhac" value="@entity.ThoiGianCVKhac.ToString(@"hh\:mm")" />
+                        }
+
+                        <div class="form-row">
+                            <div class="form-group col-lg-2 col-md-3 col-sm-6 col-xs-12">
+                                <label class="control-label">Ngày</label>
+                                <input class="form-control form-control-lg datepicker datepicker-lg" value="@date.ToString("dd/MM/yyyy")" />
+                                <input type="hidden" name="Entity.Date" class="hidedatepicker" />
+                            </div>
+                            <div class="form-group col-lg-1 col-md-2 col-sm-6 col-xs-12">
+                                <label class="control-label">Ca</label>
+                                <select asp-for="Entity.CaId" class="form-control form-control-lg">
+                                    <option value="">Chọn</option>
+                                    @foreach (var item in Model.Shifts)
+                                    {
+                                        <option value="@item.Id">@item.Name</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="form-group col-lg-1 col-md-3 col-sm-6 col-xs-12">
+                                <label class="control-label">LOT</label>
+                                <input asp-for="Entity.LOT" class="form-control form-control-lg" />
+                            </div>
+                            <div class="form-group col-md-4 col-xs-12">
+                                <label class="control-label">Công đoạn</label>
+                                <select asp-for="Entity.CongDoanId" class="form-control form-control-lg js-select2-basic-single">
+                                    <option value="">Chọn</option>
+                                    @foreach (var item in Model.Stages)
+                                    {
+                                        var display = item.Code + " - " + item.Name;
+                                        <option value="@item.Id">@display</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="form-group col-md-4 col-xs-12">
+                                <label class="control-label">Xe cơ giới - máy móc</label>
+                                <select asp-for="Entity.XeCoGioiMayId" class="form-control form-control-lg js-select2-basic-single">
+                                    <option value="">Chọn</option>
+                                    @foreach (var item in Model.Vehicles)
+                                    {
+                                        var display = item.Code;
+                                        display += !string.IsNullOrEmpty(display) ? " - " + item.Name : item.Name;
+                                        <option value="@item.Id">@display</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="form-group col-sm-4 col-xs-12">
+                                <label class="control-label">NVL/TP</label>
+                                <select asp-for="Entity.ProductId" class="form-control form-control-lg js-select2-basic-single">
+                                    <option value="">Chọn</option>
+                                    @foreach (var item in Model.Products)
+                                    {
+                                        <option value="@item.Id">@item.Name</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="form-group col-lg-4 col-sm-6 col-xs-12">
+                                <label class="control-label">Tên công nhân</label>
+                                <select asp-for="Entity.EmployeeId" class="form-control form-control-lg">
+                                    <option value="">Chọn</option>
+                                    @foreach (var item in Model.Employees)
+                                    {
+                                        <option value="@item.Id">@item.FullName</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="form-group col-lg-1 col-md-2 col-sm-6 col-xs-12">
+                                <label class="control-label">Ca làm việc</label>
+                                <select asp-for="Entity.CaLamViecId" class="form-control form-control-lg">
+                                    <option value="">Chọn</option>
+                                    @foreach (var item in Model.ShiftSubs)
+                                    {
+                                        <option value="@item.Id">@item.Name</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="form-group col-md-1 col-sm-6 col-xs-12">
+                                <label class="control-label">TG Bắt đầu</label>
+                                <input asp-for="Entity.Start" id="start" class="form-control form-control-lg datetimepicker-input" data-toggle="datetimepicker" data-target="#start" autocomplete="off" />
+                                <span asp-validation-for="Entity.Start" class="text-danger"></span>
+                            </div>
+                            <div class="form-group col-md-1 col-sm-6 col-xs-12">
+                                <label class="control-label">TG Kết thúc</label>
+                                <input asp-for="Entity.End" id="end" class="form-control form-control-lg datetimepicker-input" data-toggle="datetimepicker" data-target="#end" autocomplete="off" />
+                                <span asp-validation-for="Entity.End" class="text-danger"></span>
+                            </div>
+                            <div class="form-group col-md-1 col-sm-6 col-xs-12">
+                                <label class="control-label">TG BTTQ</label>
+                                <input asp-for="Entity.ThoiGianBTTQ" id="tgBTTQ" class="form-control form-control-lg datetimepicker-input" data-toggle="datetimepicker" data-target="#tgBTTQ" autocomplete="off" />
+                                <span asp-validation-for="Entity.ThoiGianBTTQ" class="text-danger"></span>
+                            </div>
+                            <div class="form-group col-md-1 col-sm-6 col-xs-12">
+                                <label class="control-label">TG Xe Hư</label>
+                                <input asp-for="Entity.ThoiGianXeHu" id="tgXeHu" class="form-control form-control-lg datetimepicker-input" data-toggle="datetimepicker" data-target="#tgXeHu" autocomplete="off" />
+                            </div>
+                            <div class="form-group col-md-1 col-sm-6 col-xs-12">
+                                <label class="control-label">TG Nghỉ</label>
+                                <input asp-for="Entity.ThoiGianNghi" id="tgNghi" class="form-control form-control-lg datetimepicker-input" data-toggle="datetimepicker" data-target="#tgNghi" autocomplete="off" />
+                            </div>
+                            <div class="form-group col-md-1 col-sm-6 col-xs-12">
+                                <label class="control-label">TG CV Khác</label>
+                                <input asp-for="Entity.ThoiGianCVKhac" id="tgCVKhac" class="form-control form-control-lg datetimepicker-input" data-toggle="datetimepicker" data-target="#tgCVKhac" autocomplete="off" />
+                            </div>
+                            <div class="form-group col-md-1 col-sm-6 col-xs-12">
+                                <label class="control-label">TG Làm Việc</label>
+                                <input readonly asp-for="Entity.ThoiGianLamViec" value="@entity.ThoiGianLamViec.ToString(@"hh\:mm")" class="form-control form-control-lg" />
+                            </div>
+                            <div class="form-group col-md-2 col-sm-6 col-xs-12">
+                                <label asp-for="Entity.SoLuongThucHien" class="control-label"></label>
+                                <input asp-for="Entity.SoLuongThucHien" class="form-control form-control-lg soluongthuchien" />
+                            </div>
+                            <div class="form-group col-md-1 col-sm-6 col-xs-12">
+                                <label class="control-label">Dầu</label>
+                                <input asp-for="Entity.Dau" class="form-control form-control-lg dau" />
+                            </div>
+                            <div class="form-group col-md-1 col-sm-6 col-xs-12">
+                                <label class="control-label">Nhớt 10</label>
+                                <input asp-for="Entity.Nhot10" class="form-control form-control-lg nhot10" />
+                            </div>
+                            <div class="form-group col-md-1 col-sm-6 col-xs-12">
+                                <label class="control-label">Nhớt 50</label>
+                                <input asp-for="Entity.Nhot50" class="form-control form-control-lg nhot50" />
+                            </div>
+                            <div class="form-group col-md-1 col-sm-6 col-xs-12">
+                                <label class="control-label">Nhớt 90</label>
+                                <input asp-for="Entity.Nhot90" class="form-control form-control-lg nhot90" />
+                            </div>
+                            <div class="form-group col-md-1 col-sm-6 col-xs-12">
+                                <label class="control-label">Nhớt 140</label>
+                                <input asp-for="Entity.Nhot140" class="form-control form-control-lg nhot140" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Entity.NguyenNhan" class="control-label"></label>
+                            <textarea asp-for="Entity.NguyenNhan" class="form-control form-control-lg md-textarea-auto"></textarea>
+                        </div>
+                        @if (isEdit)
+                        {
+                            <div class="form-group alert alert-danger">
+                                <label class="control-label">Trạng thái</label>
+                                <select asp-for="Entity.Enable" class="form-control form-control-lg">
+                                    <option value="true">Hoạt động</option>
+                                    <option value="false">Xóa</option>
+                                </select>
+                            </div>
+                        }
+
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-danger btn-lg btn-block">
+                                <icon class="icon-paper-plane"></icon> Cập nhật
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div>
+                <a href="/@Constants.LinkFactory.VanHanh" class="btn btn-outline-info btn-block"><icon class="icon-forward"></icon>Danh sách</a>
+            </div>
+        </div>
+    </section>
+</div>
+@section scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+        <script src="~/lib/timelite/add_two_times.js"></script>
+        <script src="~/js/factories/van-hanh-data.js?@Constants.VersionJs"></script>
+    }
+}

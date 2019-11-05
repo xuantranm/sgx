@@ -1,333 +1,191 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Distributed;
-using Newtonsoft.Json;
-using Microsoft.Extensions.Configuration;
-using System.Text;
-using Microsoft.AspNetCore.Hosting;
-using System.IO;
-using MongoDB.Driver;
-using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Http;
-using Data;
-using ViewModels;
-using Models;
+using Common.Enums;
 using Common.Utilities;
-using NPOI.SS.UserModel;
-using NPOI.HSSF.UserModel;
-using NPOI.XSSF.UserModel;
-using Microsoft.AspNetCore.Authorization;
+using Data;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Common.Enums;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Models;
+using MongoDB.Driver;
+using ViewModels;
 
-namespace erp.Controllers
+namespace Controllers
 {
     [Authorize]
-    [Route("st/")]
-    public class SettingController : Controller
+    public class SettingController : BaseController
     {
         MongoDBContext dbContext = new MongoDBContext();
-        private readonly IDistributedCache _cache;
-        readonly IHostingEnvironment _hostingEnvironment;
+        IHostingEnvironment _env;
 
         private readonly ILogger _logger;
 
-        public IConfiguration Configuration { get; }
+        public IConfiguration _configuration { get; }
 
-        public SettingController(IDistributedCache cache, IConfiguration configuration, IHostingEnvironment env, ILogger<SettingController> logger)
+        // Use cookie
+        private readonly IHttpContextAccessor _httpContextAccessor;
+
+        public SettingController(IConfiguration configuration, IHostingEnvironment env, ILogger<SettingController> logger, IHttpContextAccessor httpContextAccessor)
         {
-            _cache = cache;
-            Configuration = configuration;
-            _hostingEnvironment = env;
+            _configuration = configuration;
+            _env = env;
             _logger = logger;
+            _httpContextAccessor = httpContextAccessor;
         }
 
-        [Route("cai-dat/")]
-        public ActionResult Index(string name)
+        public async Task<IActionResult> Index(string Key, int? Type, int Trang, int Dong, string SapXep, string ThuTu)
         {
-            #region Authorization
-            var login = User.Identity.Name;
-            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
-            ViewData["LoginUserName"] = loginUserName;
+            var linkCurrent = string.Empty;
 
-            var userInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
-            if (userInformation == null)
+            #region Login Information
+            LoginInit(Constants.Rights.System, (int)ERights.Add);
+            if (!(bool)ViewData[Constants.ActionViews.IsLogin])
             {
-                #region snippet1
-                HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                #endregion
-                return RedirectToAction("login", "account");
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                return RedirectToAction(Constants.ActionViews.Login, Constants.Controllers.Account);
             }
-
-            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, "nhan-su", (int)ERights.View)))
-            {
-                return RedirectToAction("AccessDenied", "Account");
-            }
-
             #endregion
 
-            var sort = Builders<Setting>.Sort.Descending(m=>m.ModifiedDate);
-            var settings = dbContext.Settings.Find(m => m.Enable.Equals(true)).Sort(sort).ToList();
+            var domain = ViewData[Constants.ActionViews.Domain].ToString();
 
-            var settingsDisable = dbContext.Settings.Find(m => m.Enable.Equals(false)).Sort(sort).ToList();
+            #region Filter
+            var builder = Builders<Setting>.Filter;
+            var filter = builder.Eq(m => m.Enable, true);
+            filter &= builder.Eq(m => m.Domain, domain);
+
+            if (!string.IsNullOrEmpty(Key))
+            {
+                filter &= builder.Eq(x => x.Key, Key);
+            }
+            if (Type.HasValue)
+            {
+                filter &= builder.Eq(x => x.Type, Type);
+            }
+            #endregion
+
+            #region Sort
+            var sortBuilder = Builders<Setting>.Sort.Ascending(m => m.Key);
+            SapXep = string.IsNullOrEmpty(SapXep) ? "code" : SapXep;
+            ThuTu = string.IsNullOrEmpty(ThuTu) ? "asc" : ThuTu;
+            switch (SapXep)
+            {
+                case "ten":
+                    sortBuilder = ThuTu == "asc" ? Builders<Setting>.Sort.Ascending(m => m.Key) : Builders<Setting>.Sort.Descending(m => m.Key);
+                    break;
+                default:
+                    sortBuilder = ThuTu == "asc" ? Builders<Setting>.Sort.Ascending(m => m.Key) : Builders<Setting>.Sort.Descending(m => m.Key);
+                    break;
+            }
+            #endregion
+
+            Trang = Trang == 0 ? 1 : Trang;
+            int PageSize = Dong;
+            int PageTotal = 1;
+            var Records = dbContext.Settings.CountDocuments(filter);
+            if (Records > 0 && Records > PageSize)
+            {
+                PageTotal = (int)Math.Ceiling((double)Records / (double)PageSize);
+                if (Trang > PageTotal)
+                {
+                    Trang = 1;
+                }
+            }
+
+            var list = dbContext.Settings.Find(filter).Sort(sortBuilder).Skip((Trang - 1) * PageSize).Limit(PageSize).ToList();
+
             var viewModel = new SettingViewModel
             {
-                Settings = settings,
-                SettingsDisable = settingsDisable
+                Settings = list,
+                Key = Key,
+                Type = Type,
+                LinkCurrent = linkCurrent,
+                ThuTu = ThuTu,
+                SapXep = SapXep,
+                Records = (int)Records,
+                PageSize = PageSize,
+                PageTotal = PageTotal,
+                PageCurrent = Trang
             };
             return View(viewModel);
         }
 
-        [HttpGet]
-        [Route("cai-dat/ma/")]
-        public JsonResult Item(string id)
+        public async Task<IActionResult> Data(string Id)
         {
-            var item = dbContext.Settings.Find(m => m.Id.Equals(id)).First();
-            return Json(item);
+            #region Login Information
+            LoginInit(Constants.Rights.System, (int)ERights.Add);
+            if (!(bool)ViewData[Constants.ActionViews.IsLogin])
+            {
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                return RedirectToAction(Constants.ActionViews.Login, Constants.Controllers.Account);
+            }
+            #endregion
+
+            var domain = ViewData[Constants.ActionViews.Domain].ToString();
+            var settingE = new Setting()
+            {
+                Domain = domain
+            };
+
+            if (!string.IsNullOrEmpty(Id))
+            {
+                settingE = dbContext.Settings.Find(m => m.Id.Equals(Id)).FirstOrDefault();
+                if (settingE == null)
+                {
+                    settingE = new Setting()
+                    {
+                        Domain = domain
+                    };
+                }
+            }
+
+            var settings = dbContext.Settings.Find(m => true).ToList();
+            var viewModel = new SettingViewModel()
+            {
+                Setting = settingE,
+                Settings = settings
+            };
+            return View(viewModel);
         }
 
         [HttpPost]
-        //[ValidateAntiForgeryToken]
-        [Route("cai-dat/tao-moi")]
-        public ActionResult Create(SettingViewModel viewModel)
+        public async Task<IActionResult> Data(SettingViewModel viewModel)
         {
-            var userId = User.Identity.Name;
+            #region Login Information
+            LoginInit(Constants.Rights.System, (int)ERights.Add);
+            if (!(bool)ViewData[Constants.ActionViews.IsLogin])
+            {
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                return RedirectToAction(Constants.ActionViews.Login, Constants.Controllers.Account);
+            }
+            #endregion
+
             var entity = viewModel.Setting;
-            try
+
+            if (string.IsNullOrEmpty(entity.Id))
             {
-                if (CheckExist(entity))
-                {
-                    dbContext.Settings.InsertOne(entity);
-
-                    #region Activities
-                    var activity = new TrackingUser
-                    {
-                        UserId = userId,
-                        Function = Constants.Collection.Settings,
-                        Action = Constants.Action.Create,
-                        Value = entity.Key,
-                        Content = entity.Key + Constants.Flag + entity.Content
-                    };
-                    dbContext.TrackingUsers.InsertOne(activity);
-                    #endregion
-
-                    return Json(new { entity, result = true, message = "Add new successfull." });
-                }
-                else
-                {
-                    return Json(new { entity, result = false, message = entity.Key + " is exist. Try another key or contact IT." });
-                }
+                dbContext.Settings.InsertOne(entity);
             }
-            catch (Exception ex)
+            else
             {
-                return Json(new { entity, result = false, message = ex.Message });
+                var builder = Builders<Setting>.Filter;
+                var filter = builder.Eq(m => m.Id, entity.Id);
+                var update = Builders<Setting>.Update
+                    .Set(m => m.Key, entity.Key)
+                    .Set(m => m.Domain, entity.Domain)
+                    .Set(m => m.Value, entity.Value)
+                    .Set(m => m.IsCode, entity.IsCode)
+                    .Set(m => m.Type, entity.Type)
+                    .Set(m => m.Enable, entity.Enable);
+                dbContext.Settings.UpdateOne(filter, update);
             }
-        }
 
-        [HttpPost]
-        //[ValidateAntiForgeryToken]
-        [Route("cai-dat/chinh-sua")]
-        public ActionResult Edit(SettingViewModel viewModel)
-        {
-            var userId = User.Identity.Name;
-            var entity = viewModel.Setting;
-            try
-            {
-                if (CheckUpdate(entity))
-                {
-                    entity.Timestamp = DateTime.Now.ToString("yyyyMMddHHmmssfff");
-                    dbContext.Settings.ReplaceOne(m => m.Id == entity.Id, entity);
-
-                    #region Activities
-                    var activity = new TrackingUser
-                    {
-                        UserId = userId,
-                        Function = Constants.Collection.Settings,
-                        Action = Constants.Action.Edit,
-                        Value = entity.Key,
-                        Content = entity.Key + Constants.Flag + entity.Content,
-                        //Link = "/stg/" + entity.Key
-                    };
-                    dbContext.TrackingUsers.InsertOne(activity);
-                    #endregion
-
-                    return Json(new { entity, result = true, message = "Update successfull." });
-                    //return RedirectToAction("Index", "Setting");
-                }
-                else
-                {
-                    return Json(new { entity, result = false, message = entity.Key + " updated by another. Try again." });
-                }
-            }
-            catch (Exception ex)
-            {
-                return Json(new { entity, result = false, message = ex.Message });
-            }
-        }
-
-        [HttpPost]
-        //[ValidateAntiForgeryToken]
-        [Route("cai-dat/disable")]
-        public ActionResult Disable(SettingViewModel viewModel)
-        {
-            var userId = User.Identity.Name;
-            var entity = viewModel.Setting;
-            try
-            {
-                // TODO: Add disable logic here
-                if (CheckDisable(entity))
-                {
-                    var filter = Builders<Setting>.Filter.Eq(d => d.Key, entity.Key);
-                    // Update rule later. Current rule: dat hang => update request dat hang. No check quantity full or missing.
-                    var update = Builders<Setting>.Update
-                                    .Set(c => c.Enable, false);
-                    dbContext.Settings.UpdateOne(filter, update);
-
-                    #region Activities
-                    var activity = new TrackingUser
-                    {
-                        UserId = userId,
-                        Function = Constants.Collection.Settings,
-                        Action = Constants.Action.Disable,
-                        Value = entity.Key,
-                        Content = entity.Key + Constants.Flag + entity.Content
-                    };
-                    dbContext.TrackingUsers.InsertOne(activity);
-                    #endregion
-
-                    return Json(new { entity, result = true, message = "Disable successfull." });
-                }
-                else
-                {
-                    return Json(new { entity, result = false, message = entity.Key + " updated by another. Try again." });
-                }
-            }
-            catch (Exception ex)
-            {
-                return Json(new { entity, result = false, message = ex.Message });
-            }
-        }
-
-        [HttpPost]
-        [Route("cai-dat/active")]
-        public ActionResult Active(SettingViewModel viewModel)
-        {
-            var userId = User.Identity.Name;
-            var entity = viewModel.Setting;
-            try
-            {
-                // TODO: Add disable logic here
-                if (CheckActive(entity))
-                {
-                    var filter = Builders<Setting>.Filter.Eq(d => d.Key, entity.Key);
-                    // Update rule later. Current rule: dat hang => update request dat hang. No check quantity full or missing.
-                    var update = Builders<Setting>.Update
-                                    .Set(c => c.Enable, true);
-                    dbContext.Settings.UpdateOne(filter, update);
-
-                    #region Activities
-                    var activity = new TrackingUser
-                    {
-                        UserId = userId,
-                        Function = Constants.Collection.Settings,
-                        Action = Constants.Action.Active,
-                        Value = entity.Key,
-                        Content = entity.Key + Constants.Flag + entity.Content
-                    };
-                    dbContext.TrackingUsers.InsertOne(activity);
-                    #endregion
-
-                    return Json(new { entity, result = true, message = entity.Key + " active successfull." });
-                }
-                else
-                {
-                    return Json(new { entity, result = false, message = entity.Key + " is exist." });
-                }
-            }
-            catch (Exception ex)
-            {
-                return Json(new { entity, result = false, message = ex.Message });
-            }
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        [Route("cai-dat/xoa")]
-        public ActionResult Delete(SettingViewModel viewModel)
-        {
-            var userId = User.Identity.Name;
-            var entity = viewModel.Setting;
-            try
-            {
-                // TODO: Add disable logic here
-                if (CheckDelete(entity))
-                {
-                    dbContext.Settings.DeleteOne(m => m.Id == entity.Id);
-
-                    #region Activities
-                    var activity = new TrackingUser
-                    {
-                        UserId = userId,
-                        Function = Constants.Collection.Settings,
-                        Action = Constants.Action.Delete,
-                        Value = entity.Key,
-                        Content = entity.Key + Constants.Flag + entity.Content
-                    };
-                    dbContext.TrackingUsers.InsertOne(activity);
-                    #endregion
-
-                    return Json(new { entity, result = true, message = "Delete successfull." });
-                }
-                else
-                {
-                    return Json(new { entity, result = false, message = entity.Key + " updated by another. Try again." });
-                }
-            }
-            catch (Exception ex)
-            {
-                return Json(new { entity, result = false, message = ex.Message });
-            }
-        }
-
-        public bool CheckExist(Setting entity)
-        {
-            return dbContext.Settings.CountDocuments(m => m.Enable.Equals(true) && m.Key.Equals(entity.Key)) > 0 ? false : true;
-        }
-
-        public bool CheckUpdate(Setting entity)
-        {
-            var db = dbContext.Settings.Find(m => m.Enable.Equals(true) && m.Key.Equals(entity.Key)).First();
-            if (db.Key != entity.Key)
-            {
-                if (CheckExist(entity))
-                {
-                    return db.Timestamp == entity.Timestamp ? true : false;
-                }
-            }
-            return db.Timestamp == entity.Timestamp ? true: false;
-        }
-
-        public bool CheckDisable(Setting entity)
-        {
-            return entity.Usage > 0 ? false : true;
-        }
-
-        public bool CheckActive(Setting entity)
-        {
-            return dbContext.Settings.CountDocuments(m => m.Enable.Equals(true) && m.Key.Equals(entity.Key)) > 0 ? false : true;
-        }
-
-        public bool CheckDelete(Setting entity)
-        {
-            if (entity.NoDelete)
-            {
-                return false;
-            }
-            return entity.Usage > 0 ? false : true;
+            return Redirect("/setting");
         }
     }
 }

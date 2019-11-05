@@ -3,6 +3,7 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace Models
 {
+    // Move to Img
     public class Image
     {
         [BsonId]

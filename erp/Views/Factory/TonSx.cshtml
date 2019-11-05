@@ -4,7 +4,6 @@
 
 @{
     ViewData["Title"] = "Dữ Liệu Tồn Sản Xuất";
-    Layout = "~/Views/Shared/_LayoutData.cshtml";
 }
 
 <div class="card">
@@ -186,5 +185,5 @@
 </div>
 
 @section scripts {
-    <script type="text/javascript" src="~/js/factory-tonsx.js?@DateTime.Now.Ticks"></script>
+    <script type="text/javascript" src="~/js/factory-tonsx.js?@Constants.VersionJs"></script>
 }

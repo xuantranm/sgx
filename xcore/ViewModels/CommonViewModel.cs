@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Models;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
@@ -6,7 +7,10 @@ namespace ViewModels
 {
     public class CommonViewModel
     {
-        public string LinkCurrent { get; set; }
+        // Link
+        public IList<Link> Links { get; set; }
+
+        public string LinkCurrent { get; set; } // use fb share, export
 
         public string ThuTu { get; set; }
 
@@ -17,8 +21,18 @@ namespace ViewModels
 
         public int PageSize { get; set; }
 
-        public int SoTrang { get; set; } // PageCount
+        public int PageTotal { get; set; }
 
-        public int Trang { get; set; } // Page
+        public int PageCurrent { get; set; }
+
+        public int Trang { get; set; } // Temp
+
+        public int SoTrang { get; set; } // Temp
+
+        public IList<Breadcrumb> Breadcrumbs { get; set; }
+
+        public Seo Seo { get; set; }
+
+        public IList<Domain> Domains { get; set; }
     }
 }

@@ -7,20 +7,24 @@
 
 @{
     CultureInfo culture = CultureInfo.CreateSpecificCulture("en-US");
-    var login = User.Identity.Name;
-    var count = 0;
-    var read = string.Empty;
-    var modeRead = false;
-    if (Model.OvertimeEmployees != null && Model.OvertimeEmployees.Count > 0)
+    var loginId = User.Identity.Name;
+    bool isManager = false;
+    bool isEdit = (bool)ViewData[Constants.ActionViews.isEdit];
+    var submit = "disable";
+    var phone = string.Empty;
+    var manager = Model.Manager;
+    if (manager != null)
     {
-        count = Model.OvertimeEmployees.Count - 1;
-        modeRead = true;
-        read = "readonly";
+        isManager = true;
+        submit = string.Empty;
+        if (manager.Mobiles != null && manager.Mobiles.Count > 0)
+        {
+            phone = manager.Mobiles[0].Number;
+        }
     }
 }
 
-<input type="hidden" class="mode" value="@modeRead" />
-<input type="hidden" class="iE-value" value="@count" />
+
 <div class="main-container">
     <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
         <div class="container">
@@ -42,201 +46,151 @@
         </div>
     </nav>
 
-    <!-- MAIN -->
     <section class="flush-with-above height-80 d-block">
         <div class="container">
-            <!-- FILTER -->
             <form method="post" action="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Overtime/@Constants.ActionLink.Data" class="data-form">
-                @{
-                    var fromdatesearch = Model.Tu.ToString("dd/MM/yyyy");
-                    double totalHour = 0;
-                }
+                <input type="hidden" class="isChange" value="0" />
+                <input type="hidden" class="link" value="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Overtime/@Constants.ActionLink.Data" />
                 <input type="hidden" asp-for="Id" />
-                <input type="hidden" value="0" class="isChange" />
-                <input type="hidden" value="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Overtime/@Constants.ActionLink.Data" class="link" />
                 <div class="form-group row">
                     <label class="col-sm-2 col-form-label">Ngày</label>
                     <div class="col-sm-4">
-                        <input class="form-control datepicker datepicker-lg from-date" value="@fromdatesearch" />
+                        <input class="form-control datepicker datepicker-lg from-date" value="@Model.Tu.ToString("dd/MM/yyyy")" />
                         <input type="hidden" name="Tu" class="tu-ngay" value="@Model.Tu.ToString("MM-dd-yyyy")" />
-                    </div>
-                    <label class="col-sm-2 col-form-label">Loại tăng ca</label>
-                    <div class="col-sm-4">
-                        <input type="text" readonly class="form-control-plaintext" value="@Constants.TimeWork(Utility.GetTypeDate(Model.Tu))">
+                        <span class="badge badge-info">@Constants.TimeWork(Utility.GetTypeDate(Model.Tu))</span>
                     </div>
                 </div>
 
-                @if (modeRead)
-                {
+                @{
                     int no = 0;
+                    double totalHour = 0;
                     foreach (var item in Model.OvertimeEmployees)
                     {
                         totalHour += item.Hour;
-                        var titleTime = string.Empty;
-                        if (no == 0)
+                        var titleTime = "Thời gian";
+                        var start = item.StartOvertime.ToString(@"hh\:mm");
+                        var end = item.EndOvertime.ToString(@"hh\:mm");
+                        if (no != 0)
                         {
-                            titleTime = "Thời gian";
+                            titleTime += " " + (no + 1).ToString();
                         }
+
                         <div class="form-group row">
+                            <input type="hidden" class="no-overtime" value="@no" />
+                            <input type="hidden" name="OvertimeEmployees[@no].Id" />
+                            <input type="hidden" name="OvertimeEmployees[@no].Hour" class="hour-item hour-item-@no" />
+                            <input type="hidden" name="OvertimeEmployees[@no].IsDelete" value="false" />
+                            <input type="hidden" id="hiddenStart-@no" value="@start" />
+                            <input type="hidden" id="hiddenEnd-@no" value="@end" />
                             <label class="col-sm-2 col-form-label">@titleTime</label>
-                            <div class="col-sm-10">
-                                <label class="col-form-label font-weight-bold">@item.Start.ToString(@"hh\:mm") - @item.End.ToString(@"hh\:mm") (@item.Hour giờ)</label>
+                            <div class="col-sm-3">
+                                <input type="text" name="OvertimeEmployees[@no].StartOvertime" value="@item.StartOvertime" class="form-control form-control-lg datetimepicker-input" id="start-@no" data-toggle="datetimepicker" data-target="#start-@no" data-id="@no" autocomplete="off" />
+                            </div>
+                            <div class="col-sm-3">
+                                <input type="text" name="OvertimeEmployees[@no].EndOvertime" value="@item.EndOvertime" class="form-control form-control-lg datetimepicker-input" id="end-@no" data-toggle="datetimepicker" data-target="#end-@no" data-id="@no" autocomplete="off" />
+                            </div>
+                            <div class="col-sm-4">
+                                <label class="col-form-label">Số giờ:</label> <code class="hour-@no">0</code>
                             </div>
                         </div>
                         no++;
                     }
                 }
-                else
-                {
-                    int no = 0;
-                    <div class="form-group row">
-                        <input type="hidden" class="no-time" value="@no" />
-                        <input type="hidden" name="OvertimeEmployees[@no].Id" />
-                        <input type="hidden" name="OvertimeEmployees[@no].Hour" id="hHour-@no" class="hour-item" />
-                        <label class="col-sm-2 col-form-label">Thời gian</label>
-                        <div class="col-sm-3">
-                            <input type="text" name="OvertimeEmployees[@no].Start" class="form-control form-control-lg datetimepicker-input" id="start-@no" data-toggle="datetimepicker" data-target="#start-@no" data-id="@no" autocomplete="off" />
-                            <input type="hidden" value="00:00" id="hiddenStart-@no" />
-                        </div>
-                        <div class="col-sm-3">
-                            <input type="text" name="OvertimeEmployees[@no].End" class="form-control form-control-lg datetimepicker-input" id="end-@no" data-toggle="datetimepicker" data-target="#end-@no" data-id="@no" autocomplete="off" />
-                            <input type="hidden" value="00:00" id="hiddenEnd-@no" />
-                        </div>
-                        <div class="col-sm-4">
-                            <label class="col-form-label">Số giờ:</label> <code class="hour-@no">0</code>
-                        </div>
-                    </div>
 
-                }
-
-                <script id="tmplTimes" type="text/x-jsrender">
-                    <div class="form-group row">
-                        <input type="hidden" class="no-time" value="{{:no}}" />
-                        <input type="hidden" name="OvertimeEmployees[{{:no}}].Id" />
-                        <input type="hidden" name="OvertimeEmployees[{{:no}}].Hour" id="hHour-{{:no}}" class="hour-item" />
-                        <label class="col-sm-2 col-form-label"></label>
-                        <div class="col-sm-3">
-                            <input type="text" name="OvertimeEmployees[{{:no}}].Start" class="form-control form-control-lg datetimepicker-input" id="start-{{:no}}" data-toggle="datetimepicker" data-target="#start-{{:no}}" data-id="{{:no}}" autocomplete="off" />
-                            <input type="hidden" value="00:00" id="hiddenStart-{{:no}}" />
-                        </div>
-                        <div class="col-sm-3">
-                            <input type="text" name="OvertimeEmployees[{{:no}}].End" class="form-control form-control-lg datetimepicker-input" id="end-{{:no}}" data-toggle="datetimepicker" data-target="#end-{{:no}}" data-id="{{:no}}" autocomplete="off" />
-                            <input type="hidden" value="00:00" id="hiddenEnd-{{:no}}" />
-                        </div>
-                        <div class="col-sm-2">
-                            <label class="col-form-label">Số giờ:</label> <code class="hour-{{:no}}">0</code>
-                        </div>
-                        <div class="col-sm-2">
-                            <button type="button" class="btn btn-danger btn-time-remove btn-time-remove-{{:no}}"><i class="fas fa-minus-circle"></i></button>
-                        </div>
-                    </div>
-                </script>
                 <div class="form-group">
-                    <button type="button" class="btn btn-primary btn-add-hour"><i class="fas fa-plus-square"></i> Thêm thời gian</button>
+                    <button type="button" class="btn btn-primary btn-add-hour"><i class="fas fa-plus-square"></i> Thêm thời gian tăng ca</button>
                 </div>
+
                 <div class="form-group row">
                     <label class="col-sm-2 col-form-label">Nội dung <span class="text-small">(nếu có)</span></label>
                     <div class="col-sm-10">
-                        @if (modeRead)
-                        {
-                            <textarea class="form-control js-auto-size" name="OvertimeEmployees[0].Description">@Model.OvertimeEmployees[0].Description</textarea>
-                        }
-                        else
-                        {
-                            <textarea class="form-control js-auto-size" name="OvertimeEmployees[0].Description"></textarea>
-                        }
+                        <textarea class="form-control js-auto-size" name="OvertimeEmployees[0].Description">@Model.OvertimeEmployees[0].Description</textarea>
                     </div>
                 </div>
-
                 <div class="form-group form-check">
-                    @if (modeRead)
-                    {
-                        <input type="checkbox" class="form-check-input check-agreement" checked disabled />
-                    }
-                    else
-                    {
-                        <input type="checkbox" class="form-check-input check-agreement" checked />
-                    }
+                    <input type="checkbox" class="form-check-input check-agreement" checked />
                     <label class="form-check-label" for="agree">Đồng ý Tăng ca (Điều 106 Bộ luật Lao Động năm 2012)</label>
                 </div>
+                <div class="alert alert-danger" role="alert">
+                    <b>* Vui lòng kiểm tra thông tin chính xác trước khi bấm <code>[Cập nhật]</code></b>
+                    <br />
+                    <b>Thông tin sẽ gửi cho quản lý xét duyệt nên không chỉnh sửa.</b>
+                    <br />
+                    Cần thay đổi vui lòng liên hệ quản lý. <small class="text-info">Thông tin bên dưới</small>
+                </div>
 
-                @if (!modeRead)
+                <div class="form-group row mb-3">
+                    <button type="submit" class="btn btn-lg btn-danger btn-block btn-submit @submit"><i class="fas fa-check"></i> Cập nhật</button>
+                </div>
+                @if (isManager)
                 {
-                    <div class="alert alert-danger" role="alert">
-                        <b>* Vui lòng kiểm tra thông tin chính xác trước khi bấm <code>[Cập nhật]</code></b>
-                        <br />
-                        <b>Thông tin sau khi bấm <code>[Cập nhật]</code> sẽ gửi cho quản lý xét duyệt nên không được chỉnh sửa, thêm giờ trong ngày @Model.Tu.ToString("dd/MM/yyyy").</b>
-                        <br />
-                        Nếu muốn chỉnh sửa dữ liệu vui lòng liên hệ quản lý.
-                    </div>
-                }
-
-                @if (Model.Manager != null)
-                {
-                    var manager = Model.Manager;
-                    var phone = string.Empty;
-                    if (manager.Mobiles != null && manager.Mobiles.Count > 0)
-                    {
-                        phone = manager.Mobiles[0].Number;
-                    }
-
-                    <div class="form-group row mb-3">
-                        <button type="submit" class="btn btn-lg btn-danger btn-block btn-submit"><i class="fas fa-check"></i> Cập nhật</button>
-                    </div>
-
                     <div class="form-group row">
-                        @if (modeRead)
-                        {
-                            <div class="col-12">
-                                <span>Lệnh tăng ca đang được xử lý.</span>
-                                <br />
-                                Trạng thái: <span class="font-weight-bold overtime-manager-name">@Constants.OvertimeStatus(Model.OvertimeEmployees[0].Status)</span>
-                                @if (Model.OvertimeEmployees[0].Status < (int)EOvertime.Secutity)
-                                {
-                                    <div>
-                                        Người duyệt: <span class="font-weight-bold overtime-manager-name">@manager.FullName</span>
-                                        <br />
-                                        Chức vụ: <span class="font-weight-bold overtime-manager-chuc-vu">@manager.ChucVuName</span>
-                                        <br />
-                                        Email: <span class="font-weight-bold overtime-manager-email">@manager.Email</span>
-                                        <br />
-                                        Điện thoại: <span class="font-weight-bold overtime-manager-phone">@phone</span>
-                                    </div>
-                                }
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="col-12">
-                                <span>Lệnh tăng ca sẽ được duyệt bởi:</span>
-                                <br />
-                                Người duyệt: <span class="font-weight-bold overtime-manager-name">@manager.FullName</span>
-                                <br />
-                                Chức vụ: <span class="font-weight-bold overtime-manager-chuc-vu">@manager.ChucVuName</span>
-                                <br />
-                                Email: <span class="font-weight-bold overtime-manager-email">@manager.Email</span>
-                                <br />
-                                Điện thoại: <span class="font-weight-bold overtime-manager-phone">@phone</span>
-                            </div>
-                        }
+                        <div class="col-12">
+                            <span>Lệnh tăng ca sẽ được duyệt bởi:</span>
+                            <br />
+                            Người duyệt: <span class="font-weight-bold overtime-manager-name">@manager.FullName</span>
+                            <br />
+                            Chức vụ: <span class="font-weight-bold overtime-manager-chuc-vu">@manager.ChucVuName</span>
+                            <br />
+                            Email: <a href="mailto:@manager.Email">
+                                <span class="font-weight-bold overtime-manager-email">@manager.Email</span>
+                            </a>
+                            <br />
+                            Điện thoại: <a href="tel:@phone"><span class="font-weight-bold overtime-manager-phone">@phone</span></a>
+                        </div>
                     </div>
                 }
-                else
+                @if (isEdit)
                 {
-                    <div class="alert alert-danger" role="alert">
-                        Hệ thống không tìm thấy người quản lý của bạn. Vui lòng liên hệ Nhân sự (Thoa, Ánh) cập nhật người quản lý.
-                    </div>
-
-                    <div class="form-group row mb-3">
-                        <button type="submit" class="btn btn-primary btn-block btn-submit" disabled>Cập nhật</button>
+                    <div class="form-group row">
+                        <div class="col-12">
+                            <span>Lệnh tăng ca đang được xử lý.</span>
+                            <br />
+                            Trạng thái: <span class="font-weight-bold overtime-manager-name">@Constants.OvertimeStatus(Model.OvertimeEmployees[0].Status)</span>
+                            @if (Model.OvertimeEmployees[0].Status < (int)EOvertime.Secutity)
+                            {
+                                <div>
+                                    Người duyệt: <span class="font-weight-bold overtime-manager-name">@manager.FullName</span>
+                                    <br />
+                                    Chức vụ: <span class="font-weight-bold overtime-manager-chuc-vu">@manager.ChucVuName</span>
+                                    <br />
+                                    Email: <span class="font-weight-bold overtime-manager-email">@manager.Email</span>
+                                    <br />
+                                    Điện thoại: <span class="font-weight-bold overtime-manager-phone">@phone</span>
+                                </div>
+                            }
+                        </div>
                     </div>
                 }
-
                 <input type="hidden" class="hour-total" value="@totalHour" />
             </form>
         </div>
     </section>
 </div>
+
+<script id="tmplTimes" type="text/x-jsrender">
+    <div class="form-group row">
+        <input type="hidden" class="no-overtime" value="{{:no}}" />
+        <input type="hidden" name="OvertimeEmployees[{{:no}}].Id" />
+        <input type="hidden" name="OvertimeEmployees[{{:no}}].Hour" class="hour-item hour-item-{{:no}}" />
+        <input type="hidden" name="OvertimeEmployees[{{:no}}].IsDelete" class="delete" value="false" />
+        <input type="hidden" id="hiddenStart-{{:no}}" value="00:00" />
+        <input type="hidden" id="hiddenEnd-{{:no}}" value="00:00" />
+        <label class="col-sm-2 col-form-label"></label>
+        <div class="col-sm-3">
+            <input type="text" name="OvertimeEmployees[{{:no}}].StartOvertime" class="form-control form-control-lg datetimepicker-input" id="start-{{:no}}" data-toggle="datetimepicker" data-target="#start-{{:no}}" data-id="{{:no}}" autocomplete="off" />
+        </div>
+        <div class="col-sm-3">
+            <input type="text" name="OvertimeEmployees[{{:no}}].EndOvertime" class="form-control form-control-lg datetimepicker-input" id="end-{{:no}}" data-toggle="datetimepicker" data-target="#end-{{:no}}" data-id="{{:no}}" autocomplete="off" />
+        </div>
+        <div class="col-sm-2">
+            <label class="col-form-label">Số giờ:</label> <code class="hour-{{:no}}">0</code>
+        </div>
+        <div class="col-sm-2">
+            <button type="button" class="btn btn-danger btn-time-remove btn-time-remove-{{:no}}"><i class="fas fa-minus-circle"></i></button>
+        </div>
+    </div>
+</script>
 
 @section scripts {
     @{

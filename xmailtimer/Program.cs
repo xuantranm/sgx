@@ -44,9 +44,9 @@ namespace xmailtimer
             var url = Constants.System.domain;
             #endregion
 
-            var congtychinhanhs = dbContext.CongTyChiNhanhs.Find(m => m.Enable.Equals(true)).ToList();
-            var congtychinhanhTruSo = congtychinhanhs.Where(m => m.Code.Equals("CT1")).FirstOrDefault();
-            var congtychinhanhNhaMay = congtychinhanhs.Where(m => m.Code.Equals("CT2")).FirstOrDefault();
+            var congtychinhanhs = dbContext.Categories.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)ECategory.Company)).ToList();
+            var vanPhong = congtychinhanhs.Where(m => m.Code.Equals("VP")).FirstOrDefault();
+            var nhaMay = congtychinhanhs.Where(m => m.Code.Equals("NM")).FirstOrDefault();
 
             #region Times : 26 run
             var today = DateTime.Now;
@@ -58,16 +58,16 @@ namespace xmailtimer
             #region Filter
             var builder = Builders<Employee>.Filter;
             var filter = !builder.Eq(i => i.UserName, Constants.System.account)
-                        & builder.Eq(m => m.Enable, true)
+                        & builder.Eq(m => m.Enable, true) & builder.Eq(m => m.IsOnline, true)
                         & builder.Eq(m => m.IsTimeKeeper, false);
             if (!string.IsNullOrEmpty(location))
             {
-                var locationId = location == "NM" ? congtychinhanhNhaMay.Id : congtychinhanhTruSo.Id;
-                filter = filter & builder.Eq(m => m.CongTyChiNhanh, locationId);
+                var locationId = location == "NM" ? nhaMay.Id : vanPhong.Id;
+                filter &= builder.Eq(m => m.CongTyChiNhanh, locationId);
             }
             if (!string.IsNullOrEmpty(debug))
             {
-                filter = filter & builder.Eq(m => m.Id, debug);
+                filter &= builder.Eq(m => m.Id, debug);
             }
 
             var fields = Builders<Employee>.Projection.Include(p => p.Id);
@@ -75,85 +75,13 @@ namespace xmailtimer
             var employees = dbContext.Employees.Find(filter).ToList();
             var employeesId = dbContext.Employees.Find(filter).Project<Employee>(fields).ToList().Select(m => m.Id).ToList();
 
-            #region Comment, Recheck again
-            //var employeesIdHrNM = new List<string>(); // use cc hr
-            //var employeesHrNM = new List<Employee>(); // use cc hr
-            //var employeesIdHrVP = new List<string>(); // use cc hr
-            //var employeesHrVP = new List<Employee>(); // use cc hr
-            //if (string.IsNullOrEmpty(debug))
-            //{
-            //    var locationNM = congtychinhanhNhaMay.Id;
-            //    filter = filter & builder.Eq(m => m.CongTyChiNhanh, locationNM);
-            //    var employeesNM = dbContext.Employees.Find(filter).ToList();
-            //    var employeesIdNM = dbContext.Employees.Find(filter).Project<Employee>(fields).ToList().Select(m => m.Id).ToList();
-
-            //    // NHA MAY: + Phong XDCB + Phong Du An, Vat Tu, TTNC, NCUD
-            //    var listPhongBanTinhCongONhaMay = new List<string>
-            //    {
-            //        "5c88d094d59d56225c43242a", // XDCB
-            //        "5c88d094d59d56225c432437", // DA
-            //        "5c88d094d59d56225c43242f", // VATTU
-            //        "5c88d094d59d56225c432435", // BAN VAT TU
-            //        "5c88d094d59d56225c43243c", // TTNC
-            //        "5c88d094d59d56225c432441" // NCUD
-            //    };
-            //    var listIdLoaiTruONhaMay = new List<string>
-            //    {
-            //        "5b6bb22fe73a301f941c589e", // Huyen
-            //        "5bc048540ae7341a7ce7f1fb" // Hien
-            //    };
-            //    var listIdCongThemONhaMay = new List<string>
-            //    {
-            //        "5b6bb22fe73a301f941c5885", // Thy
-            //        "5b6bb231e73a301f941c58dd", // Thoa
-            //        "5b6bfc463ee8461ee48cbbea", // Xuan
-            //        "5c3e90b5566d7c0a345e5488" // Phuong
-            //    };
-
-            //    var employeesPhongBanONhaMay = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false)
-            //                            && listPhongBanTinhCongONhaMay.Contains(m.PhongBan) && !listIdLoaiTruONhaMay.Contains(m.Id)).ToList();
-            //    var employeesPhongBanONhaMayId = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false)
-            //                            && listPhongBanTinhCongONhaMay.Contains(m.PhongBan) && !listIdLoaiTruONhaMay.Contains(m.Id)).ToList()
-            //                            .Select(m => m.Id).ToList();
-            //    var employeesCongThem = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false)
-            //                            && listIdCongThemONhaMay.Contains(m.Id)).ToList();
-            //    var employeesCongThemId = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false)
-            //                            && listIdCongThemONhaMay.Contains(m.Id)).ToList()
-            //                            .Select(m => m.Id).ToList();
-
-            //    employeesIdHrNM = employeesIdNM.Concat(employeesPhongBanONhaMayId).Concat(employeesCongThemId).ToList();
-            //    employeesHrNM = employeesNM.Concat(employeesPhongBanONhaMay).Concat(employeesCongThem).ToList();
-
-            //    employeesHrVP = employees.Where(m => !listPhongBanTinhCongONhaMay.Contains(m.PhongBan)
-            //                    && !listIdCongThemONhaMay.Contains(m.Id)).ToList();
-            //    employeesIdHrVP = employees.Where(m => !listPhongBanTinhCongONhaMay.Contains(m.PhongBan)
-            //                    && !listIdCongThemONhaMay.Contains(m.Id)).ToList().Select(m => m.Id).ToList();
-
-            //    if (!string.IsNullOrEmpty(location))
-            //    {
-            //        if (location == "NM")
-            //        {
-            //            //employees = employeesHrNM;
-            //            //employeesId = employeesIdHrNM;
-            //            employees = employeesNM;
-            //            employeesId = employeesIdNM;
-            //        }
-            //        else
-            //        {
-            //            employees = employeesHrVP;
-            //            employeesId = employeesIdHrVP;
-            //        }
-            //    }
-            //}
-            #endregion
-
             var builderT = Builders<EmployeeWorkTimeLog>.Filter;
             var filterT = builderT.Eq(m => m.Enable, true)
                         & builderT.Gte(m => m.Date, Tu)
                         & builderT.Lte(m => m.Date, Den);
             if (employeesId != null && employeesId.Count > 0)
             {
-                filterT = filterT & builderT.Where(m => employeesId.Contains(m.EmployeeId));
+                filterT &= builderT.Where(m => employeesId.Contains(m.EmployeeId));
             }
             #endregion
 
@@ -206,32 +134,6 @@ namespace xmailtimer
             var hrsCongTy = new List<Employee>();
             var employeeHr = dbContext.Employees.Find(m => m.Id.Equals("5b6bb22fe73a301f941c5887")).FirstOrDefault(); // Anh
             hrsCongTy.Add(employeeHr);
-            //var hrsNhaMay = new List<Employee>();
-
-            //var listHrRoles = dbContext.RoleUsers.Find(m => m.Role.Equals(Constants.Rights.NhanSu) && (m.Expired.Equals(null) || m.Expired > DateTime.Now)).ToList();
-            //if (listHrRoles != null && listHrRoles.Count > 0)
-            //{
-            //    foreach (var item in listHrRoles)
-            //    {
-            //        if (item.Action == 3)
-            //        {
-            //            var fieldHrs = Builders<Employee>.Projection.Include(p => p.Email).Include(p => p.FullName).Include(p => p.CongTyChiNhanh);
-            //            var employeeHr = dbContext.Employees.Find(m => m.Id.Equals(item.User) && !string.IsNullOrEmpty(m.Email)).Project<Employee>(fieldHrs).FirstOrDefault();
-            //            if (employeeHr != null)
-            //            {
-            //                // Because data not good, set hand
-            //                if (employeeHr.Id == "5b6bb22fe73a301f941c5887") // Anh
-            //                {
-            //                    hrsCongTy.Add(employeeHr);
-            //                }
-            //                //else if (employeeHr.Id == "5b6bb231e73a301f941c58dd") //Thoa
-            //                //{
-            //                //    hrsNhaMay.Add(employeeHr);
-            //                //}
-            //            }
-            //        }
-            //    }
-            //}
             #endregion
 
             int thang = ngaychot.Month;
@@ -268,50 +170,6 @@ namespace xmailtimer
                     ccs.Add(new EmailAddress() { Name = item.FullName, Address = item.Email });
                 }
 
-                #region Comment, Recheck again
-                //if (!string.IsNullOrEmpty(location))
-                //{
-                //    if (location == "NM")
-                //    {
-                //        ccs = new List<EmailAddress>();
-                //        foreach (var item in hrsNhaMay)
-                //        {
-                //            // Thoa no need cc
-                //            //ccs.Add(new EmailAddress() { Name = item.FullName, Address = item.Email });
-                //        }
-                //    }
-                //    else
-                //    {
-                //        ccs = new List<EmailAddress>();
-                //        foreach (var item in hrsCongTy)
-                //        {
-                //            ccs.Add(new EmailAddress() { Name = item.FullName, Address = item.Email });
-                //        }
-                //    }
-                //}
-                //else
-                //{
-                //    bool exists = employeesIdHrNM.Any(s => s.Contains(employee.Id));
-                //    if (exists)
-                //    {
-                //        ccs = new List<EmailAddress>();
-                //        foreach (var item in hrsNhaMay)
-                //        {
-                //            // Thoa no need cc
-                //            // ccs.Add(new EmailAddress() { Name = item.FullName, Address = item.Email });
-                //        }
-                //    }
-                //    else
-                //    {
-                //        ccs = new List<EmailAddress>();
-                //        foreach (var item in hrsCongTy)
-                //        {
-                //            ccs.Add(new EmailAddress() { Name = item.FullName, Address = item.Email });
-                //        }
-                //    }
-                //}
-                #endregion
-
                 // Because some case have enrollNumber but no time manage.
                 // If ngaycongNT = 0: gui nhan su
                 if (excelViewModel.NgayCongNT == 0)
@@ -326,52 +184,6 @@ namespace xmailtimer
                         tos.Add(new EmailAddress() { Name = item.FullName, Address = item.Email });
                     }
                     note = "<b>Anh/chị nhận được email này do nhân viên " + employee.FullName + " không có dữ liệu chấm công. Xin lỗi về bất tiện này và vui lòng kiểm tra lại.</b><br />";
-
-                    #region Comment, Recheck again
-                    //if (!string.IsNullOrEmpty(location))
-                    //{
-                    //    if (location == "NM")
-                    //    {
-                    //        subject = "CHẤM CÔNG THÁNG " + thang + "-" + nam + " của " + employee.FullName.ToUpper();
-                    //        to2 = string.Empty;
-                    //        owner = string.Empty;
-                    //        tos = new List<EmailAddress>();
-                    //        foreach (var item in hrsNhaMay)
-                    //        {
-                    //            tos.Add(new EmailAddress() { Name = item.FullName, Address = item.Email });
-                    //        }
-                    //        note = "<b>Anh/chị nhận được email này do nhân viên " + employee.FullName + " không có dữ liệu chấm công. Xin lỗi về bất tiện này và vui lòng kiểm tra lại.</b><br />";
-                    //    }
-                    //    else
-                    //    {
-                    //        subject = "CHẤM CÔNG THÁNG " + thang + "-" + nam + " của " + employee.FullName.ToUpper();
-                    //        to2 = string.Empty;
-                    //        owner = string.Empty;
-                    //        tos = new List<EmailAddress>();
-                    //        foreach (var item in hrsCongTy)
-                    //        {
-                    //            tos.Add(new EmailAddress() { Name = item.FullName, Address = item.Email });
-                    //        }
-                    //        note = "<b>Anh/chị nhận được email này do nhân viên " + employee.FullName + " không có dữ liệu chấm công. Xin lỗi về bất tiện này và vui lòng kiểm tra lại.</b><br />";
-                    //    }
-                    //}
-                    //else
-                    //{
-                    //    subject = "CHẤM CÔNG THÁNG " + thang + "-" + nam + " của " + employee.FullName.ToUpper();
-                    //    to2 = string.Empty;
-                    //    owner = string.Empty;
-                    //    tos = new List<EmailAddress>();
-                    //    foreach (var item in hrsCongTy)
-                    //    {
-                    //        tos.Add(new EmailAddress() { Name = item.FullName, Address = item.Email });
-                    //    }
-                    //    foreach (var item in hrsNhaMay)
-                    //    {
-                    //        tos.Add(new EmailAddress() { Name = item.FullName, Address = item.Email });
-                    //    }
-                    //    note = "<b>Anh/chị nhận được email này do nhân viên " + employee.FullName + " không có dữ liệu chấm công. Xin lỗi về bất tiện này và vui lòng kiểm tra lại.</b><br />";
-                    //}
-                    #endregion
                 }
   
                 var attachments = new List<string>
@@ -457,48 +269,6 @@ namespace xmailtimer
                             ccs.Add(new EmailAddress() { Name = item.FullName, Address = item.Email });
                         }
 
-                        #region Comment, Recheck later
-                        //if (!string.IsNullOrEmpty(location))
-                        //{
-                        //    if (location == "NM")
-                        //    {
-                        //        foreach (var item in hrsNhaMay)
-                        //        {
-                        //            // Thoa no need cc
-                        //            // ccs.Add(new EmailAddress() { Name = item.FullName, Address = item.Email });
-                        //        }
-                        //    }
-                        //    else
-                        //    {
-                        //        foreach (var item in hrsCongTy)
-                        //        {
-                        //            ccs.Add(new EmailAddress() { Name = item.FullName, Address = item.Email });
-                        //        }
-                        //    }
-                        //}
-                        //else
-                        //{
-                        //    bool exists = employeesIdHrNM.Any(s => s.Contains(managerE.Id));
-                        //    if (exists)
-                        //    {
-                        //        ccs = new List<EmailAddress>();
-                        //        foreach (var item in hrsNhaMay)
-                        //        {
-                        //            // Thoa no need cc
-                        //            // ccs.Add(new EmailAddress() { Name = item.FullName, Address = item.Email });
-                        //        }
-                        //    }
-                        //    else
-                        //    {
-                        //        ccs = new List<EmailAddress>();
-                        //        foreach (var item in hrsCongTy)
-                        //        {
-                        //            ccs.Add(new EmailAddress() { Name = item.FullName, Address = item.Email });
-                        //        }
-                        //    }
-                        //}
-                        #endregion
-
                         var attachments = new List<string>
                         {
                             excelViewModel.FileNameFullPath
@@ -550,25 +320,6 @@ namespace xmailtimer
                         to2 += string.IsNullOrEmpty(to2) ? hrEmployee.FullName : ", " + hrEmployee.FullName;
                         tos.Add(new EmailAddress { Name = hrEmployee.FullName, Address = hrEmployee.Email });
                     }
-
-                    #region Comment, Recheck later
-                    //if (location == "NM")
-                    //{
-                    //    foreach (var hrEmployee in hrsNhaMay)
-                    //    {
-                    //        to2 += string.IsNullOrEmpty(to2) ? hrEmployee.FullName : ", " + hrEmployee.FullName;
-                    //        tos.Add(new EmailAddress { Name = hrEmployee.FullName, Address = hrEmployee.Email });
-                    //    }
-                    //}
-                    //else
-                    //{
-                    //    foreach (var hrEmployee in hrsCongTy)
-                    //    {
-                    //        to2 += string.IsNullOrEmpty(to2) ? hrEmployee.FullName : ", " + hrEmployee.FullName;
-                    //        tos.Add(new EmailAddress { Name = hrEmployee.FullName, Address = hrEmployee.Email });
-                    //    }
-                    //}
-                    #endregion
 
                     var excelViewModel = RenderExcel(Tu, Den, ngaychot, sFileName, 2, listControl);
 

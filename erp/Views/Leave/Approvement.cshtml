@@ -17,9 +17,6 @@
                         <li class="breadcrumb-item">
                             <a href="/@Constants.LinkLeave.Main/@Constants.LinkLeave.Index">Phép</a>
                         </li>
-                        <li class="breadcrumb-item">
-                            <a href="/@Constants.LinkLeave.Main/@Constants.LinkLeave.HelpLeave">Phép nhân viên</a>
-                        </li>
                         <li class="breadcrumb-item active" aria-current="page">
                             Quản lý phép
                         </li>
@@ -31,15 +28,6 @@
 
     <section class="space-sm">
         <div class="container">
-            @if (Model.RightRequest)
-            {
-                <div class="form-group">
-                    <a href="/@Constants.LinkLeave.Main/@Constants.LinkLeave.HelpLeave" style="cursor:pointer" data-toggle="tooltip" title="Bấm vô tạo nghỉ phép cho nhân viên khác.">
-                        <i class="fas fa-hands-helping"></i> Tạo nghỉ phép cho nhân viên khác
-                    </a>
-                </div>
-            }
-
             @if (Model.LeaveEmployees.Count > 0)
             {
                 <h5 class="mb-4">Ngày phép còn lại của nhân viên</h5>
@@ -85,13 +73,10 @@
                             </tbody>
                         </table>
                     </div>
-                    <!--end of col-->
                 </div>
-                <!--end of row-->
             }
 
             <h5 class="mb-4">Danh sách xác nhận</h5>
-
             @if (Model.Leaves.Count > 0)
             {
                 <div class="row">
@@ -190,7 +175,6 @@
                             </tbody>
                         </table>
                     </div>
-                    <!--end of col-->
                 </div>
             }
             else
@@ -204,7 +188,6 @@
                     </div>
                 </div>
             }
-
         </div>
     </section>
 </div>

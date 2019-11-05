@@ -166,8 +166,8 @@
                                                 <td nowrap>
                                                     @item.Date.ToString("dd/MM/yyyy")
                                                 </td>
-                                                <td>@item.Start.ToString(@"hh\:mm")</td>
-                                                <td>@item.End.ToString(@"hh\:mm")</td>
+                                                <td>@item.StartOvertime.ToString(@"hh\:mm")</td>
+                                                <td>@item.EndOvertime.ToString(@"hh\:mm")</td>
                                                 <td>@item.Hour</td>
                                                 @if (securityConfirm)
                                                 {
@@ -220,7 +220,7 @@
 @section scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
-        <script type="text/javascript" src="~/js/timer/overtime-list.js?@DateTime.Now.Ticks"></script>
+        <script type="text/javascript" src="~/js/timer/overtime-list.js?@Constants.VersionJs"></script>
     }
 }
 

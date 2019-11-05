@@ -2,7 +2,6 @@
 @model ViewModels.EmployeeViewModel
 @{
     ViewData["title"] = "CƠ CẤU CHỨC NĂNG | CÔNG TY TNHH CNSH SÀI GÒN XANH";
-    var login = User.Identity.Name;
 }
 
 
@@ -43,7 +42,7 @@
                         <li>
                             <span>@item.Name.ToUpper()</span> &nbsp; <button type="button" data-toggle="modal" data-target="#khoiChucNangModal" data-id="@item.Id" class="btn btn-sm btn-outline-primary"><i class="icon icon-edit"></i> Sửa</button>
                             <ul>
-                                @foreach (var phongban in Model.PhongBans.Where(m=>m.KhoiChucNangId.Equals(item.Id)).ToList())
+                                @foreach (var phongban in Model.PhongBans.Where(m=>m.Id.Equals(item.Id)).ToList())
                                 {
                                     <li>@phongban.Name &nbsp; <button type="button" data-toggle="modal" data-target="#phongBanBoPhanModal" data-id="@phongban.Id" class="btn btn-sm btn-outline-primary"><i class="icon icon-edit"></i> Sửa</button></li>
                                 }
@@ -66,12 +65,22 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form class="data-form" method="post" action="/api/khoichucnang" enctype="multipart/form-data">
+            <form class="data-form" method="post" action="/api/categorydata" enctype="multipart/form-data">
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                 <input type="hidden" name="Id" class="id-modal" />
-                <input type="hidden" name="CongTyChiNhanhId" class="congtychinhanhid-modal" />
+                <input type="hidden" name="Type" class="type-modal" />
                 <span class="result"></span>
                 <div class="modal-body">
+                    <div class="form-group">
+                        <label class="control-label">Doanh mục</label>
+                        <select name="ParentId" class="form-control form-control-lg khoichucnangid-modal">
+                            <option value="">Chọn</option>
+                            @foreach (var item in Model.KhoiChucNangs)
+                            {
+                                <option value="@item.Id">@item.Name</option>
+                            }
+                        </select>
+                    </div>
                     <div class="form-group">
                         <label class="control-label">Tên</label>
                         <input name="Name" class="form-control form-control-lg name-modal" />
@@ -83,7 +92,7 @@
                     </div>
                     <div class="form-group">
                         <label class="control-label">Vị trí hiển thị</label>
-                        <input type="number" name="Order" class="form-control form-control-lg order-modal" />
+                        <input type="number" name="CodeInt" class="form-control form-control-lg order-modal" />
                     </div>
                     <div class="form-group">
                         <label class="control-label">Trạng thái</label>

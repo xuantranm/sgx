@@ -3,10 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Distributed;
-using Newtonsoft.Json;
 using Microsoft.Extensions.Configuration;
-using System.Text;
 using Microsoft.AspNetCore.Hosting;
 using System.IO;
 using MongoDB.Driver;
@@ -16,128 +13,47 @@ using Data;
 using ViewModels;
 using Models;
 using Common.Utilities;
-using NPOI.SS.UserModel;
-using NPOI.HSSF.UserModel;
-using NPOI.XSSF.UserModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using MongoDB.Driver.Linq;
-using System.Security.Claims;
-using System.Threading;
 using MimeKit;
 using Services;
 using Common.Enums;
-using MongoDB.Bson;
 
-namespace erp.Controllers
+namespace Controllers
 {
     [Authorize]
-    public class HomeController : Controller
+    public class HomeController : BaseController
     {
         readonly MongoDBContext dbContext = new MongoDBContext();
         readonly IHostingEnvironment _env;
-        private IHttpContextAccessor _accessor;
-        private readonly ILogger _logger;
-
         private readonly IEmailSender _emailSender;
-        private readonly ISmsSender _smsSender;
-
         public IConfiguration Configuration { get; }
 
         public HomeController(
-            IHttpContextAccessor accessor,
             IConfiguration configuration,
             IHostingEnvironment env,
-            IEmailSender emailSender,
-            ISmsSender smsSender,
-            ILogger<HomeController> logger)
+            IEmailSender emailSender)
         {
-            _accessor = accessor;
             Configuration = configuration;
             _env = env;
             _emailSender = emailSender;
-            _smsSender = smsSender;
-            _logger = logger;
         }
 
         public async Task<IActionResult> Index()
         {
-            #region Login
+            #region Login | Right
             var login = User.Identity.Name;
             var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
             var userInformation = dbContext.Employees.Find(m => m.Id.Equals(login)).FirstOrDefault();
             if (userInformation == null)
             {
-                var ipAddress = string.Empty;
-                try
-                {
-                    ipAddress = _accessor.HttpContext.Connection.RemoteIpAddress.ToString();
-                    // UAT
-                    // ipAddress = "14.161.24.132";
-                    // Login base ip
-
-                    if (string.IsNullOrEmpty(ipAddress) && ipAddress == "::1")
-                    {
-                        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                        return RedirectToAction("login", "account");
-                    }
-                    else
-                    {
-                        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                        return RedirectToAction("login", "account");
-                        // Ip + more information
-                        //var ipE = dbContext.Ips.Find(m => m.IpAddress.Equals(ipAddress)).FirstOrDefault();
-                        //if (ipE == null)
-                        //{
-                        //    await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                        //    return RedirectToAction("login", "account");
-                        //}
-                        //else
-                        //{
-                        //    userInformation = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(ipE.Login)).FirstOrDefault();
-                        //    if (userInformation == null)
-                        //    {
-                        //        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                        //        return RedirectToAction("login", "account");
-                        //    }
-                        //    else
-                        //    {
-                        //        var claims = new List<Claim>
-                        //        {
-                        //            new Claim("UserName", userInformation.UserName),
-                        //            new Claim(ClaimTypes.Name, userInformation.Id),
-                        //            new Claim(ClaimTypes.Email, string.IsNullOrEmpty(userInformation.Email) ? string.Empty : userInformation.Email),
-                        //            new Claim("FullName", userInformation.FullName)
-                        //        };
-                        //        var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-                        //        var authProperties = new AuthenticationProperties
-                        //        {
-                        //        };
-                        //        authProperties.IsPersistent = true;
-                        //        await HttpContext.SignInAsync(
-                        //            CookieAuthenticationDefaults.AuthenticationScheme,
-                        //            new ClaimsPrincipal(claimsIdentity),
-                        //            authProperties);
-                        //    }
-                        //}
-                    }
-                }
-                catch (Exception ex)
-                {
-                    await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                    return RedirectToAction("login", "account");
-                }
-            }
-            #endregion
-
-            #region Rights
-            var rightHr = false;
-            if (!string.IsNullOrEmpty(login))
-            {
-                rightHr = Utility.IsRight(login, Constants.Rights.HR, (int)ERights.View);
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                return RedirectToAction("login", "account");
             }
 
+            var rightHr = Utility.IsRight(login, Constants.Rights.HR, (int)ERights.View);
             ViewData["rightHr"] = rightHr;
             #endregion
 
@@ -311,55 +227,400 @@ namespace erp.Controllers
             return View(viewModel);
         }
 
+        // ALL COMMON CONTENT, CATEGORY
+        [Route("{url}")]
+        public async Task<IActionResult> Content(string url)
+        {
+            // CATEGORY | CONTENT
+            var mode = (int)EModeDirect.Content;
+            var contents = new List<Content>(); // Base Category
+            var contentE = new Content(); // Base Content
+
+            var categoryE = dbContext.Categories.Find(m => m.Alias.Equals(url)).FirstOrDefault();
+            if (categoryE != null)
+            {
+                mode = (int)EModeDirect.Category;
+                contents = dbContext.Contents.Find(m => m.CategoryId.Equals(categoryE.Id)).ToList();
+                if (categoryE.Seo != null)
+                {
+                    SeoInit(categoryE.Seo);
+                }
+            }
+            else
+            {
+                mode = (int)EModeDirect.Content;
+                contentE = dbContext.Contents.Find(m => m.Enable.Equals(true) && m.Alias.Equals(url)).FirstOrDefault();
+                if (contentE != null && contentE.Seo != null)
+                {
+                    SeoInit(contentE.Seo);
+                }
+            }
+
+            // Redirect Index if error data
+            if (categoryE == null && contentE == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            ViewData[Constants.Texts.ModeDirect] = mode;
+
+            var viewModel = new HomeViewModel()
+            {
+                Category = categoryE,
+                Contents = contents,
+                Content = contentE
+            };
+            return View(viewModel);
+        }
+
+        #region SUB:API,...
         [Route("/tai-lieu/{type}")]
         public IActionResult Document(string type)
         {
             ViewData["Type"] = type;
-            return View();
-        }
+            if (type == "update-setting")
+            {
+                var settings = dbContext.SettingsTemp.Find(m => true).ToList();
+                dbContext.Settings.DeleteMany(m => true);
+                foreach (var item in settings)
+                {
+                    dbContext.Settings.InsertOne(new Setting()
+                    {
+                        Type = item.Type,
+                        Key = item.Key,
+                        Value = item.Value
+                    });
+                }
+            }
+            if (type == "update-role")
+            {
+                dbContext.Categories.DeleteMany(m => m.Type.Equals((int)ECategory.Role));
+                var roles = dbContext.Roles.Find(m => true).ToList();
+                foreach (var item in roles)
+                {
+                    if (!string.IsNullOrEmpty(item.Object))
+                    {
+                        var existCate = dbContext.Categories.CountDocuments(m => m.Name.Equals(item.Object));
+                        if (existCate == 0)
+                        {
+                            dbContext.Categories.InsertOne(new Category()
+                            {
+                                Type = (int)ECategory.Role,
+                                Name = item.Object,
+                                Alias = Utility.AliasConvert(item.Object),
+                                Description = item.Description,
+                                ModeData = (int)EModeData.Merge
+                            });
+                        }
+                    }
+                }
 
-        //[Route("/nt/thong-bao/{userId}")]
-        //public IActionResult Notification(string userId)
-        //{
-        //    var isOwner = false;
-        //    var ownerId = User.Identity.Name;
-        //    if (string.IsNullOrEmpty(userId))
-        //    {
-        //        isOwner = true;
-        //        userId = ownerId;
-        //        if (string.IsNullOrEmpty(userId))
-        //        {
-        //            return Json(new { result = false });
-        //        }
-        //    }
+                dbContext.Rights.DeleteMany(m => m.Type.Equals((int)ECategory.Role));
+                var olds = dbContext.RoleUsers.Find(m => true).ToList();
+                foreach (var item in olds)
+                {
+                    if (!string.IsNullOrEmpty(item.Role))
+                    {
+                        var roleE = dbContext.Categories.Find(m => m.Alias.Equals(item.Role) && m.Type.Equals((int)ECategory.Role)).FirstOrDefault();
+                        if (roleE != null)
+                        {
+                            dbContext.Rights.InsertOne(new Right()
+                            {
+                                RoleId = roleE.Id,
+                                ObjectId = item.User,
+                                Action = item.Action,
+                                Start = item.Start,
+                                Expired = item.Expired,
+                                ModeData = (int)EModeData.Merge
+                            });
+                        }
+                    }
+                }
+            }
+            if (type == "update-category")
+            {
+                var congtychinhanhs = dbContext.CongTyChiNhanhs.Find(m => m.Enable.Equals(true)).ToList();
+                var khoichucnangs = dbContext.KhoiChucNangs.Find(m => m.Enable.Equals(true)).ToList();
+                var phongbans = dbContext.PhongBans.Find(m => m.Enable.Equals(true) && !string.IsNullOrEmpty(m.KhoiChucNangId)).ToList();
+                var bophans = dbContext.BoPhans.Find(m => m.Enable.Equals(true) && string.IsNullOrEmpty(m.Parent)).ToList();
+                var chucvus = dbContext.ChucVus.Find(m => m.Enable.Equals(true)).ToList();
+                var hospitals = dbContext.BHYTHospitals.Find(m => m.Enable.Equals(true)).ToList();
+                var contracts = dbContext.ContractTypes.Find(m => m.Enable.Equals(true)).ToList();
+                var workTimeTypes = dbContext.WorkTimeTypes.Find(m => m.Enable.Equals(true)).ToList();
+                var banks = dbContext.Banks.Find(m => m.Enable.Equals(true)).ToList();
 
-        //    var userInformation = dbContext.Employees.Find(m => m.Id.Equals(userId)).First();
+                dbContext.Categories.DeleteMany(m => m.Type.Equals((int)ECategory.Company));
+                dbContext.Categories.DeleteMany(m => m.Type.Equals((int)ECategory.KhoiChucNang));
+                dbContext.Categories.DeleteMany(m => m.Type.Equals((int)ECategory.PhongBan));
+                dbContext.Categories.DeleteMany(m => m.Type.Equals((int)ECategory.BoPhan));
+                dbContext.Categories.DeleteMany(m => m.Type.Equals((int)ECategory.ChucVu));
+                dbContext.Categories.DeleteMany(m => m.Type.Equals((int)ECategory.Hospital));
+                dbContext.Categories.DeleteMany(m => m.Type.Equals((int)ECategory.Contract));
+                dbContext.Categories.DeleteMany(m => m.Type.Equals((int)ECategory.TimeWork));
+                dbContext.Categories.DeleteMany(m => m.Type.Equals((int)ECategory.Bank));
+                var iCompany = 1;
+                foreach (var item in congtychinhanhs)
+                {
+                    dbContext.Categories.InsertOne(new Category()
+                    {
+                        Id = item.Id,
+                        Type = (int)ECategory.Company,
+                        Name = item.Name,
+                        Alias = item.Alias,
+                        Description = item.Description,
+                        Code = item.Code,
+                        CodeInt = iCompany
+                    });
+                    iCompany++;
+                }
+                foreach (var item in khoichucnangs)
+                {
+                    dbContext.Categories.InsertOne(new Category()
+                    {
+                        Id = item.Id,
+                        Type = (int)ECategory.KhoiChucNang,
+                        Name = item.Name,
+                        Alias = item.Alias,
+                        Description = item.Description,
+                        ParentId = item.CongTyChiNhanhId
+                    });
+                }
+                foreach (var item in phongbans)
+                {
+                    dbContext.Categories.InsertOne(new Category()
+                    {
+                        Id = item.Id,
+                        Type = (int)ECategory.PhongBan,
+                        Name = item.Name,
+                        Alias = item.Alias,
+                        Description = item.Description,
+                        ParentId = item.KhoiChucNangId
+                    });
+                }
+                foreach (var item in bophans)
+                {
+                    dbContext.Categories.InsertOne(new Category()
+                    {
+                        Id = item.Id,
+                        Type = (int)ECategory.BoPhan,
+                        Name = item.Name,
+                        Alias = item.Alias,
+                        Description = item.Description,
+                        ParentId = item.PhongBanId
+                    });
+                }
+                foreach (var item in chucvus)
+                {
+                    dbContext.Categories.InsertOne(new Category()
+                    {
+                        Id = item.Id,
+                        Type = (int)ECategory.ChucVu,
+                        Name = item.Name,
+                        Alias = item.Alias,
+                        Description = item.Description,
+                        ParentId = item.KhoiChucNangId
+                    });
+                }
+                foreach (var item in hospitals)
+                {
+                    dbContext.Categories.InsertOne(new Category()
+                    {
+                        Id = item.Id,
+                        Type = (int)ECategory.Hospital,
+                        Name = item.Name,
+                        Alias = item.Alias
+                    });
+                }
+                foreach (var item in contracts)
+                {
+                    dbContext.Categories.InsertOne(new Category()
+                    {
+                        Id = item.Id,
+                        Type = (int)ECategory.Contract,
+                        Name = item.Name,
+                        Alias = Utility.AliasConvert(item.Name)
+                    });
+                }
+                foreach (var item in workTimeTypes)
+                {
+                    dbContext.Categories.InsertOne(new Category()
+                    {
+                        Id = item.Id,
+                        Type = (int)ECategory.TimeWork,
+                        Name = item.Start.ToString(@"hh\:mm") + "-" + item.End.ToString(@"hh\:mm")
+                    });
+                }
+                foreach (var item in banks)
+                {
+                    dbContext.Categories.InsertOne(new Category()
+                    {
+                        Id = item.Id,
+                        Type = (int)ECategory.Bank,
+                        Name = item.Name,
+                        Alias = item.Alias
+                    });
+                }
+            }
+            if (type == "update-employee")
+            {
+                var employees = dbContext.Employees.Find(m => true).ToList();
+                
+                foreach(var entity in employees)
+                {
+                    var imgs = new List<Img>();
+                    var avatar = entity.Avatar;
+                    var cover = entity.Cover;
+                    if (!string.IsNullOrEmpty(entity.ManagerId))
+                    {
+                        var managerE = dbContext.Employees.Find(m => m.ChucVu.Equals(entity.ManagerId) && m.Enable.Equals(true) && m.Leave.Equals(false)).FirstOrDefault();
+                        entity.ManagerEmployeeId = managerE != null ? managerE.Id : string.Empty;
+                        entity.ManagerInformation = managerE != null ? managerE.ChucVuName + " - " +managerE.FullName : string.Empty;
+                    }
+                    if (!string.IsNullOrEmpty(entity.CongTyChiNhanh))
+                    {
+                        var companyE = dbContext.Categories.Find(m => m.Type.Equals((int)ECategory.Company) && m.Id.Equals(entity.CongTyChiNhanh)).FirstOrDefault();
+                        entity.CongTyChiNhanhName = companyE != null ? companyE.Name : string.Empty;
+                    }
+                    if (!string.IsNullOrEmpty(entity.KhoiChucNang))
+                    {
+                        var khoichucnangE = dbContext.Categories.Find(m => m.Type.Equals((int)ECategory.KhoiChucNang) && m.Id.Equals(entity.KhoiChucNang)).FirstOrDefault();
+                        entity.KhoiChucNangName = khoichucnangE != null ? khoichucnangE.Name : string.Empty;
+                    }
+                    if (!string.IsNullOrEmpty(entity.PhongBan))
+                    {
+                        var phongbanE = dbContext.Categories.Find(m => m.Type.Equals((int)ECategory.PhongBan) && m.Id.Equals(entity.PhongBan)).FirstOrDefault();
+                        entity.PhongBanName = phongbanE != null ? phongbanE.Name : string.Empty;
+                    }
+                    if (!string.IsNullOrEmpty(entity.BoPhan))
+                    {
+                        var bophanE = dbContext.Categories.Find(m => m.Type.Equals((int)ECategory.BoPhan) && m.Id.Equals(entity.BoPhan)).FirstOrDefault();
+                        entity.BoPhanName = bophanE != null ? bophanE.Name : string.Empty;
+                    }
+                    if (!string.IsNullOrEmpty(entity.ChucVu))
+                    {
+                        try
+                        {
+                            var chucVuE = dbContext.Categories.Find(m => m.Type.Equals((int)ECategory.ChucVu) && m.Id.Equals(entity.ChucVu)).FirstOrDefault();
+                            entity.ChucVuName = chucVuE != null ? chucVuE.Name : string.Empty;
+                        }
+                        catch (Exception ex)
+                        {
+                            entity.ChucVu = string.Empty;
+                            entity.ChucVuName = string.Empty;
+                        }
+                    }
+                    if (avatar != null)
+                    {
+                        var r1 = avatar.Path.Substring(1);
+                        var newPath = r1.Remove(r1.Length - 1, 1);
+                        imgs.Add(new Img()
+                        {
+                            Type = (int)EImageSize.Avatar,
+                            Path = newPath,
+                            FileName = avatar.FileName,
+                            Title = avatar.Title,
+                            Main = true,
+                            Orginal = avatar.OrginalName
+                        });
+                    }
+                    if (cover != null)
+                    {
+                        var r1 = cover.Path.Substring(1);
+                        var newPath = r1.Remove(r1.Length - 1, 1);
+                        imgs.Add(new Img()
+                        {
+                            Type = (int)EImageSize.Cover,
+                            Path = newPath,
+                            FileName = cover.FileName,
+                            Title = cover.Title,
+                            Main = true,
+                            Orginal = cover.OrginalName
+                        });
+                    }
+                    imgs = imgs.Count == 0 ? null : imgs;
+                    var isTimeKeeper = entity.IsTimeKeeper ? false : true;
+                    var workplaces = isTimeKeeper ? entity.Workplaces : null;
 
-        //    var owner = isOwner ? userInformation : dbContext.Employees.Find(m => m.Id.Equals(ownerId)).First();
-        //    // notification
-        //    var sortNotification = Builders<Notification>.Sort.Ascending(m => m.CreatedOn);
-        //    var notifications = dbContext.Notifications.Find(m => m.Enable.Equals(true) && m.User.Equals(ownerId)).Sort(sortNotification).ToList();
+                    if (isTimeKeeper)
+                    {
+                        if (entity.Workplaces == null)
+                        {
+                            isTimeKeeper = false;
+                        }
+                        else
+                        {
+                            var places = entity.Workplaces.Where(m => !string.IsNullOrEmpty(m.Fingerprint)).ToList();
+                            if (places == null)
+                            {
+                                isTimeKeeper = false;
+                            }
+                        }
+                    }
 
-        //    //var ownerViewModel = new OwnerViewModel
-        //    //{
-        //    //    Main = owner,
-        //    //    NotificationCount = notifications != null ? notifications.Count() : 0
-        //    //};
+                    var filter = Builders<Employee>.Filter.Eq(m => m.Id, entity.Id);
+                    var update = Builders<Employee>.Update
+                        .Set(m => m.ManagerEmployeeId, entity.ManagerEmployeeId)
+                        .Set(m => m.ManagerInformation, entity.ManagerInformation)
+                        .Set(m => m.CongTyChiNhanhName, entity.CongTyChiNhanhName)
+                        .Set(m => m.KhoiChucNangName, entity.KhoiChucNangName)
+                        .Set(m => m.PhongBanName, entity.PhongBanName)
+                        .Set(m => m.BoPhanName, entity.BoPhanName)
+                        .Set(m => m.ChucVu, entity.ChucVu)
+                        .Set(m => m.ChucVuName, entity.ChucVuName)
+                        .Set(m => m.Images, imgs)
+                        .Set(m => m.IsTimeKeeper, isTimeKeeper)
+                        .Set(m => m.Workplaces, workplaces);
 
-        //    return View();
-        //}
+                    dbContext.Employees.UpdateOne(filter, update);
+                    // UPDATE HISTORY
+                    var filterH = Builders<Employee>.Filter.Eq(m => m.EmployeeId, entity.Id);
+                    var updateH = Builders<Employee>.Update
+                        .Set(m => m.ManagerEmployeeId, entity.ManagerEmployeeId)
+                        .Set(m => m.ManagerInformation, entity.ManagerInformation)
+                        .Set(m => m.CongTyChiNhanhName, entity.CongTyChiNhanhName)
+                        .Set(m => m.KhoiChucNangName, entity.KhoiChucNangName)
+                        .Set(m => m.PhongBanName, entity.PhongBanName)
+                        .Set(m => m.BoPhanName, entity.BoPhanName)
+                        .Set(m => m.ChucVuName, entity.ChucVuName);
+                    dbContext.EmployeeHistories.UpdateMany(filterH, updateH);
+                }
+            }
+            if (type == "update-employee-leave")
+            {
+                var Den = Utility.GetToDate(string.Empty);
+                var year = Den.Year;
+                var month = Den.Month;
 
-        //chinh-sach-bao-mat
-        [Route("/pp/{name}")]
-        public IActionResult Policy(string name)
-        {
-            return View();
-        }
+                var builder = Builders<Employee>.Filter;
+                var filter = !builder.Eq(i => i.UserName, Constants.System.account)
+                    & builder.Eq(m => m.Enable, true) & builder.Eq(m => m.Leave, true);
+                var employees = dbContext.Employees.Find(filter).ToList();
+                var fields = Builders<Employee>.Projection.Include(p => p.Id);
+                var employeeIds = dbContext.Employees.Find(filter).Project<Employee>(fields).ToList().Select(m => m.Id).ToList();
 
-        [Route("/v/{name}/")]
-        public IActionResult Version(string name)
-        {
-            return View();
+                var builderT = Builders<EmployeeWorkTimeLog>.Filter;
+                var filterT = builderT.Eq(m => m.Enable, true)
+                            & builderT.Eq(m => m.Month, month)
+                            & builderT.Eq(m => m.Year, year);
+                if (employeeIds != null && employeeIds.Count > 0)
+                {
+                    filterT &= builderT.Where(m => employeeIds.Contains(m.EmployeeId));
+                }
+                var times = dbContext.EmployeeWorkTimeLogs.Find(filterT).SortBy(m => m.Date).ToList();
+
+                foreach (var entity in employees)
+                {
+                    var employeeWorkTimeLogs = times.Where(m => m.EmployeeId.Equals(entity.Id)).ToList();
+                    if (employeeWorkTimeLogs != null || employeeWorkTimeLogs.Count > 0)
+                    {
+                        var filterU = Builders<Employee>.Filter.Eq(m => m.Id, entity.Id);
+                        var update = Builders<Employee>.Update
+                            .Set(m => m.IsOnline, false);
+                        dbContext.Employees.UpdateOne(filterU, update);
+                    }
+                }
+            }
+            return Json(new { result = true, message = "Cập nhật thành công." });
         }
 
         [Route("/email/welcome/")]
@@ -565,5 +826,6 @@ namespace erp.Controllers
 
             _emailSender.SendEmail(emailMessage);
         }
+        #endregion
     }
 }

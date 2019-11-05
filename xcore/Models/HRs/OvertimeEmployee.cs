@@ -8,8 +8,57 @@ using System.IO;
 
 namespace Models
 {
-    public class OvertimeEmployee: CommonV101
+    public class OvertimeEmployee: Extension
     {
+        [DataType(DataType.Date)]
+        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
+        public DateTime Date { get; set; }
+
+        public TimeSpan StartOvertime { get; set; }
+
+        public TimeSpan EndOvertime { get; set; }
+
+        public double Hour { get; set; }
+
+        public TimeSpan StartSecurity { get; set; }
+
+        public TimeSpan EndSecurity { get; set; }
+
+        public double HourSecurity { get; set; }
+
+        public int Food { get; set; } = 0;
+
+        public string Description { get; set; }
+
+        public bool Agreement { get; set; } = true;
+
+        public int Status{ get; set; } = (int)EOvertime.Create;
+
+        public int Type { get; set; } = (int)EDateType.Normal;
+
+        public int Year { get; set; } = DateTime.Now.Year;
+
+        public int Month { get; set; } = DateTime.Now.Month;
+
+        // Not use, use UI only
+        public bool CheckOnUI { get; set; } = true;
+
+        public bool IsDelete { get; set; } = false;
+
+        public string Document
+        {
+            get
+            {
+                var sFileName = "bang-tang-ca-code-" + Code + ".xlsx";
+                return Path.Combine("documents", "overtimes", Date.ToString("yyyyMMdd"), sFileName);
+            }
+        }
+
+        public string ApprovedBy { get; set; } = string.Empty;
+
+        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
+        public DateTime ApprovedOn { get; set; } = DateTime.Now;
+
         #region Employee
         public string ManagerId { get; set; }
 
@@ -53,51 +102,5 @@ namespace Models
 
         public string CongTyChiNhanhAlias { get; set; }
         #endregion
-
-        [DataType(DataType.Date)]
-        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
-        public DateTime Date { get; set; }
-
-        public TimeSpan Start { get; set; }
-
-        public TimeSpan End { get; set; }
-
-        public double Hour { get; set; }
-
-        public TimeSpan StartSecurity { get; set; }
-
-        public TimeSpan EndSecurity { get; set; }
-
-        public double HourSecurity { get; set; }
-
-        public int Food { get; set; } = 0;
-
-        public string Description { get; set; }
-
-        public bool Agreement { get; set; } = true;
-
-        public int Status{ get; set; } = (int)EOvertime.Create;
-
-        public int Type { get; set; } = (int)EDateType.Normal;
-
-        public int Year { get; set; } = DateTime.Now.Year;
-
-        public int Month { get; set; } = DateTime.Now.Month;
-
-        // Automatic, 1 times 1 code
-        // Use update approve + timestamp
-        public int Code { get; set; }
-
-        // Not use, use UI only
-        public bool CheckOnUI { get; set; } = true;
-
-        public string Document
-        {
-            get
-            {
-                var sFileName = "bang-tang-ca-code-" + Code + ".xlsx";
-                return Path.Combine("documents", "overtimes", Date.ToString("yyyyMMdd"), sFileName);
-            }
-        }
     }
 }

@@ -185,11 +185,11 @@
                                         </td>
                                         <td>
                                             <input type="text" value="@item.StartSecurity" name="OvertimeEmployees[@iE].StartSecurity" class="form-control datetimepicker-input" id="start-@iE" data-toggle="datetimepicker" data-target="#start-@iE" data-id="@iE" />
-                                            <code>Bắt đầu: @item.Start.ToString(@"hh\:mm")</code>
+                                            <code>Bắt đầu: @item.StartOvertime.ToString(@"hh\:mm")</code>
                                         </td>
                                         <td>
                                             <input type="text" value="@item.EndSecurity" name="OvertimeEmployees[@iE].EndSecurity" class="form-control datetimepicker-input" id="end-@iE" data-toggle="datetimepicker" data-target="#end-@iE" data-id="@iE" />
-                                            <code>Kết thúc: @item.End.ToString(@"hh\:mm")</code>
+                                            <code>Kết thúc: @item.EndOvertime.ToString(@"hh\:mm")</code>
                                         </td>
                                         <td>
                                             <code>Giờ tăng ca xác nhận: <span class="hSecurity-@iE">@item.HourSecurity</span></code>

@@ -142,7 +142,6 @@
                 category: chartCategory
             },
             success: function (data) {
-                console.log(data);
                 $('.chart-name').text(data.title);
                 $('.chart-info').text(data.info);
                 datasets = [{

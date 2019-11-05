@@ -4,10 +4,6 @@
 
 @{
     ViewData["Title"] = "Xác nhận nghỉ phép";
-    
-}
-
-@{
     string alerttype = "alert-success";
     if (Model.Approve == 2)
     {
@@ -18,34 +14,51 @@
         alerttype = "alert-danger";
     }
 }
-<div class="alert @alerttype" role="alert">
-    @ViewData["Status"]
+
+
+<div class="main-container">
+    <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="/">Trang chủ</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">
+                            Xác nhận phép
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <section class="space-sm">
+        <div class="container">
+            <div class="alert @alerttype" role="alert">
+                @ViewData["Status"]
+            </div>
+
+            <ul class="row mb-3 feature-list feature-list-sm">
+                @foreach (var item in Model.ListTraining)
+                {
+                    <li class="col-12 col-md-6">
+                        <div class="card card-lg">
+                            <div class="embed-responsive embed-responsive-16by9">
+                                <iframe class="embed-responsive-item" src="@item.Link" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                            </div>
+                            <div class="card-body">
+                                <a href="#">
+                                    <h4 class="card-title mb-3">@item.Name</h4>
+                                </a>
+                                <p class="card-text">@item.Description</p>
+                            </div>
+                        </div>
+                    </li>
+                }
+            </ul>
+        </div>
+    </section>
 </div>
 
-<div>
-    <a href="/">Trang chủ</a>
-</div>
-
-<section class="flush-with-above">
-    <div class="container">
-        <ul class="row mb-3 feature-list feature-list-sm">
-            @foreach (var item in Model.ListTraining)
-            {
-                <li class="col-12 col-md-6">
-                    <div class="card card-lg">
-                        <div class="embed-responsive embed-responsive-16by9">
-                            <iframe class="embed-responsive-item" src="@item.Link" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-                        </div>
-                        <div class="card-body">
-                            <a href="#">
-                                <h4 class="card-title mb-3">@item.Name</h4>
-                            </a>
-                            <p class="card-text">@item.Description</p>
-                        </div>
-                    </div>
-                </li>
-            }
-        </ul>
-    </div>
-</section>
 

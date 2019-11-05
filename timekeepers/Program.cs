@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
 using System.Text;
+using Models;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Builders;
@@ -111,7 +112,7 @@ namespace timekeepers
             #endregion
 
             // Disable the device
-            TimeKeeperMachine.EnableDevice(iMachineNumber, false);//disable the device
+            //TimeKeeperMachine.EnableDevice(iMachineNumber, false);//disable the device
             //if (!TimeKeeperMachine.ReadGeneralLogData(iMachineNumber))//read all the attendance records to the memory
             //{
             //    TimeKeeperMachine.GetLastError(ref idwErrorCode);
@@ -137,7 +138,9 @@ namespace timekeepers
             timeCrawled = new DateTime(timeCrawled.Year, timeCrawled.Month, timeCrawled.Day, 2, 0, 0);
             #endregion
 
-            //var list = new List<AttLog>();
+            var list = new List<AttLog>();
+            // Disable the device
+            TimeKeeperMachine.EnableDevice(iMachineNumber, false);
             while (TimeKeeperMachine.SSR_GetGeneralLogData(iMachineNumber, out sdwEnrollNumber, out idwVerifyMode,
                        out idwInOutMode, out idwYear, out idwMonth, out idwDay, out idwHour, out idwMinute, out idwSecond, ref idwWorkcode))//get records from the memory
             {
@@ -171,7 +174,6 @@ namespace timekeepers
                     Console.WriteLine("Added to list " + dateFinger + " , enrollNumber: " + sdwEnrollNumber);
                 }
             }
-
             // Enable the device
             TimeKeeperMachine.EnableDevice(iMachineNumber, true);
 
@@ -306,6 +308,11 @@ namespace timekeepers
                 Ip = ip,
                 Port = port
             });
+
+            var settings = database.GetCollection<Setting>("Settings");
+            var query = Query<Setting>.EQ(e => e.Key, location.ToLower() + "-timekeeper-connection");
+            var update = Update<Setting>.Set(e => e.Value, status.ToString());
+            settings.Update(query, update);
         }
     }
 }

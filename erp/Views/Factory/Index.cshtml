@@ -2,10 +2,11 @@
 @using Common.Utilities;
 @using Common.Enums;
 @using ViewModels
-@model LeaveViewModel
+@model FactoryViewModel
 
 @{
     ViewData["title"] = "NHÀ MÁY | CÔNG TY TNHH CNSH SÀI GÒN XANH";
+    var link = Constants.LinkFactory.Index;
     var login = User.Identity.Name;
     var rightDataKhoNguyenVatLieu = false;
     var rightDataKhoThanhPham = false;
@@ -24,91 +25,109 @@
     }
 }
 
-<div class="main-container">
-    <section class="space-sm">
-        <div class="container">
-            <div class="row">
-                <div class="col-12 col-md-4">
-                    <h3>Đường dẫn</h3>
-                    @if (rightDataVanHanh)
-                    {
-                        <div class="row mb-2">
-                            <div class="col-12">
-                                <a href="/@Constants.LinkFactory.Main/@Constants.LinkFactory.VanHanh" class="btn btn-block btn-outline-info">
-                                    DỮ LIỆU VẬN HÀNH
-                                </a>
-                            </div>
-                        </div>
-                    }
-                    @if (rightDataKhoNguyenVatLieu)
-                    {
-                        <div class="row mb-2">
-                            <div class="col-12">
-                                <a href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoNguyenVatLieu" class="btn btn-block btn-outline-info">
-                                    KHO NGUYÊN VẬT LIỆU
-                                </a>
-                            </div>
-                        </div>
-                    }
-
-                    @if (rightDataKhoThanhPham)
-                    {
-                        <div class="row mb-2">
-                            <div class="col-12">
-                                <a href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoThanhPham" class="btn btn-block btn-outline-info">
-                                    KHO THÀNH PHẨM
-                                </a>
-                            </div>
-                        </div>
-                    }
-
-                    @if (rightDataKhoHangTraVe)
-                    {
-                        <div class="row mb-2">
-                            <div class="col-12">
-                                <a href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoHangTraVe" class="btn btn-block btn-outline-info">
-                                    KHO HÀNG TRẢ VỀ
-                                </a>
-                            </div>
-                        </div>
-                    }
-
-                    @if (rightDataKhoBun)
-                    {
-                        <div class="row mb-2">
-                            <div class="col-12">
-                                <a href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoBun" class="btn btn-block btn-outline-info">
-                                    KHO BÙN
-                                </a>
-                            </div>
-                        </div>
-                    }
-
-                    @if (rightDataTramCan)
-                    {
-                        <div class="row mb-2">
-                            <div class="col-12">
-                                <a href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuTramCan" class="btn btn-block btn-outline-info">
-                                    TRẠM CÂN
-                                </a>
-                            </div>
-                        </div>
-                    }
+    <div class="main-container">
+        <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">
+                                <a href="/">Trang chủ</a>
+                            </li>
+                            <li class="breadcrumb-item active" aria-current="page">
+                                <a href="/@link">Nhà máy</a>
+                            </li>
+                        </ol>
+                    </div>
                 </div>
-                <div class="col-12 col-md-8">
-                    <div class="row">
-                        <div class="col-12">
-                            <i class="far fa-clock"></i>
-                            <span>
-                                Đang cập nhật chức năng, báo cáo,...
-                            </span>
+            </div>
+        </nav>
+
+        <section class="space-sm">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12 col-md-4">
+                        <h3>Đường dẫn</h3>
+                        @if (rightDataVanHanh)
+                        {
+                            <div class="row mb-2">
+                                <div class="col-12">
+                                    <a href="/@Constants.LinkFactory.VanHanh" class="btn btn-block btn-outline-info">
+                                        VẬN HÀNH
+                                    </a>
+                                </div>
+                            </div>
+                        }
+
+                        @if (rightDataKhoNguyenVatLieu)
+                        {
+                            <div class="row mb-2">
+                                <div class="col-12">
+                                    <a href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoNguyenVatLieu" class="btn btn-block btn-outline-info">
+                                        KHO NGUYÊN VẬT LIỆU
+                                    </a>
+                                </div>
+                            </div>
+                        }
+
+                        @if (rightDataKhoThanhPham)
+                        {
+                            <div class="row mb-2">
+                                <div class="col-12">
+                                    <a href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoThanhPham" class="btn btn-block btn-outline-info">
+                                        KHO THÀNH PHẨM
+                                    </a>
+                                </div>
+                            </div>
+                        }
+
+                        @if (rightDataKhoHangTraVe)
+                        {
+                            <div class="row mb-2">
+                                <div class="col-12">
+                                    <a href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoHangTraVe" class="btn btn-block btn-outline-info">
+                                        KHO HÀNG TRẢ VỀ
+                                    </a>
+                                </div>
+                            </div>
+                        }
+
+                        @if (rightDataKhoBun)
+                        {
+                            <div class="row mb-2">
+                                <div class="col-12">
+                                    <a href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoBun" class="btn btn-block btn-outline-info">
+                                        KHO BÙN
+                                    </a>
+                                </div>
+                            </div>
+                        }
+
+                        @if (rightDataTramCan)
+                        {
+                            <div class="row mb-2">
+                                <div class="col-12">
+                                    <a href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuTramCan" class="btn btn-block btn-outline-info">
+                                        TRẠM CÂN
+                                    </a>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    <div class="col-12 col-md-8">
+                        <div class="row">
+                            <div class="col-12">
+                                <i class="far fa-clock"></i>
+                                <span>
+                                    Đang cập nhật chức năng, báo cáo,...
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
-</div>
+        </section>
+    </div>
 
 @section scripts {
     @{

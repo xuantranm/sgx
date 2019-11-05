@@ -4,9 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
-using Newtonsoft.Json;
 using Microsoft.Extensions.Configuration;
-using System.Text;
 using Microsoft.AspNetCore.Hosting;
 using System.IO;
 using MongoDB.Driver;
@@ -19,139 +17,83 @@ using Common.Utilities;
 using NPOI.SS.UserModel;
 using NPOI.HSSF.UserModel;
 using NPOI.XSSF.UserModel;
-using System.Globalization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Common.Enums;
 using Helpers;
 using MimeKit;
-using MimeKit.Text;
 using Services;
 using NPOI.HSSF.Util;
 using NPOI.SS.Util;
 
-namespace erp.Controllers
+namespace Controllers
 {
-    /// <summary>
-    /// Approve by EmployeeId,
-    /// Load list approver by Chuc Vu quan ly nhân viên đó.
-    /// </summary>
     [Authorize]
     [Route(Constants.LinkTimeKeeper.Main)]
-    public class TimeKeeperController : Controller
+    public class TimeKeeperController : BaseController
     {
         readonly MongoDBContext dbContext = new MongoDBContext();
-        private readonly IDistributedCache _cache;
         readonly IHostingEnvironment _env;
-
-        private readonly ILogger _logger;
-
         public IConfiguration Configuration { get; }
 
-        private readonly IEmailSender _emailSender;
-        private readonly ISmsSender _smsSender;
-
-        public TimeKeeperController(IDistributedCache cache, IConfiguration configuration, IHostingEnvironment env, IEmailSender emailSender,
-            ISmsSender smsSender, ILogger<TimeKeeperController> logger)
+        public TimeKeeperController(IConfiguration configuration,
+            IHostingEnvironment env)
         {
-            _cache = cache;
             Configuration = configuration;
             _env = env;
-            _emailSender = emailSender;
-            _smsSender = smsSender;
-            _logger = logger;
         }
 
         [Route(Constants.LinkTimeKeeper.Index)]
         public async Task<IActionResult> Index(string thang, string id)
         {
             #region Authorization
-            var login = User.Identity.Name;
-            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
-            ViewData["LoginUserName"] = loginUserName;
-
-            var loginE = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(login)).FirstOrDefault();
-            if (loginE == null)
+            LoginInit(string.Empty, (int)ERights.View);
+            if (!(bool)ViewData[Constants.ActionViews.IsLogin])
             {
-                #region snippet1
                 await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                #endregion
-                return RedirectToAction("login", "account");
+                return RedirectToAction(Constants.ActionViews.Login, Constants.Controllers.Account);
+            }
+            var loginId = User.Identity.Name;
+            var loginE = dbContext.Employees.Find(m => m.Id.Equals(loginId)).FirstOrDefault();
+
+            bool isHr = Utility.IsRight(loginId, Constants.Rights.NhanSu, (int)ERights.View);
+
+            bool isXNDum = Utility.IsRight(loginId, Constants.Rights.XacNhanCongDum, (int)ERights.Add);
+            if (!isXNDum)
+            {
+                var countManager = dbContext.Employees.CountDocuments(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.ManagerEmployeeId.Equals(loginId));
+                if (countManager > 0)
+                {
+                    isXNDum = true;
+                }
+            }
+            if (!isXNDum)
+            {
+                isXNDum = isHr;
             }
 
-            bool quyenXacNhanCong = false;
-            if (loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.XacNhanCongDum, (int)ERights.Add))
+            bool rightBangCong = Utility.IsRight(loginId, Constants.Rights.BangChamCong, (int)ERights.View);
+            var rightApprove = false;
+            if (dbContext.EmployeeWorkTimeLogs.CountDocuments(m => m.Enable.Equals(true) && m.ConfirmId.Equals(loginId)) > 0)
             {
-                quyenXacNhanCong = true;
+                rightApprove = true;
             }
-            bool quyenBangCong = false;
-            if (loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.BangChamCong, (int)ERights.View))
-            {
-                quyenBangCong = true;
-            }
+            // TẠO TĂNG CA NHÂN VIÊN KHÁC??
+            var isManager = Utility.IsManager(loginE);
+
+            var securityPosition = dbContext.Categories.Find(m => m.Type.Equals((int)ECategory.ChucVu) && m.Id.Equals("5c88d098d59d56225c4324a8")).FirstOrDefault();
+            var isSecurity = loginE.ChucVu == securityPosition.Id;
             #endregion
 
-            id = string.IsNullOrEmpty(id) ? login : id;
-
-            var userInformation = new Employee();
-            if (id == login)
-            {
-                userInformation = loginE;
-            }
-            else
-            {
-                userInformation = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(id)).FirstOrDefault();
-            }
+            id = string.IsNullOrEmpty(id) ? loginId : id;
+            var isMe = id == loginId ? true : false;
+            var account = id == loginId ? loginE : dbContext.Employees.Find(m => m.Id.Equals(id)).FirstOrDefault();
 
             #region Dropdownlist
-            var monthYears = new List<MonthYear>();
-            var date = new DateTime(2018, 02, 01);
-            var endDate = DateTime.Now;
-            while (date.Year < endDate.Year || (date.Year == endDate.Year && date.Month <= endDate.Month))
-            {
-                monthYears.Add(new MonthYear
-                {
-                    Month = date.Month,
-                    Year = date.Year
-                });
-                date = date.AddMonths(1);
-            }
-            if (endDate.Day > 25)
-            {
-                monthYears.Add(new MonthYear
-                {
-                    Month = endDate.AddMonths(1).Month,
-                    Year = endDate.AddMonths(1).Year
-                });
-            }
-            var sortTimes = monthYears.OrderByDescending(x => x.Month).OrderByDescending(x => x.Year).ToList();
-            var approves = new List<IdName>();
-            if (!string.IsNullOrEmpty(userInformation.ManagerId))
-            {
-                var approveEntity = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.ChucVu.Equals(userInformation.ManagerId)).FirstOrDefault();
-                if (approveEntity != null)
-                {
-                    approves.Add(new IdName
-                    {
-                        Id = approveEntity.Id,
-                        Name = approveEntity.FullName + " (" + approveEntity.ChucVuName + ")"
-                    });
-                }
-            }
-            if (approves == null || approves.Count == 0)
-            {
-                var rolesApprove = dbContext.RoleUsers.Find(m => m.Enable.Equals(true) && m.Role.Equals(Constants.Rights.XacNhanCong)).ToList();
-                foreach (var roleApprove in rolesApprove)
-                {
-                    var employeeRole = dbContext.Employees.Find(m => m.Id.Equals(roleApprove.User)).FirstOrDefault();
-                    approves.Add(new IdName
-                    {
-                        Id = employeeRole.Id,
-                        Name = employeeRole.FullName + " (" + employeeRole.ChucVuName + ")"
-                    });
-                }
-            }
+            var sortTimes = Utility.DllMonths();
+            var approves = Utility.Approves(account, true, Constants.Rights.XacNhanCong, (int)ERights.Edit);
+            var employees = Utility.EmployeesBase(isHr, account.ManagerEmployeeId);
             #endregion
 
             #region Times
@@ -182,269 +124,410 @@ namespace erp.Controllers
             filterSum = filterSum & builderSum.Eq(m => m.Month, month) & builderSum.Eq(m => m.Year, year);
             #endregion
 
-            var timekeepings = await dbContext.EmployeeWorkTimeLogs.Find(filter).SortByDescending(m => m.Date).ToListAsync();
+            var timekeeperlogs = await dbContext.EmployeeWorkTimeLogs.Find(filter).SortByDescending(m => m.Date).ToListAsync();
             var monthsTimes = await dbContext.EmployeeWorkTimeMonthLogs.Find(filterSum).SortByDescending(m => m.LastUpdated).ToListAsync();
-
-            var approver = false;
-            if (dbContext.EmployeeWorkTimeLogs.CountDocuments(m => m.Enable.Equals(true) && m.ConfirmId.Equals(login)) > 0)
-            {
-                approver = true;
-            }
-
-            var isManager = dbContext.Employees.CountDocuments(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.ManagerId.Equals(loginE.ChucVu)) > 0;
-            var securityPosition = dbContext.ChucVus.Find(m => m.Code.Equals("CHUCVU86")).FirstOrDefault();
-            var isSecurity = loginE.ChucVu == securityPosition.Id;
 
             var viewModel = new TimeKeeperViewModel
             {
-                EmployeeWorkTimeLogs = timekeepings,
-                Employee = loginE,
+                Employee = account,
+                Employees = employees,
+                EmployeeWorkTimeLogs = timekeeperlogs,
                 EmployeeWorkTimeMonthLogs = monthsTimes,
                 MonthYears = sortTimes,
                 StartWorkingDate = fromDate,
                 EndWorkingDate = toDate,
                 Approves = approves,
                 Thang = thang,
-                RightRequest = quyenXacNhanCong,
-                RightManager = quyenBangCong,
-                Approver = approver,
+                RightRequest = isXNDum,
+                RightManager = rightBangCong,
+                Approver = rightApprove,
                 IsManager = isManager,
-                IsSecurity = isSecurity
+                IsSecurity = isSecurity,
+                IsMe = isMe,
+                Id = id
             };
             return View(viewModel);
         }
 
-        [Route(Constants.LinkTimeKeeper.HelpTime)]
-        public async Task<IActionResult> HelpTime(string id, string thang)
+        [HttpPost]
+        [Route(Constants.LinkTimeKeeper.Request)]
+        public async Task<IActionResult> RequestTimeKeeper(TimeKeeperViewModel viewModel)
         {
             #region Authorization
-            var login = User.Identity.Name;
-            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
-            ViewData["LoginUserName"] = loginUserName;
-
-            var userInformation = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(login)).FirstOrDefault();
-            if (userInformation == null)
+            LoginInit(string.Empty, (int)ERights.View);
+            if (!(bool)ViewData[Constants.ActionViews.IsLogin])
             {
-                #region snippet1
                 await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                #endregion
-                return RedirectToAction("login", "account");
+                return RedirectToAction(Constants.ActionViews.Login, Constants.Controllers.Account);
             }
-
-            bool quyenXacNhan = false;
-            if (loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.XacNhanCongDum, (int)ERights.Add))
-            {
-                quyenXacNhan = true;
-            }
-            if (!quyenXacNhan)
-            {
-                return RedirectToAction("AccessDenied", "Account");
-            }
-
-            bool quyenBangCong = false;
-            if (loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.BangChamCong, (int)ERights.View))
-            {
-                quyenBangCong = true;
-            }
+            var loginId = User.Identity.Name;
+            var loginE = dbContext.Employees.Find(m => m.Id.Equals(loginId)).FirstOrDefault();
             #endregion
 
-            id = string.IsNullOrEmpty(id) ? login : id;
-            if (id != login)
+            var now = DateTime.Now;
+            var entity = viewModel.EmployeeWorkTimeLog;
+            entity.EmployeeId = string.IsNullOrEmpty(entity.EmployeeId) ? loginId : entity.EmployeeId;
+            var isMe = entity.EmployeeId == loginId ? true : false;
+            var account = isMe ? loginE : dbContext.Employees.Find(m => m.Id.Equals(entity.EmployeeId)).FirstOrDefault();
+            var approveE = new Employee();
+            if (isMe)
             {
-                userInformation = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.Id.Equals(id)).FirstOrDefault();
-            }
-
-            #region Dropdownlist
-            // Danh sách nhân viên để tạo phép dùm
-            var builderEmp = Builders<Employee>.Filter;
-            var filterEmp = builderEmp.Eq(m => m.Enable, true) & builderEmp.Eq(m => m.Leave, false);
-            filterEmp = filterEmp & !builderEmp.Eq(m => m.UserName, Constants.System.account);
-            // Remove cấp cao ra (theo mã số lương)
-            filterEmp = filterEmp & !builderEmp.In(m => m.NgachLuongCode, new string[] { "C.01", "C.02", "C.03" });
-            var employees = await dbContext.Employees.Find(filterEmp).SortBy(m => m.FullName).ToListAsync();
-
-            var monthYears = new List<MonthYear>();
-            var date = new DateTime(2018, 02, 01);
-            var endDate = DateTime.Now;
-            while (date.Year < endDate.Year || (date.Year == endDate.Year && date.Month <= endDate.Month))
-            {
-                monthYears.Add(new MonthYear
+                approveE = dbContext.Employees.Find(m => m.Id.Equals(entity.ConfirmId)).FirstOrDefault();
+                if (approveE == null)
                 {
-                    Month = date.Month,
-                    Year = date.Year
-                });
-                date = date.AddMonths(1);
-            }
-            if (endDate.Day > 25)
-            {
-                monthYears.Add(new MonthYear
+                    return Json(new { result = false, message = "Lỗi: Vui lòng chọn người duyệt công." });
+                }
+                else
                 {
-                    Month = endDate.AddMonths(1).Month,
-                    Year = endDate.AddMonths(1).Year
-                });
-            }
-            var sortTimes = monthYears.OrderByDescending(x => x.Month).OrderByDescending(x => x.Year).ToList();
-            var approves = new List<IdName>();
-            if (!string.IsNullOrEmpty(userInformation.ManagerId))
-            {
-                var approveEntity = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.ChucVu.Equals(userInformation.ManagerId)).FirstOrDefault();
-                if (approveEntity != null)
-                {
-                    approves.Add(new IdName
-                    {
-                        Id = approveEntity.Id,
-                        Name = approveEntity.FullName + " (" + approveEntity.ChucVuName + ")"
-                    });
+                    entity.ConfirmName = approveE.FullName + " - " + approveE.ChucVuName;
+                    entity.ConfirmDate = now;
+                    entity.Status = (int)EStatusWork.DaGuiXacNhan;
                 }
             }
-            var rolesApprove = dbContext.RoleUsers.Find(m => m.Enable.Equals(true) && m.Role.Equals(Constants.Rights.XacNhanCong)).ToList();
-            foreach (var roleApprove in rolesApprove)
+            else
             {
-                var employeeRole = dbContext.Employees.Find(m => m.Id.Equals(roleApprove.User)).FirstOrDefault();
-                approves.Add(new IdName
+                entity.ConfirmId = loginE.Id;
+                entity.ConfirmName = loginE.FullName + " - " + loginE.ChucVuName;
+                entity.ConfirmDate = now;
+                entity.Status = (int)EStatusWork.DongY;
+            }
+
+            string secureCode = Helper.HashedPassword(Guid.NewGuid().ToString("N").Substring(0, 12));
+
+            #region Update Status
+            var builderEmployeeWorkTimeLog = Builders<EmployeeWorkTimeLog>.Filter;
+            var filterEmployeeWorkTimeLog = builderEmployeeWorkTimeLog.Eq(m => m.Id, entity.Id);
+            var updateEmployeeWorkTimeLog = Builders<EmployeeWorkTimeLog>.Update
+                .Set(m => m.Status, entity.Status)
+                .Set(m => m.Request, loginId)
+                .Set(m => m.RequestDate, now.Date)
+                .Set(m => m.Reason, entity.Reason)
+                .Set(m => m.ReasonDetail, entity.ReasonDetail)
+                .Set(m => m.ConfirmId, entity.ConfirmId)
+                .Set(m => m.ConfirmName, entity.ConfirmName)
+                .Set(m => m.ConfirmDate, entity.ConfirmDate)
+                .Set(m => m.SecureCode, secureCode);
+            dbContext.EmployeeWorkTimeLogs.UpdateOne(filterEmployeeWorkTimeLog, updateEmployeeWorkTimeLog);
+            #endregion
+
+            if (isMe)
+            {
+                #region Send Mail
+                var tos = new List<EmailAddress>
                 {
-                    Id = employeeRole.Id,
-                    Name = employeeRole.FullName + " (" + employeeRole.ChucVuName + ")"
-                });
+                    new EmailAddress { Name = approveE.FullName, Address = approveE.Email }
+                };
+                var phone = string.Empty;
+                if (account.Mobiles != null && account.Mobiles.Count > 0)
+                {
+                    phone = account.Mobiles[0].Number;
+                }
+
+                var webRoot = Environment.CurrentDirectory;
+                var pathToFile = _env.WebRootPath
+                        + Path.DirectorySeparatorChar.ToString()
+                        + "Templates"
+                        + Path.DirectorySeparatorChar.ToString()
+                        + "EmailTemplate"
+                        + Path.DirectorySeparatorChar.ToString()
+                        + "TimeKeeperRequest.html";
+
+                var subject = "Hỗ trợ xác nhận công.";
+                var requester = account.FullName;
+                var var3 = account.FullName;
+                var inTime = entity.In.HasValue ? entity.In.Value.ToString(@"hh\:mm") : string.Empty;
+                var outTime = entity.Out.HasValue ? entity.Out.Value.ToString(@"hh\:mm") : string.Empty;
+                var lateTime = entity.Late.TotalMilliseconds > 0 ? Math.Round(entity.Late.TotalMinutes, 0).ToString() : "0";
+                var earlyTime = entity.Early.TotalMilliseconds > 0 ? Math.Round(entity.Early.TotalMinutes, 0).ToString() : "0";
+                var sumTime = string.Empty;
+                if (string.IsNullOrEmpty(inTime) && string.IsNullOrEmpty(outTime))
+                {
+                    sumTime = "1 ngày";
+                }
+                else if (string.IsNullOrEmpty(inTime) || string.IsNullOrEmpty(outTime))
+                {
+                    sumTime = "0.5 ngày";
+                }
+                var minutesMissing = TimeSpan.FromMilliseconds(entity.Late.TotalMilliseconds + entity.Early.TotalMilliseconds).TotalMinutes;
+                if (minutesMissing > 0)
+                {
+                    if (!string.IsNullOrEmpty(sumTime))
+                    {
+                        sumTime += ", ";
+                    }
+                    sumTime += Math.Round(minutesMissing, 0) + " phút";
+                }
+
+                var detailTimeKeeping = "Ngày: " + entity.Date.ToString("dd/MM/yyyy") + "; thiếu: " + sumTime;
+                if (!string.IsNullOrEmpty(inTime))
+                {
+                    detailTimeKeeping += " | giờ vào: " + inTime + "; trễ: " + lateTime;
+                }
+                else
+                {
+                    detailTimeKeeping += " | giờ vào: --; trễ: --";
+                }
+                if (!string.IsNullOrEmpty(outTime))
+                {
+                    detailTimeKeeping += "; giờ ra: " + outTime + "; sớm: " + earlyTime;
+                }
+                else
+                {
+                    detailTimeKeeping += "; giờ ra: --; sớm: --";
+                }
+                // Api update, generate code.
+                var linkapprove = Constants.System.domain + "/xacnhan/cong";
+                var linkAccept = linkapprove + "?id=" + entity.Id + "&approve=3&secure=" + secureCode;
+                var linkCancel = linkapprove + "?id=" + entity.Id + "&approve=4&secure=" + secureCode;
+                var linkDetail = Constants.System.domain;
+                var bodyBuilder = new BodyBuilder();
+                using (StreamReader SourceReader = System.IO.File.OpenText(pathToFile))
+                {
+                    bodyBuilder.HtmlBody = SourceReader.ReadToEnd();
+                }
+                string messageBody = string.Format(bodyBuilder.HtmlBody,
+                    subject,
+                    approveE.FullName,
+                    requester,
+                    var3,
+                    account.Email,
+                    account.ChucVuName,
+                    detailTimeKeeping,
+                    entity.Reason,
+                    entity.ReasonDetail,
+                    phone,
+                    linkAccept,
+                    linkCancel,
+                    linkDetail,
+                    Constants.System.domain
+                    );
+
+                var emailMessage = new EmailMessage()
+                {
+                    ToAddresses = tos,
+                    Subject = subject,
+                    BodyContent = messageBody,
+                    Type = "ho-tro-xac-nhan-cong",
+                    EmployeeId = account.Id
+                };
+                var scheduleEmail = new ScheduleEmail
+                {
+                    Status = (int)EEmailStatus.Schedule,
+                    To = emailMessage.ToAddresses,
+                    CC = emailMessage.CCAddresses,
+                    BCC = emailMessage.BCCAddresses,
+                    Type = emailMessage.Type,
+                    Title = emailMessage.Subject,
+                    Content = emailMessage.BodyContent,
+                    EmployeeId = emailMessage.EmployeeId
+                };
+                dbContext.ScheduleEmails.InsertOne(scheduleEmail);
+                return Json(new { result = true, message = "Yêu cầu được gửi các bộ phận liên quan." });
+                #endregion
             }
-            #endregion
-
-            #region Times
-            var toDate = Utility.WorkingMonthToDate(thang);
-            var fromDate = toDate.AddMonths(-1).AddDays(1);
-            if (string.IsNullOrEmpty(thang))
+            else
             {
-                toDate = DateTime.Now;
-                fromDate = toDate.Day > 25 ? new DateTime(toDate.Year, toDate.Month, 26) : new DateTime(toDate.AddMonths(-1).Year, toDate.AddMonths(-1).Month, 26);
+                #region update Summary
+                var timelog = entity;
+                var monthDate = Utility.EndWorkingMonthByDate(timelog.Date);
+                var builderUpdateSum = Builders<EmployeeWorkTimeMonthLog>.Filter;
+                var filterUpdateSum = builderUpdateSum.Eq(m => m.EmployeeId, timelog.EmployeeId);
+                filterUpdateSum &= builderUpdateSum.Eq(m => m.Year, monthDate.Year);
+                filterUpdateSum &= builderUpdateSum.Eq(m => m.Month, monthDate.Month);
+
+                double dateInc = 0;
+                double worktimeInc = 0;
+                double lateInc = 0;
+                double earlyInc = 0;
+                if (!timelog.In.HasValue && !timelog.Out.HasValue)
+                {
+                    dateInc += 1;
+                    worktimeInc += new TimeSpan(8, 0, 0).TotalMilliseconds;
+                }
+                else if (!timelog.In.HasValue || !timelog.Out.HasValue)
+                {
+                    dateInc += 0.5;
+                    worktimeInc += new TimeSpan(4, 0, 0).TotalMilliseconds;
+                }
+                if (timelog.Late.TotalMilliseconds > 0)
+                {
+                    worktimeInc += timelog.Late.TotalMilliseconds;
+                    lateInc += timelog.Late.TotalMilliseconds;
+                }
+                if (timelog.Early.TotalMilliseconds > 0)
+                {
+                    worktimeInc += timelog.Early.TotalMilliseconds;
+                    earlyInc += timelog.Early.TotalMilliseconds;
+                }
+                var updateSum = Builders<EmployeeWorkTimeMonthLog>.Update
+                    .Inc(m => m.Workday, dateInc)
+                    .Inc(m => m.WorkTime, worktimeInc)
+                    .Inc(m => m.Late, -(lateInc))
+                    .Inc(m => m.Early, -(earlyInc))
+                    .Set(m => m.LastUpdated, DateTime.Now);
+                dbContext.EmployeeWorkTimeMonthLogs.UpdateOne(filterUpdateSum, updateSum);
+                #endregion
+
+                #region Send email to user
+                var approvement = dbContext.Employees.Find(m => m.Id.Equals(timelog.ConfirmId)).FirstOrDefault();
+                var employee = dbContext.Employees.Find(m => m.Id.Equals(timelog.EmployeeId)).FirstOrDefault();
+                var requester = employee.FullName;
+                var tos = new List<EmailAddress>
+                {
+                    new EmailAddress { Name = employee.FullName, Address = employee.Email }
+                };
+
+                var hrs = Utility.EmailGet(Constants.Rights.NhanSu, (int)ERights.Edit);
+                if (hrs != null && hrs.Count > 0)
+                {
+                    requester += " , HR";
+                    foreach (var item in hrs)
+                    {
+                        if (tos.Count(m => m.Address.Equals(item.Address)) == 0)
+                        {
+                            tos.Add(item);
+                        }
+                    }
+                }
+
+                var ccs = new List<EmailAddress>();
+
+                var webRoot = Environment.CurrentDirectory;
+                var pathToFile = _env.WebRootPath
+                        + Path.DirectorySeparatorChar.ToString()
+                        + "Templates"
+                        + Path.DirectorySeparatorChar.ToString()
+                        + "EmailTemplate"
+                        + Path.DirectorySeparatorChar.ToString()
+                        + "TimeKeeperConfirm.html";
+
+                var subject = "Xác nhận công.";
+                var status = "Đồng ý";
+                var inTime = timelog.In.HasValue ? timelog.In.Value.ToString(@"hh\:mm") : string.Empty;
+                var outTime = timelog.Out.HasValue ? timelog.Out.Value.ToString(@"hh\:mm") : string.Empty;
+                var lateTime = timelog.Late.TotalMilliseconds > 0 ? Math.Round(timelog.Late.TotalMinutes, 0).ToString() : "0";
+                var earlyTime = timelog.Early.TotalMilliseconds > 0 ? Math.Round(timelog.Early.TotalMinutes, 0).ToString() : "0";
+                var sumTime = string.Empty;
+                if (string.IsNullOrEmpty(inTime) && string.IsNullOrEmpty(outTime))
+                {
+                    sumTime = "1 ngày";
+                }
+                else if (string.IsNullOrEmpty(inTime) || string.IsNullOrEmpty(outTime))
+                {
+                    sumTime = "0.5 ngày";
+                }
+                var minutesMissing = TimeSpan.FromMilliseconds(timelog.Late.TotalMilliseconds + timelog.Early.TotalMilliseconds).TotalMinutes;
+                if (minutesMissing > 0)
+                {
+                    if (!string.IsNullOrEmpty(sumTime))
+                    {
+                        sumTime += ", ";
+                    }
+                    sumTime += Math.Round(minutesMissing, 0) + " phút";
+                }
+
+                var detailTimeKeeping = "Ngày: " + timelog.Date.ToString("dd/MM/yyyy") + "; thiếu: " + sumTime;
+                if (!string.IsNullOrEmpty(inTime))
+                {
+                    detailTimeKeeping += " | giờ vào: " + inTime + "; trễ: " + lateTime;
+                }
+                else
+                {
+                    detailTimeKeeping += " | giờ vào: --; trễ: --";
+                }
+                if (!string.IsNullOrEmpty(outTime))
+                {
+                    detailTimeKeeping += "; giờ ra: " + outTime + "; sớm: " + earlyTime;
+                }
+                else
+                {
+                    detailTimeKeeping += "; giờ ra: --; sớm: --";
+                }
+                // Api update, generate code.
+                var linkDetail = Constants.System.domain;
+                var bodyBuilder = new BodyBuilder();
+                using (StreamReader SourceReader = System.IO.File.OpenText(pathToFile))
+                {
+                    bodyBuilder.HtmlBody = SourceReader.ReadToEnd();
+                }
+                string messageBody = string.Format(bodyBuilder.HtmlBody,
+                    subject,
+                    requester,
+                    status,
+                    approvement.FullName,
+                    approvement.Email,
+                    approvement.ChucVuName,
+                    detailTimeKeeping,
+                    timelog.Reason,
+                    timelog.ReasonDetail,
+                    linkDetail,
+                    Constants.System.domain
+                    );
+
+                var emailMessage = new EmailMessage()
+                {
+                    ToAddresses = tos,
+                    CCAddresses = ccs,
+                    Subject = subject,
+                    BodyContent = messageBody,
+                    Type = "xac-nhan-cong",
+                    EmployeeId = timelog.EmployeeId
+                };
+
+                var scheduleEmail = new ScheduleEmail
+                {
+                    Status = (int)EEmailStatus.Schedule,
+                    To = emailMessage.ToAddresses,
+                    CC = emailMessage.CCAddresses,
+                    BCC = emailMessage.BCCAddresses,
+                    Type = emailMessage.Type,
+                    Title = emailMessage.Subject,
+                    Content = emailMessage.BodyContent,
+                    EmployeeId = emailMessage.EmployeeId
+                };
+                dbContext.ScheduleEmails.InsertOne(scheduleEmail);
+                #endregion
+
+                return Json(new { result = true, message = "Yêu cầu được gửi các bộ phận liên quan." });
             }
-            var year = toDate.Day > 25 ? toDate.AddMonths(1).Year : toDate.Year;
-            var month = toDate.Day > 25 ? toDate.AddMonths(1).Month : toDate.Month;
-            var dayworking = Utility.BusinessDaysUntil(fromDate, toDate);
-            if (toDate > DateTime.Now.Date)
-            {
-                dayworking = Utility.BusinessDaysUntil(fromDate, DateTime.Now);
-            }
-            ViewData["DayWorking"] = dayworking;
-            #endregion
-
-            #region Filter
-            var builder = Builders<EmployeeWorkTimeLog>.Filter;
-            var filter = builder.Eq(m => m.EmployeeId, id);
-            filter = filter & builder.Gt(m => m.Date, fromDate.AddDays(-1)) & builder.Lt(m => m.Date, toDate.AddDays(1));
-
-            var builderSum = Builders<EmployeeWorkTimeMonthLog>.Filter;
-            var filterSum = builderSum.Eq(m => m.EmployeeId, id);
-            filterSum = filterSum & builderSum.Eq(m => m.Month, month) & builderSum.Eq(m => m.Year, year);
-            #endregion
-
-            var timekeepings = await dbContext.EmployeeWorkTimeLogs.Find(filter).SortByDescending(m => m.Date).ToListAsync();
-            var monthsTimes = await dbContext.EmployeeWorkTimeMonthLogs.Find(filterSum).SortByDescending(m => m.LastUpdated).ToListAsync();
-
-            var viewModel = new TimeKeeperViewModel
-            {
-                EmployeeWorkTimeLogs = timekeepings,
-                Employee = userInformation,
-                EmployeeWorkTimeMonthLogs = monthsTimes,
-                Employees = employees,
-                MonthYears = sortTimes,
-                StartWorkingDate = fromDate,
-                EndWorkingDate = toDate,
-                Approves = approves,
-                Id = id,
-                Thang = thang,
-                RightManager = quyenBangCong
-            };
-            return View(viewModel);
         }
 
         [Route(Constants.LinkTimeKeeper.Approvement)]
         public async Task<IActionResult> Approvement(string id, string thang, string phep)
         {
             #region Authorization
-            var login = User.Identity.Name;
-            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
-            ViewData["LoginUserName"] = loginUserName;
-
-            var userInformation = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(login)).FirstOrDefault();
-            if (userInformation == null)
+            LoginInit(string.Empty, (int)ERights.View);
+            if (!(bool)ViewData[Constants.ActionViews.IsLogin])
             {
-                #region snippet1
                 await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                #endregion
-                return RedirectToAction("login", "account");
+                return RedirectToAction(Constants.ActionViews.Login, Constants.Controllers.Account);
             }
-            bool isRight = false;
-            if (loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.XacNhanCong, (int)ERights.Add))
+            var loginId = User.Identity.Name;
+            var loginE = dbContext.Employees.Find(m => m.Id.Equals(loginId)).FirstOrDefault();
+
+            bool quyenXacNhan = Utility.IsRight(loginId, Constants.Rights.XacNhanCongDum, (int)ERights.Add);
+            if (!quyenXacNhan)
             {
-                isRight = true;
+                return RedirectToAction("AccessDenied", "Account");
             }
-            //if (!isRight)
-            //{
-            //    return RedirectToAction("AccessDenied", "Account");
-            //}
             #endregion
 
-            id = string.IsNullOrEmpty(id) ? login : id;
-            if (id != login)
-            {
-                userInformation = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(id)).FirstOrDefault();
-            }
+            id = string.IsNullOrEmpty(id) ? loginId : id;
+            var account = id == loginId ? loginE : dbContext.Employees.Find(m => m.Id.Equals(id)).FirstOrDefault();
 
-            var myDepartment = userInformation.PhongBan;
+            var myDepartment = account.PhongBan;
 
             #region Dropdownlist
             // Danh sách nhân viên để tạo phép dùm
             var builderEmp = Builders<Employee>.Filter;
-            var filterEmp = builderEmp.Eq(m => m.Enable, true);
-            filterEmp = filterEmp & !builderEmp.Eq(m => m.UserName, Constants.System.account);
+            var filterEmp = builderEmp.Eq(m => m.Enable, true) & builderEmp.Eq(m => m.Leave, false);
+            filterEmp &= !builderEmp.Eq(m => m.UserName, Constants.System.account);
             // Remove cấp cao ra (theo mã số lương)
-            filterEmp = filterEmp & !builderEmp.In(m => m.NgachLuongCode, new string[] { "C.01", "C.02", "C.03" });
+            filterEmp &= !builderEmp.In(m => m.NgachLuongCode, new string[] { "C.01", "C.02", "C.03" });
             var employees = await dbContext.Employees.Find(filterEmp).SortBy(m => m.FullName).ToListAsync();
 
-            var monthYears = new List<MonthYear>();
-            var date = new DateTime(2018, 02, 01);
-            var endDate = DateTime.Now;
-            while (date.Year < endDate.Year || (date.Year == endDate.Year && date.Month <= endDate.Month))
-            {
-                monthYears.Add(new MonthYear
-                {
-                    Month = date.Month,
-                    Year = date.Year
-                });
-                date = date.AddMonths(1);
-            }
-            if (endDate.Day > 25)
-            {
-                monthYears.Add(new MonthYear
-                {
-                    Month = endDate.AddMonths(1).Month,
-                    Year = endDate.AddMonths(1).Year
-                });
-            }
-            var sortTimes = monthYears.OrderByDescending(x => x.Month).OrderByDescending(x => x.Year).ToList();
-            var approves = new List<IdName>();
-            if (!string.IsNullOrEmpty(userInformation.ManagerId))
-            {
-                var approveEntity = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.ChucVu.Equals(userInformation.ManagerId)).FirstOrDefault();
-                if (approveEntity != null)
-                {
-                    approves.Add(new IdName
-                    {
-                        Id = approveEntity.Id,
-                        Name = approveEntity.FullName + " (" + approveEntity.ChucVuName + ")"
-                    });
-                }
-            }
-            var rolesApprove = dbContext.RoleUsers.Find(m => m.Enable.Equals(true) && m.Role.Equals(Constants.Rights.XacNhanCong)).ToList();
-            foreach (var roleApprove in rolesApprove)
-            {
-                var employeeRole = dbContext.Employees.Find(m => m.Id.Equals(roleApprove.User)).FirstOrDefault();
-                approves.Add(new IdName
-                {
-                    Id = roleApprove.User,
-                    Name = employeeRole.FullName + " (" + employeeRole.ChucVuName + ")"
-                });
-            }
+            var sortTimes = Utility.DllMonths();
+            var approves = Utility.Approves(account, true, Constants.Rights.XacNhanCong, (int)ERights.Edit);
             #endregion
 
             #region Times
@@ -461,7 +544,7 @@ namespace erp.Controllers
 
             #region Filter
             var builder = Builders<EmployeeWorkTimeLog>.Filter;
-            var filter = builder.Eq(m => m.ConfirmId, login) & builder.Eq(m => m.Month, month) & builder.Eq(m => m.Year, year);
+            var filter = builder.Eq(m => m.ConfirmId, loginId) & builder.Eq(m => m.Month, month) & builder.Eq(m => m.Year, year);
 
             var builderSum = Builders<EmployeeWorkTimeMonthLog>.Filter;
             var filterSum = builderSum.Eq(m => m.EmployeeId, id);
@@ -496,465 +579,19 @@ namespace erp.Controllers
                 };
                 timers.Add(employeeDisplay);
             }
+
             var viewModel = new TimeKeeperViewModel
             {
                 TimeKeeperDisplays = timers,
-                Employee = userInformation,
+                Employee = account,
                 MonthYears = sortTimes,
                 StartWorkingDate = fromDate,
                 EndWorkingDate = toDate,
                 Approves = approves,
                 Thang = thang,
-                RightRequest = isRight
+                RightRequest = quyenXacNhan
             };
             return View(viewModel);
-        }
-
-        [HttpPost]
-        [Route(Constants.LinkTimeKeeper.Request)]
-        public async Task<IActionResult> RequestTimeKeeper(TimeKeeperViewModel viewModel)
-        {
-            var model = viewModel.EmployeeWorkTimeLog;
-            #region Authorization
-            var login = User.Identity.Name;
-            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
-            ViewData["LoginUserName"] = loginUserName;
-
-            var loginE = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(login)).FirstOrDefault();
-            if (loginE == null)
-            {
-                #region snippet1
-                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                #endregion
-                return RedirectToAction("login", "account");
-            }
-            #endregion
-
-            // Update status
-            var entity = dbContext.EmployeeWorkTimeLogs.Find(m => m.Id.Equals(model.Id)).FirstOrDefault();
-            string secureCode = Helper.HashedPassword(Guid.NewGuid().ToString("N").Substring(0, 12));
-            // Tự yêu cầu
-            var employee = loginE;
-            // Làm cho người khác
-            if (entity.EmployeeId != login)
-            {
-                employee = dbContext.Employees.Find(m => m.Id.Equals(entity.EmployeeId)).FirstOrDefault();
-            }
-
-            var chucvuE = dbContext.ChucVus.Find(m => m.Id.Equals(employee.ChucVu)).FirstOrDefault();
-            var chucvu = chucvuE != null ? chucvuE.Name : string.Empty;
-
-            var approveEntity = new Employee();
-            if (!string.IsNullOrEmpty(model.ConfirmId))
-            {
-                approveEntity = dbContext.Employees.Find(m => m.Id.Equals(model.ConfirmId)).FirstOrDefault();
-            }
-            else
-            {
-                approveEntity = dbContext.Employees.Find(m => true).FirstOrDefault();
-            }
-
-            var confirmName = approveEntity.FullName;
-
-            #region Update Status
-            var builderEmployeeWorkTimeLog = Builders<EmployeeWorkTimeLog>.Filter;
-            var filterEmployeeWorkTimeLog = builderEmployeeWorkTimeLog.Eq(m => m.Id, entity.Id);
-            var updateEmployeeWorkTimeLog = Builders<EmployeeWorkTimeLog>.Update.Set(m => m.Status, 2)
-                .Set(m => m.Request, login)
-                .Set(m => m.RequestDate, DateTime.Now.Date)
-                .Set(m => m.Reason, model.Reason)
-                .Set(m => m.ReasonDetail, model.ReasonDetail)
-                .Set(m => m.ConfirmId, approveEntity.Id)
-                .Set(m => m.ConfirmName, approveEntity.FullName)
-                .Set(m => m.SecureCode, secureCode);
-            dbContext.EmployeeWorkTimeLogs.UpdateOne(filterEmployeeWorkTimeLog, updateEmployeeWorkTimeLog);
-            #endregion
-
-            #region Send Mail
-            var tos = new List<EmailAddress>
-            {
-                new EmailAddress { Name = approveEntity.FullName, Address = approveEntity.Email }
-            };
-            var phone = string.Empty;
-            if (employee.Mobiles != null && employee.Mobiles.Count > 0)
-            {
-                phone = employee.Mobiles[0].Number;
-            }
-
-            var webRoot = Environment.CurrentDirectory;
-            var pathToFile = _env.WebRootPath
-                    + Path.DirectorySeparatorChar.ToString()
-                    + "Templates"
-                    + Path.DirectorySeparatorChar.ToString()
-                    + "EmailTemplate"
-                    + Path.DirectorySeparatorChar.ToString()
-                    + "TimeKeeperRequest.html";
-
-            #region parameters
-            //{0} : Subject
-            //{1} : Nguoi duyet 
-            //{2} : Nguoi gui yeu cau  - Nguoi tao yeu cau (dùm)
-            //{3} : v3
-            //{4} : Email
-            //{5} : Chức vụ
-            //{6} : Nội dung chấm công (ngay, in, out,....)
-            //{7} : Lý do
-            //{8} : Số điện thoại liên hệ
-            //{9}: Link đồng ý
-            //{10}: Link từ chối
-            //{11}: Link chi tiết
-            //{12}: Website
-            #endregion
-
-            var subject = "Hỗ trợ xác nhận công.";
-            var requester = employee.FullName;
-            var var3 = employee.FullName;
-            if (entity.EmployeeId != login)
-            {
-                requester += " (người tạo xác nhận: " + loginE.FullName + ")";
-            }
-            var inTime = entity.In.HasValue ? entity.In.Value.ToString(@"hh\:mm") : string.Empty;
-            var outTime = entity.Out.HasValue ? entity.Out.Value.ToString(@"hh\:mm") : string.Empty;
-            var lateTime = entity.Late.TotalMilliseconds > 0 ? Math.Round(entity.Late.TotalMinutes, 0).ToString() : "0";
-            var earlyTime = entity.Early.TotalMilliseconds > 0 ? Math.Round(entity.Early.TotalMinutes, 0).ToString() : "0";
-            var sumTime = string.Empty;
-            if (string.IsNullOrEmpty(inTime) && string.IsNullOrEmpty(outTime))
-            {
-                sumTime = "1 ngày";
-            }
-            else if (string.IsNullOrEmpty(inTime) || string.IsNullOrEmpty(outTime))
-            {
-                sumTime = "0.5 ngày";
-            }
-            var minutesMissing = TimeSpan.FromMilliseconds(entity.Late.TotalMilliseconds + entity.Early.TotalMilliseconds).TotalMinutes;
-            if (minutesMissing > 0)
-            {
-                if (!string.IsNullOrEmpty(sumTime))
-                {
-                    sumTime += ", ";
-                }
-                sumTime += Math.Round(minutesMissing, 0) + " phút";
-            }
-
-            var detailTimeKeeping = "Ngày: " + entity.Date.ToString("dd/MM/yyyy") + "; thiếu: " + sumTime;
-            if (!string.IsNullOrEmpty(inTime))
-            {
-                detailTimeKeeping += " | giờ vào: " + inTime + "; trễ: " + lateTime;
-            }
-            else
-            {
-                detailTimeKeeping += " | giờ vào: --; trễ: --";
-            }
-            if (!string.IsNullOrEmpty(outTime))
-            {
-                detailTimeKeeping += "; giờ ra: " + outTime + "; sớm: " + earlyTime;
-            }
-            else
-            {
-                detailTimeKeeping += "; giờ ra: --; sớm: --";
-            }
-            // Api update, generate code.
-            var linkapprove = Constants.System.domain + "/xacnhan/cong";
-            var linkAccept = linkapprove + "?id=" + entity.Id + "&approve=3&secure=" + secureCode;
-            var linkCancel = linkapprove + "?id=" + entity.Id + "&approve=4&secure=" + secureCode;
-            var linkDetail = Constants.System.domain;
-            var bodyBuilder = new BodyBuilder();
-            using (StreamReader SourceReader = System.IO.File.OpenText(pathToFile))
-            {
-                bodyBuilder.HtmlBody = SourceReader.ReadToEnd();
-            }
-            string messageBody = string.Format(bodyBuilder.HtmlBody,
-                subject,
-                confirmName,
-                requester,
-                var3,
-                employee.Email,
-                chucvu,
-                detailTimeKeeping,
-                model.Reason,
-                model.ReasonDetail,
-                phone,
-                linkAccept,
-                linkCancel,
-                linkDetail,
-                Constants.System.domain
-                );
-
-            var emailMessage = new EmailMessage()
-            {
-                ToAddresses = tos,
-                Subject = subject,
-                BodyContent = messageBody,
-                Type = "ho-tro-xac-nhan-cong",
-                EmployeeId = employee.Id
-            };
-
-            // For faster. Add to schedule.
-            // Send later
-            var scheduleEmail = new ScheduleEmail
-            {
-                Status = (int)EEmailStatus.Schedule,
-                //From = emailMessage.FromAddresses,
-                To = emailMessage.ToAddresses,
-                CC = emailMessage.CCAddresses,
-                BCC = emailMessage.BCCAddresses,
-                Type = emailMessage.Type,
-                Title = emailMessage.Subject,
-                Content = emailMessage.BodyContent,
-                EmployeeId = emailMessage.EmployeeId
-            };
-            dbContext.ScheduleEmails.InsertOne(scheduleEmail);
-            #endregion
-
-            return Json(new { result = true, message = "Yêu cầu được gửi các bộ phận liên quan." });
-        }
-
-        [Route(Constants.LinkTimeKeeper.AprrovePost)]
-        [AllowAnonymous]
-        [HttpPost]
-        public IActionResult AprrovePost(string id, int approve, string secure)
-        {
-            var viewModel = new TimeKeeperViewModel
-            {
-                Approve = approve
-            };
-            var entity = dbContext.EmployeeWorkTimeLogs.Find(m => m.Id.Equals(id)).FirstOrDefault();
-
-            #region Extensions
-            var builderTraining = Builders<Trainning>.Filter;
-            var filterTraining = builderTraining.Eq(m => m.Enable, true);
-            filterTraining = filterTraining & builderTraining.Eq(m => m.Type, "anh-van");
-            var listTraining = dbContext.Trainnings.Find(filterTraining).Limit(10).SortByDescending(m => m.CreatedOn).ToList();
-            viewModel.ListTraining = listTraining;
-            #endregion
-
-            if (entity == null)
-            {
-                ViewData["Status"] = Constants.ErrorParameter;
-
-                return View(viewModel);
-            }
-
-            if (entity.SecureCode != secure && entity.Status != 2)
-            {
-                return Json(new { result = true, message = Constants.ErrorParameter });
-            }
-
-            viewModel.EmployeeWorkTimeLog = entity;
-
-            #region Update status
-            var filter = Builders<EmployeeWorkTimeLog>.Filter.Eq(m => m.Id, id);
-            var update = Builders<EmployeeWorkTimeLog>.Update
-                .Set(m => m.SecureCode, Helper.HashedPassword(Guid.NewGuid().ToString("N").Substring(0, 12)))
-                .Set(m => m.WorkDay, 1)
-                .Set(m => m.Status, approve)
-                .Set(m => m.ConfirmDate, DateTime.Now.Date);
-            dbContext.EmployeeWorkTimeLogs.UpdateOne(filter, update);
-            #endregion
-
-            #region update Summary
-            if (approve == 3)
-            {
-                var monthDate = Utility.EndWorkingMonthByDate(entity.Date);
-                var builderUpdateSum = Builders<EmployeeWorkTimeMonthLog>.Filter;
-                var filterUpdateSum = builderUpdateSum.Eq(m => m.EmployeeId, entity.EmployeeId);
-                filterUpdateSum = filterUpdateSum & builderUpdateSum.Eq(m => m.Year, monthDate.Year);
-                filterUpdateSum = filterUpdateSum & builderUpdateSum.Eq(m => m.Month, monthDate.Month);
-
-                double dateInc = 0;
-                double worktimeInc = 0;
-                double lateInc = 0;
-                double earlyInc = 0;
-
-                // Update 1 date
-                if (!entity.In.HasValue && !entity.Out.HasValue)
-                {
-                    dateInc += 1;
-                    worktimeInc += new TimeSpan(8, 0, 0).TotalMilliseconds;
-                }
-                else if (!entity.In.HasValue || !entity.Out.HasValue)
-                {
-                    dateInc += 0.5;
-                    worktimeInc += new TimeSpan(4, 0, 0).TotalMilliseconds;
-                }
-
-                if (entity.Late.TotalMilliseconds > 0)
-                {
-                    worktimeInc += entity.Late.TotalMilliseconds;
-                    lateInc += entity.Late.TotalMilliseconds;
-                }
-                if (entity.Early.TotalMilliseconds > 0)
-                {
-                    worktimeInc += entity.Early.TotalMilliseconds;
-                    earlyInc += entity.Early.TotalMilliseconds;
-                }
-
-                var updateSum = Builders<EmployeeWorkTimeMonthLog>.Update
-                    .Inc(m => m.Workday, dateInc)
-                    .Inc(m => m.WorkTime, worktimeInc)
-                    .Inc(m => m.Late, -(lateInc))
-                    .Inc(m => m.Early, -(earlyInc))
-                    .Set(m => m.LastUpdated, DateTime.Now);
-
-                dbContext.EmployeeWorkTimeMonthLogs.UpdateOne(filterUpdateSum, updateSum);
-            }
-            #endregion
-
-            #region Tracking everything
-
-            #endregion
-
-            var approvement = dbContext.Employees.Find(m => m.Id.Equals(entity.ConfirmId)).FirstOrDefault();
-            var approvementchucvu = approvement.ChucVuName;
-            // Tự yêu cầu
-            //bool seftFlag = entity.EmployeeId == entity.Request ? true : false;
-            var employee = dbContext.Employees.Find(m => m.Id.Equals(entity.EmployeeId)).FirstOrDefault();
-            //var userCreate = employee;
-            //if (!seftFlag)
-            //{
-            //    userCreate = dbContext.Employees.Find(m => m.Id.Equals(entity.CreatedBy)).FirstOrDefault();
-            //}
-
-            #region Send email to user leave
-            var requester = employee.FullName;
-            var tos = new List<EmailAddress>();
-            var ccs = new List<EmailAddress>();
-            tos.Add(new EmailAddress { Name = employee.FullName, Address = employee.Email });
-
-            // Send mail to HR: if approve = 3 (dong y);
-            if (approve == 3)
-            {
-                var listHrRoles = dbContext.RoleUsers.Find(m => m.Role.Equals(Constants.Rights.NhanSu) && (m.Expired.Equals(null) || m.Expired > DateTime.Now)).ToList();
-                if (listHrRoles != null && listHrRoles.Count > 0)
-                {
-                    foreach (var item in listHrRoles)
-                    {
-                        if (item.Action == 3)
-                        {
-                            var fields = Builders<Employee>.Projection.Include(p => p.Email).Include(p => p.FullName);
-                            var emailEntity = dbContext.Employees.Find(m => m.Id.Equals(item.User)).Project<Employee>(fields).FirstOrDefault();
-                            if (emailEntity != null)
-                            {
-                                tos.Add(new EmailAddress { Name = emailEntity.FullName, Address = emailEntity.Email });
-                            }
-                        }
-                    }
-                }
-                requester += " , HR";
-            }
-
-            #region UAT
-            //tos = new List<EmailAddress>
-            //            {
-            //                new EmailAddress { Name = "Xuan", Address = "xuan.tm1988@gmail.com" }
-            //            };
-
-            //ccs = new List<EmailAddress>
-            //            {
-            //                new EmailAddress { Name = "Xuan CC", Address = "xuantranm@gmail.com" }
-            //            };
-            #endregion
-
-            var webRoot = Environment.CurrentDirectory;
-            var pathToFile = _env.WebRootPath
-                    + Path.DirectorySeparatorChar.ToString()
-                    + "Templates"
-                    + Path.DirectorySeparatorChar.ToString()
-                    + "EmailTemplate"
-                    + Path.DirectorySeparatorChar.ToString()
-                    + "TimeKeeperConfirm.html";
-
-            var subject = "Xác nhận công.";
-            var status = approve == 3 ? "Đồng ý" : "Không duyệt";
-            var inTime = entity.In.HasValue ? entity.In.Value.ToString(@"hh\:mm") : string.Empty;
-            var outTime = entity.Out.HasValue ? entity.Out.Value.ToString(@"hh\:mm") : string.Empty;
-            var lateTime = entity.Late.TotalMilliseconds > 0 ? Math.Round(entity.Late.TotalMinutes, 0).ToString() : "0";
-            var earlyTime = entity.Early.TotalMilliseconds > 0 ? Math.Round(entity.Early.TotalMinutes, 0).ToString() : "0";
-            var sumTime = string.Empty;
-            if (string.IsNullOrEmpty(inTime) && string.IsNullOrEmpty(outTime))
-            {
-                sumTime = "1 ngày";
-            }
-            else if (string.IsNullOrEmpty(inTime) || string.IsNullOrEmpty(outTime))
-            {
-                sumTime = "0.5 ngày";
-            }
-            var minutesMissing = TimeSpan.FromMilliseconds(entity.Late.TotalMilliseconds + entity.Early.TotalMilliseconds).TotalMinutes;
-            if (minutesMissing > 0)
-            {
-                if (!string.IsNullOrEmpty(sumTime))
-                {
-                    sumTime += ", ";
-                }
-                sumTime += Math.Round(minutesMissing, 0) + " phút";
-            }
-
-            var detailTimeKeeping = "Ngày: " + entity.Date.ToString("dd/MM/yyyy") + "; thiếu: " + sumTime;
-            if (!string.IsNullOrEmpty(inTime))
-            {
-                detailTimeKeeping += " | giờ vào: " + inTime + "; trễ: " + lateTime;
-            }
-            else
-            {
-                detailTimeKeeping += " | giờ vào: --; trễ: --";
-            }
-            if (!string.IsNullOrEmpty(outTime))
-            {
-                detailTimeKeeping += "; giờ ra: " + outTime + "; sớm: " + earlyTime;
-            }
-            else
-            {
-                detailTimeKeeping += "; giờ ra: --; sớm: --";
-            }
-
-            // Api update, generate code.
-            var linkDetail = Constants.System.domain;
-            var bodyBuilder = new BodyBuilder();
-            using (StreamReader SourceReader = System.IO.File.OpenText(pathToFile))
-            {
-                bodyBuilder.HtmlBody = SourceReader.ReadToEnd();
-            }
-            string messageBody = string.Format(bodyBuilder.HtmlBody,
-                subject,
-                requester,
-                status,
-                approvement.FullName,
-                approvement.Email,
-                approvementchucvu,
-                detailTimeKeeping,
-                entity.Reason,
-                entity.ReasonDetail,
-                linkDetail,
-                Constants.System.domain
-                );
-            var emailMessage = new EmailMessage()
-            {
-                ToAddresses = tos,
-                CCAddresses = ccs,
-                Subject = subject,
-                BodyContent = messageBody,
-                Type = "xac-nhan-cong",
-                EmployeeId = entity.EmployeeId
-            };
-
-            // For faster. Add to schedule.
-            // Send later
-            var scheduleEmail = new ScheduleEmail
-            {
-                Status = (int)EEmailStatus.Schedule,
-                //From = emailMessage.FromAddresses,
-                To = emailMessage.ToAddresses,
-                CC = emailMessage.CCAddresses,
-                BCC = emailMessage.BCCAddresses,
-                Type = emailMessage.Type,
-                Title = emailMessage.Subject,
-                Content = emailMessage.BodyContent,
-                EmployeeId = emailMessage.EmployeeId
-            };
-            dbContext.ScheduleEmails.InsertOne(scheduleEmail);
-            #endregion
-
-            return Json(new { result = true, message = "Cám ơn đã xác nhận, kết quả đang gửi cho người liên quan." });
         }
 
         #region CHAM CONG
@@ -962,48 +599,47 @@ namespace erp.Controllers
         public async Task<IActionResult> BangChamCong(DateTime Tu, DateTime Den, string Thang, string Nl, string Kcn, string Pb, string Bp, string Fg, string Id)
         {
             #region Authorization
-            var login = User.Identity.Name;
-            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
-            ViewData["LoginUserName"] = loginUserName;
-
-            var loginInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
-            if (loginInformation == null)
+            LoginInit(Constants.Rights.BangChamCong, (int)ERights.View);
+            if (!(bool)ViewData[Constants.ActionViews.IsLogin])
             {
-                #region snippet1
                 await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                #endregion
-                return RedirectToAction("login", "account");
+                return RedirectToAction(Constants.ActionViews.Login, Constants.Controllers.Account);
             }
-
-            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.BangChamCong, (int)ERights.View)))
-            {
-                return RedirectToAction("AccessDenied", "Account");
-            }
+            var loginId = User.Identity.Name;
+            var loginE = dbContext.Employees.Find(m => m.Id.Equals(loginId)).FirstOrDefault();
             #endregion
 
             var linkCurrent = string.Empty;
 
             #region DDL
             var sortTimes = Utility.DllMonths();
-            var employees = await dbContext.Employees.Find(m => m.Enable.Equals(true)
-                            && m.IsTimeKeeper.Equals(false) && !m.UserName.Equals(Constants.System.account)).SortBy(m => m.FullName).ToListAsync();
+            var congtychinhanhs = dbContext.Categories.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)ECategory.Company)).ToList();
+            var khoichucnangs = dbContext.Categories.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)ECategory.KhoiChucNang)).ToList();
 
-            var congtychinhanhs = dbContext.CongTyChiNhanhs.Find(m => m.Enable.Equals(true)).ToList();
+            var chucvus = dbContext.Categories.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)ECategory.ChucVu)).ToList();
+
             Nl = string.IsNullOrEmpty(Nl) ? congtychinhanhs.First().Id : Nl;
-
-            var khoichucnangs = dbContext.KhoiChucNangs.Find(m => m.Enable.Equals(true)).ToList();
-            Kcn = string.IsNullOrEmpty(Kcn) ? khoichucnangs.Where(m => m.CongTyChiNhanhId.Equals(Nl)).First().Id : Kcn;
+            Kcn = string.IsNullOrEmpty(Kcn) ? khoichucnangs.Where(m => m.ParentId.Equals(Nl)).First().Id : Kcn;
 
             var listPBRemove = new List<string>
             {
                 "5c88d094d59d56225c43240f", // CHU TICH
                 "5c88d094d59d56225c432412" // GIAM DOC
             };
-            var phongbans = dbContext.PhongBans.Find(m => m.Enable.Equals(true) && m.KhoiChucNangId.Equals(Kcn) && !listPBRemove.Contains(m.Id)).ToList();
-            Pb = string.IsNullOrEmpty(Pb) ? phongbans.Where(m => m.KhoiChucNangId.Equals(Kcn)).First().Id : Pb;
+            var phongbans = dbContext.Categories.Find(m => m.Enable.Equals(true)
+            && m.Type.Equals((int)ECategory.PhongBan)
+            && m.ParentId.Equals(Kcn) && !listPBRemove.Contains(m.Id)).ToList();
+            Pb = string.IsNullOrEmpty(Pb) ? phongbans.Where(m => m.ParentId.Equals(Kcn)).First().Id : Pb;
 
-            var bophans = dbContext.BoPhans.Find(m => m.Enable.Equals(true) && m.PhongBanId.Equals(Pb) && string.IsNullOrEmpty(m.Parent)).ToList();
-            //var chucvus = dbContext.ChucVus.Find(m => m.Enable.Equals(true)).ToList();
+            var bophans = dbContext.Categories.Find(m => m.Enable.Equals(true)
+            && m.Type.Equals((int)ECategory.BoPhan)
+            && m.ParentId.Equals(Pb) && string.IsNullOrEmpty(m.ParentId)).ToList();
+
+            var employees = await dbContext.Employees.Find(m => !m.UserName.Equals(Constants.System.account)
+                            && m.Enable.Equals(true) && m.IsOnline.Equals(true)
+                            && m.IsTimeKeeper.Equals(true))
+                           .SortBy(m => m.FullName).ToListAsync();
+            // NHAN VIEN NGHI => MOI THANG QUET IF KO CO CHAM CONG CAP NHAT IsOnline => FALSE
             #endregion
 
             #region Times
@@ -1033,11 +669,12 @@ namespace erp.Controllers
 
             #region Filter
             var builder = Builders<Employee>.Filter;
-            var filter = !builder.Eq(i => i.UserName, Constants.System.account) & builder.Eq(m => m.Enable, true);
+            var filter = !builder.Eq(i => i.UserName, Constants.System.account)
+                & builder.Eq(m => m.Enable, true);
 
             if (!string.IsNullOrEmpty(Id))
             {
-                filter = filter & builder.Eq(x => x.Id, Id.Trim());
+                filter &= builder.Eq(x => x.Id, Id.Trim());
                 linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "?";
                 linkCurrent += "Id=" + Id;
                 var employeeEId = dbContext.Employees.Find(m => m.Id.Equals(Id)).FirstOrDefault();
@@ -1051,21 +688,21 @@ namespace erp.Controllers
             }
             else
             {
-                filter = filter & builder.Eq(m => m.CongTyChiNhanh, Nl);
+                filter &= builder.Eq(m => m.CongTyChiNhanh, Nl);
                 linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "?";
                 linkCurrent += "Nl=" + Nl;
 
-                filter = filter & builder.Eq(m => m.KhoiChucNang, Kcn);
+                filter &= builder.Eq(m => m.KhoiChucNang, Kcn);
                 linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "?";
                 linkCurrent += "Kcn=" + Kcn;
 
-                filter = filter & builder.Eq(m => m.PhongBan, Pb);
+                filter &= builder.Eq(m => m.PhongBan, Pb);
                 linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "?";
                 linkCurrent += "Pb=" + Pb;
 
                 if (!string.IsNullOrEmpty(Bp))
                 {
-                    filter = filter & builder.Eq(m => m.BoPhan, Bp);
+                    filter &= builder.Eq(m => m.BoPhan, Bp);
                     linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "?";
                     linkCurrent += "Bp=" + Bp;
                 }
@@ -1073,14 +710,13 @@ namespace erp.Controllers
 
             if (!string.IsNullOrEmpty(Fg))
             {
-                filter = filter & builder.Where(m => m.Workplaces.Any(c => c.Fingerprint == Fg.Trim()));
+                filter &= builder.Where(m => m.Workplaces.Any(c => c.Fingerprint == Fg.Trim()));
                 linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "?";
                 linkCurrent += "Fg=" + Fg;
             }
 
             var fields = Builders<Employee>.Projection.Include(p => p.Id);
             var employeeFilters = dbContext.Employees.Find(filter).ToList();
-
             var employeeIds = dbContext.Employees.Find(filter).Project<Employee>(fields).ToList().Select(m => m.Id).ToList();
 
             var builderT = Builders<EmployeeWorkTimeLog>.Filter;
@@ -1089,7 +725,7 @@ namespace erp.Controllers
                         & builderT.Lte(m => m.Date, Den);
             if (employeeIds != null && employeeIds.Count > 0)
             {
-                filterT = filterT & builderT.Where(m => employeeIds.Contains(m.EmployeeId));
+                filterT &= builderT.Where(m => employeeIds.Contains(m.EmployeeId));
             }
             #endregion
 
@@ -1166,35 +802,29 @@ namespace erp.Controllers
         public async Task<IActionResult> BangChamCongExport(DateTime Tu, DateTime Den, string Thang, string Nl, string Kcn, string Pb, string Bp, string Fg, string Id)
         {
             #region Authorization
-            var login = User.Identity.Name;
-            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
-            ViewData["LoginUserName"] = loginUserName;
-
-            var loginInformation = dbContext.Employees.Find(m => m.Leave.Equals(false) && m.Id.Equals(login)).FirstOrDefault();
-            if (loginInformation == null)
+            LoginInit(Constants.Rights.BangChamCong, (int)ERights.View);
+            if (!(bool)ViewData[Constants.ActionViews.IsLogin])
             {
-                #region snippet1
                 await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                #endregion
-                return RedirectToAction("login", "account");
+                return RedirectToAction(Constants.ActionViews.Login, Constants.Controllers.Account);
             }
-
-            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.BangChamCong, (int)ERights.View)))
-            {
-                return RedirectToAction("AccessDenied", "Account");
-            }
-
+            var loginId = User.Identity.Name;
+            var loginE = dbContext.Employees.Find(m => m.Id.Equals(loginId)).FirstOrDefault();
             #endregion
 
             var linkCurrent = string.Empty;
             #region DDL
             var sortTimes = Utility.DllMonths();
-            var employees = await dbContext.Employees.Find(m => m.Enable.Equals(true) && !m.UserName.Equals(Constants.System.account)).SortBy(m => m.FullName).ToListAsync();
-            var congtychinhanhs = dbContext.CongTyChiNhanhs.Find(m => m.Enable.Equals(true)).ToList();
-            var khoichucnangs = dbContext.KhoiChucNangs.Find(m => m.Enable.Equals(true)).ToList();
-            var phongbans = dbContext.PhongBans.Find(m => m.Enable.Equals(true)).ToList();
-            var bophans = dbContext.BoPhans.Find(m => m.Enable.Equals(true) && string.IsNullOrEmpty(m.Parent)).ToList();
-            var chucvus = dbContext.ChucVus.Find(m => m.Enable.Equals(true)).ToList();
+            var employees = await dbContext.Employees.Find(m => m.Enable.Equals(true)
+                        && !m.UserName.Equals(Constants.System.account)
+                        && m.IsTimeKeeper.Equals(true))
+                        .SortBy(m => m.FullName).ToListAsync();
+
+            var congtychinhanhs = dbContext.Categories.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)ECategory.Company)).ToList();
+            var khoichucnangs = dbContext.Categories.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)ECategory.KhoiChucNang)).ToList();
+            var phongbans = dbContext.Categories.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)ECategory.KhoiChucNang)).ToList();
+            var bophans = dbContext.Categories.Find(m => m.Enable.Equals(true) && string.IsNullOrEmpty(m.ParentId) && m.Type.Equals((int)ECategory.BoPhan)).ToList();
+            var chucvus = dbContext.Categories.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)ECategory.ChucVu)).ToList();
             #endregion
 
             #region Times
@@ -1224,44 +854,45 @@ namespace erp.Controllers
 
             #region Filter
             var builder = Builders<Employee>.Filter;
-            var filter = !builder.Eq(i => i.UserName, Constants.System.account) & builder.Eq(m => m.Enable, true) & builder.Eq(m => m.Leave, false);
+            var filter = !builder.Eq(i => i.UserName, Constants.System.account)
+                        & builder.Eq(m => m.Enable, true);
             if (!string.IsNullOrEmpty(Id))
             {
-                filter = filter & builder.Eq(x => x.Id, Id.Trim());
+                filter &= builder.Eq(x => x.Id, Id.Trim());
                 linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "";
                 linkCurrent += "Id=" + Id;
             }
             if (!string.IsNullOrEmpty(Fg))
             {
-                filter = filter & builder.Where(m => m.Workplaces.Any(c => c.Fingerprint == Fg.Trim()));
+                filter &= builder.Where(m => m.Workplaces.Any(c => c.Fingerprint == Fg.Trim()));
                 linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "";
                 linkCurrent += "Fg=" + Fg;
                 sFileName += "-" + Fg;
             }
             if (!string.IsNullOrEmpty(Nl))
             {
-                filter = filter & builder.Eq(m => m.CongTyChiNhanh, Nl);
+                filter &= builder.Eq(m => m.CongTyChiNhanh, Nl);
                 linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "";
                 linkCurrent += "Nl=" + Nl;
                 sFileName += "-" + Nl;
             }
             if (!string.IsNullOrEmpty(Kcn))
             {
-                filter = filter & builder.Eq(m => m.KhoiChucNang, Kcn);
+                filter &= builder.Eq(m => m.KhoiChucNang, Kcn);
                 linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "";
                 linkCurrent += "Kcn=" + Kcn;
                 sFileName += "-" + Kcn;
             }
             if (!string.IsNullOrEmpty(Pb))
             {
-                filter = filter & builder.Eq(m => m.PhongBan, Pb);
+                filter &= builder.Eq(m => m.PhongBan, Pb);
                 linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "";
                 linkCurrent += "Pb=" + Pb;
                 sFileName += "-" + Pb;
             }
             if (!string.IsNullOrEmpty(Bp))
             {
-                filter = filter & builder.Eq(m => m.BoPhan, Bp);
+                filter &= builder.Eq(m => m.BoPhan, Bp);
                 linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "";
                 linkCurrent += "Bp=" + Bp;
                 sFileName += "-" + Bp;
@@ -1279,7 +910,7 @@ namespace erp.Controllers
                         & builderT.Lte(m => m.Date, Den);
             if (employeeIds != null && employeeIds.Count > 0)
             {
-                filterT = filterT & builderT.Where(m => employeeIds.Contains(m.EmployeeId));
+                filterT &= builderT.Where(m => employeeIds.Contains(m.EmployeeId));
             }
             #endregion
 
@@ -2116,21 +1747,18 @@ namespace erp.Controllers
             var linkCurrent = string.Empty;
 
             #region Authorization
-            var login = User.Identity.Name;
-            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
-            ViewData["LoginUserName"] = loginUserName;
-            var loginE = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(login)).FirstOrDefault();
-            if (loginE == null)
+            LoginInit(string.Empty, (int)ERights.View);
+            if (!(bool)ViewData[Constants.ActionViews.IsLogin])
             {
-                #region snippet1
                 await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                #endregion
-                return RedirectToAction("login", "account");
+                return RedirectToAction(Constants.ActionViews.Login, Constants.Controllers.Account);
             }
+            var loginId = User.Identity.Name;
+            var loginE = dbContext.Employees.Find(m => m.Id.Equals(loginId)).FirstOrDefault();
             #endregion
 
             #region Filter
-            Id = string.IsNullOrEmpty(Id) ? login : Id;
+            Id = string.IsNullOrEmpty(Id) ? loginId : Id;
             linkCurrent += "Id=" + Id;
 
             var builder = Builders<OvertimeEmployee>.Filter;
@@ -2143,7 +1771,7 @@ namespace erp.Controllers
 
             if (TrangThai != 0)
             {
-                filter = filter & builder.Eq(m => m.Status, TrangThai);
+                filter &= builder.Eq(m => m.Status, TrangThai);
                 linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "?";
                 linkCurrent += "TrangThai=" + TrangThai;
             }
@@ -2165,7 +1793,7 @@ namespace erp.Controllers
             #endregion
 
             Trang = Trang == 0 ? 1 : Trang;
-            var settingPage = dbContext.Settings.Find(m => m.Type.Equals((int)ESetting.System) && m.Key.Equals("page-size")).FirstOrDefault();
+            var settingPage = dbContext.Settings.Find(m => m.Type.Equals((int)EData.System) && m.Key.Equals("page-size")).FirstOrDefault();
             int Size = Convert.ToInt32(settingPage.Value);
             int pages = 1;
             var records = dbContext.OvertimeEmployees.CountDocuments(filter);
@@ -2202,8 +1830,8 @@ namespace erp.Controllers
                 SapXep = SapXep,
                 Records = (int)records,
                 PageSize = Size,
-                SoTrang = pages,
-                Trang = Trang
+                PageTotal = pages,
+                PageCurrent = Trang
             };
 
             return View(viewModel);
@@ -2212,53 +1840,49 @@ namespace erp.Controllers
         [Route(Constants.LinkTimeKeeper.Overtime + "/" + Constants.ActionLink.Data)]
         public async Task<IActionResult> OvertimeData(DateTime? Ngay)
         {
-            var now = DateTime.Now;
+            var today = DateTime.Now.Date;
             var linkCurrent = string.Empty;
 
             #region Authorization
-            var login = User.Identity.Name;
-            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
-            ViewData["LoginUserName"] = loginUserName;
-            var loginE = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(login)).FirstOrDefault();
-            if (loginE == null)
+            LoginInit(string.Empty, (int)ERights.View);
+            if (!(bool)ViewData[Constants.ActionViews.IsLogin])
             {
-                #region snippet1
                 await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                #endregion
-                return RedirectToAction("login", "account");
+                return RedirectToAction(Constants.ActionViews.Login, Constants.Controllers.Account);
             }
+            var loginId = User.Identity.Name;
+            var loginE = dbContext.Employees.Find(m => m.Id.Equals(loginId)).FirstOrDefault();
             #endregion
 
             var directorE = new Employee();
-            if (!string.IsNullOrEmpty(loginE.ManagerId))
+            if (!string.IsNullOrEmpty(loginE.ManagerEmployeeId))
             {
-                directorE = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.ChucVu.Equals(loginE.ManagerId)).FirstOrDefault();
-            }
-            else
-            {
-                // gửi cho ai | HCNS
+                directorE = dbContext.Employees.Find(m => m.Id.Equals(loginE.ManagerEmployeeId) && m.Enable.Equals(true) && m.Leave.Equals(false)).FirstOrDefault();
             }
 
-            var Tu = Ngay ?? DateTime.Now.Date;
+            var Tu = Ngay ?? today;
 
             #region Filter
+            bool isEdit = true;
             var overtimes = dbContext.OvertimeEmployees.Find(m => m.EmployeeId.Equals(loginE.Id) && m.Date.Equals(Tu) && !m.Status.Equals((int)EOvertime.Cancel)).ToList();
-            //if (overtimes == null || overtimes.Count == 0)
-            //{
-            //    overtimes = new List<OvertimeEmployee>
-            //    {
-            //        new OvertimeEmployee()
-            //        {
-            //            EmployeeId = login
-            //        }
-            //    };
-            //}
+            if (overtimes == null || overtimes.Count == 0)
+            {
+                isEdit = false;
+                overtimes = new List<OvertimeEmployee>
+                {
+                    new OvertimeEmployee()
+                    {
+                        Date = today
+                    }
+                };
+            }
+            ViewData[Constants.ActionViews.isEdit] = isEdit;
             #endregion
 
             var viewModel = new TimeKeeperViewModel()
             {
                 Name = "Tăng ca",
-                Id = login,
+                Id = loginId,
                 OvertimeEmployees = overtimes,
                 Tu = Tu,
                 LinkCurrent = linkCurrent,
@@ -2275,88 +1899,76 @@ namespace erp.Controllers
             try
             {
                 #region Authorization
-                var login = User.Identity.Name;
-                var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
-                ViewData["LoginUserName"] = loginUserName;
-                var loginE = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(login)).FirstOrDefault();
-                if (loginE == null)
+                LoginInit(string.Empty, (int)ERights.View);
+                if (!(bool)ViewData[Constants.ActionViews.IsLogin])
                 {
-                    #region snippet1
                     await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                    #endregion
-                    return RedirectToAction("login", "account");
+                    return RedirectToAction(Constants.ActionViews.Login, Constants.Controllers.Account);
                 }
+                var loginId = User.Identity.Name;
+                var loginE = dbContext.Employees.Find(m => m.Id.Equals(loginId)).FirstOrDefault();
                 #endregion
+
+                var employeeId = string.IsNullOrEmpty(dataModel.Id) ? loginId : dataModel.Id;
+                var employeeE = string.IsNullOrEmpty(dataModel.Id) ? loginE : dbContext.Employees.Find(m => m.Id.Equals(employeeId)).FirstOrDefault();
 
                 #region Define director
                 var directorE = new Employee();
-                if (!string.IsNullOrEmpty(loginE.ManagerId))
+                if (!string.IsNullOrEmpty(loginE.ManagerEmployeeId))
                 {
-                    directorE = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.ChucVu.Equals(loginE.ManagerId)).FirstOrDefault();
-                }
-                else
-                {
-                    // gửi cho ai | HCNS
+                    directorE = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.Id.Equals(loginE.ManagerEmployeeId)).FirstOrDefault();
                 }
                 #endregion
 
+                var href = "/" + Constants.LinkTimeKeeper.Main + "/" + Constants.LinkTimeKeeper.Overtime;
                 var now = DateTime.Now;
-                var timestamp = now.ToString("yyyyMMddHHmmssfff");
+                var secure = now.ToString("yyyyMMddHHmmssfff");
                 var date = dataModel.Tu.Date;
                 var items = dataModel.OvertimeEmployees;
-                var employeeId = dataModel.Id;
+
                 var lastest = dbContext.OvertimeEmployees.Find(m => m.Enable.Equals(true)).SortByDescending(m => m.Code).FirstOrDefault();
-                int codeNew = lastest != null ? lastest.Code + 1 : 1;
-                
+                int codeNew = lastest != null ? lastest.CodeInt + 1 : 1;
+
+                var isTrue = false;
                 foreach (var item in items)
                 {
                     if (item.Hour > 0)
                     {
-                        #region Full Data
-                        if (!string.IsNullOrEmpty(employeeId))
-                        {
-                            item.EmployeeId = employeeId;
-                            var employeeE = dbContext.Employees.Find(m => m.Id.Equals(employeeId)).FirstOrDefault();
-                            if (employeeE != null)
-                            {
-                                item.EmployeeCode = employeeE.CodeOld;
-                                item.EmployeeAlias = employeeE.AliasFullName;
-                                item.EmployeeName = employeeE.FullName;
-                                item.ChucVuId = employeeE.ChucVu;
-                                item.ChucVuName = employeeE.ChucVuName;
-                                item.ChucVuAlias = Utility.AliasConvert(employeeE.ChucVuName);
-                                item.BoPhanId = employeeE.BoPhan;
-                                item.BoPhanName = employeeE.BoPhanName;
-                                item.BoPhanAlias = Utility.AliasConvert(employeeE.BoPhanName);
-                                item.PhongBanId = employeeE.PhongBan;
-                                item.PhongBanName = employeeE.PhongBanName;
-                                item.PhongBanAlias = Utility.AliasConvert(employeeE.PhongBanName);
-                                item.KhoiChucNangId = employeeE.KhoiChucNang;
-                                item.KhoiChucNangName = employeeE.KhoiChucNangName;
-                                item.KhoiChucNangAlias = Utility.AliasConvert(employeeE.KhoiChucNangName);
-                                item.CongTyChiNhanhId = employeeE.CongTyChiNhanh;
-                                item.CongTyChiNhanhName = employeeE.CongTyChiNhanhName;
-                                item.CongTyChiNhanhAlias = Utility.AliasConvert(employeeE.CongTyChiNhanhName);
-                            }
-                        }
-
+                        #region Fill Data
+                        item.EmployeeId = employeeE.Id;
+                        item.EmployeeCode = employeeE.CodeOld;
+                        item.EmployeeAlias = employeeE.AliasFullName;
+                        item.EmployeeName = employeeE.FullName;
+                        item.ChucVuId = employeeE.ChucVu;
+                        item.ChucVuName = employeeE.ChucVuName;
+                        item.ChucVuAlias = Utility.AliasConvert(employeeE.ChucVuName);
+                        item.BoPhanId = employeeE.BoPhan;
+                        item.BoPhanName = employeeE.BoPhanName;
+                        item.BoPhanAlias = Utility.AliasConvert(employeeE.BoPhanName);
+                        item.PhongBanId = employeeE.PhongBan;
+                        item.PhongBanName = employeeE.PhongBanName;
+                        item.PhongBanAlias = Utility.AliasConvert(employeeE.PhongBanName);
+                        item.KhoiChucNangId = employeeE.KhoiChucNang;
+                        item.KhoiChucNangName = employeeE.KhoiChucNangName;
+                        item.KhoiChucNangAlias = Utility.AliasConvert(employeeE.KhoiChucNangName);
+                        item.CongTyChiNhanhId = employeeE.CongTyChiNhanh;
+                        item.CongTyChiNhanhName = employeeE.CongTyChiNhanhName;
+                        item.CongTyChiNhanhAlias = Utility.AliasConvert(employeeE.CongTyChiNhanhName);
                         item.ManagerId = directorE.Id;
-                        if (directorE != null)
-                        {
-                            item.ManagerInfo = directorE.FullName + " (" + directorE.ChucVuName + ")";
-                        }
-
+                        item.ApprovedBy = directorE.Id;
+                        item.ManagerInfo = directorE.ChucVuName + " - " + directorE.FullName;
                         item.Date = date;
                         item.Type = Utility.GetTypeDate(item.Date);
                         var endDate = Utility.EndWorkingMonthByDate(item.Date);
                         item.Month = endDate.Month;
                         item.Year = endDate.Year;
-                        item.Timestamp = timestamp;
-                        item.Code = codeNew;
-                        item.ApprovedBy = directorE.Id;
-                        item.StartSecurity = item.Start;
-                        item.EndSecurity = item.End;
+                        item.Code = codeNew.ToString();
+                        item.CodeInt = codeNew;
+                        item.ManagerId = directorE.Id;
+                        item.StartSecurity = item.StartOvertime;
+                        item.EndSecurity = item.EndOvertime;
                         item.HourSecurity = item.Hour;
+                        item.Secure = secure;
                         #endregion
 
                         if (string.IsNullOrEmpty(item.Id))
@@ -2368,117 +1980,125 @@ namespace erp.Controllers
                             var filter = Builders<OvertimeEmployee>.Filter.Eq(m => m.Id, item.Id);
                             var update = Builders<OvertimeEmployee>.Update
                                 .Set(m => m.Date, item.Date)
-                                .Set(m => m.Start, item.Start)
-                                .Set(m => m.End, item.End)
+                                .Set(m => m.StartOvertime, item.StartOvertime)
+                                .Set(m => m.EndOvertime, item.EndOvertime)
                                 .Set(m => m.Hour, item.Hour)
-                                 .Set(m => m.StartSecurity, item.StartSecurity)
+                                .Set(m => m.StartSecurity, item.StartSecurity)
                                 .Set(m => m.EndSecurity, item.EndSecurity)
                                 .Set(m => m.HourSecurity, item.HourSecurity)
-                                .Set(m => m.Timestamp, timestamp)
+                                .Set(m => m.Secure, secure)
                                 .Set(m => m.Description, item.Description)
-                                .Set(m => m.Code, codeNew)
-                                .Set(m => m.UpdatedOn, DateTime.Now);
+                                .Set(m => m.Code, codeNew.ToString())
+                                .Set(m => m.CodeInt, codeNew)
+                                .Set(m => m.ModifiedOn, DateTime.Now);
                             dbContext.OvertimeEmployees.UpdateOne(filter, update);
                         }
+
+                        isTrue = true;
                     }
                 }
 
-                var linkExcel = RenderExcel(date, codeNew, loginE.Id);
+                if (isTrue)
+                {
+                    var linkExcel = RenderExcel(date, codeNew, loginE.Id);
 
-                var attachments = new List<string>
+                    var attachments = new List<string>
                     {
                         linkExcel
                     };
 
-                #region Send mail: Quản lý trực tiếp (phòng ban)
-                var genderDE = directorE.Gender == "Nam" ? "anh" : "chị";
-                var genderLE = loginE.Gender == "Nam" ? "Anh" : "Chị";
-                var genderLELower = loginE.Gender == "Nam" ? "anh" : "chị";
-                var phone = string.Empty;
-                if (loginE.Mobiles != null && loginE.Mobiles.Count > 0)
-                {
-                    phone = loginE.Mobiles[0].Number;
-                }
+                    #region Send mail: Quản lý trực tiếp (phòng ban)
+                    var genderDE = directorE.Gender == "Nam" ? "anh" : "chị";
+                    var genderLE = loginE.Gender == "Nam" ? "Anh" : "Chị";
+                    var genderLELower = loginE.Gender == "Nam" ? "anh" : "chị";
+                    var phone = string.Empty;
+                    if (loginE.Mobiles != null && loginE.Mobiles.Count > 0)
+                    {
+                        phone = loginE.Mobiles[0].Number;
+                    }
 
-                var webRoot = Environment.CurrentDirectory;
-                var pathToFile = _env.WebRootPath
-                        + Path.DirectorySeparatorChar.ToString()
-                        + "Templates"
-                        + Path.DirectorySeparatorChar.ToString()
-                        + "EmailTemplate"
-                        + Path.DirectorySeparatorChar.ToString()
-                        + "OvertimeApprove.html";
+                    var webRoot = Environment.CurrentDirectory;
+                    var pathToFile = _env.WebRootPath
+                            + Path.DirectorySeparatorChar.ToString()
+                            + "Templates"
+                            + Path.DirectorySeparatorChar.ToString()
+                            + "EmailTemplate"
+                            + Path.DirectorySeparatorChar.ToString()
+                            + "OvertimeApprove.html";
 
-                var tos = new List<EmailAddress>
+                    var tos = new List<EmailAddress>
             {
                 new EmailAddress { Name = directorE.FullName, Address = directorE.Email }
             };
 
-                var ccs = new List<EmailAddress>
+                    var ccs = new List<EmailAddress>
             {
                 new EmailAddress { Name = loginE.FullName, Address = loginE.Email }
             };
 
-                var subject = "Xác nhận Bảng tăng ca ngày " + date.ToString("dd/MM/yyyy");
-                var title = "Bảng tăng ca ngày " + date.ToString("dd/MM/yyyy");
-                // Api update, generate code.
-                var linkapprove = Constants.System.domain + "/xacnhan/tangca";
-                var linkAccept = linkapprove + "?code=" + codeNew + "&approve=" + (int)EOvertime.Ok + "&secure=" + timestamp;
-                var linkCancel = linkapprove + "?code=" + codeNew + "&approve=" + (int)EOvertime.Cancel + "&secure=" + timestamp;
-                var linkDetail = Constants.System.domain + "/" + Constants.LinkTimeKeeper.Main + "/" + Constants.LinkTimeKeeper.Overtime + "?Tu=" + date.ToString("MM-dd-yyyy") + "&Den=" + date.ToString("MM-dd-yyyy");
+                    var subject = "Xác nhận Bảng tăng ca ngày " + date.ToString("dd/MM/yyyy");
+                    var title = "Bảng tăng ca ngày " + date.ToString("dd/MM/yyyy");
+                    // Api update, generate code.
+                    var linkapprove = Constants.System.domain + "/xacnhan/tangca";
+                    var linkAccept = linkapprove + "?code=" + codeNew + "&approve=" + (int)EOvertime.Ok + "&secure=" + secure;
+                    var linkCancel = linkapprove + "?code=" + codeNew + "&approve=" + (int)EOvertime.Cancel + "&secure=" + secure;
+                    var linkDetail = Constants.System.domain + "/" + Constants.LinkTimeKeeper.Main + "/" + Constants.LinkTimeKeeper.Overtime + "?Tu=" + date.ToString("MM-dd-yyyy") + "&Den=" + date.ToString("MM-dd-yyyy");
 
-                var bodyBuilder = new BodyBuilder();
-                using (StreamReader SourceReader = System.IO.File.OpenText(pathToFile))
-                {
-                    bodyBuilder.HtmlBody = SourceReader.ReadToEnd();
+                    var bodyBuilder = new BodyBuilder();
+                    using (StreamReader SourceReader = System.IO.File.OpenText(pathToFile))
+                    {
+                        bodyBuilder.HtmlBody = SourceReader.ReadToEnd();
+                    }
+                    string messageBody = string.Format(bodyBuilder.HtmlBody,
+                        subject,
+                        genderDE,
+                        directorE.FullName,
+                        genderLE,
+                        genderLELower,
+                        loginE.FullName,
+                        loginE.ChucVuName,
+                        loginE.Email,
+                        phone,
+                        title,
+                        linkDetail,
+                        linkAccept,
+                        linkCancel,
+                        Constants.System.domain
+                        );
+
+                    var emailMessage = new EmailMessage()
+                    {
+                        ToAddresses = tos,
+                        CCAddresses = ccs,
+                        Subject = subject,
+                        BodyContent = messageBody,
+                        Type = "overtime-approve",
+                        EmployeeId = codeNew.ToString(),
+                        Attachments = attachments
+                    };
+
+                    var scheduleEmail = new ScheduleEmail
+                    {
+                        Status = (int)EEmailStatus.Schedule,
+                        To = emailMessage.ToAddresses,
+                        CC = emailMessage.CCAddresses,
+                        BCC = emailMessage.BCCAddresses,
+                        Type = emailMessage.Type,
+                        Title = emailMessage.Subject,
+                        Content = emailMessage.BodyContent,
+                        EmployeeId = emailMessage.EmployeeId,
+                        Attachments = emailMessage.Attachments
+                    };
+
+                    dbContext.ScheduleEmails.InsertOne(scheduleEmail);
+                    #endregion
+
+                    return Json(new { result = true, source = "create", href, message = "Khởi tạo thành công" });
                 }
-                string messageBody = string.Format(bodyBuilder.HtmlBody,
-                    subject,
-                    genderDE,
-                    directorE.FullName,
-                    genderLE,
-                    genderLELower,
-                    loginE.FullName,
-                    loginE.ChucVuName,
-                    loginE.Email,
-                    phone,
-                    title,
-                    linkDetail,
-                    linkAccept,
-                    linkCancel,
-                    Constants.System.domain
-                    );
-
-                var emailMessage = new EmailMessage()
+                else
                 {
-                    ToAddresses = tos,
-                    CCAddresses = ccs,
-                    Subject = subject,
-                    BodyContent = messageBody,
-                    Type = "overtime-approve",
-                    EmployeeId = codeNew.ToString(),
-                    Attachments = attachments
-                };
-
-                var scheduleEmail = new ScheduleEmail
-                {
-                    Status = (int)EEmailStatus.Schedule,
-                    To = emailMessage.ToAddresses,
-                    CC = emailMessage.CCAddresses,
-                    BCC = emailMessage.BCCAddresses,
-                    Type = emailMessage.Type,
-                    Title = emailMessage.Subject,
-                    Content = emailMessage.BodyContent,
-                    EmployeeId = emailMessage.EmployeeId,
-                    Attachments = emailMessage.Attachments
-                };
-
-                dbContext.ScheduleEmails.InsertOne(scheduleEmail);
-                #endregion
-
-                var href = "/" + Constants.LinkTimeKeeper.Main + "/" + Constants.LinkTimeKeeper.Overtime;
-
-                return Json(new { result = true, source = "create", href, message = "Khởi tạo thành công" });
+                    return Json(new { result = false, source = "create", href, message = "Khởi tạo không thành công, kiểm tra lại dữ liệu" });
+                }
             }
             catch (Exception ex)
             {
@@ -2493,25 +2113,22 @@ namespace erp.Controllers
             var linkCurrent = string.Empty;
 
             #region Authorization
-            var login = User.Identity.Name;
-            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
-            ViewData["LoginUserName"] = loginUserName;
-            var loginE = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(login)).FirstOrDefault();
-            if (loginE == null)
+            LoginInit(string.Empty, (int)ERights.View);
+            if (!(bool)ViewData[Constants.ActionViews.IsLogin])
             {
-                #region snippet1
                 await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                #endregion
-                return RedirectToAction("login", "account");
+                return RedirectToAction(Constants.ActionViews.Login, Constants.Controllers.Account);
             }
+            var loginId = User.Identity.Name;
+            var loginE = dbContext.Employees.Find(m => m.Id.Equals(loginId)).FirstOrDefault();
             #endregion
 
             #region Dropdownlist
             // Danh sách nhân viên đang quản
             var builderEmp = Builders<Employee>.Filter;
             var filterEmp = builderEmp.Eq(m => m.Enable, true) & builderEmp.Eq(m => m.Leave, false);
-            filterEmp = filterEmp & !builderEmp.Eq(m => m.UserName, Constants.System.account);
-            filterEmp = filterEmp & builderEmp.Eq(m => m.ManagerId, loginE.ChucVu);
+            filterEmp &= !builderEmp.Eq(m => m.UserName, Constants.System.account);
+            filterEmp &= builderEmp.Eq(m => m.ManagerEmployeeId, loginE.Id);
             var employees = await dbContext.Employees.Find(filterEmp).SortBy(m => m.FullName).ToListAsync();
             #endregion
 
@@ -2520,19 +2137,19 @@ namespace erp.Controllers
             Tu = Tu.Year < 1990 ? new DateTime(now.Year, now.Month, 1).Add(new TimeSpan(0, 0, 0)) : Tu.Date.Add(new TimeSpan(0, 0, 0));
             Den = Den.Year < 1990 ? now.Date.Add(new TimeSpan(23, 59, 59)) : Den.Date.Add(new TimeSpan(23, 59, 59));
             var filter = builder.Eq(m => m.Enable, true)
-                        & builder.Eq(m => m.ManagerId, login)
+                        & builder.Eq(m => m.ManagerId, loginId)
                         & builder.Gte(m => m.Date, Tu)
                         & builder.Lte(m => m.Date, Den);
 
             if (!string.IsNullOrEmpty(Id))
             {
-                filter = filter & builder.Eq(m => m.EmployeeId, Id);
+                filter &= builder.Eq(m => m.EmployeeId, Id);
                 linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "?";
                 linkCurrent += "Id=" + Id;
             }
             if (TrangThai != 0)
             {
-                filter = filter & builder.Eq(m => m.Status, TrangThai);
+                filter &= builder.Eq(m => m.Status, TrangThai);
                 linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "?";
                 linkCurrent += "TrangThai=" + TrangThai;
             }
@@ -2554,7 +2171,7 @@ namespace erp.Controllers
             #endregion
 
             Trang = Trang == 0 ? 1 : Trang;
-            var settingPage = dbContext.Settings.Find(m => m.Type.Equals((int)ESetting.System) && m.Key.Equals("page-size")).FirstOrDefault();
+            var settingPage = dbContext.Settings.Find(m => m.Type.Equals((int)EData.System) && m.Key.Equals("page-size")).FirstOrDefault();
             int Size = Convert.ToInt32(settingPage.Value);
             int pages = 1;
             var records = dbContext.OvertimeEmployees.CountDocuments(filter);
@@ -2592,8 +2209,8 @@ namespace erp.Controllers
                 SapXep = SapXep,
                 Records = (int)records,
                 PageSize = Size,
-                SoTrang = pages,
-                Trang = Trang
+                PageTotal = pages,
+                PageCurrent = Trang
             };
 
             return View(viewModel);
@@ -2606,17 +2223,14 @@ namespace erp.Controllers
             var linkCurrent = string.Empty;
 
             #region Authorization
-            var login = User.Identity.Name;
-            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
-            ViewData["LoginUserName"] = loginUserName;
-            var loginE = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(login)).FirstOrDefault();
-            if (loginE == null)
+            LoginInit(string.Empty, (int)ERights.View);
+            if (!(bool)ViewData[Constants.ActionViews.IsLogin])
             {
-                #region snippet1
                 await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                #endregion
-                return RedirectToAction("login", "account");
+                return RedirectToAction(Constants.ActionViews.Login, Constants.Controllers.Account);
             }
+            var loginId = User.Identity.Name;
+            var loginE = dbContext.Employees.Find(m => m.Id.Equals(loginId)).FirstOrDefault();
             #endregion
 
             var Tu = Ngay ?? DateTime.Now.Date;
@@ -2625,8 +2239,8 @@ namespace erp.Controllers
             // Danh sách nhân viên đang quản
             var builderEmp = Builders<Employee>.Filter;
             var filterEmp = builderEmp.Eq(m => m.Enable, true) & builderEmp.Eq(m => m.Leave, false);
-            filterEmp = filterEmp & !builderEmp.Eq(m => m.UserName, Constants.System.account);
-            filterEmp = filterEmp & builderEmp.Eq(m => m.ManagerId, loginE.ChucVu);
+            filterEmp &= !builderEmp.Eq(m => m.UserName, Constants.System.account);
+            filterEmp &= builderEmp.Eq(m => m.ManagerEmployeeId, loginE.Id);
             var employees = await dbContext.Employees.Find(filterEmp).SortBy(m => m.FullName).ToListAsync();
             #endregion
 
@@ -2694,17 +2308,14 @@ namespace erp.Controllers
             try
             {
                 #region Authorization
-                var login = User.Identity.Name;
-                var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
-                ViewData["LoginUserName"] = loginUserName;
-                var loginE = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(login)).FirstOrDefault();
-                if (loginE == null)
+                LoginInit(string.Empty, (int)ERights.View);
+                if (!(bool)ViewData[Constants.ActionViews.IsLogin])
                 {
-                    #region snippet1
                     await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                    #endregion
-                    return RedirectToAction("login", "account");
+                    return RedirectToAction(Constants.ActionViews.Login, Constants.Controllers.Account);
                 }
+                var loginId = User.Identity.Name;
+                var loginE = dbContext.Employees.Find(m => m.Id.Equals(loginId)).FirstOrDefault();
                 #endregion
 
                 #region Define director
@@ -2734,9 +2345,9 @@ namespace erp.Controllers
 
                 var date = dataModel.Tu.Date;
 
-                var timestamp = now.ToString("yyyyMMddHHmmssfff");
+                var timestamp = now.Ticks;
                 var lastest = dbContext.OvertimeEmployees.Find(m => m.Enable.Equals(true)).SortByDescending(m => m.Code).FirstOrDefault();
-                int codeNew = lastest != null ? lastest.Code + 1 : 1;
+                int codeNew = lastest != null ? lastest.CodeInt + 1 : 1;
 
                 foreach (var item in data)
                 {
@@ -2780,10 +2391,11 @@ namespace erp.Controllers
                     item.Month = endDate.Month;
                     item.Year = endDate.Year;
                     item.Timestamp = timestamp;
-                    item.Code = codeNew;
-                    item.ApprovedBy = directorE.Id;
-                    item.StartSecurity = item.Start;
-                    item.EndSecurity = item.End;
+                    item.Code = codeNew.ToString();
+                    item.CodeInt = codeNew;
+                    item.ManagerId = directorE.Id;
+                    item.StartSecurity = item.StartOvertime;
+                    item.EndSecurity = item.EndOvertime;
                     item.HourSecurity = item.Hour;
                     #endregion
 
@@ -2796,15 +2408,16 @@ namespace erp.Controllers
                         var filter = Builders<OvertimeEmployee>.Filter.Eq(m => m.Id, item.Id);
                         var update = Builders<OvertimeEmployee>.Update
                             .Set(m => m.Date, item.Date)
-                            .Set(m => m.Start, item.Start)
-                            .Set(m => m.End, item.End)
+                            .Set(m => m.StartOvertime, item.StartOvertime)
+                            .Set(m => m.EndOvertime, item.EndOvertime)
                             .Set(m => m.Hour, item.Hour)
                              .Set(m => m.StartSecurity, item.StartSecurity)
                             .Set(m => m.EndSecurity, item.EndSecurity)
                             .Set(m => m.HourSecurity, item.HourSecurity)
                             .Set(m => m.Timestamp, timestamp)
-                            .Set(m => m.Code, codeNew)
-                            .Set(m => m.UpdatedOn, DateTime.Now);
+                            .Set(m => m.Code, codeNew.ToString())
+                            .Set(m => m.CodeInt, codeNew)
+                            .Set(m => m.ModifiedOn, now);
                         dbContext.OvertimeEmployees.UpdateOne(filter, update);
                     }
                 }
@@ -2915,20 +2528,20 @@ namespace erp.Controllers
         [AllowAnonymous]
         [Route(Constants.LinkTimeKeeper.Overtime + "/" + Constants.ActionLink.Approve)]
         [HttpPost]
-        public IActionResult OvertimeApprove(int code, int approve, string secure)
+        public IActionResult OvertimeApprove(int code, int approve, long secure)
         {
-            var list = dbContext.OvertimeEmployees.Find(m => m.Code.Equals(code) && m.Timestamp.Equals(secure)).ToList();
+            var list = dbContext.OvertimeEmployees.Find(m => m.CodeInt.Equals(code) && m.Timestamp.Equals(secure)).ToList();
 
             if (list == null)
             {
                 return Json(new { result = true, message = Constants.ErrorParameter });
             }
 
-            var filter = Builders<OvertimeEmployee>.Filter.Eq(m => m.Code, code) & Builders<OvertimeEmployee>.Filter.Eq(m => m.Timestamp, secure);
+            var filter = Builders<OvertimeEmployee>.Filter.Eq(m => m.CodeInt, code) & Builders<OvertimeEmployee>.Filter.Eq(m => m.Timestamp, secure);
             var update = Builders<OvertimeEmployee>.Update
-                .Set(m => m.Timestamp, DateTime.Now.ToString("yyyyMMddHHmmssfff"))
+                .Set(m => m.Timestamp, DateTime.Now.Ticks)
                 .Set(m => m.Status, approve)
-                .Set(m => m.ApprovedOn, DateTime.Now);
+                .Set(m => m.ModifiedOn, DateTime.Now);
             dbContext.OvertimeEmployees.UpdateMany(filter, update);
 
             #region Send mail AN NINH
@@ -2951,10 +2564,9 @@ namespace erp.Controllers
                 var overtime = list.First();
                 var date = overtime.Date;
 
-                var directorE = dbContext.Employees.Find(m => m.Id.Equals(overtime.ApprovedBy)).FirstOrDefault();
+                var directorE = dbContext.Employees.Find(m => m.Id.Equals(overtime.ManagerId)).FirstOrDefault();
 
-                var securityPosition = dbContext.ChucVus.Find(m => m.Code.Equals("CHUCVU86")).FirstOrDefault();
-
+                var securityPosition = dbContext.Categories.Find(m => m.Type.Equals((int)ECategory.ChucVu) && m.Id.Equals("5c88d098d59d56225c4324a8")).FirstOrDefault();
                 var securityE = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.ChucVu.Equals(securityPosition.Id)).FirstOrDefault();
 
                 var genderDE = directorE.Gender == "Nam" ? "Anh" : "Chị";
@@ -3041,11 +2653,14 @@ namespace erp.Controllers
             var linkCurrent = string.Empty;
 
             #region Authorization
-            var login = User.Identity.Name;
-            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
-            ViewData["LoginUserName"] = loginUserName;
-            var securityPosition = dbContext.ChucVus.Find(m => m.Code.Equals("CHUCVU86")).FirstOrDefault();
-            var loginE = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.Id.Equals(login) && m.ChucVu.Equals(securityPosition.Id)).FirstOrDefault();
+            LoginInit(string.Empty, (int)ERights.View);
+            if (!(bool)ViewData[Constants.ActionViews.IsLogin])
+            {
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                return RedirectToAction(Constants.ActionViews.Login, Constants.Controllers.Account);
+            }
+            var loginId = User.Identity.Name;
+            var loginE = dbContext.Employees.Find(m => m.Id.Equals(loginId) && m.ChucVu.Equals("5c88d098d59d56225c4324a8")).FirstOrDefault();
             if (loginE == null)
             {
                 #region snippet1
@@ -3056,10 +2671,11 @@ namespace erp.Controllers
             #endregion
 
             #region Dropdownlist
-            var phongbans = dbContext.PhongBans.Find(m => m.Enable.Equals(true)).ToList();
+            var phongbans = dbContext.Categories.Find(m => m.Type.Equals((int)ECategory.PhongBan) && m.Enable.Equals(true)).ToList();
 
             var listDirector = new string[] { "C.01", "C.02", "C.03" };
-            var employees = dbContext.Employees.Find(m => m.Enable.Equals(true) && !listDirector.Contains(m.NgachLuongCode)).ToList();
+            var employees = dbContext.Employees.Find(m => m.Enable.Equals(true)
+                            && !listDirector.Contains(m.NgachLuongCode)).ToList();
             #endregion
 
             #region Filter
@@ -3072,28 +2688,28 @@ namespace erp.Controllers
                         & builder.Lte(m => m.Date, Den);
             if (!string.IsNullOrEmpty(Id))
             {
-                filter = filter & builder.Eq(m => m.EmployeeId, Id);
+                filter &= builder.Eq(m => m.EmployeeId, Id);
                 linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "?";
                 linkCurrent += "Id=" + Id;
             }
 
             if (!string.IsNullOrEmpty(Pb))
             {
-                filter = filter & builder.Eq(m => m.PhongBanId, Pb);
+                filter &= builder.Eq(m => m.PhongBanId, Pb);
                 linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "?";
                 linkCurrent += "Pb=" + Pb;
             }
 
             if (CodeInt != 0)
             {
-                filter = filter & builder.Eq(m => m.Code, CodeInt);
+                filter &= builder.Eq(m => m.CodeInt, CodeInt);
                 linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "?";
                 linkCurrent += "Code=" + CodeInt;
             }
 
             if (TrangThai != 0)
             {
-                filter = filter & builder.Eq(m => m.Status, TrangThai);
+                filter &= builder.Eq(m => m.Status, TrangThai);
                 linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "?";
                 linkCurrent += "TrangThai=" + TrangThai;
             }
@@ -3115,7 +2731,7 @@ namespace erp.Controllers
             #endregion
 
             Trang = Trang == 0 ? 1 : Trang;
-            var settingPage = dbContext.Settings.Find(m => m.Type.Equals((int)ESetting.System) && m.Key.Equals("page-size")).FirstOrDefault();
+            var settingPage = dbContext.Settings.Find(m => m.Type.Equals((int)EData.System) && m.Key.Equals("page-size")).FirstOrDefault();
             int Size = Convert.ToInt32(settingPage.Value);
             int pages = 1;
             var records = dbContext.OvertimeEmployees.CountDocuments(filter);
@@ -3156,8 +2772,8 @@ namespace erp.Controllers
                 SapXep = SapXep,
                 Records = (int)records,
                 PageSize = Size,
-                SoTrang = pages,
-                Trang = Trang
+                PageTotal = pages,
+                PageCurrent = Trang
             };
 
             return View(viewModel);
@@ -3170,11 +2786,14 @@ namespace erp.Controllers
             try
             {
                 #region Authorization
-                var login = User.Identity.Name;
-                var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
-                ViewData["LoginUserName"] = loginUserName;
-                var securityPosition = dbContext.ChucVus.Find(m => m.Code.Equals("CHUCVU86")).FirstOrDefault();
-                var loginE = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.Id.Equals(login) && m.ChucVu.Equals(securityPosition.Id)).FirstOrDefault();
+                LoginInit(string.Empty, (int)ERights.View);
+                if (!(bool)ViewData[Constants.ActionViews.IsLogin])
+                {
+                    await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                    return RedirectToAction(Constants.ActionViews.Login, Constants.Controllers.Account);
+                }
+                var loginId = User.Identity.Name;
+                var loginE = dbContext.Employees.Find(m => m.Id.Equals(loginId) && m.ChucVu.Equals("5c88d098d59d56225c4324a8")).FirstOrDefault();
                 if (loginE == null)
                 {
                     #region snippet1
@@ -3185,7 +2804,7 @@ namespace erp.Controllers
                 #endregion
 
                 var now = DateTime.Now;
-                var timestamp = now.ToString("yyyyMMddHHmmssfff");
+                var timestamp = now.Ticks;
                 var data = dataModel.OvertimeEmployees;
 
                 //if (data.Count(m => m.HourSecurity <= 0) > 0)
@@ -3204,7 +2823,7 @@ namespace erp.Controllers
                             .Set(m => m.HourSecurity, item.HourSecurity)
                             .Set(m => m.Status, (int)EOvertime.Secutity)
                             .Set(m => m.Timestamp, timestamp)
-                            .Set(m => m.UpdatedOn, DateTime.Now);
+                            .Set(m => m.ModifiedOn, DateTime.Now);
                         dbContext.OvertimeEmployees.UpdateOne(filter, update);
 
                         // Update Timer
@@ -4293,12 +3912,12 @@ namespace erp.Controllers
                     columnIndex++;
 
                     cell = row.CreateCell(columnIndex, CellType.String);
-                    cell.SetCellValue(item.Start.ToString(@"hh\:mm"));
+                    cell.SetCellValue(item.StartOvertime.ToString(@"hh\:mm"));
                     cell.CellStyle = styleDedault;
                     columnIndex++;
 
                     cell = row.CreateCell(columnIndex, CellType.String);
-                    cell.SetCellValue(item.End.ToString(@"hh\:mm"));
+                    cell.SetCellValue(item.EndOvertime.ToString(@"hh\:mm"));
                     cell.CellStyle = styleDedault;
                     columnIndex++;
 
@@ -4569,12 +4188,12 @@ namespace erp.Controllers
                     columnIndex++;
 
                     cell = row.CreateCell(columnIndex, CellType.String);
-                    cell.SetCellValue(item.Start.ToString(@"hh\:mm"));
+                    cell.SetCellValue(item.StartOvertime.ToString(@"hh\:mm"));
                     cell.CellStyle = styleDedault;
                     columnIndex++;
 
                     cell = row.CreateCell(columnIndex, CellType.String);
-                    cell.SetCellValue(item.End.ToString(@"hh\:mm"));
+                    cell.SetCellValue(item.EndOvertime.ToString(@"hh\:mm"));
                     cell.CellStyle = styleDedault;
                     columnIndex++;
 

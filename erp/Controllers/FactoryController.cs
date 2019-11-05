@@ -30,11 +30,9 @@ using System.Threading;
 using Common.Enums;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using MongoDB.Bson;
-using Controllers;
 
-namespace erp.Controllers
+namespace Controllers
 {
-    [Route(Constants.LinkFactory.Main)]
     public class FactoryController : BaseController
     {
         MongoDBContext dbContext = new MongoDBContext();
@@ -58,13 +56,648 @@ namespace erp.Controllers
             _logger = logger;
         }
 
+
         [Route(Constants.LinkFactory.Index)]
-        public async Task<IActionResult> Index(string search, string lot, string type, int? page, int? size, string sortField, string sort)
+        public async Task<IActionResult> Index(string url)
         {
+            #region Update DATA. Remove after clone
+           
+            
+            #endregion
+
             return View();
         }
 
-        #region TONSX
+        #region VAN HANH
+        [Route(Constants.LinkFactory.VanHanh)]
+        public async Task<IActionResult> VanHanh(string Xm, string Ca, string Cd, string Lot, string CaLamViec, string Phieu, string Nvl, DateTime? Tu, DateTime? Den, int? Trang, int? Dong, string SapXep, string Truong)
+        {
+            #region Login Information
+            //LoginInit("van-hanh", (int)ERights.View);
+            //if (!(bool)ViewData[Constants.ActionViews.IsLogin])
+            //{
+            //    await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            //    return RedirectToAction(Constants.ActionViews.Login, Constants.Controllers.Account);
+            //}
+            //if (!(bool)ViewData[Constants.ActionViews.IsRight])
+            //{
+            //    return RedirectToAction("Index", "Home");
+            //}
+            #endregion
+
+            var linkCurrent = string.Empty;
+
+            #region Filter
+            if (!Trang.HasValue)
+            {
+                Trang = 1;
+            }
+            if (!Dong.HasValue)
+            {
+                Dong = 200;
+            }
+            if (!Tu.HasValue)
+            {
+                Tu = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1).AddMonths(-2);
+            }
+            if (!Den.HasValue)
+            {
+                Den = Tu.Value.AddMonths(3).AddDays(-1);
+            }
+            var builder = Builders<FactoryVanHanh>.Filter;
+            var filter = builder.Eq(m => m.Enable, true);
+            if (!string.IsNullOrEmpty(Xm))
+            {
+                filter &= builder.Eq(m => m.XeCoGioiMayCode, Xm);
+            }
+            if (!string.IsNullOrEmpty(Ca))
+            {
+                filter &= builder.Eq(m => m.CaAlias, Ca);
+            }
+            if (!string.IsNullOrEmpty(Cd))
+            {
+                filter &= builder.Eq(m => m.CongDoanCode, Cd);
+            }
+            if (!string.IsNullOrEmpty(Lot))
+            {
+                filter &= builder.Regex(m => m.LOT, new BsonRegularExpression(Utility.AliasConvert(Lot.ToLower()), "i"));
+            }
+            if (!string.IsNullOrEmpty(CaLamViec))
+            {
+                filter &= builder.Eq(m => m.CaLamViecAlias, CaLamViec);
+            }
+            if (!string.IsNullOrEmpty(Phieu))
+            {
+                filter &= builder.Regex(m => m.PhieuInCa, new BsonRegularExpression(Utility.AliasConvert(Phieu.ToLower()), "i"));
+            }
+            if (!string.IsNullOrEmpty(Nvl))
+            {
+                filter &= builder.Eq(m => m.ProductAlias, Nvl);
+            }
+            if (Tu.HasValue)
+            {
+                filter &= builder.Gte(m => m.Date, Tu.Value);
+            }
+            if (Den.HasValue)
+            {
+                filter &= builder.Lte(m => m.Date, Den.Value);
+            }
+            #endregion
+
+            #region Sort
+
+            var sortBuilder = Builders<FactoryVanHanh>.Sort.Descending(m => m.Date).Descending(m => m.CreatedOn);
+            #endregion
+
+            #region Dropdownlist
+            var shifts = await dbContext.Categories.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)ECategory.Ca)).ToListAsync();
+            var shiftsubs = await dbContext.Categories.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)ECategory.CaLamViec)).ToListAsync();
+            var stages = await dbContext.Categories.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)ECategory.CongDoan)).ToListAsync();
+            var xemays = await dbContext.Categories.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)ECategory.XeCoGioivsMayMoc) && !string.IsNullOrEmpty(m.Code)).ToListAsync();
+            var products = await dbContext.Categories.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)ECategory.NVLvsBTPvsTP)).ToListAsync();
+            #endregion
+
+            var records = await dbContext.FactoryVanHanhs.CountDocumentsAsync(filter);
+            var pages = (int)Math.Ceiling(records / (double)Dong);
+            if (Trang > pages)
+            {
+                Trang = 1;
+            }
+
+            var datas = await dbContext.FactoryVanHanhs.Find(filter).Skip((Trang - 1) * Dong).Limit(Dong).Sort(sortBuilder).ToListAsync();
+            var viewModel = new VanHanhViewModel
+            {
+                FactoryVanHanhs = datas,
+                Shifts = shifts,
+                ShiftSubs = shiftsubs,
+                Stages = stages,
+                Vehicles = xemays,
+                Products = products,
+                Records = (int)records,
+                Pages = pages,
+                Xm = Xm,
+                Cd = Cd,
+                Nvl = Nvl,
+                Lot = Lot,
+                Phieu = Phieu,
+                Ca = Ca,
+                CaLamViec = CaLamViec,
+                Tu = Tu,
+                Den = Den,
+                Trang = Trang.Value,
+                Dong = Dong.Value,
+                SapXep = SapXep,
+                Truong = Truong
+            };
+
+            return View(viewModel);
+        }
+
+        [Route(Constants.LinkFactory.VanHanh + "/" + Constants.ActionLink.Data)]
+        public async Task<IActionResult> VanHanhData(string Id)
+        {
+            #region Login Information
+            //LoginInit("van-hanh", (int)ERights.View);
+            //if (!(bool)ViewData[Constants.ActionViews.IsLogin])
+            //{
+            //    await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            //    return RedirectToAction(Constants.ActionViews.Login, Constants.Controllers.Account);
+            //}
+            //if (!(bool)ViewData[Constants.ActionViews.IsRight])
+            //{
+            //    return RedirectToAction("Index", "Home");
+            //}
+            #endregion
+
+            #region Dropdownlist
+            var shifts = await dbContext.Categories.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)ECategory.Ca)).ToListAsync();
+            var shiftsubs = await dbContext.Categories.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)ECategory.CaLamViec)).ToListAsync();
+            var stages = await dbContext.Categories.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)ECategory.CongDoan)).ToListAsync();
+            var xemays = await dbContext.Categories.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)ECategory.XeCoGioivsMayMoc)).ToListAsync();
+            var products = await dbContext.Categories.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)ECategory.NVLvsBTPvsTP)).ToListAsync();
+            // Employees: cong nhan
+            var employees = await dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false)).ToListAsync();
+            #endregion
+
+            var entity = new FactoryVanHanh();
+            if (!string.IsNullOrEmpty(Id))
+            {
+                entity = dbContext.FactoryVanHanhs.Find(m => m.Id.Equals(Id)).FirstOrDefault();
+                if (entity == null)
+                {
+                    entity = new FactoryVanHanh();
+                }
+            }
+            var viewModel = new VanHanhViewModel
+            {
+                Shifts = shifts,
+                ShiftSubs = shiftsubs,
+                Stages = stages,
+                Vehicles = xemays,
+                Products = products,
+                Employees = employees,
+                Entity = entity
+            };
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        [Route(Constants.LinkFactory.VanHanh + "/" + Constants.ActionLink.Data)]
+        public async Task<IActionResult> VanHanhData(FactoryVanHanh entity)
+        {
+            #region Login Information
+            //LoginInit("van-hanh", (int)ERights.View);
+            //if (!(bool)ViewData[Constants.ActionViews.IsLogin])
+            //{
+            //    await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            //    return RedirectToAction(Constants.ActionViews.Login, Constants.Controllers.Account);
+            //}
+            //if (!(bool)ViewData[Constants.ActionViews.IsRight])
+            //{
+            //    return RedirectToAction("Index", "Home");
+            //}
+            #endregion
+
+            try
+            {
+                #region Data
+                var now = DateTime.Now;
+                entity.CreatedBy = User.Identity.Name;
+                entity.ModifiedBy = User.Identity.Name;
+                entity.Year = entity.Date.Year;
+                entity.Month = entity.Date.Month;
+                entity.Week = Utility.GetIso8601WeekOfYear(entity.Date);
+                entity.Day = entity.Date.Day;
+
+                if (!string.IsNullOrEmpty(entity.CaId))
+                {
+                    var caE = dbContext.Categories.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)ECategory.Ca) && m.Id.Equals(entity.CaId)).FirstOrDefault();
+                    if (caE != null)
+                    {
+                        entity.CaAlias = caE.Alias;
+                        entity.Ca = caE.Name;
+                    }
+                }
+                if (!string.IsNullOrEmpty(entity.CaLamViecId))
+                {
+                    var calamviecE = dbContext.Categories.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)ECategory.CaLamViec) && m.Id.Equals(entity.CaLamViecId)).FirstOrDefault();
+                    if (calamviecE != null)
+                    {
+                        entity.CaLamViecAlias = calamviecE.Alias;
+                        entity.CaLamViec = calamviecE.Name;
+                    }
+                }
+                if (!string.IsNullOrEmpty(entity.CongDoanId))
+                {
+                    var congdoanE = dbContext.Categories.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)ECategory.CongDoan) && m.Id.Equals(entity.CongDoanId)).FirstOrDefault();
+                    if (congdoanE != null)
+                    {
+                        entity.CongDoanCode = congdoanE.Code;
+                        entity.CongDoanAlias = congdoanE.Alias;
+                        entity.CongDoanName = congdoanE.Name;
+                        //entity.CongDoanNoiDung = congdoanE.Content;
+                    }
+                }
+                if (!string.IsNullOrEmpty(entity.XeCoGioiMayId))
+                {
+                    var xecogioimayE = dbContext.Categories.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)ECategory.XeCoGioivsMayMoc) && m.Id.Equals(entity.XeCoGioiMayId)).FirstOrDefault();
+                    if (xecogioimayE != null)
+                    {
+                        entity.XeCoGioiMayCode = xecogioimayE.Code;
+                        entity.XeCoGioiMayAlias = xecogioimayE.Alias;
+                        entity.XeCoGioiMayName = xecogioimayE.Name;
+                    }
+                }
+                if (!string.IsNullOrEmpty(entity.ProductId))
+                {
+                    var productE = dbContext.Categories.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)ECategory.NVLvsBTPvsTP) && m.Id.Equals(entity.ProductId)).FirstOrDefault();
+                    if (productE != null)
+                    {
+                        entity.ProductAlias = productE.Alias;
+                        entity.ProductName = productE.Name;
+                    }
+                }
+                if (!string.IsNullOrEmpty(entity.EmployeeId))
+                {
+                    var employeeE = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(entity.EmployeeId)).FirstOrDefault();
+                    if (employeeE != null)
+                    {
+                        entity.EmployeeAlias = employeeE.AliasFullName;
+                        entity.Employee = employeeE.FullName;
+                    }
+                }
+
+                entity.PhieuInCa = Utility.NoPhieuInCa(entity.Date, entity.XeCoGioiMayCode);
+
+                #endregion
+
+                if (string.IsNullOrEmpty(entity.Id))
+                {
+                    await dbContext.FactoryVanHanhs.InsertOneAsync(entity);
+                }
+                else
+                {
+                    var filter = Builders<FactoryVanHanh>.Filter.Eq(m => m.Id, entity.Id);
+                    var update = Builders<FactoryVanHanh>.Update
+                        .Set(m => m.Year, entity.Year)
+                        .Set(m => m.Month, entity.Month)
+                        .Set(m => m.Week, entity.Week)
+                        .Set(m => m.Day, entity.Day)
+                        .Set(m => m.Date, entity.Date)
+                        .Set(m => m.Ca, entity.Ca)
+                        .Set(m => m.CaId, entity.CaId)
+                        .Set(m => m.CaAlias, entity.CaAlias)
+                        .Set(m => m.CongDoanId, entity.CongDoanId)
+                        .Set(m => m.CongDoanCode, entity.CongDoanCode)
+                        .Set(m => m.CongDoanName, entity.CongDoanName)
+                        .Set(m => m.CongDoanAlias, entity.CongDoanAlias)
+                        .Set(m => m.CongDoanNoiDung, entity.CongDoanNoiDung)
+                        .Set(m => m.LOT, entity.LOT)
+                        .Set(m => m.XeCoGioiMayId, entity.XeCoGioiMayId)
+                        .Set(m => m.XeCoGioiMayCode, entity.XeCoGioiMayCode)
+                        .Set(m => m.XeCoGioiMayName, entity.XeCoGioiMayName)
+                        .Set(m => m.XeCoGioiMayAlias, entity.XeCoGioiMayAlias)
+                        .Set(m => m.ProductId, entity.ProductId)
+                        .Set(m => m.ProductName, entity.ProductName)
+                        .Set(m => m.ProductAlias, entity.ProductAlias)
+                        .Set(m => m.ProductType, entity.ProductType)
+                        .Set(m => m.EmployeeId, entity.EmployeeId)
+                        .Set(m => m.Employee, entity.Employee)
+                        .Set(m => m.EmployeeAlias, entity.EmployeeAlias)
+                        .Set(m => m.CaLamViec, entity.CaLamViec)
+                        .Set(m => m.CaLamViecId, entity.CaLamViecId)
+                        .Set(m => m.CaLamViecAlias, entity.CaLamViecAlias)
+                        .Set(m => m.Start, entity.Start)
+                        .Set(m => m.End, entity.End)
+                        .Set(m => m.ThoiGianBTTQ, entity.ThoiGianBTTQ)
+                        .Set(m => m.ThoiGianXeHu, entity.ThoiGianXeHu)
+                        .Set(m => m.ThoiGianNghi, entity.ThoiGianNghi)
+                        .Set(m => m.ThoiGianCVKhac, entity.ThoiGianCVKhac)
+                        .Set(m => m.ThoiGianLamViec, entity.ThoiGianLamViec)
+                        .Set(m => m.SoLuongThucHien, entity.SoLuongThucHien)
+                        .Set(m => m.Dau, entity.Dau)
+                        .Set(m => m.Nhot10, entity.Nhot10)
+                        .Set(m => m.Nhot50, entity.Nhot50)
+                        .Set(m => m.Nhot90, entity.Nhot90)
+                        .Set(m => m.Nhot140, entity.Nhot140)
+                        .Set(m => m.NguyenNhan, entity.NguyenNhan)
+                        .Set(m => m.PhieuInCa, entity.PhieuInCa)
+                        .Set(m => m.ModifiedOn, entity.ModifiedOn)
+                        .Set(m => m.ModifiedBy, entity.ModifiedBy);
+                    dbContext.FactoryVanHanhs.UpdateOne(filter, update);
+                }
+
+                #region Activities
+                string s = JsonConvert.SerializeObject(entity);
+                var activity = new TrackingUser
+                {
+                    UserId = User.Identity.Name,
+                    Function = Constants.Collection.FactoryVanHanh,
+                    Action = Constants.Action.Create,
+                    Value = s,
+                    Content = Constants.Action.Create,
+                };
+                await dbContext.TrackingUsers.InsertOneAsync(activity);
+                #endregion
+
+                return Json(new { result = true, source = "data", message = "Thành công" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { result = false, source = "data", id = string.Empty, message = ex.Message });
+            }
+        }
+
+        [Route(Constants.LinkFactory.ReportVanHanh)]
+        public async Task<IActionResult> ReportVanHanh(string xm, DateTime? from, DateTime? to, /*int? page, int? size,*/ string sortField, string sort)
+        {
+            //#region Filter
+            //var builder = Builders<FactoryVanHanh>.Filter;
+            //var filter = builder.Eq(m => m.Enable, true);
+            //filter = filter & !builder.Eq(m => m.XeCoGioiMayAlias, null) & !builder.Eq(m => m.XeCoGioiMayAlias, string.Empty);
+            //if (!String.IsNullOrEmpty(xm))
+            //{
+            //    filter = filter & builder.Regex(m => m.XeCoGioiMayAlias, xm);
+            //}
+            //DateTime date = DateTime.Now;
+            //var firstDayOfMonth = new DateTime(date.Year, date.Month, 1);
+            //var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
+            //if (!from.HasValue)
+            //{
+            //    from = firstDayOfMonth;
+            //}
+            //if (!to.HasValue)
+            //{
+            //    to = lastDayOfMonth;
+            //}
+            //filter = filter & builder.Gte(m => m.Date, from.Value);
+            //filter = filter & builder.Lte(m => m.Date, to.Value);
+            //#endregion
+
+            //#region Sort
+            //var sortBuilder = Builders<FactoryVanHanh>.Sort.Descending(m => m.Date).Descending(m => m.UpdatedOn).Ascending(m => m.XeCoGioiMay);
+            //#endregion
+
+            //#region Selectlist
+            //var vehicles = await dbContext.FactoryMotorVehicles.Find(m => m.Enable.Equals(true)).ToListAsync();
+            //#endregion
+
+            //var viewModel = new VanHanhViewModel
+            //{
+            //    List = await dbContext.FactoryVanHanhs.Find(filter).Sort(sortBuilder).ToListAsync(),
+            //    Vehicles = vehicles,
+            //    from = from,
+            //    to = to
+            //};
+
+            return View();
+        }
+
+        //[HttpPost]
+        //[Route(Constants.LinkFactory.VanHanh + "/" + Constants.LinkFactory.Edit)]
+        //public async Task<IActionResult> EditVanHanh(FactoryVanHanh entity)
+        //{
+        //    #region Authorization
+        //    var login = User.Identity.Name;
+        //    var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+        //    bool right = Utility.IsRight(login, "vanhanh", (int)ERights.Edit);
+
+        //    // sys account override
+        //    if (loginUserName == Constants.System.account)
+        //    {
+        //        right = true;
+        //    }
+
+        //    if (!right)
+        //    {
+        //        return RedirectToAction("AccessDenied", "Account");
+        //    }
+        //    #endregion
+
+        //    try
+        //    {
+        //        var now = DateTime.Now;
+        //        entity.UpdatedBy = login;
+        //        entity.UpdatedOn = now;
+        //        entity.Year = entity.Date.Year;
+        //        entity.Month = entity.Date.Month;
+        //        entity.Week = Utility.GetIso8601WeekOfYear(entity.Date);
+        //        entity.Day = entity.Date.Day;
+        //        var entityProduct = dbContext.FactoryProducts.Find(m => m.Id.Equals(entity.ProductId)).FirstOrDefault();
+        //        entity.XeCoGioiMay = entityProduct.Name;
+
+        //        var builderUpdate = Builders<FactoryVanHanh>.Filter;
+        //        var filterUpdate = builderUpdate.Eq(m => m.Id, Utility.AliasConvert(entity.Id));
+        //        var update = Builders<FactoryVanHanh>.Update
+        //            .Set(m => m.Year, entity.Year)
+        //            .Set(m => m.Month, entity.Month)
+        //            .Set(m => m.Week, entity.Week)
+        //            .Set(m => m.Day, entity.Day)
+        //            .Set(m => m.Date, entity.Date)
+        //            .Set(m => m.Ca, entity.Ca)
+        //            .Set(m => m.MangCongViec, entity.MangCongViec)
+        //            .Set(m => m.CongDoan, entity.CongDoan)
+        //            .Set(m => m.LOT, entity.LOT)
+        //            .Set(m => m.XeCoGioiMay, entity.XeCoGioiMay)
+        //            .Set(m => m.ProductId, entity.ProductId)
+        //            .Set(m => m.NVLTP, entity.NVLTP)
+        //            .Set(m => m.SLNhanCong, entity.SLNhanCong)
+        //            .Set(m => m.Start, entity.Start)
+        //            .Set(m => m.End, entity.End)
+        //            .Set(m => m.ThoiGianBTTQ, entity.ThoiGianBTTQ)
+        //            .Set(m => m.ThoiGianXeHu, entity.ThoiGianXeHu)
+        //            .Set(m => m.ThoiGianNghi, entity.ThoiGianNghi)
+        //            .Set(m => m.ThoiGianCVKhac, entity.ThoiGianCVKhac)
+        //            .Set(m => m.ThoiGianDayMoBat, entity.ThoiGianDayMoBat)
+        //            .Set(m => m.ThoiGianBocHang, entity.ThoiGianBocHang)
+        //            .Set(m => m.ThoiGianLamViec, entity.ThoiGianLamViec)
+        //            .Set(m => m.SoLuongThucHien, entity.SoLuongThucHien)
+        //            .Set(m => m.SoLuongDongGoi, entity.SoLuongDongGoi)
+        //            .Set(m => m.SoLuongBocHang, entity.SoLuongBocHang)
+        //            .Set(m => m.Dau, entity.Dau)
+        //            .Set(m => m.Nhot10, entity.Nhot10)
+        //            .Set(m => m.Nhot50, entity.Nhot50)
+        //            .Set(m => m.NguyenNhan, entity.NguyenNhan)
+        //            .Set(m => m.TongThoiGianBocHang, entity.TongThoiGianBocHang)
+        //            .Set(m => m.TongThoiGianDongGoi, entity.TongThoiGianDongGoi)
+        //            .Set(m => m.TongThoiGianCVKhac, entity.TongThoiGianCVKhac)
+        //            .Set(m => m.TongThoiGianDayMoBat, entity.TongThoiGianDayMoBat);
+        //         await dbContext.FactoryVanHanhs.UpdateOneAsync(filterUpdate, update);
+
+        //        #region Activities
+        //        string s = JsonConvert.SerializeObject(entity);
+        //        var activity = new TrackingUser
+        //        {
+        //            UserId = login,
+        //            Function = Constants.Collection.FactoryVanHanh,
+        //            Action = Constants.Action.Edit,
+        //            Value = s,
+        //            Content = Constants.Action.Edit,
+        //        };
+        //        dbContext.TrackingUsers.InsertOne(activity);
+        //        #endregion
+
+        //        return Json(new { result = true, source = "edit", message = "Thành công" });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return Json(new { result = false, source = "edit", id = string.Empty, message = ex.Message });
+        //    }
+        //}
+
+        [Route(Constants.LinkFactory.XCG + "/" + Constants.ActionLink.Report)]
+        public async Task<IActionResult> ReportXCG(string xm, string cv, string cd, DateTime? from, DateTime? to, /*int? page, int? size,*/ string sortField, string sort)
+        {
+            //#region Filter
+            //var builder = Builders<FactoryVanHanh>.Filter;
+            //var filter = builder.Eq(m => m.Enable, true);
+            //filter = filter & !builder.Eq(m => m.XeCoGioiMayAlias, null) & !builder.Eq(m => m.XeCoGioiMayAlias, string.Empty);
+            //if (!String.IsNullOrEmpty(cv))
+            //{
+            //    filter = filter & builder.Regex(m => m.MangCongViecAlias, cv);
+            //}
+            //if (!String.IsNullOrEmpty(cd))
+            //{
+            //    filter = filter & builder.Regex(m => m.CongDoanAlias, cd);
+            //}
+            //if (!String.IsNullOrEmpty(xm))
+            //{
+            //    filter = filter & builder.Regex(m => m.XeCoGioiMayAlias, xm);
+            //}
+
+            //DateTime date = DateTime.Now;
+            //var firstDayOfMonth = new DateTime(date.Year, date.Month, 1);
+            //var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
+
+            //if (!from.HasValue)
+            //{
+            //    from = firstDayOfMonth;
+            //}
+            //if (!to.HasValue)
+            //{
+            //    to = lastDayOfMonth;
+            //}
+            //filter = filter & builder.Gte(m => m.Date, from.Value);
+            //filter = filter & builder.Lte(m => m.Date, to.Value);
+            //#endregion
+
+            //#region Sort
+            //var sortBuilder = Builders<FactoryVanHanh>.Sort.Descending(m => m.Date).Descending(m => m.UpdatedOn).Ascending(m=>m.XeCoGioiMay);
+            //#endregion
+
+            //#region Selectlist
+            //var works = await dbContext.FactoryWorks.Find(m => m.Enable.Equals(true)).ToListAsync();
+            //var stages = await dbContext.FactoryStages.Find(m => m.Enable.Equals(true)).ToListAsync();
+            //var vehicles = await dbContext.FactoryMotorVehicles.Find(m => m.Enable.Equals(true)).ToListAsync();
+            //#endregion
+
+            //var viewModel = new VanHanhViewModel
+            //{
+            //    List = await dbContext.FactoryVanHanhs.Find(filter).Sort(sortBuilder).ToListAsync(),
+            //    Works = works,
+            //    Stages = stages,
+            //    Vehicles = vehicles,
+            //    from = from,
+            //    to = to
+            //};
+
+            return View();
+        }
+
+        [Route(Constants.LinkFactory.ReportDG)]
+        public async Task<IActionResult> ReportDG(string tp, DateTime? from, DateTime? to, /*int? page, int? size,*/ string sortField, string sort)
+        {
+            //#region Filter
+            //var builder = Builders<FactoryVanHanh>.Filter;
+            //var filter = builder.Eq(m => m.Enable, true);
+            //filter = filter & !builder.Eq(m => m.NVLTP, null) & !builder.Eq(m => m.NVLTP, string.Empty);
+            //if (!String.IsNullOrEmpty(tp))
+            //{
+            //    filter = filter & builder.Regex(m => m.NVLTPAlias, tp);
+            //}
+            //DateTime date = DateTime.Now;
+            //var firstDayOfMonth = new DateTime(date.Year, date.Month, 1);
+            //var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
+            //if (!from.HasValue)
+            //{
+            //    from = firstDayOfMonth;
+            //}
+            //if (!to.HasValue)
+            //{
+            //    to = lastDayOfMonth;
+            //}
+            //filter = filter & builder.Gte(m => m.Date, from.Value);
+            //filter = filter & builder.Lte(m => m.Date, to.Value);
+            //#endregion
+
+            //#region Sort
+            //var sortBuilder = Builders<FactoryVanHanh>.Sort.Descending(m => m.Date).Descending(m => m.UpdatedOn).Ascending(m => m.NVLTP);
+            //#endregion
+
+            //#region Selectlist
+            //var products = await dbContext.FactoryProducts.Find(m => m.Enable.Equals(true)).ToListAsync();
+            //#endregion
+
+            //var viewModel = new VanHanhViewModel
+            //{
+            //    List = await dbContext.FactoryVanHanhs.Find(filter).Sort(sortBuilder).ToListAsync(),
+            //    Products = products,
+            //    from = from,
+            //    to = to
+            //};
+
+            //return View(viewModel);
+            return View();
+        }
+
+        [Route(Constants.LinkFactory.ReportBH)]
+        public async Task<IActionResult> ReportBH(string tp, DateTime? from, DateTime? to, /*int? page, int? size,*/ string sortField, string sort)
+        {
+            //#region Filter
+            //var builder = Builders<FactoryVanHanh>.Filter;
+            //var filter = builder.Eq(m => m.Enable, true);
+            //filter = filter & !builder.Eq(m => m.NVLTP, null) & !builder.Eq(m => m.NVLTP, string.Empty);
+            //if (!String.IsNullOrEmpty(tp))
+            //{
+            //    filter = filter & builder.Regex(m => m.NVLTPAlias, tp);
+            //}
+            //DateTime date = DateTime.Now;
+            //var firstDayOfMonth = new DateTime(date.Year, date.Month, 1);
+            //var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
+            //if (!from.HasValue)
+            //{
+            //    from = firstDayOfMonth;
+            //}
+            //if (!to.HasValue)
+            //{
+            //    to = lastDayOfMonth;
+            //}
+            //filter = filter & builder.Gte(m => m.Date, from.Value);
+            //filter = filter & builder.Lte(m => m.Date, to.Value);
+            //#endregion
+
+            //#region Sort
+            //var sortBuilder = Builders<FactoryVanHanh>.Sort.Descending(m => m.Date).Descending(m => m.UpdatedOn).Ascending(m => m.NVLTP);
+            //#endregion
+
+            //#region Selectlist
+            //var products = await dbContext.FactoryProducts.Find(m => m.Enable.Equals(true)).ToListAsync();
+            //#endregion
+
+            //var viewModel = new VanHanhViewModel
+            //{
+            //    List = await dbContext.FactoryVanHanhs.Find(filter).Sort(sortBuilder).ToListAsync(),
+            //    Products = products,
+            //    from = from,
+            //    to = to
+            //};
+
+            return View();
+        }
+
+        #endregion
+
+        #region TON SX
         [Route(Constants.LinkFactory.TonSx)]
         public async Task<IActionResult> TonSx(string nvl, string lot, DateTime? from, DateTime? to, int? page, int? size, string sortField, string sort)
         {
@@ -189,7 +822,7 @@ namespace erp.Controllers
             bool right = Utility.IsRight(login, "tonsanxuat", (int)ERights.Add);
 
             bool roleTaiNhap = Utility.IsRight(login, "ton-san-xuat-tai-nhap", (int)ERights.Add);
-            
+
 
             // sys account override
             if (loginUserName == Constants.System.account)
@@ -414,615 +1047,52 @@ namespace erp.Controllers
         }
         #endregion
 
-        #region VAN HANH
-        [Route(Constants.LinkFactory.VanHanh)]
-        public async Task<IActionResult> VanHanh(string ca, string calamviec, string cv, string cd, string xm, string lot, string phieuinca, string nvl, DateTime? from, DateTime? to, int? page, int? size, string sortField, string sort)
-        {
-            #region Login Information
-            LoginInit("van-hanh", (int)ERights.View);
-            if (!(bool)ViewData[Constants.ActionViews.IsLogin])
-            {
-                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                return RedirectToAction(Constants.ActionViews.Login, Constants.Controllers.Account);
-            }
-            if (!(bool)ViewData[Constants.ActionViews.IsRight])
-            {
-                return RedirectToAction("Index", "Home");
-            }
-            #endregion
-
-            var linkCurrent = string.Empty;
-
-            //if (!page.HasValue)
-            //{
-            //    page = 1;
-            //}
-            //if (!size.HasValue)
-            //{
-            //    size = 10;
-            //}
-            //if (!from.HasValue)
-            //{
-            //    from = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1).AddMonths(-4); ;
-            //}
-            //if (!to.HasValue)
-            //{
-            //    to = from.Value.AddMonths(1).AddDays(-1);
-            //}
-
-            #region Filter
-            var builder = Builders<FactoryVanHanh>.Filter;
-            var filter = builder.Eq(m => m.Enable, true);
-            if (!String.IsNullOrEmpty(ca))
-            {
-                filter = filter & builder.Regex(m => m.CaAlias, ca);
-            }
-            if (!String.IsNullOrEmpty(calamviec))
-            {
-                filter = filter & builder.Eq(m => m.CaLamViec, calamviec);
-            }
-            if (!String.IsNullOrEmpty(cv))
-            {
-                filter = filter & builder.Regex(m => m.MangCongViecAlias, cv);
-            }
-            if (!String.IsNullOrEmpty(cd))
-            {
-                filter = filter & builder.Regex(m => m.CongDoanAlias, cd);
-            }
-            if (!String.IsNullOrEmpty(xm))
-            {
-                filter = filter & builder.Eq(m => m.XeCoGioiMayAlias, xm);
-            }
-            if (!String.IsNullOrEmpty(lot))
-            {
-                filter = filter & builder.Regex(m => m.LOT, new BsonRegularExpression(Utility.AliasConvert(lot.ToLower()), "i"));
-            }
-            if (!String.IsNullOrEmpty(phieuinca))
-            {
-                filter = filter & builder.Regex(m => m.PhieuInCa, new BsonRegularExpression(Utility.AliasConvert(phieuinca.ToLower()), "i"));
-            }
-            if (!String.IsNullOrEmpty(nvl))
-            {
-                filter = filter & builder.Regex(m => m.NVLTPAlias, nvl);
-            }
-            if (from.HasValue)
-            {
-                filter = filter & builder.Gte(m => m.Date, from.Value);
-            }
-            if (to.HasValue)
-            {
-                filter = filter & builder.Lte(m => m.Date, to.Value);
-            }
-            #endregion
-
-            #region Sort
-            var sortBuilder = Builders<FactoryVanHanh>.Sort.Descending(m => m.Date).Descending(m => m.CreatedOn);
-            #endregion
-
-            #region Selectlist
-            var works = await dbContext.FactoryWorks.Find(m => m.Enable.Equals(true)).ToListAsync();
-            var stages = await dbContext.FactoryStages.Find(m => m.Enable.Equals(true)).ToListAsync();
-            var vehicles = await dbContext.FactoryMotorVehicles.Find(m => m.Enable.Equals(true)).ToListAsync();
-            var products = await dbContext.FactoryProducts.Find(m => m.Enable.Equals(true)).ToListAsync();
-            #endregion
-
-            var records = await dbContext.FactoryVanHanhs.CountDocumentsAsync(filter);
-            var pages = (int)Math.Ceiling(records / (double)size);
-            if (page > pages)
-            {
-                page = 1;
-            }
-
-            var viewModel = new VanHanhViewModel
-            {
-                FactoryVanHanhs = await dbContext.FactoryVanHanhs.Find(filter).Skip((page - 1) * size).Limit(size).Sort(sortBuilder).ToListAsync(),
-                Works = works,
-                Stages = stages,
-                Vehicles = vehicles,
-                Products = products,
-                Records = (int)records,
-                Pages = pages,
-                Tu = from,
-                Den = to
-            };
-
-            return View(viewModel);
-        }
-
-        [Route(Constants.LinkFactory.ReportXCG)]
-        public async Task<IActionResult> ReportXCG(string xm, string cv, string cd, DateTime? from, DateTime? to, /*int? page, int? size,*/ string sortField, string sort)
-        {
-            #region Filter
-            var builder = Builders<FactoryVanHanh>.Filter;
-            var filter = builder.Eq(m => m.Enable, true);
-            filter = filter & !builder.Eq(m => m.XeCoGioiMayAlias, null) & !builder.Eq(m => m.XeCoGioiMayAlias, string.Empty);
-            if (!String.IsNullOrEmpty(cv))
-            {
-                filter = filter & builder.Regex(m => m.MangCongViecAlias, cv);
-            }
-            if (!String.IsNullOrEmpty(cd))
-            {
-                filter = filter & builder.Regex(m => m.CongDoanAlias, cd);
-            }
-            if (!String.IsNullOrEmpty(xm))
-            {
-                filter = filter & builder.Regex(m => m.XeCoGioiMayAlias, xm);
-            }
-
-            DateTime date = DateTime.Now;
-            var firstDayOfMonth = new DateTime(date.Year, date.Month, 1);
-            var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
-
-            if (!from.HasValue)
-            {
-                from = firstDayOfMonth;
-            }
-            if (!to.HasValue)
-            {
-                to = lastDayOfMonth;
-            }
-            filter = filter & builder.Gte(m => m.Date, from.Value);
-            filter = filter & builder.Lte(m => m.Date, to.Value);
-            #endregion
-
-            #region Sort
-            var sortBuilder = Builders<FactoryVanHanh>.Sort.Descending(m => m.Date).Descending(m => m.UpdatedOn).Ascending(m=>m.XeCoGioiMay);
-            #endregion
-
-            #region Selectlist
-            var works = await dbContext.FactoryWorks.Find(m => m.Enable.Equals(true)).ToListAsync();
-            var stages = await dbContext.FactoryStages.Find(m => m.Enable.Equals(true)).ToListAsync();
-            var vehicles = await dbContext.FactoryMotorVehicles.Find(m => m.Enable.Equals(true)).ToListAsync();
-            #endregion
-
-            var viewModel = new VanHanhViewModel
-            {
-                List = await dbContext.FactoryVanHanhs.Find(filter).Sort(sortBuilder).ToListAsync(),
-                Works = works,
-                Stages = stages,
-                Vehicles = vehicles,
-                from = from,
-                to = to
-            };
-
-            return View(viewModel);
-        }
-
-        [Route(Constants.LinkFactory.ReportDG)]
-        public async Task<IActionResult> ReportDG(string tp, DateTime? from, DateTime? to, /*int? page, int? size,*/ string sortField, string sort)
-        {
-            #region Filter
-            var builder = Builders<FactoryVanHanh>.Filter;
-            var filter = builder.Eq(m => m.Enable, true);
-            filter = filter & !builder.Eq(m => m.NVLTP, null) & !builder.Eq(m => m.NVLTP, string.Empty);
-            if (!String.IsNullOrEmpty(tp))
-            {
-                filter = filter & builder.Regex(m => m.NVLTPAlias, tp);
-            }
-            DateTime date = DateTime.Now;
-            var firstDayOfMonth = new DateTime(date.Year, date.Month, 1);
-            var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
-            if (!from.HasValue)
-            {
-                from = firstDayOfMonth;
-            }
-            if (!to.HasValue)
-            {
-                to = lastDayOfMonth;
-            }
-            filter = filter & builder.Gte(m => m.Date, from.Value);
-            filter = filter & builder.Lte(m => m.Date, to.Value);
-            #endregion
-
-            #region Sort
-            var sortBuilder = Builders<FactoryVanHanh>.Sort.Descending(m => m.Date).Descending(m => m.UpdatedOn).Ascending(m => m.NVLTP);
-            #endregion
-
-            #region Selectlist
-            var products = await dbContext.FactoryProducts.Find(m => m.Enable.Equals(true)).ToListAsync();
-            #endregion
-
-            var viewModel = new VanHanhViewModel
-            {
-                List = await dbContext.FactoryVanHanhs.Find(filter).Sort(sortBuilder).ToListAsync(),
-                Products = products,
-                from = from,
-                to = to
-            };
-
-            return View(viewModel);
-        }
-
-        [Route(Constants.LinkFactory.ReportBH)]
-        public async Task<IActionResult> ReportBH(string tp, DateTime? from, DateTime? to, /*int? page, int? size,*/ string sortField, string sort)
-        {
-            #region Filter
-            var builder = Builders<FactoryVanHanh>.Filter;
-            var filter = builder.Eq(m => m.Enable, true);
-            filter = filter & !builder.Eq(m => m.NVLTP, null) & !builder.Eq(m => m.NVLTP, string.Empty);
-            if (!String.IsNullOrEmpty(tp))
-            {
-                filter = filter & builder.Regex(m => m.NVLTPAlias, tp);
-            }
-            DateTime date = DateTime.Now;
-            var firstDayOfMonth = new DateTime(date.Year, date.Month, 1);
-            var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
-            if (!from.HasValue)
-            {
-                from = firstDayOfMonth;
-            }
-            if (!to.HasValue)
-            {
-                to = lastDayOfMonth;
-            }
-            filter = filter & builder.Gte(m => m.Date, from.Value);
-            filter = filter & builder.Lte(m => m.Date, to.Value);
-            #endregion
-
-            #region Sort
-            var sortBuilder = Builders<FactoryVanHanh>.Sort.Descending(m => m.Date).Descending(m => m.UpdatedOn).Ascending(m => m.NVLTP);
-            #endregion
-
-            #region Selectlist
-            var products = await dbContext.FactoryProducts.Find(m => m.Enable.Equals(true)).ToListAsync();
-            #endregion
-
-            var viewModel = new VanHanhViewModel
-            {
-                List = await dbContext.FactoryVanHanhs.Find(filter).Sort(sortBuilder).ToListAsync(),
-                Products = products,
-                from = from,
-                to = to
-            };
-
-            return View(viewModel);
-        }
-
-        [Route(Constants.LinkFactory.ReportVanHanh)]
-        public async Task<IActionResult> ReportVanHanh(string xm, DateTime? from, DateTime? to, /*int? page, int? size,*/ string sortField, string sort)
-        {
-            #region Filter
-            var builder = Builders<FactoryVanHanh>.Filter;
-            var filter = builder.Eq(m => m.Enable, true);
-            filter = filter & !builder.Eq(m => m.XeCoGioiMayAlias, null) & !builder.Eq(m => m.XeCoGioiMayAlias, string.Empty);
-            if (!String.IsNullOrEmpty(xm))
-            {
-                filter = filter & builder.Regex(m => m.XeCoGioiMayAlias, xm);
-            }
-            DateTime date = DateTime.Now;
-            var firstDayOfMonth = new DateTime(date.Year, date.Month, 1);
-            var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
-            if (!from.HasValue)
-            {
-                from = firstDayOfMonth;
-            }
-            if (!to.HasValue)
-            {
-                to = lastDayOfMonth;
-            }
-            filter = filter & builder.Gte(m => m.Date, from.Value);
-            filter = filter & builder.Lte(m => m.Date, to.Value);
-            #endregion
-
-            #region Sort
-            var sortBuilder = Builders<FactoryVanHanh>.Sort.Descending(m => m.Date).Descending(m => m.UpdatedOn).Ascending(m => m.XeCoGioiMay);
-            #endregion
-
-            #region Selectlist
-            var vehicles = await dbContext.FactoryMotorVehicles.Find(m => m.Enable.Equals(true)).ToListAsync();
-            #endregion
-
-            var viewModel = new VanHanhViewModel
-            {
-                List = await dbContext.FactoryVanHanhs.Find(filter).Sort(sortBuilder).ToListAsync(),
-                Vehicles = vehicles,
-                from = from,
-                to = to
-            };
-
-            return View(viewModel);
-        }
-
-        [Route(Constants.LinkFactory.VanHanh + "/" + Constants.LinkFactory.Create)]
-        public async Task<IActionResult> CreateVanHanh()
-        {
-            #region Authorization
-            var login = User.Identity.Name;
-            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
-            bool right = Utility.IsRight(login, "vanhanh", (int)ERights.Add);
-
-            // sys account override
-            if (loginUserName == Constants.System.account)
-            {
-                right = true;
-            }
-
-            if (!right)
-            {
-                return RedirectToAction("AccessDenied", "Account");
-            }
-            #endregion
-
-            #region Selectlist
-            var works = await dbContext.FactoryWorks.Find(m => m.Enable.Equals(true)).ToListAsync();
-            var stages = await dbContext.FactoryStages.Find(m => m.Enable.Equals(true)).ToListAsync();
-            var vehicles = await dbContext.FactoryMotorVehicles.Find(m => m.Enable.Equals(true)).ToListAsync();
-            var products = await dbContext.FactoryProducts.Find(m => m.Enable.Equals(true)).ToListAsync();
-            #endregion
-
-            var viewModel = new VanHanhDataViewModel
-            {
-                Works = works,
-                Stages = stages,
-                Vehicles = vehicles,
-                Products = products,
-            };
-            return View(viewModel);
-        }
-
-        [HttpPost]
-        [Route(Constants.LinkFactory.VanHanh + "/" + Constants.LinkFactory.Create)]
-        public async Task<IActionResult> CreateVanHanh(FactoryVanHanh entity)
-        {
-            #region Authorization
-            var login = User.Identity.Name;
-            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
-            bool right = Utility.IsRight(login, "vanhanh", (int)ERights.Add);
-
-            // sys account override
-            if (loginUserName == Constants.System.account)
-            {
-                right = true;
-            }
-
-            if (!right)
-            {
-                return RedirectToAction("AccessDenied", "Account");
-            }
-            #endregion
-
-            try
-            {
-                var now = DateTime.Now;
-                entity.CreatedBy = login;
-                entity.UpdatedBy = login;
-                entity.CheckedBy = login;
-                entity.ApprovedBy = login;
-                if (!string.IsNullOrEmpty(entity.ProductId))
-                {
-                    var entityProduct = dbContext.FactoryProducts.Find(m => m.Id.Equals(entity.ProductId)).FirstOrDefault();
-                    if (entityProduct != null)
-                    {
-                        entity.NVLTP = entityProduct.Name;
-                        entity.NVLTPAlias = entityProduct.Alias;
-                    }
-                }
-                entity.Year = entity.Date.Year;
-                entity.Month = entity.Date.Month;
-                entity.Week = Utility.GetIso8601WeekOfYear(entity.Date);
-                entity.Day = entity.Date.Day;
-
-                entity.CaAlias = Utility.AliasConvert(entity.Ca);
-                entity.MangCongViecAlias = Utility.AliasConvert(entity.MangCongViec);
-                entity.CongDoanAlias = Utility.AliasConvert(entity.CongDoan);
-                entity.XeCoGioiMayAlias = Utility.AliasConvert(entity.XeCoGioiMay);
-
-                entity.PhieuInCa = Utility.NoPhieuInCa(entity.Date, entity.XeCoGioiMayAlias);
-
-                await dbContext.FactoryVanHanhs.InsertOneAsync(entity);
-
-                #region Activities
-                string s = JsonConvert.SerializeObject(entity);
-                var activity = new TrackingUser
-                {
-                    UserId = login,
-                    Function = Constants.Collection.FactoryVanHanh,
-                    Action = Constants.Action.Create,
-                    Value = s,
-                    Content = Constants.Action.Create,
-                };
-                await dbContext.TrackingUsers.InsertOneAsync(activity);
-                #endregion
-
-                return Json(new { result = true, source = "create", message = "Thành công" });
-            }
-            catch (Exception ex)
-            {
-                return Json(new { result = false, source = "create", id = string.Empty, message = ex.Message });
-            }
-        }
-
-        [Route(Constants.LinkFactory.VanHanh + "/" + Constants.LinkFactory.Edit)]
-        public async Task<IActionResult> EditVanHanh(string id)
-        {
-            #region Authorization
-            var login = User.Identity.Name;
-            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
-            bool right = Utility.IsRight(login, "vanhanh", (int)ERights.Edit);
-
-            // sys account override
-            if (loginUserName == Constants.System.account)
-            {
-                right = true;
-            }
-
-            if (!right)
-            {
-                return RedirectToAction("AccessDenied", "Account");
-            }
-            #endregion
-
-            #region Selectlist
-            var works = await dbContext.FactoryWorks.Find(m => m.Enable.Equals(true)).ToListAsync();
-            var stages = await dbContext.FactoryStages.Find(m => m.Enable.Equals(true)).ToListAsync();
-            var vehicles = await dbContext.FactoryMotorVehicles.Find(m => m.Enable.Equals(true)).ToListAsync();
-            var products = await dbContext.FactoryProducts.Find(m => m.Enable.Equals(true)).ToListAsync();
-            #endregion
-
-            var entity = dbContext.FactoryVanHanhs.Find(m => m.Id.Equals(id)).FirstOrDefault();
-            var viewModel = new VanHanhDataViewModel
-            {
-                Entity = entity,
-                Works = works,
-                Stages = stages,
-                Vehicles = vehicles,
-                Products = products
-            };
-            return View(viewModel);
-        }
-
-        [HttpPost]
-        [Route(Constants.LinkFactory.VanHanh + "/" + Constants.LinkFactory.Edit)]
-        public async Task<IActionResult> EditVanHanh(FactoryVanHanh entity)
-        {
-            #region Authorization
-            var login = User.Identity.Name;
-            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
-            bool right = Utility.IsRight(login, "vanhanh", (int)ERights.Edit);
-
-            // sys account override
-            if (loginUserName == Constants.System.account)
-            {
-                right = true;
-            }
-
-            if (!right)
-            {
-                return RedirectToAction("AccessDenied", "Account");
-            }
-            #endregion
-
-            try
-            {
-                var now = DateTime.Now;
-                entity.UpdatedBy = login;
-                entity.UpdatedOn = now;
-                entity.Year = entity.Date.Year;
-                entity.Month = entity.Date.Month;
-                entity.Week = Utility.GetIso8601WeekOfYear(entity.Date);
-                entity.Day = entity.Date.Day;
-                var entityProduct = dbContext.FactoryProducts.Find(m => m.Id.Equals(entity.ProductId)).FirstOrDefault();
-                entity.XeCoGioiMay = entityProduct.Name;
-
-                var builderUpdate = Builders<FactoryVanHanh>.Filter;
-                var filterUpdate = builderUpdate.Eq(m => m.Id, Utility.AliasConvert(entity.Id));
-                var update = Builders<FactoryVanHanh>.Update
-                    .Set(m => m.Year, entity.Year)
-                    .Set(m => m.Month, entity.Month)
-                    .Set(m => m.Week, entity.Week)
-                    .Set(m => m.Day, entity.Day)
-                    .Set(m => m.Date, entity.Date)
-                    .Set(m => m.Ca, entity.Ca)
-                    .Set(m => m.MangCongViec, entity.MangCongViec)
-                    .Set(m => m.CongDoan, entity.CongDoan)
-                    .Set(m => m.LOT, entity.LOT)
-                    .Set(m => m.XeCoGioiMay, entity.XeCoGioiMay)
-                    .Set(m => m.ProductId, entity.ProductId)
-                    .Set(m => m.NVLTP, entity.NVLTP)
-                    .Set(m => m.SLNhanCong, entity.SLNhanCong)
-                    .Set(m => m.Start, entity.Start)
-                    .Set(m => m.End, entity.End)
-                    .Set(m => m.ThoiGianBTTQ, entity.ThoiGianBTTQ)
-                    .Set(m => m.ThoiGianXeHu, entity.ThoiGianXeHu)
-                    .Set(m => m.ThoiGianNghi, entity.ThoiGianNghi)
-                    .Set(m => m.ThoiGianCVKhac, entity.ThoiGianCVKhac)
-                    .Set(m => m.ThoiGianDayMoBat, entity.ThoiGianDayMoBat)
-                    .Set(m => m.ThoiGianBocHang, entity.ThoiGianBocHang)
-                    .Set(m => m.ThoiGianLamViec, entity.ThoiGianLamViec)
-                    .Set(m => m.SoLuongThucHien, entity.SoLuongThucHien)
-                    .Set(m => m.SoLuongDongGoi, entity.SoLuongDongGoi)
-                    .Set(m => m.SoLuongBocHang, entity.SoLuongBocHang)
-                    .Set(m => m.Dau, entity.Dau)
-                    .Set(m => m.Nhot10, entity.Nhot10)
-                    .Set(m => m.Nhot50, entity.Nhot50)
-                    .Set(m => m.NguyenNhan, entity.NguyenNhan)
-                    .Set(m => m.TongThoiGianBocHang, entity.TongThoiGianBocHang)
-                    .Set(m => m.TongThoiGianDongGoi, entity.TongThoiGianDongGoi)
-                    .Set(m => m.TongThoiGianCVKhac, entity.TongThoiGianCVKhac)
-                    .Set(m => m.TongThoiGianDayMoBat, entity.TongThoiGianDayMoBat);
-                 await dbContext.FactoryVanHanhs.UpdateOneAsync(filterUpdate, update);
-
-                #region Activities
-                string s = JsonConvert.SerializeObject(entity);
-                var activity = new TrackingUser
-                {
-                    UserId = login,
-                    Function = Constants.Collection.FactoryVanHanh,
-                    Action = Constants.Action.Edit,
-                    Value = s,
-                    Content = Constants.Action.Edit,
-                };
-                dbContext.TrackingUsers.InsertOne(activity);
-                #endregion
-
-                return Json(new { result = true, source = "edit", message = "Thành công" });
-            }
-            catch (Exception ex)
-            {
-                return Json(new { result = false, source = "edit", id = string.Empty, message = ex.Message });
-            }
-        }
-        #endregion
-
         #region PHIEU IN CA
         [AllowAnonymous]
-        [Route(Constants.LinkFactory.PhieuInCa)]
-        public async Task<IActionResult> PhieuInCa(string phieuinca, string xe, DateTime? ngay)
+        [Route(Constants.LinkFactory.VanHanh + "/" + Constants.LinkFactory.PhieuInCa)]
+        public async Task<IActionResult> PhieuInCa(string Phieu, string Xm, string Thang)
         {
             #region Selectlist
-            var vehicles = await dbContext.FactoryMotorVehicles.Find(m => m.Enable.Equals(true)).ToListAsync();
+            var vehicles = await dbContext.Categories.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)ECategory.XeCoGioivsMayMoc) && !string.IsNullOrEmpty(m.Code)).ToListAsync();
+            var monthYears = Utility.DllMonths();
             #endregion
-
-            var viewModel = new PhieuInCaViewModel
-            {
-                Vehicles = vehicles
-            };
-            if (String.IsNullOrEmpty(xe) && String.IsNullOrEmpty(phieuinca))
-            {
-                // Get lastest phieuinca
-                var lastestCode = dbContext.FactoryVanHanhs.Find(m=>m.Enable.Equals(true)).SortByDescending(m=>m.PhieuInCa).FirstOrDefault();
-                if (lastestCode != null)
-                {
-                    viewModel.VanHanhs = await dbContext.FactoryVanHanhs.Find(m => m.PhieuInCa.Equals(lastestCode.PhieuInCa)).ToListAsync();
-                    viewModel.NhaThau = await dbContext.FactoryNhaThaus.Find(m => m.XeAlias.Equals(lastestCode.XeCoGioiMayAlias)).FirstOrDefaultAsync();
-                    viewModel.phieuinca = lastestCode.PhieuInCa;
-                    viewModel.ngay = lastestCode.Date;
-                }
-                
-                return View(viewModel);
-            }
 
             #region Filter
             var builder = Builders<FactoryVanHanh>.Filter;
             var filter = builder.Eq(m => m.Enable, true);
-            if (!String.IsNullOrEmpty(phieuinca))
+            if (!string.IsNullOrEmpty(Phieu))
             {
-                filter = filter & builder.Regex(m => m.PhieuInCa, phieuinca);
-                // because each month reset. Get lastest code
-                var ls = await dbContext.FactoryVanHanhs.Find(filter).ToListAsync();
-                if (ls != null && ls.Count > 0)
-                {
-                    var lastCode = ls.OrderByDescending(m => m.PhieuInCa).FirstOrDefault();
-                    viewModel.VanHanhs = await dbContext.FactoryVanHanhs.Find(m => m.PhieuInCa.Equals(lastCode.PhieuInCa)).ToListAsync();
-                    viewModel.NhaThau = await dbContext.FactoryNhaThaus.Find(m => m.XeAlias.Equals(lastCode.XeCoGioiMayAlias)).FirstOrDefaultAsync();
-                    viewModel.phieuinca = lastCode.PhieuInCa;
-                }
+                filter &= builder.Regex(m => m.PhieuInCa, Phieu);
             }
             else
             {
-                if (!ngay.HasValue)
-                {
-                    ngay = DateTime.Now.Date;
-                }
-                filter = filter & builder.Eq(m => m.Date, ngay.Value.Date);
-                filter = filter & builder.Eq(m => m.XeCoGioiMayAlias, xe);
-                viewModel.VanHanhs = await dbContext.FactoryVanHanhs.Find(filter).ToListAsync();
-                viewModel.NhaThau = await dbContext.FactoryNhaThaus.Find(m => m.XeAlias.Equals(xe)).FirstOrDefaultAsync();
-                viewModel.ngay = ngay;
-                viewModel.xe = xe;
+                filter &= builder.Eq(m => m.XeCoGioiMayCode, Xm);
             }
             #endregion
 
+            var vanhanhs = dbContext.FactoryVanHanhs.Find(filter).ToList();
+            var vehicleDisplay = new CategoryDisplay();
+            Xm = string.IsNullOrEmpty(Xm) ? vanhanhs.First().XeCoGioiMayCode : Xm;
+            var vehicle = dbContext.Categories.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)ECategory.XeCoGioivsMayMoc) && m.Code.Equals(Xm)).FirstOrDefault();
+            if (vehicle != null)
+            {
+                var nhaThau = dbContext.Categories.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)ECategory.NhaThau)).FirstOrDefault(); //????
+                vehicleDisplay = new CategoryDisplay()
+                {
+                    Category = vehicle,
+                    NhaThauName = nhaThau != null ? nhaThau.Name : string.Empty
+                };
+            }
+            var viewModel = new VanHanhViewModel()
+            {
+                FactoryVanHanhs = vanhanhs,
+                Vehicle = vehicleDisplay,
+                Vehicles = vehicles,
+                MonthYears = monthYears,
+                Phieu = Phieu,
+                Thang = Thang,
+                Xm = Xm
+            };
             return View(viewModel);
         }
         #endregion
@@ -1197,7 +1267,7 @@ namespace erp.Controllers
                 entity.UpdatedBy = login;
                 entity.CheckedBy = login;
                 entity.ApprovedBy = login;
-                
+
                 entity.Week = entity.Week;
                 // Convert Week to Year/Month
                 //entity.Year = entity.Date.Year;
@@ -1398,7 +1468,7 @@ namespace erp.Controllers
         }
         #endregion 
 
-        #region Sub data
+        #region Sub data, File
         [HttpPost]
         [Route(Constants.LinkFactory.NewProduct)]
         public IActionResult NewProduct(FactoryProduct entity)

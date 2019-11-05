@@ -1,303 +1,126 @@
 ﻿@using System.Globalization;
 @using Common.Utilities;
+@using Common.Enums;
 @using ViewModels
 @model SettingViewModel
-
 @{
-    
+
 }
 
-@Html.ValidationSummary()
+<div class="main-container">
+    <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="/">Trang chủ</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">
+                            <a href="/setting">Cài đặt thông số</a>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </nav>
 
-<div class="card">
-    <div class="card-header">
-        <a data-target="#new-setting" data-toggle="collapse" aria-expanded="false" aria-controls="new-setting" style="cursor:pointer">
-            <i class="icon-add-to-list mr-1"></i> Create new setting
-        </a>
-    </div>
-    <div class="collapse" id="new-setting">
-        <div class="card-body">
-            <form method="post" action="/st/cai-dat/tao-moi" class="data-form" enctype="multipart/form-data">
-                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <section class="space-sm">
+        <div class="container">
+            <div class="row mb-3">
+                <div class="col-12">
+                    <a href="/setting/data" class="btn btn-success">
+                        <i class="icon-add-to-list mr-1"></i> Tạo mới
+                    </a>
+                </div>
+            </div>
 
-                <div class="form-group">
-                    <label asp-for="Setting.Type" class="control-label"></label>
-                    <select asp-for="Setting.Type" class="form-control">
-                        <option value="hcns">Hành chính nhân sự</option>
-                        <option value="factory">Nhà máy</option>
-                        <option value="system">System</option>
-                    </select>
+            <!-- FILTER  & SORTER -->
+            <form method="get" action="/setting" id="form-main">
+                <input asp-for="PageCurrent" type="hidden" value="1" />
+                <input asp-for="SapXep" class="sap-xep" type="hidden" />
+                <input asp-for="ThuTu" class="thu-tu" type="hidden" />
+                <div class="row">
+                    <div class="col-12">
+                        <span class="badge badge-primary">Tìm kiếm:</span>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label asp-for="Setting.Key" class="control-label"></label>
-                    <input asp-for="Setting.Key" class="form-control" />
-                    <span asp-validation-for="Setting.Key" class="text-danger"></span>
+                <div class="row mb-3">
+                    <div class="col-md-4 col-sm-6 col-xs-12">
+                        <span class="mr-2 text-muted text-small text-nowrap">Loại:</span>
+                        <select asp-for="Type" class="form-control form-control-lg js-select2-basic-single" onchange="formSubmit();">
+                            <option value="">Tất cả</option>
+                            @foreach (var item in Html.GetEnumSelectList<EData>())
+                            {
+                                <option value="@item.Value">@item.Text</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-4 col-sm-6 col-xs-12">
+                        <span class="mr-2 text-muted text-small text-nowrap">Từ khóa:</span>
+                        <input asp-for="Key" class="form-control form-control-lg" onfocusout="formSubmit();" />
+                        <small>[Enter], [Tab] hoặc rê chuột ra để tìm kiếm</small>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label asp-for="Setting.Value" class="control-label"></label>
-                    <input asp-for="Setting.Value" class="form-control" />
-                    <span asp-validation-for="Setting.Value" class="text-danger"></span>
-                </div>
-                <div class="form-group">
-                    <label asp-for="Setting.Title" class="control-label"></label>
-                    <input asp-for="Setting.Title" class="form-control" />
-                    <span asp-validation-for="Setting.Title" class="text-danger"></span>
-                </div>
-                <div class="form-group">
-                    <label asp-for="Setting.Content" class="control-label"></label>
-                    <textarea asp-for="Setting.Content" class="form-control"></textarea>
-                    <span asp-validation-for="Setting.Content" class="text-danger"></span>
-                </div>
-                <div class="form-group">
-                    <label asp-for="Setting.NoDelete" class="control-label"></label>
-                    <select asp-for="Setting.NoDelete" class="form-control">
-                        <option value="false">Xóa được</option>
-                        <option value="true">Không xóa được</option>
-                    </select>
-                </div>
-                <div class="d-flex align-items-center">
-                    <div class="mr-2">
-                        <a href="#new-setting" class="btn btn-outline-primaryd" data-toggle="collapse" aria-expanded="true" aria-controls="new-setting">Hủy</a>
-                        <button type="submit" class="btn btn-outline-primary"><i class="icon-save"></i>&nbsp;Tạo</button>
+
+                <div class="row">
+                    <div class="col-12">
+                        <span>Sắp xếp theo: </span>
+                        @{
+                            var sortFlagKeyDesc = "badge-default";
+                            if (Model.SapXep == "key" && Model.ThuTu == "desc")
+                            {
+                                sortFlagKeyDesc = "badge-success";
+                            }
+                            var sortFlagKeyAsc = "badge-default";
+                            if (Model.SapXep == "key" && Model.ThuTu == "asc")
+                            {
+                                sortFlagKeyAsc = "badge-success";
+                            }
+                            <a href="javascript:;" data-sortby="ton" data-sortorder="asc" class="btn-sort">
+                                <span class="badge @sortFlagKeyAsc"><i class="fas fa-sort-alpha-up"></i> Từ khóa tăng dần</span>
+                            </a>
+                            <a href="javascript:;" data-sortby="ton" data-sortorder="desc" class="btn-sort">
+                                <span class="badge @sortFlagKeyDesc"><i class="fas fa-sort-alpha-down"></i> Từ khóa giảm dần</span>
+                            </a>
+                        }
                     </div>
                 </div>
             </form>
+
+            <div class="row">
+                <div class="col-12">Tìm thấy <span class="badge badge-info">@Model.Records</span> kết quả.</div>
+                <div class="col-12 table-responsive mb-1">
+                    <table class="table table-sm table-striped table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th scope="col"></th>
+                                <th scope="col">Type</th>
+                                <th scope="col">Key</th>
+                                <th scope="col">Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.Settings)
+                            {
+                            <tr>
+                                <td>
+                                    <a href="/setting/data?Id=@item.Id"><i class="fas fa-edit"></i></a>
+                                </td>
+                                <td>@Constants.DataType(item.Type)</td>
+                                <td>@item.Key</td>
+                                <td>@Constants.Truncate(item.Value, 100)</td>
+                            </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
-    </div>
+    </section>
 </div>
-
-<div class="card card-sm">
-    <div class="card-header bg-secondary d-flex justify-content-between align-items-center">
-        <div>
-            <h6>Settings</h6>
-        </div>
-        <form class="d-flex align-items-center">
-            <span class="mr-2 text-muted text-small text-nowrap">Sắp xếp:</span>
-            <select class="custom-select">
-                <option value="old-new" selected>Mới nhất</option>
-                <option value="status">Trạng thái</option>
-            </select>
-        </form>
-    </div>
-
-</div>
-
-@if (Model.Settings.Count > 0)
-{
-<div class="row">
-    <div class="col">
-        <table class="table table-responsive table-borderless table-hover align-items-center un-display-block">
-            <thead>
-                <tr>
-                    <th scope="col"></th>
-                    <th scope="col">Key</th>
-                    <th scope="col">Value</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var entity in Model.Settings)
-                {
-                    <tr class="bg-white">
-                        <td>
-                            <div class="dropdown">
-                                <button class="btn btn-sm btn-outline-primary dropdown-toggle dropdown-toggle-no-arrow" type="button" id="dropdownMenuButton-1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    <i class="icon-dots-three-horizontal"></i>
-                                </button>
-                                <div class="dropdown-menu dropdown-menu-sm" aria-labelledby="dropdownMenuButton">
-                                    <a class="dropdown-item edit-item" href="javascript:;" data-toggle="modal" data-target="#editItemModal" data-id="@entity.Id">Chỉnh sửa</a>
-                                    <div class="dropdown-divider"></div>
-                                    <a class="dropdown-item disable-item" href="javascript:;" data-toggle="modal" data-target="#disableItemModal" data-id="@entity.Id">Vô hiệu</a>
-                                    <div class="dropdown-divider"></div>
-                                    <a class="dropdown-item delete-item" href="javascript:;" data-toggle="modal" data-target="#deleteItemModal" data-id="@entity.Id">Xóa</a>
-                                </div>
-                            </div>
-                        </td>
-                        <td>@entity.Key</td>
-                        <td>@entity.Value</td>
-
-                    </tr>
-                    <tr class="table-divider"></tr>
-                }
-                <tr><td colspan="3"><h6>Disable list</h6></td></tr>
-                @foreach (var disable in Model.SettingsDisable)
-                {
-                    <tr class="bg-white">
-                        <td>
-                            <a class="dropdown-item active-item badge badge-success" href="javascript:;" data-toggle="modal" data-target="#activeItemModal" data-id="@disable.Id">Active</a>
-                        </td>
-                        <td>@disable.Key</td>
-                        <td>@disable.Value</td>
-                    </tr>
-                    <tr class="table-divider"></tr>
-                }
-            </tbody>
-        </table>
-    </div>
-    <script id="tmplDataItem" type="text/x-jsrender">
-        <input type="hidden" name="Setting.Id" value="{{:id}}" class="form-control" />
-        <input type="hidden" name="Setting.Timestamp" value="{{:timestamp}}" class="form-control" />
-        <div class="form-group">
-            <label class="control-label">Loại</label>
-            <input type="hidden" class="hide-type" value="{{:type}}"/>
-            <select name="Setting.Type" class="form-control setting-type">
-                <option value="hcns">Hành chính nhân sự</option>
-                <option value="factory">Nhà máy</option>
-                <option value="system">System</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label class="control-label">Khóa chính</label>
-            <input name="Setting.Key" value="{{:key}}" class="form-control" readonly />
-        </div>
-        <div class="form-group">
-            <label class="control-label">Giá trị</label>
-            <input name="Setting.Value" value="{{:value}}" class="form-control" />
-        </div>
-        <div class="form-group">
-            <label class="control-label">Tiêu đề</label>
-            <input name="Setting.Title" value="{{:title}}" class="form-control" />
-        </div>
-        <div class="form-group">
-            <label class="control-label">Mô tả</label>
-            <textarea name="Setting.Content" class="form-control js-auto-size">{{:content}}</textarea>
-        </div>
-        <div class="form-group">
-            <label class="control-label">Dữ liệu</label>
-            <input type="hidden" class="hide-no-delete" value="{{:noDelete}}" />
-            <select name="Setting.NoDelete" class="form-control setting-no-delete">
-                <option value="false">Xóa được</option>
-                <option value="true">Không xóa được</option>
-            </select>
-        </div>
-    </script>
-
-    <script id="tmplDataItemPlainText" type="text/x-jsrender">
-        <input type="hidden" name="Setting.Id" value="{{:id}}" class="form-control" />
-        <input type="hidden" name="Setting.Timestamp" value="{{:timestamp}}" class="form-control" />
-        <div class="form-group">
-            <label class="control-label">Loại</label>
-            <select name="Setting.Type" value="{{:type}}" class="form-control-plaintext">
-
-            </select>
-        </div>
-        <div class="form-group">
-            <label class="control-label">Khóa chính</label>
-            <input name="Setting.Key" value="{{:key}}" class="form-control-plaintext" readonly />
-        </div>
-        <div class="form-group">
-            <label class="control-label">Giá trị</label>
-            <input name="Setting.Value" value="{{:value}}" class="form-control-plaintext" />
-        </div>
-        <div class="form-group">
-            <label class="control-label">Tiêu đề</label>
-            <input name="Setting.Title" value="{{:title}}" class="form-control-plaintext" />
-        </div>
-        <div class="form-group">
-            <label class="control-label">Mô tả</label>
-            <textarea name="Setting.Content" value="{{:content}}" class="form-control-plaintext"></textarea>
-        </div>
-    </script>
-
-    <div class="modal fade" id="editItemModal" tabindex="-1" role="dialog" aria-labelledby="editItemModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="editItemModalLabel">Chỉnh sửa</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <form class="data-form" method="post" action="/st/cai-dat/chinh-sua/" enctype="multipart/form-data">
-                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                    <span class="result"></span>
-                    <div class="modal-body data-item-edit">
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy & Đóng</button>
-                        <button type="submit" class="btn btn-primary"><i class="icon-save"></i>&nbsp;Lưu</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="disableItemModal" tabindex="-1" role="dialog" aria-labelledby="disableItemModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="disableItemModalLabel">Bạn chắc không sử dụng cài đặt này?</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Đóng">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <form class="data-form" method="post" action="/st/cai-dat/disable/" enctype="multipart/form-data">
-                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                    <div class="modal-body data-item-disable">
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy & Đóng</button>
-                        <button type="submit" class="btn btn-primary"><i class="icon-save"></i>&nbsp;Không sử dụng</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="activeItemModal" tabindex="-1" role="dialog" aria-labelledby="activeItemModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="activeItemModalLabel">Bạn chắc khôi phục cài đặt này?</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Đóng">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <form class="data-form" method="post" action="/st/cai-dat/active/" enctype="multipart/form-data">
-                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                    <div class="modal-body data-item-active">
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy & Đóng</button>
-                        <button type="submit" class="btn btn-primary"><i class="icon-save"></i>&nbsp;Khôi phục</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="deleteItemModal" tabindex="-1" role="dialog" aria-labelledby="deleteItemModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="deleteItemModalLabel">Bạn chắc xóa cài đặt này?</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Đóng">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <form class="data-form" method="post" action="/st/cai-dat/xoa/" enctype="multipart/form-data">
-                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                    <div class="modal-body data-item-delete">
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy & Đóng</button>
-                        <button type="submit" class="btn btn-primary"><i class="icon-save"></i>&nbsp;Xóa</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-    <!--end of col-->
-</div>
-    <!--end of row-->
-}
-else
-{
-    <div class="alert alert-light" role="alert">
-        No data.
-    </div>
-}
 
 @section scripts {
-    <script type="text/javascript" src="~/js/setting.js?@DateTime.Now.Ticks"></script>
+    <script type="text/javascript" src="~/js/setting.js?@Constants.VersionJs"></script>
 }
 

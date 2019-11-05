@@ -9,35 +9,35 @@ namespace ViewModels
     {
         public IList<Employee> Employees { get; set; }
 
-        public Employee Employee { get; set; }
+        public IList<Notification> Notifications { get; set; }
 
-        public bool StatusChange { get; set; }
+        public Employee Employee { get; set; }
 
         public Employee EmployeeChance { get; set; }
 
-        public IList<CongTyChiNhanh> CongTyChiNhanhs { get; set; }
+        public IList<Category> CongTyChiNhanhs { get; set; }
 
-        public IList<KhoiChucNang> KhoiChucNangs { get; set; }
+        public IList<Category> KhoiChucNangs { get; set; }
 
-        public IList<PhongBan> PhongBans { get; set; }
+        public IList<Category> PhongBans { get; set; }
 
         public IList<PhongBanBoPhanDisplay> CoCaus { get; set; }
 
-        public IList<BoPhan> BoPhans { get; set; }
+        public IList<Category> BoPhans { get; set; }
 
-        public IList<BoPhan> BoPhanCons { get; set; }
+        public IList<Category> BoPhanCons { get; set; }
 
-        public IList<ChucVu> ChucVus { get; set; }
+        public IList<Category> ChucVus { get; set; }
+
+        public IList<Employee> Managers { get; set; }
 
         public IList<Employee> EmployeesDdl { get; set; }
 
-        public IList<WorkTimeType> WorkTimeTypes { get; set; }
+        public IList<Category> WorkTimeTypes { get; set; }
 
-        public IList<BHYTHospital> Hospitals { get; set; }
+        public IList<Category> Hospitals { get; set; }
 
-        public IList<ContractType> Contracts { get; set; }
-
-        //public IList<WorkTimeType> WorkTimeTypes { get; set; }
+        public IList<Category> Contracts { get; set; }
 
         public IList<NgachLuong> NgachLuongs { get; set; }
 

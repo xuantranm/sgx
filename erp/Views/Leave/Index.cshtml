@@ -5,6 +5,11 @@
 
 @{
     ViewData["title"] = "PHÉP | CÔNG TY TNHH CNSH SÀI GÒN XANH";
+    var currentcrumb = "Phép";
+    if (!Model.IsMe)
+    {
+        currentcrumb = "Phép " + Model.Employee.FullName;
+    }
     double totalLeaveAvailable = 0;
     if (Model.LeaveEmployees != null & Model.LeaveEmployees.Count > 0)
     {
@@ -24,8 +29,11 @@
                         <li class="breadcrumb-item">
                             <a href="/">Trang chủ</a>
                         </li>
+                        <li class="breadcrumb-item">
+                            <a href="/@Constants.LinkLeave.Main/@Constants.LinkLeave.Index">Phép</a>
+                        </li>
                         <li class="breadcrumb-item active" aria-current="page">
-                            Phép
+                            @currentcrumb
                         </li>
                     </ol>
                 </div>
@@ -36,7 +44,7 @@
     <section class="space-sm">
         <div class="container">
             <div class="row">
-                <div class="col-12 col-md-6">
+                <div class="col-md-6 col-sm-12 col-xs-12">
                     <div class="card">
                         <ul class="list-group list-group-flush">
                             <li class="list-group-item">
@@ -49,19 +57,17 @@
                         <div id="info-leave">
                             <div class="card-body">
                                 <div class="row">
-                                    @{
-                                        foreach (var type in Model.Types)
+                                    @foreach (var type in Model.Types)
+                                    {
+                                        var leaveEmployee = Model.LeaveEmployees.Where(m => m.LeaveTypeId.Equals(type.Id)).FirstOrDefault();
+                                        double number = leaveEmployee != null ? leaveEmployee.Number : 0;
+                                        if (number > 0)
                                         {
-                                            var leaveEmployee = Model.LeaveEmployees.Where(m => m.LeaveTypeId.Equals(type.Id)).FirstOrDefault();
-                                            double number = leaveEmployee != null ? leaveEmployee.Number : 0;
-                                            if (number > 0)
-                                            {
-                                                <div class="col-12">
-                                                    <span class="leave-duration badge badge-info">@number</span> ngày -
-                                                    <label>@type.Name</label>
-                                                    <span class="small">@type.Description</span>
-                                                </div>
-                                            }
+                                            <div class="col-12">
+                                                <span class="leave-duration badge badge-info">@number</span> ngày -
+                                                <label>@type.Name</label>
+                                                <span class="small">@type.Description</span>
+                                            </div>
                                         }
                                     }
                                 </div>
@@ -69,22 +75,34 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-12 col-md-6">
+                <div class="col-md-6 col-sm-12 col-xs-12">
                     @if (Model.RightRequest)
                     {
-                        <div class="row mb-2">
-                            <div class="col-12">
-                                <a href="/@Constants.LinkLeave.Main/@Constants.LinkLeave.HelpLeave" class="btn btn-block btn-outline-info" data-toggle="tooltip" title="Bấm vô tạo nghỉ phép cho nhân viên khác.">
-                                    <i class="fas fa-calculator"></i> TẠO PHÉP NHÂN VIÊN
-                                </a>
+                        <form method="get" action="/@Constants.LinkLeave.Main/@Constants.LinkLeave.Index" id="form-main">
+                            <div class="row mb-2">
+                                <div class="form-group col-12">
+                                    <label class="col-form-label">Tạo phép cho</label>
+                                    <select asp-for="Leave.EmployeeId" id="ddlId" name="id" class="form-control form-control-lg js-select2-basic-single ddlEmployeeId">
+                                        <option value="">Chọn</option>
+                                        @foreach (var item in Model.Employees)
+                                        {
+                                            string displayTitle = string.Empty;
+                                            if (!string.IsNullOrEmpty(item.Email))
+                                            {
+                                                displayTitle += "- " + item.Email + "";
+                                            }
+                                            <option value="@item.Id">@item.FullName @displayTitle</option>
+                                        }
+                                    </select>
+                                </div>
                             </div>
-                        </div>
+                        </form>
                     }
                     @if (Model.Approver)
                     {
                         <div class="row mb-2">
                             <div class="col-12">
-                                <a href="/@Constants.LinkLeave.Main/@Constants.LinkLeave.Approvement" class="btn btn-block btn-outline-info" data-toggle="tooltip" title="Quản lý phép của nhân viên và lịch sử duyệt phép.">
+                                <a href="/@Constants.LinkLeave.Main/@Constants.LinkLeave.Approvement" class="btn btn-block btn-lg btn-outline-info" data-toggle="tooltip" title="Quản lý phép của nhân viên và lịch sử duyệt phép.">
                                     <i class="fas fa-chalkboard-teacher"></i> DUYỆT PHÉP
                                 </a>
                             </div>
@@ -201,22 +219,22 @@
                                             <input asp-for="Leave.Phone" class="form-control form-control-lg" />
                                             <span asp-validation-for="Leave.Phone" class="text-danger"></span>
                                         </div>
-
                                     </div>
-                                    <div class="form-group row">
-                                        <label asp-for="Leave.ApproverName" class="col-sm-2 col-form-label"></label>
-                                        <div class="col-sm-10">
-                                            <select asp-for="Leave.ApproverId" class="form-control form-control-lg">
-                                                @{
-                                                    foreach (var item in Model.Approves)
+                                    @if (Model.IsMe)
+                                    {
+                                        <div class="form-group row">
+                                            <label asp-for="Leave.ApproverName" class="col-sm-2 col-form-label"></label>
+                                            <div class="col-sm-10">
+                                                <select asp-for="Leave.ApproverId" class="form-control form-control-lg">
+                                                    @foreach (var item in Model.Approves)
                                                     {
                                                         <option value="@item.Id">@item.Name</option>
                                                     }
-                                                }
-                                            </select>
+                                                </select>
+                                            </div>
                                         </div>
+                                    }
 
-                                    </div>
                                     <div class="form-group row">
                                         <label class="col-sm-2 col-form-label"><span class="leave-duration badge badge-info">1</span> ngày.</label>
                                         <div class="col-sm-10">
@@ -269,7 +287,6 @@
                                             <a class="media align-items-center" href="#">
                                                 <div class="media-body">
                                                     <span class="text-muted">@leave.TypeName</span>
-                                                    @*<span class="text-muted">@leave.Reason</span>*@
                                                 </div>
                                             </a>
                                         </th>
@@ -284,7 +301,6 @@
                             </tbody>
                         </table>
                     </div>
-                    <!--end of col-->
                 </div>
             }
             else

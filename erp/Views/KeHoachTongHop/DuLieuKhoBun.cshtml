@@ -17,7 +17,7 @@
                 <div class="col">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item">
-                            <a href="/">Trang chủ</a>
+                            <a href="/">PageCurrent chủ</a>
                         </li>
                         <li class="breadcrumb-item">
                             <a href="/@Constants.KeHoachTongHopLink.Main">Kho</a>
@@ -97,7 +97,7 @@
 
                     <!-- FILTER -->
                     <form method="get" action="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoBun" id="form-main">
-                        <input asp-for="Trang" type="hidden" value="1" />
+                        <input asp-for="PageCurrent" type="hidden" value="1" />
                         <input asp-for="SapXep" class="sap-xep" type="hidden" />
                         <input asp-for="ThuTu" class="thu-tu" type="hidden" />
                         <div class="row">
@@ -266,7 +266,7 @@
                                     </thead>
                                     <tbody class="font-14">
                                         @{
-                                            var i = (Model.Trang - 1) * Model.PageSize + 1;
+                                            var i = (Model.PageCurrent - 1) * Model.PageSize + 1;
                                             foreach (var item in Model.KhoBuns)
                                             {
                                                 <tr>
@@ -303,15 +303,15 @@
                                 </table>
                             </div>
 
-                            @if (Model.SoTrang > 1)
+                            @if (Model.PageTotal > 1)
                             {
                                 <div class="col-12">
                                     <form method="get" action="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoBun" id="form-main-paging">
                                         <input asp-for="Tu" type="hidden" id="tu-fage" />
                                         <input asp-for="Den" type="hidden" id="den-fpage" />
                                         <input asp-for="Hang" type="hidden" id="hang-fpage" />
-                                        <input asp-for="TrangThai" type="hidden" id="trangthai-fpage" />
-                                        <input asp-for="Trang" type="hidden" id="trang-fpage" />
+                                        <input asp-for="TrangThai" type="hidden" id="TrangThai-fpage" />
+                                        <input asp-for="PageCurrent" type="hidden" id="PageCurrent-fpage" />
                                         <input asp-for="SapXep" class="sap-xep" type="hidden" />
                                         <input asp-for="ThuTu" class="thu-tu" type="hidden" />
                                         @{
@@ -319,21 +319,21 @@
                                             int previous = 1;
                                             int next = 1;
                                             var disableNext = string.Empty;
-                                            if (Model.Trang == 1)
+                                            if (Model.PageCurrent == 1)
                                             {
                                                 disablePrevious = "disabled";
                                             }
-                                            if (Model.Trang == Model.SoTrang)
+                                            if (Model.PageCurrent == Model.PageTotal)
                                             {
                                                 disableNext = "disabled";
                                             }
-                                            if (Model.Trang > 1)
+                                            if (Model.PageCurrent > 1)
                                             {
-                                                previous = Model.Trang - 1;
+                                                previous = Model.PageCurrent - 1;
                                             }
-                                            if (Model.Trang < Model.SoTrang)
+                                            if (Model.PageCurrent < Model.PageTotal)
                                             {
-                                                next = Model.Trang + 1;
+                                                next = Model.PageCurrent + 1;
                                             }
                                         }
                                         <nav aria-label="Page navigation example">
@@ -345,8 +345,8 @@
                                                     <a class="page-link page-click" data-page="@previous" href="javascript:;" tabindex="-1" alt="Trước"><i class="fas fa-arrow-circle-left"></i></a>
                                                 </li>
                                                 <li class="page-item">
-                                                    <select asp-for="Trang" name="TrangDll" id="TrangDll" class="form-control" style="height:100%">
-                                                        @for (int pageNo = 1; pageNo <= Model.SoTrang; pageNo++)
+                                                    <select asp-for="PageCurrent" name="PageCurrentDll" id="PageCurrentDll" class="form-control" style="height:100%">
+                                                        @for (int pageNo = 1; pageNo <= Model.PageTotal; pageNo++)
                                                         {
                                                             <option value="@pageNo">@pageNo</option>
                                                         }
@@ -356,7 +356,7 @@
                                                     <a class="page-link page-click" data-page="@next" href="javascript:;" alt="Sau"><i class="fas fa-arrow-circle-right"></i></a>
                                                 </li>
                                                 <li class="page-item @disableNext">
-                                                    <a class="page-link page-click" data-page="@Model.SoTrang" href="javascript:;" alt="Cuối"><i class="fas fa-fast-forward"></i></a>
+                                                    <a class="page-link page-click" data-page="@Model.PageTotal" href="javascript:;" alt="Cuối"><i class="fas fa-fast-forward"></i></a>
                                                 </li>
                                             </ul>
                                         </nav>

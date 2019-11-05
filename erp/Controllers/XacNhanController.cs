@@ -1,58 +1,33 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
-using Newtonsoft.Json;
 using Microsoft.Extensions.Configuration;
-using System.Text;
 using Microsoft.AspNetCore.Hosting;
 using System.IO;
 using MongoDB.Driver;
-using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Http;
 using Data;
 using ViewModels;
 using Models;
 using Common.Utilities;
-using NPOI.SS.UserModel;
-using NPOI.HSSF.UserModel;
-using NPOI.XSSF.UserModel;
-using System.Globalization;
 using Microsoft.AspNetCore.Authorization;
-using Services;
 using MimeKit;
-using MimeKit.Text;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Common.Enums;
 using Helpers;
-using MongoDB.Bson;
 
-namespace erp.Controllers
+namespace Controllers
 {
     public class XacNhanController : Controller
     {
         readonly MongoDBContext dbContext = new MongoDBContext();
-        private readonly IDistributedCache _cache;
-        IHostingEnvironment _env;
-
-        private readonly ILogger _logger;
-
+        readonly IHostingEnvironment _env;
         public IConfiguration Configuration { get; }
-        private readonly IEmailSender _emailSender;
-        private readonly ISmsSender _smsSender;
-
-        public XacNhanController(IDistributedCache cache, IConfiguration configuration, IHostingEnvironment env, IEmailSender emailSender,
-            ISmsSender smsSender, ILogger<XacNhanController> logger)
+        public XacNhanController(IConfiguration configuration, 
+            IHostingEnvironment env)
         {
-            _cache = cache;
             Configuration = configuration;
             _env = env;
-            _emailSender = emailSender;
-            _smsSender = smsSender;
-            _logger = logger;
         }
 
         public IActionResult Index()
@@ -69,22 +44,15 @@ namespace erp.Controllers
             };
             var leave = dbContext.Leaves.Find(m => m.Id.Equals(id)).FirstOrDefault();
 
-            #region Extensions
+            #region Extensions: Trainning
             var builderTraining = Builders<Trainning>.Filter;
             var filterTraining = builderTraining.Eq(m => m.Enable, true);
-            filterTraining = filterTraining & builderTraining.Eq(m => m.Type, "anh-van");
+            filterTraining &= builderTraining.Eq(m => m.Type, "anh-van");
             var listTraining = dbContext.Trainnings.Find(filterTraining).Limit(10).SortByDescending(m => m.CreatedOn).ToList();
             viewModel.ListTraining = listTraining;
             #endregion
 
-            if (leave == null)
-            {
-                ViewData["Status"] = Constants.ErrorParameter;
-                viewModel.Error = true;
-                return View(viewModel);
-            }
-
-            if (leave.SecureCode != secure && leave.Status != 0)
+            if (leave == null || (leave.SecureCode != secure && leave.Status != 0))
             {
                 ViewData["Status"] = Constants.ErrorParameter;
                 viewModel.Error = true;
@@ -99,7 +67,6 @@ namespace erp.Controllers
                 .Set(m => m.SecureCode, Helper.HashedPassword(Guid.NewGuid().ToString("N").Substring(0, 12)))
                 .Set(m => m.Status, approve)
                 .Set(m => m.ApprovedBy, leave.ApproverId);
-
             dbContext.Leaves.UpdateOne(filter, update);
             #endregion
 
@@ -122,12 +89,8 @@ namespace erp.Controllers
             }
             #endregion
 
-            #region Tracking everything
-
-            #endregion
-
+            #region Send email to user leave, cc: người duyệt
             var approvement = dbContext.Employees.Find(m => m.Id.Equals(leave.ApproverId)).FirstOrDefault();
-
             // Tự yêu cầu
             bool seftFlag = leave.EmployeeId == leave.CreatedBy ? true : false;
             var employee = dbContext.Employees.Find(m => m.Id.Equals(leave.EmployeeId)).FirstOrDefault();
@@ -136,41 +99,33 @@ namespace erp.Controllers
             {
                 userCreate = dbContext.Employees.Find(m => m.Id.Equals(leave.CreatedBy)).FirstOrDefault();
             }
-
-            #region Send email to user leave, cc: người duyệt
             var requester = employee.FullName;
-            var tos = new List<EmailAddress>();
-            var ccs = new List<EmailAddress>();
-            tos.Add(new EmailAddress { Name = employee.FullName, Address = employee.Email });
-
-            // Send mail to HR: if approve = 1;
-            if (approve == 1)
+            var tos = new List<EmailAddress>
             {
-                var listHrRoles = dbContext.RoleUsers.Find(m => m.Role.Equals(Constants.Rights.NhanSu) && (m.Expired.Equals(null) || m.Expired > DateTime.Now)).ToList();
-                if (listHrRoles != null && listHrRoles.Count > 0)
+                new EmailAddress { Name = employee.FullName, Address = employee.Email }
+            };
+            if (approve == (int)EStatusLeave.Accept)
+            {
+                var hrs = Utility.EmailGet(Constants.Rights.NhanSu, (int)ERights.Edit);
+                if (hrs != null && hrs.Count > 0)
                 {
-                    foreach (var item in listHrRoles)
+                    requester += " , HR";
+                    foreach (var item in hrs)
                     {
-                        if (item.Action == 3)
+                        if (tos.Count(m => m.Address.Equals(item.Address)) == 0)
                         {
-                            var fields = Builders<Employee>.Projection.Include(p => p.Email).Include(p => p.FullName);
-                            var emailEntity = dbContext.Employees.Find(m => m.Id.Equals(item.User)).Project<Employee>(fields).FirstOrDefault();
-                            if (emailEntity != null)
-                            {
-                                tos.Add(new EmailAddress { Name = emailEntity.FullName, Address = emailEntity.Email });
-                            }
+                            tos.Add(item);
                         }
                     }
                 }
-                requester += " , HR";
             }
 
             // cc người tạo dùm
+            var ccs = new List<EmailAddress>();
             if (!seftFlag)
             {
                 ccs.Add(new EmailAddress { Name = userCreate.FullName, Address = userCreate.Email });
             }
-
             // cc người duyệt
             ccs.Add(new EmailAddress { Name = approvement.FullName, Address = approvement.Email });
 
@@ -183,20 +138,6 @@ namespace erp.Controllers
                     + Path.DirectorySeparatorChar.ToString()
                     + "LeaveApprove.html";
 
-            #region parameters
-            //{0} : Subject
-            //{1} : Nguoi gui yeu cau  - Nguoi tao yeu cau (dùm) 
-            //{2} : Tình trạng (đồng ý/hủy)
-            //{3} : Nguoi duyet
-            //{4} : Email
-            //{5} : Chức vụ
-            //{6} : Date (từ, đến, số ngày)
-            //{7} : Lý do
-            //{8} : Loại phép
-            //{9} : Số điện thoại liên hệ
-            //{10}: Link chi tiết
-            //{11}: Website
-            #endregion
             var status = approve == 1 ? "Đồng ý" : "Không đồng ý";
             var dateRequest = leave.From.ToString("dd/MM/yyyy HH:mm") + " - " + leave.To.ToString("dd/MM/yyyy HH:mm");
 
@@ -266,31 +207,23 @@ namespace erp.Controllers
             {
                 Approve = approve
             };
-            var entity = dbContext.EmployeeWorkTimeLogs.Find(m => m.Id.Equals(id)).FirstOrDefault();
-
-            #region Extensions
+            #region Extensions: Trainning
             var builderTraining = Builders<Trainning>.Filter;
             var filterTraining = builderTraining.Eq(m => m.Enable, true);
-            filterTraining = filterTraining & builderTraining.Eq(m => m.Type, "anh-van");
+            filterTraining &= builderTraining.Eq(m => m.Type, "anh-van");
             var listTraining = dbContext.Trainnings.Find(filterTraining).Limit(10).SortByDescending(m => m.CreatedOn).ToList();
             viewModel.ListTraining = listTraining;
             #endregion
 
-            if (entity == null)
+            var timelog = dbContext.EmployeeWorkTimeLogs.Find(m => m.Id.Equals(id)).FirstOrDefault();
+            if (timelog == null || (timelog.SecureCode != secure && timelog.Status != 2))
             {
                 ViewData["Status"] = Constants.ErrorParameter;
                 viewModel.Error = true;
                 return View(viewModel);
             }
 
-            if (entity.SecureCode != secure && entity.Status != 2)
-            {
-                ViewData["Status"] = Constants.ErrorParameter;
-                viewModel.Error = true;
-                return View(viewModel);
-            }
-
-            viewModel.EmployeeWorkTimeLog = entity;
+            viewModel.EmployeeWorkTimeLog = timelog;
 
             #region Update status
             var filter = Builders<EmployeeWorkTimeLog>.Filter.Eq(m => m.Id, id);
@@ -303,99 +236,73 @@ namespace erp.Controllers
             #endregion
 
             #region update Summary
-            if (approve == 3)
+            if (approve == (int)EStatusWork.DongY)
             {
-                var monthDate = Utility.EndWorkingMonthByDate(entity.Date);
+                var monthDate = Utility.EndWorkingMonthByDate(timelog.Date);
                 var builderUpdateSum = Builders<EmployeeWorkTimeMonthLog>.Filter;
-                var filterUpdateSum = builderUpdateSum.Eq(m => m.EmployeeId, entity.EmployeeId);
-                filterUpdateSum = filterUpdateSum & builderUpdateSum.Eq(m => m.Year, monthDate.Year);
-                filterUpdateSum = filterUpdateSum & builderUpdateSum.Eq(m => m.Month, monthDate.Month);
+                var filterUpdateSum = builderUpdateSum.Eq(m => m.EmployeeId, timelog.EmployeeId);
+                filterUpdateSum &= builderUpdateSum.Eq(m => m.Year, monthDate.Year);
+                filterUpdateSum &= builderUpdateSum.Eq(m => m.Month, monthDate.Month);
 
                 double dateInc = 0;
                 double worktimeInc = 0;
                 double lateInc = 0;
                 double earlyInc = 0;
-
-                // Update 1 date
-                if (!entity.In.HasValue && !entity.Out.HasValue)
+                if (!timelog.In.HasValue && !timelog.Out.HasValue)
                 {
                     dateInc += 1;
                     worktimeInc += new TimeSpan(8, 0, 0).TotalMilliseconds;
                 }
-                else if (!entity.In.HasValue || !entity.Out.HasValue)
+                else if (!timelog.In.HasValue || !timelog.Out.HasValue)
                 {
                     dateInc += 0.5;
                     worktimeInc += new TimeSpan(4, 0, 0).TotalMilliseconds;
                 }
-
-                if (entity.Late.TotalMilliseconds > 0)
+                if (timelog.Late.TotalMilliseconds > 0)
                 {
-                    worktimeInc += entity.Late.TotalMilliseconds;
-                    lateInc += entity.Late.TotalMilliseconds;
+                    worktimeInc += timelog.Late.TotalMilliseconds;
+                    lateInc += timelog.Late.TotalMilliseconds;
                 }
-                if (entity.Early.TotalMilliseconds > 0)
+                if (timelog.Early.TotalMilliseconds > 0)
                 {
-                    worktimeInc += entity.Early.TotalMilliseconds;
-                    earlyInc += entity.Early.TotalMilliseconds;
+                    worktimeInc += timelog.Early.TotalMilliseconds;
+                    earlyInc += timelog.Early.TotalMilliseconds;
                 }
-
                 var updateSum = Builders<EmployeeWorkTimeMonthLog>.Update
                     .Inc(m => m.Workday, dateInc)
                     .Inc(m => m.WorkTime, worktimeInc)
                     .Inc(m => m.Late, -(lateInc))
                     .Inc(m => m.Early, -(earlyInc))
                     .Set(m => m.LastUpdated, DateTime.Now);
-
                 dbContext.EmployeeWorkTimeMonthLogs.UpdateOne(filterUpdateSum, updateSum);
             }
             #endregion
 
-            #region Tracking everything
-
-            #endregion
-
-            var approvement = dbContext.Employees.Find(m => m.Id.Equals(entity.ConfirmId)).FirstOrDefault();
-            var employee = dbContext.Employees.Find(m => m.Id.Equals(entity.EmployeeId)).FirstOrDefault();
-
             #region Send email to user
+            var approvement = dbContext.Employees.Find(m => m.Id.Equals(timelog.ConfirmId)).FirstOrDefault();
+            var employee = dbContext.Employees.Find(m => m.Id.Equals(timelog.EmployeeId)).FirstOrDefault();
             var requester = employee.FullName;
-            var tos = new List<EmailAddress>();
-            var ccs = new List<EmailAddress>();
-            tos.Add(new EmailAddress { Name = employee.FullName, Address = employee.Email });
-
-            // Send mail to HR: if approve = 3 (dong y);
-            if (approve == 3)
+            var tos = new List<EmailAddress>
             {
-                var listHrRoles = dbContext.RoleUsers.Find(m => m.Role.Equals(Constants.Rights.NhanSu) && (m.Expired.Equals(null) || m.Expired > DateTime.Now)).ToList();
-                if (listHrRoles != null && listHrRoles.Count > 0)
+                new EmailAddress { Name = employee.FullName, Address = employee.Email }
+            };
+            if (approve == (int)EStatusWork.DongY)
+            {
+                var hrs = Utility.EmailGet(Constants.Rights.NhanSu, (int)ERights.Edit);
+                if (hrs != null && hrs.Count > 0)
                 {
-                    foreach (var item in listHrRoles)
+                    requester += " , HR";
+                    foreach(var item in hrs)
                     {
-                        if (item.Action == 3)
+                        if (tos.Count(m => m.Address.Equals(item.Address)) == 0)
                         {
-                            var fields = Builders<Employee>.Projection.Include(p => p.Email).Include(p => p.FullName);
-                            var emailEntity = dbContext.Employees.Find(m => m.Id.Equals(item.User)).Project<Employee>(fields).FirstOrDefault();
-                            if (emailEntity != null)
-                            {
-                                tos.Add(new EmailAddress { Name = emailEntity.FullName, Address = emailEntity.Email });
-                            }
+                            tos.Add(item);
                         }
                     }
                 }
-                requester += " , HR";
             }
 
-            #region UAT
-            //tos = new List<EmailAddress>
-            //            {
-            //                new EmailAddress { Name = "Xuan", Address = "xuan.tm1988@gmail.com" }
-            //            };
-
-            //ccs = new List<EmailAddress>
-            //            {
-            //                new EmailAddress { Name = "Xuan CC", Address = "xuantranm@gmail.com" }
-            //            };
-            #endregion
+            var ccs = new List<EmailAddress>();
 
             var webRoot = Environment.CurrentDirectory;
             var pathToFile = _env.WebRootPath
@@ -406,24 +313,12 @@ namespace erp.Controllers
                     + Path.DirectorySeparatorChar.ToString()
                     + "TimeKeeperConfirm.html";
 
-            #region parameters
-            //{0} : Subject
-            //{1} : Nguoi gui yeu cau  - Nguoi tao yeu cau (dùm) 
-            //{2} : Tình trạng (đồng ý/hủy)
-            //{3} : Nguoi duyet
-            //{4} : Email
-            //{5} : Chức vụ
-            //{6} : Date (từ, đến, số ngày)
-            //{7} : Lý do
-            //{8}: Link chi tiết
-            //{9}: Website
-            #endregion
             var subject = "Xác nhận công.";
             var status = approve == 3 ? "Đồng ý" : "Không duyệt";
-            var inTime = entity.In.HasValue ? entity.In.Value.ToString(@"hh\:mm") : string.Empty;
-            var outTime = entity.Out.HasValue ? entity.Out.Value.ToString(@"hh\:mm") : string.Empty;
-            var lateTime = entity.Late.TotalMilliseconds > 0 ? Math.Round(entity.Late.TotalMinutes, 0).ToString() : "0";
-            var earlyTime = entity.Early.TotalMilliseconds > 0 ? Math.Round(entity.Early.TotalMinutes, 0).ToString() : "0";
+            var inTime = timelog.In.HasValue ? timelog.In.Value.ToString(@"hh\:mm") : string.Empty;
+            var outTime = timelog.Out.HasValue ? timelog.Out.Value.ToString(@"hh\:mm") : string.Empty;
+            var lateTime = timelog.Late.TotalMilliseconds > 0 ? Math.Round(timelog.Late.TotalMinutes, 0).ToString() : "0";
+            var earlyTime = timelog.Early.TotalMilliseconds > 0 ? Math.Round(timelog.Early.TotalMinutes, 0).ToString() : "0";
             var sumTime = string.Empty;
             if (string.IsNullOrEmpty(inTime) && string.IsNullOrEmpty(outTime))
             {
@@ -433,7 +328,7 @@ namespace erp.Controllers
             {
                 sumTime = "0.5 ngày";
             }
-            var minutesMissing = TimeSpan.FromMilliseconds(entity.Late.TotalMilliseconds + entity.Early.TotalMilliseconds).TotalMinutes;
+            var minutesMissing = TimeSpan.FromMilliseconds(timelog.Late.TotalMilliseconds + timelog.Early.TotalMilliseconds).TotalMinutes;
             if (minutesMissing > 0)
             {
                 if (!string.IsNullOrEmpty(sumTime))
@@ -443,7 +338,7 @@ namespace erp.Controllers
                 sumTime += Math.Round(minutesMissing, 0) + " phút";
             }
 
-            var detailTimeKeeping = "Ngày: " + entity.Date.ToString("dd/MM/yyyy") + "; thiếu: " + sumTime;
+            var detailTimeKeeping = "Ngày: " + timelog.Date.ToString("dd/MM/yyyy") + "; thiếu: " + sumTime;
             if (!string.IsNullOrEmpty(inTime))
             {
                 detailTimeKeeping += " | giờ vào: " + inTime + "; trễ: " + lateTime;
@@ -475,8 +370,8 @@ namespace erp.Controllers
                 approvement.Email,
                 approvement.ChucVuName,
                 detailTimeKeeping,
-                entity.Reason,
-                entity.ReasonDetail,
+                timelog.Reason,
+                timelog.ReasonDetail,
                 linkDetail,
                 Constants.System.domain
                 );
@@ -488,7 +383,7 @@ namespace erp.Controllers
                 Subject = subject,
                 BodyContent = messageBody,
                 Type = "xac-nhan-cong",
-                EmployeeId = entity.EmployeeId
+                EmployeeId = timelog.EmployeeId
             };
 
             var scheduleEmail = new ScheduleEmail
@@ -506,6 +401,7 @@ namespace erp.Controllers
             #endregion
 
             ViewData["Status"] = "Cám ơn đã xác nhận, kết quả đang gửi cho người liên quan.";
+
             return View(viewModel);
         }
 
@@ -520,26 +416,26 @@ namespace erp.Controllers
             #region Extensions
             var builderTraining = Builders<Trainning>.Filter;
             var filterTraining = builderTraining.Eq(m => m.Enable, true);
-            filterTraining = filterTraining & builderTraining.Eq(m => m.Type, "anh-van");
+            filterTraining &= builderTraining.Eq(m => m.Type, "anh-van");
             var listTraining = dbContext.Trainnings.Find(filterTraining).Limit(10).SortByDescending(m => m.CreatedOn).ToList();
             viewModel.ListTraining = listTraining;
             #endregion
 
-            var list = dbContext.OvertimeEmployees.Find(m => m.Code.Equals(code) && m.Timestamp.Equals(secure)).ToList();
+            var list = dbContext.OvertimeEmployees.Find(m => m.CodeInt.Equals(code) && m.Secure.Equals(secure)).ToList();
 
             if (list != null && list.Count > 0)
             {
-                var filter = Builders<OvertimeEmployee>.Filter.Eq(m => m.Code, code) & Builders<OvertimeEmployee>.Filter.Eq(m => m.Timestamp, secure);
+                var filter = Builders<OvertimeEmployee>.Filter.Eq(m => m.CodeInt, code) & Builders<OvertimeEmployee>.Filter.Eq(m => m.Secure, secure);
                 var update = Builders<OvertimeEmployee>.Update
-                    .Set(m => m.Timestamp, DateTime.Now.ToString("yyyyMMddHHmmssfff"))
+                    .Set(m => m.Secure, DateTime.Now.ToString("yyyyMMddHHmmssfff"))
                     .Set(m => m.Status, approve)
-                    .Set(m => m.ApprovedOn, DateTime.Now);
+                    .Set(m => m.ModifiedOn, DateTime.Now);
                 dbContext.OvertimeEmployees.UpdateMany(filter, update);
 
                 #region Send mail
                 var overtime = list.First();
                 var date = overtime.Date;
-                var directorE = dbContext.Employees.Find(m => m.Id.Equals(overtime.ApprovedBy)).FirstOrDefault();
+                var directorE = dbContext.Employees.Find(m => m.Id.Equals(overtime.ManagerId)).FirstOrDefault();
                 var genderDE = directorE.Gender == "Nam" ? "Anh" : "Chị";
                 var genderDELower = directorE.Gender == "Nam" ? "anh" : "chị";
                 var phone = string.Empty;
@@ -568,72 +464,75 @@ namespace erp.Controllers
                     //{10}: Website
                     #endregion
 
-                    var securityPosition = dbContext.ChucVus.Find(m => m.Code.Equals("CHUCVU86")).FirstOrDefault();
+                    var securityPosition = dbContext.Categories.Find(m => m.Type.Equals((int)ECategory.ChucVu) && m.Id.Equals("5c88d098d59d56225c4324a8")).FirstOrDefault();
+                    var securityE = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) 
+                                    && m.ChucVu.Equals(securityPosition.Id)).FirstOrDefault();
+                    if (securityE != null)
+                    {
+                        var genderSE = securityE.Gender == "Nam" ? "anh" : "chị";
 
-                    var securityE = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.ChucVu.Equals(securityPosition.Id)).FirstOrDefault();
-                    var genderSE = securityE.Gender == "Nam" ? "anh" : "chị";
+                        var webRoot = Environment.CurrentDirectory;
+                        var pathToFile = _env.WebRootPath
+                                + Path.DirectorySeparatorChar.ToString()
+                                + "Templates"
+                                + Path.DirectorySeparatorChar.ToString()
+                                + "EmailTemplate"
+                                + Path.DirectorySeparatorChar.ToString()
+                                + "OvertimeSecurity.html";
 
-                    var webRoot = Environment.CurrentDirectory;
-                    var pathToFile = _env.WebRootPath
-                            + Path.DirectorySeparatorChar.ToString()
-                            + "Templates"
-                            + Path.DirectorySeparatorChar.ToString()
-                            + "EmailTemplate"
-                            + Path.DirectorySeparatorChar.ToString()
-                            + "OvertimeSecurity.html";
-
-                    var tos = new List<EmailAddress>
+                        var tos = new List<EmailAddress>
                     {
                         new EmailAddress { Name = securityE.FullName, Address = securityE.Email }
                     };
 
-                    var subject = "Kiểm tra Bảng tăng ca ngày " + date.ToString("dd/MM/yyyy");
-                    var title = "Bảng tăng ca ngày " + date.ToString("dd/MM/yyyy");
+                        var subject = "Kiểm tra Bảng tăng ca ngày " + date.ToString("dd/MM/yyyy");
+                        var title = "Bảng tăng ca ngày " + date.ToString("dd/MM/yyyy");
 
-                    var linkDetail = Constants.System.domain + "/" + Constants.LinkTimeKeeper.Main + "/" + Constants.LinkTimeKeeper.Overtime + "?Tu=" + date.ToString("MM-dd-yyyy") + "&Den=" + date.ToString("MM-dd-yyyy");
+                        var linkDetail = Constants.System.domain + "/" + Constants.LinkTimeKeeper.Main + "/" + Constants.LinkTimeKeeper.Overtime + "?Tu=" + date.ToString("MM-dd-yyyy") + "&Den=" + date.ToString("MM-dd-yyyy");
 
-                    var bodyBuilder = new BodyBuilder();
-                    using (StreamReader SourceReader = System.IO.File.OpenText(pathToFile))
-                    {
-                        bodyBuilder.HtmlBody = SourceReader.ReadToEnd();
+                        var bodyBuilder = new BodyBuilder();
+                        using (StreamReader SourceReader = System.IO.File.OpenText(pathToFile))
+                        {
+                            bodyBuilder.HtmlBody = SourceReader.ReadToEnd();
+                        }
+                        string messageBody = string.Format(bodyBuilder.HtmlBody,
+                            subject,
+                            genderSE,
+                            securityE.FullName,
+                            genderDE,
+                            directorE.FullName,
+                            directorE.ChucVuName,
+                            genderDELower,
+                            directorE.Email,
+                            phone,
+                            title,
+                            linkDetail,
+                            Constants.System.domain
+                            );
+
+                        var emailMessage = new EmailMessage()
+                        {
+                            ToAddresses = tos,
+                            Subject = subject,
+                            BodyContent = messageBody,
+                            Type = "overtime-security",
+                            EmployeeId = overtime.Code.ToString()
+                        };
+
+                        var scheduleEmail = new ScheduleEmail
+                        {
+                            Status = (int)EEmailStatus.Schedule,
+                            To = emailMessage.ToAddresses,
+                            CC = emailMessage.CCAddresses,
+                            BCC = emailMessage.BCCAddresses,
+                            Type = emailMessage.Type,
+                            Title = emailMessage.Subject,
+                            Content = emailMessage.BodyContent,
+                            EmployeeId = emailMessage.EmployeeId
+                        };
+
+                        dbContext.ScheduleEmails.InsertOne(scheduleEmail);
                     }
-                    string messageBody = string.Format(bodyBuilder.HtmlBody,
-                        subject,
-                        genderSE,
-                        securityE.FullName,
-                        genderDE,
-                        directorE.FullName,
-                        directorE.ChucVuName,
-                        genderDELower,
-                        directorE.Email,
-                        phone,
-                        title,
-                        linkDetail,
-                        Constants.System.domain
-                        );
-
-                    var emailMessage = new EmailMessage()
-                    {
-                        ToAddresses = tos,
-                        Subject = subject,
-                        BodyContent = messageBody,
-                        Type = "overtime-security",
-                        EmployeeId = overtime.Code.ToString()
-                    };
-
-                    var scheduleEmail = new ScheduleEmail
-                    {
-                        Status = (int)EEmailStatus.Schedule,
-                        To = emailMessage.ToAddresses,
-                        CC = emailMessage.CCAddresses,
-                        BCC = emailMessage.BCCAddresses,
-                        Type = emailMessage.Type,
-                        Title = emailMessage.Subject,
-                        Content = emailMessage.BodyContent,
-                        EmployeeId = emailMessage.EmployeeId
-                    };
-
-                    dbContext.ScheduleEmails.InsertOne(scheduleEmail);
                 }
 
                 // SEND USER
@@ -739,13 +638,13 @@ namespace erp.Controllers
             viewModel.ListTraining = listTraining;
             #endregion
 
-            var list = dbContext.OvertimeEmployees.Find(m => m.Code.Equals(code) && m.Timestamp.Equals(secure)).ToList();
+            var list = dbContext.OvertimeEmployees.Find(m => m.Code.Equals(code) && m.Secure.Equals(secure)).ToList();
 
             if (list != null && list.Count > 0)
             {
-                var filter = Builders<OvertimeEmployee>.Filter.Eq(m => m.Code, code) & Builders<OvertimeEmployee>.Filter.Eq(m => m.Timestamp, secure);
+                var filter = Builders<OvertimeEmployee>.Filter.Eq(m => m.CodeInt, code) & Builders<OvertimeEmployee>.Filter.Eq(m => m.Secure, secure);
                 var update = Builders<OvertimeEmployee>.Update
-                    .Set(m => m.Timestamp, DateTime.Now.ToString("yyyyMMddHHmmssfff"))
+                    .Set(m => m.Secure, DateTime.Now.ToString("yyyyMMddHHmmssfff"))
                     .Set(m => m.Status, approve)
                     .Set(m => m.ApprovedOn, DateTime.Now);
                 dbContext.OvertimeEmployees.UpdateMany(filter, update);

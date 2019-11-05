@@ -23,9 +23,180 @@ namespace Common.Utilities
         {
         }
 
+        public static List<IdName> Approves(Employee account, bool extend, string role, int action)
+        {
+            var approves = new List<IdName>();
+            var today = DateTime.Now.Date;
+
+            if (!string.IsNullOrEmpty(account.ManagerEmployeeId))
+            {
+                var managerE = dbContext.Employees.Find(m => m.Id.Equals(account.ManagerEmployeeId) && m.Enable.Equals(true) && m.Leave.Equals(false)).FirstOrDefault();
+                if (managerE == null)
+                {
+                    var nextManagerE = dbContext.Employees.Find(m => m.ChucVu.Equals(account.ManagerId) && m.Enable.Equals(true) && m.Leave.Equals(false)).FirstOrDefault();
+                    if (nextManagerE != null)
+                    {
+                        approves.Add(new IdName
+                        {
+                            Id = nextManagerE.Id,
+                            Name = nextManagerE.ChucVuName + " - " + nextManagerE.FullName
+                        });
+                    }
+                }
+                else
+                {
+                    approves.Add(new IdName
+                    {
+                        Id = managerE.Id,
+                        Name = managerE.ChucVuName + " - " + managerE.FullName
+                    });
+                }
+            }
+
+            if (extend && !string.IsNullOrEmpty(role) && (approves == null || approves.Count == 0))
+            {
+                var roleE = dbContext.Categories.Find(m => m.Type.Equals((int)ECategory.Role) && m.Alias.Equals(role)).FirstOrDefault();
+                if (roleE != null)
+                {
+                    var rights = dbContext.Rights.Find(m => m.Enable.Equals(true)
+                                    && m.RoleId.Equals(roleE.Id) && m.Action <= action
+                                    && (m.Start == null || m.Start <= today)
+                                    && (m.Expired == null || m.Expired > today)).ToList();
+                    foreach (var item in rights)
+                    {
+                        var accounts = dbContext.Employees.Find(m => (m.ChucVu.Equals(item.ObjectId) || m.Id.Equals(item.ObjectId)) && m.Enable.Equals(true) && m.Leave.Equals(false)).ToList();
+                        if (accounts != null && accounts.Count > 0)
+                        {
+                            foreach (var accountE in accounts)
+                            {
+                                approves.Add(new IdName
+                                {
+                                    Id = accountE.Id,
+                                    Name = accountE.ChucVuName + " - " + accountE.FullName
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+
+            return approves.Distinct().ToList();
+        }
+
+        public static List<IdName> ApproveSystem(string role, int action)
+        {
+            var approves = new List<IdName>();
+            var today = DateTime.Now.Date;
+            var roleE = dbContext.Categories.Find(m => m.Type.Equals((int)ECategory.Role) && m.Alias.Equals(role)).FirstOrDefault();
+            if (roleE != null)
+            {
+                var rights = dbContext.Rights.Find(m => m.Enable.Equals(true)
+                                && m.RoleId.Equals(roleE.Id) && m.Action <= action
+                                && (m.Start == null || m.Start <= today)
+                                && (m.Expired == null || m.Expired > today)).ToList();
+                foreach (var item in rights)
+                {
+                    var accounts = dbContext.Employees.Find(m => (m.ChucVu.Equals(item.ObjectId) || m.Id.Equals(item.ObjectId)) && m.Enable.Equals(true) && m.Leave.Equals(false)).ToList();
+                    if (accounts != null && accounts.Count > 0)
+                    {
+                        foreach (var accountE in accounts)
+                        {
+                            approves.Add(new IdName
+                            {
+                                Id = accountE.Id,
+                                Name = accountE.ChucVuName + " - " + accountE.FullName
+                            });
+                        }
+                    }
+                }
+            }
+           
+            return approves;
+        }
+
+        public static List<Employee> GetManager(Employee account, bool extend, string role, int action)
+        {
+            var approves = new List<Employee>();
+            var today = DateTime.Now.Date;
+
+            if (!string.IsNullOrEmpty(account.ManagerEmployeeId))
+            {
+                var managerE = dbContext.Employees.Find(m => m.Id.Equals(account.ManagerEmployeeId) && m.Enable.Equals(true) && m.Leave.Equals(false)).FirstOrDefault();
+                if (managerE == null)
+                {
+                    var nextManagerE = dbContext.Employees.Find(m => m.ChucVu.Equals(account.ManagerId) && m.Enable.Equals(true) && m.Leave.Equals(false)).FirstOrDefault();
+                    if (nextManagerE != null)
+                    {
+                        approves.Add(nextManagerE);
+                    }
+                }
+                else
+                {
+                    approves.Add(managerE);
+                }
+            }
+
+            if (extend && !string.IsNullOrEmpty(role) && (approves == null || approves.Count == 0))
+            {
+                var roleE = dbContext.Categories.Find(m => m.Type.Equals((int)ECategory.Role) && m.Alias.Equals(role)).FirstOrDefault();
+                if (roleE != null)
+                {
+                    var rights = dbContext.Rights.Find(m => m.Enable.Equals(true)
+                                    && m.RoleId.Equals(roleE.Id) && m.Action <= action
+                                    && (m.Start == null || m.Start <= today)
+                                    && (m.Expired == null || m.Expired > today)).ToList();
+                    foreach (var item in rights)
+                    {
+                        var accounts = dbContext.Employees.Find(m => (m.ChucVu.Equals(item.ObjectId) || m.Id.Equals(item.ObjectId)) && m.Enable.Equals(true) && m.Leave.Equals(false)).ToList();
+                        if (accounts != null && accounts.Count > 0)
+                        {
+                            foreach (var accountE in accounts)
+                            {
+                                approves.Add(accountE);
+                            }
+                        }
+                    }
+                }
+            }
+
+            return approves.Distinct().ToList();
+        }
+
+        public static List<Employee> GetApprove(string role, int action)
+        {
+            var results = new List<Employee>();
+            var today = DateTime.Now.Date;
+            var roleE = dbContext.Categories.Find(m => m.Type.Equals((int)ECategory.Role) && m.Alias.Equals(role)).FirstOrDefault();
+            if (roleE != null)
+            {
+                var rights = dbContext.Rights.Find(m => m.Enable.Equals(true)
+                                && m.RoleId.Equals(roleE.Id) && m.Action <= action
+                                && (m.Start == null || m.Start <= today)
+                                && (m.Expired == null || m.Expired > today)).ToList();
+                foreach (var item in rights)
+                {
+                    var accounts = dbContext.Employees.Find(m => (m.ChucVu.Equals(item.ObjectId) || m.Id.Equals(item.ObjectId)) && m.Enable.Equals(true) && m.Leave.Equals(false)).ToList();
+                    if (accounts != null && accounts.Count > 0)
+                    {
+                        foreach (var accountE in accounts)
+                        {
+                            results.Add(accountE);
+                        }
+                    }
+                }
+            }
+
+            return results;
+        }
+
         private static readonly Random random = new Random((int)DateTime.Now.Ticks);
         private const string Chars = "abcdefghijklmnopqrstuvwxyz0123456789";
         private const string CharsNoO0 = "abcdefghijklmnpqrstuvwxyz123456789";
+
+        public static bool IsInteger(double number)
+        {
+            return (number % 1 == 0);
+        }
 
         /// <summary>
         /// Generates a random string

@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Models
 {
+    // No use, move to Categories
     public class Role: Common
     {
         [BsonId]

@@ -6,6 +6,8 @@ namespace ViewModels
     public class ErpViewModel
     {
         public Employee OwnerInformation { get; set; }
+        public Img Avatar { get; set; }
+        public Img Cover { get; set; }
         public int NotificationCount { get; set; } = 0;
         public Employee UserInformation { get; set; }
         public IList<TrackingUser> TrackingUser { get; set; }

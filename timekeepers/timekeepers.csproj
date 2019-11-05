@@ -38,6 +38,11 @@
     </StartupObject>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Interop.zkemkeeper, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+      <HintPath>bin\Debug\Interop.zkemkeeper.dll</HintPath>
+    </Reference>
     <Reference Include="MongoDB.Bson, Version=1.11.0.92, Culture=neutral, PublicKeyToken=f686731cfb9cc103, processorArchitecture=MSIL">
       <HintPath>..\packages\mongocsharpdriver.1.11.0\lib\net35\MongoDB.Bson.dll</HintPath>
     </Reference>
@@ -56,9 +61,12 @@
     <Compile Include="Models\AttLog.cs" />
     <Compile Include="Models\DeviceTimeInfo.cs" />
     <Compile Include="Models\EmployeeWorkTime.cs" />
+    <Compile Include="Models\Extension.cs" />
     <Compile Include="Models\Group.cs" />
     <Compile Include="Models\LogTimeKeeper.cs" />
     <Compile Include="Models\MachineInfo.cs" />
+    <Compile Include="Models\Seo.cs" />
+    <Compile Include="Models\Setting.cs" />
     <Compile Include="Models\TimeKeeper.cs" />
     <Compile Include="Models\EmployeeWorkTimeLog.cs" />
     <Compile Include="Models\UserIDInfo.cs" />
@@ -107,17 +115,6 @@
     <Content Include="TheSDK\usbstd.dll" />
     <Content Include="TheSDK\zkemkeeper.dll" />
     <Content Include="TheSDK\zkemsdk.dll" />
-  </ItemGroup>
-  <ItemGroup>
-    <COMReference Include="zkemkeeper">
-      <Guid>{FE9DED34-E159-408E-8490-B720A5E632C7}</Guid>
-      <VersionMajor>1</VersionMajor>
-      <VersionMinor>0</VersionMinor>
-      <Lcid>0</Lcid>
-      <WrapperTool>tlbimp</WrapperTool>
-      <Isolated>False</Isolated>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </COMReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

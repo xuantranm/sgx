@@ -7,6 +7,7 @@ namespace ViewModels
 {
     public class TimeKeeperViewModel : CommonViewModel
     {
+        public bool IsMe { get; set; }
         // data display
         public IList<EmployeeWorkTimeLog> EmployeeWorkTimeLogs { get; set; }
 
@@ -14,15 +15,15 @@ namespace ViewModels
 
         public IList<Employee> Employees { get; set; }
 
-        public IList<CongTyChiNhanh> CongTyChiNhanhs { get; set; }
+        public IList<Category> CongTyChiNhanhs { get; set; }
 
-        public IList<KhoiChucNang> KhoiChucNangs { get; set; }
+        public IList<Category> KhoiChucNangs { get; set; }
 
-        public IList<PhongBan> PhongBans { get; set; }
+        public IList<Category> PhongBans { get; set; }
 
-        public IList<BoPhan> BoPhans { get; set; }
+        public IList<Category> BoPhans { get; set; }
 
-        public IList<ChucVu> ChucVus { get; set; }
+        public IList<Category> ChucVus { get; set; }
 
         public IList<MonthYear> MonthYears { get; set; }
 

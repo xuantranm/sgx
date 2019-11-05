@@ -16,6 +16,8 @@ namespace ViewModels
 
         public bool RightRequest { get; set; } = false;
 
+        public bool IsMe { get; set; }
+
         #region Extensions
         public int Approve { get; set; }
         public IList<Trainning> ListTraining;

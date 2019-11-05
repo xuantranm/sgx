@@ -200,7 +200,7 @@ namespace erp.Controllers
         {
             if (userId == null || code == null)
             {
-                return RedirectToAction(nameof(HomeController.Index), "Home");
+                return RedirectToAction("Index", "Home");
             }
             //var user = await _userManager.FindByIdAsync(userId);
             var user = dbContext.Employees.Find(m => m.Id.Equals(userId)).FirstOrDefault();
@@ -327,7 +327,7 @@ namespace erp.Controllers
             }
             else
             {
-                return RedirectToAction(nameof(HomeController.Index), "Home");
+                return RedirectToAction("Index", "Home");
             }
         }
 

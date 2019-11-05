@@ -1,0 +1,1424 @@
+﻿@using Common.Utilities;
+@using Common.Enums;
+@using ViewModels;
+@model EmployeeViewModel
+
+@{
+    var isEdit = (bool)ViewData[Constants.ActionViews.isEdit];
+    var isRight = (bool)ViewData[Constants.ActionViews.IsRight];
+    var isChange = (bool)ViewData["isChange"];
+    var title = "NHÂN SỰ | TẠO MỚI";
+    var breadcrumb = "Cài đặt thông tin nhân sự";
+    var action = "/" + Constants.LinkHr.Human + "/" + Constants.ActionLink.Data;
+    var typeCompany = (int)ECategory.Company;
+    var typeKhoiChucNang = (int)ECategory.KhoiChucNang;
+    var typePhongBan = (int)ECategory.PhongBan;
+    var typeBoPhan = (int)ECategory.BoPhan;
+    // If user changed data
+    // 1. Employee is changed data
+    // 2. Display current HR.
+    // 3. Button "Xac nhan" is "Submit"
+    var employee = Model.Employee;
+    var currentE = Model.EmployeeChance;
+    var sizeValueAvatar = (int)EImageSize.Avatar;
+    var sizeValueCover = (int)EImageSize.Cover;
+    var i = 0;
+    var iImg = 0;
+    var images = new List<Img>
+{
+        new Img() { Type = sizeValueAvatar },
+        new Img() { Type = sizeValueCover }
+    };
+    var isImg = false;
+    if (isEdit)
+    {
+        title = "NHÂN SỰ | THAY ĐỔI THÔNG TIN " + employee.FullName.ToUpper();
+        breadcrumb = "Cập nhật thông tin";
+        if (employee.Images != null && employee.Images.Count > 0)
+        {
+            isImg = true;
+            images = employee.Images.ToList();
+        }
+    }
+    ViewData["title"] = title;
+    var avatarDisplay = "/images/placeholder/120x120.png";
+    var coverDisplay = "background-image: url('/images/placeholder/354x167.png')";
+    if (isImg)
+    {
+        var avatar = images.Where(m => m.Type.Equals(sizeValueAvatar)).FirstOrDefault();
+        var cover = images.Where(m => m.Type.Equals(sizeValueCover)).FirstOrDefault();
+        if (avatar != null)
+        {
+            avatarDisplay = "/" + System.IO.Path.Combine(avatar.Path, avatar.FileName).Replace("\\", "/");
+        }
+        if (cover != null)
+        {
+            coverDisplay = "background-image: url('/" + System.IO.Path.Combine(avatar.Path, avatar.FileName).Replace("\\", "/") + "'); height:167px";
+        }
+    }
+}
+<input value="@typeCompany" type="hidden" class="hid-type-company" />
+<input value="@typeKhoiChucNang" type="hidden" class="hid-type-khoichucnang" />
+<input value="@typePhongBan" type="hidden" class="hid-type-phongban" />
+<input value="@typeBoPhan" type="hidden" class="hid-type-bophan" />
+<div class="main-container">
+    <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="/">Trang chủ</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="/@Constants.LinkHr.Human">Nhân sự</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">@breadcrumb</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="bg-white space-sm pb-4">
+        <div class="container">
+            <div class="row justify-content-between align-items-center">
+                <div class="col-auto">
+                    <h1 class="h2">@breadcrumb</h1>
+                </div>
+                @if (isEdit){
+                    <div class="col-auto text-right">
+                        <a href="/@Constants.LinkHr.Human/@Constants.LinkHr.Information/@employee.Id" class="btn btn-success">Chế độ xem</a>
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+
+    <!-- MAIN -->
+    <form class="data-form" action="@action" method="post" enctype="multipart/form-data">
+        @if (isEdit)
+        {
+            <input asp-for="Employee.Id" type="hidden" />
+            <input asp-for="Employee.Code" type="hidden" />
+            <input asp-for="Employee.Timestamp" type="hidden" />
+            <input name="checkUserName" type="hidden" value="@employee.UserName" />
+            <input name="checkEMail" type="hidden" value="@employee.Email" />
+        }
+        <section class="flush-with-above space-0">
+            <div class="bg-white">
+                <div class="container">
+                    <div class="row">
+                        <div class="col">
+                            <ul class="nav nav-tabs" id="myTab" role="tablist">
+                                <li class="nav-item">
+                                    <a class="nav-link active" id="overview-tab" data-toggle="tab" href="#general" role="tab" aria-selected="true">Thông tin</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" id="extend1-tab" data-toggle="tab" href="#extend1" role="tab" aria-selected="true">Cá nhân</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" id="extend2-tab" data-toggle="tab" href="#extend2" role="tab" aria-selected="false">Mở rộng</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" id="extend3-tab" data-toggle="tab" href="#extend3" role="tab" aria-selected="false">Tài liệu & Thông báo</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="space-xs">
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="general" role="tabpanel">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-12" id="cover" style="@coverDisplay">
+                                <div class="media flex-wrap mb-0 align-items-center" id="avatar-upload">
+                                    <img id="avatarShow" src="@avatarDisplay" class="avatar avatar-lg mb-3 mb-md-0" />
+                                    <div class="media-body" style="margin-top:10px">
+                                        @foreach (var img in images)
+                                        {
+                                            <div class="img-@img.Type d-none">
+                                                <input name="Employee.Images[@iImg].Size" type="hidden" value="@img.Size" class="img-size" />
+                                                <input name="Employee.Images[@iImg].Path" type="hidden" value="@img.Path" class="img-path" />
+                                                <input name="Employee.Images[@iImg].FileName" type="hidden" value="@img.FileName" class="img-filename" />
+                                                <input name="Employee.Images[@iImg].Orginal" type="hidden" value="@img.Orginal" class="img-orginal" />
+                                                <input name="Employee.Images[@iImg].Type" type="hidden" value="@img.Type" class="img-type" />
+                                                <input name="Employee.Images[@iImg].TypeFile" type="hidden" value="@img.TypeFile" class="img-typefile" />
+                                                <input name="Employee.Images[@iImg].Temp" type="hidden" value="@img.Temp" class="img-temp" />
+                                                <input name="Employee.Images[@iImg].IsDelete" type="hidden" value="@img.IsDelete" class="delete-flag" />
+                                            </div>
+                                            iImg++;
+                                        }
+                                        <label class="custom-file mb-2">
+                                            <input type="hidden" value="@sizeValueAvatar" class="hid-type-size-file" />
+                                            <input type="file" id="avatar-input" name="avatar" class="custom-file-input height-0" />
+                                            <span class="btn btn-primary"><i class="icon-upload-to-cloud">&nbsp;</i>Chọn hình</span>
+                                        </label>
+                                        <label class="custom-file mb-2">
+                                            <input type="hidden" value="@sizeValueCover" class="hid-type-size-file" />
+                                            <input type="file" id="cover-input" name="cover" class="custom-file-input height-0" />
+                                            <span class="btn btn-primary"><i class="icon-upload-to-cloud">&nbsp;</i>Chọn hình nền</span>
+                                        </label>
+                                        <div>
+                                            <small>
+                                                Để có kết quả tốt nhất, hãy sử dụng hình ảnh có kích thước tối thiểu 256px x 256px ở định dạng .jpg hoặc .png
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row mb-4">
+                            <div class="col">
+                                <h5>Thông tin</h5>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="form-group col-md-4 col-sm-6 col-xs-12">
+                                <label class="control-label">Họ và tên</label> <span class="text-red">*</span>
+                                @if (isEdit && !isRight)
+                                {
+                                    <p><span>@employee.FullName</span></p>
+                                }
+                                else
+                                {
+                                    <input asp-for="Employee.FullName" class="form-control form-control-lg" autofocus />
+                                    <span asp-validation-for="Employee.FullName" class="text-danger"></span>
+                                }
+                            </div>
+                            <div class="form-group col-md-4 col-sm-6 col-xs-12">
+                                <label class="control-label">Tên đăng nhập</label> <span class="text-red">*</span>
+                                @if (isEdit && !isRight)
+                                {
+                                    <p><span>@employee.UserName</span></p>
+                                }
+                                else
+                                {
+                                    <input asp-for="Employee.UserName" class="form-control form-control-lg" />
+                                    <span asp-validation-for="Employee.UserName" class="text-danger"></span>
+                                }
+                            </div>
+                            <div class="form-group col-md-4 col-sm-6 col-xs-12">
+                                <label class="control-label">Email</label>
+                                @if (isEdit && !isRight)
+                                {
+                                    var email = string.IsNullOrEmpty(employee.Email) ? Constants.MissTitle : employee.Email;
+                                    <p>@email</p>
+                                }
+                                else
+                                {
+                                    <input asp-for="Employee.Email" class="form-control form-control-lg" autocomplete="off" />
+                                    <span asp-validation-for="Employee.Email" class="text-danger"></span>
+                                }
+                            </div>
+                            <div class="col-md-3 col-sm-12 col-xs-12">
+                                <div class="row">
+                                    <div class="form-group col-md-7 col-sm-6 col-xs-12">
+                                        <i class="icon icon-cake"></i>
+                                        <label class="control-label">Ngày sinh nhật</label>
+                                        @if (isEdit && !isRight)
+                                        {
+                                            <p><span>@employee.Birthday.ToString("dd/MM/yyyy")</span></p>
+                                        }
+                                        else
+                                        {
+                                            <input class="form-control form-control-lg datepicker datepicker-lg" value="@employee.Birthday.ToString("dd/MM/yyyy")" />
+                                            <span asp-validation-for="Employee.Birthday" class="text-danger"></span>
+                                            <input type="hidden" name="Employee.Birthday" value="@employee.Birthday" class="form-control form-control-lg hidedatepicker datepicker-lg" />
+                                        }
+                                    </div>
+                                    <div class="form-group col-md-5 col-sm-6 col-xs-12">
+                                        <i class="icon icon-select-arrows"></i>
+                                        <label class="control-label">Giới tính</label>
+                                        @if (isEdit && !isRight)
+                                        {
+                                            <p><span>@employee.Gender</span></p>
+                                        }
+                                        else
+                                        {
+                                            <select asp-for="Employee.Gender" class="form-control form-control-lg">
+                                                <option value="Nam">Nam</option>
+                                                <option value="Nữ">Nữ</option>
+                                                <option value="Khác">Khác</option>
+                                            </select>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group col-md-3 col-sm-6 col-xs-12">
+                                <label class="control-label">Khối chức năng</label>
+                                @if (isEdit && !isRight)
+                                {
+                                    <p><span>@employee.KhoiChucNangName</span></p>
+                                }
+                                else
+                                {
+                                    <select asp-for="Employee.KhoiChucNang" class="form-control form-control-lg">
+                                        <option value="">Chọn</option>
+                                        @foreach (var item in Model.KhoiChucNangs)
+                                        {
+                                            <option value="@item.Id">@item.Name</option>
+                                        }
+                                    </select>
+                                }
+                            </div>
+                            <div class="form-group col-md-3 col-sm-6 col-xs-12">
+                                <label class="control-label">Phòng/Ban</label>
+                                @if (isEdit && !isRight)
+                                {
+                                    <p><span>@employee.PhongBanName</span></p>
+                                }
+                                else
+                                {
+                                    <select asp-for="Employee.PhongBan" class="form-control form-control-lg js-select2-basic-single">
+                                        <option value="">Chọn</option>
+                                        @foreach (var item in Model.PhongBans)
+                                        {
+                                            <option value="@item.Id">@item.Name</option>
+                                        }
+                                    </select>
+                                }
+                            </div>
+                            <div class="form-group col-md-3 col-sm-6 col-xs-12">
+                                <label class="control-label">Bộ phận</label>
+                                @if (isEdit && !isRight)
+                                {
+                                    <p><span>@employee.BoPhanName</span></p>
+                                }
+                                else
+                                {
+                                    <select asp-for="Employee.BoPhan" class="form-control form-control-lg js-select2-basic-single">
+                                        <option value="">Chọn</option>
+                                        @foreach (var item in Model.BoPhans)
+                                        {
+                                            <option value="@item.Id">@item.Name</option>
+                                        }
+                                    </select>
+                                }
+                            </div>
+                            <div class="form-group col-md-3 col-sm-6 col-sm-12">
+                                <i class="icon icon-select-arrows"></i>
+                                <label class="control-label">Chức vụ</label>
+                                @if (isEdit && !isRight)
+                                {
+                                    <p><span>@employee.ChucVuName</span></p>
+                                }
+                                else
+                                {
+                                    <select asp-for="Employee.ChucVu" class="form-control form-control-lg js-select2-basic-single">
+                                        <option value="" selected>Chọn</option>
+                                        @foreach (var item in Model.ChucVus)
+                                        {
+                                            <option value="@item.Id">@item.Name</option>
+                                        }
+                                    </select>
+                                }
+                            </div>
+                            <div class="form-group col-md-3 col-sm-6 col-xs-12">
+                                <i class="icon icon-select-arrows"></i>
+                                <label class="control-label">Nơi làm việc chính</label>
+                                @if (isEdit && !isRight)
+                                {
+                                    <p><span>@employee.CongTyChiNhanhName</span></p>
+                                }
+                                else
+                                {
+                                    <select asp-for="Employee.CongTyChiNhanh" class="form-control form-control-lg">
+                                        <option value="">Chọn</option>
+                                        @foreach (var item in Model.CongTyChiNhanhs)
+                                        {
+                                            <option value="@item.Id">@item.Name</option>
+                                        }
+                                    </select>
+                                }
+                            </div>
+                            <div class="form-group col-md-4 col-sm-6 col-sm-12">
+                                <i class="icon icon-select-arrows"></i>
+                                <label class="control-label">Cấp quản lý</label>
+                                @if (isEdit && !isRight)
+                                {
+                                    <p><span>@employee.ManagerInformation</span></p>
+                                }
+                                else
+                                {
+                                    <select asp-for="Employee.ManagerEmployeeId" class="form-control form-control-lg js-select2-basic-single">
+                                        <option value="">Chọn</option>
+                                        @foreach (var item in Model.Managers)
+                                        {
+                                            var displayM = item.ChucVuName + " - " + item.FullName;
+                                            <option value="@item.Id">@displayM</option>
+                                        }
+                                    </select>
+                                }
+                            </div>
+                            <div class="form-group col-md-2 col-sm-6 col-xs-12">
+                                <label class="control-label">Ngày vào làm</label>
+                                @if (isEdit && !isRight)
+                                {
+                                    <p><span>@employee.Joinday.ToString("dd/MM/yyyy")</span></p>
+                                }
+                                else
+                                {
+                                    <input class="form-control form-control-lg datepicker datepicker-lg" value="@employee.Joinday.ToString("dd/MM/yyyy")" />
+                                    <span asp-validation-for="Employee.Joinday" class="text-danger"></span>
+                                    <input type="hidden" name="Employee.Joinday" value="@employee.Joinday" class="form-control form-control-lg hidedatepicker datepicker-lg" />
+                                }
+                            </div>
+                            <div class="form-group col-md-2 col-sm-6 col-xs-12">
+                                <label class="control-label">TG.thử việc</label>
+                                @if (isEdit && !isRight)
+                                {
+                                    var probetionMonth = employee.ProbationMonth > 0 ? employee.ProbationMonth + " tháng" : "Không";
+                                    <p><span>@probetionMonth</span></p>
+                                }
+                                else
+                                {
+                                    <select asp-for="Employee.ProbationMonth" class="form-control form-control-lg">
+                                        <option value="0">Không</option>
+                                        <option value="6">06 ngày</option>
+                                        <option value="30">30 ngày</option>
+                                        <option value="60">60 ngày</option>
+                                    </select>
+                                }
+                            </div>
+                            <div class="form-group col-md-1 col-sm-6 col-xs-12">
+                                <label class="control-label">NV.chính thức</label>
+                                @if (isEdit && !isRight)
+                                {
+                                    var official = employee.Official ? "Chưa chính thức" : "Chính thức";
+                                    <p><span>@official</span></p>
+                                }
+                                else
+                                {
+                                    var checkOfficial = string.Empty;
+                                    if (employee.Official)
+                                    {
+                                        checkOfficial = "checked";
+                                    }
+                                    <input type="checkbox" @checkOfficial class="form-control form-control-lg big-checkbox chkOfficial">
+                                    <input asp-for="Employee.Official" type="hidden" />
+                                }
+                            </div>
+                            @if (isEdit && employee.Official)
+                            {
+                                <div class="form-group col-md-2 col-sm-6 col-xs-12">
+                                    <i class="icon icon-time-slot"></i>
+                                    <label class="control-label">Ngày LV chính thức</label>
+                                    @if (!isRight && employee.Contractday > Constants.MinDate)
+                                    {
+                                        <p><span>@employee.Contractday.ToString("dd/MM/yyyy")</span></p>
+                                    }
+                                    else
+                                    {
+                                        var displayNLVC = employee.Contractday > Constants.MinDate ? employee.Contractday.ToString("dd/MM/yyyy") : string.Empty;
+                                        <input class="form-control form-control-lg datepicker datepicker-lg" value="@displayNLVC" />
+                                        <span asp-validation-for="Employee.Contractday" class="text-danger"></span>
+                                        <input type="hidden" name="Employee.Contractday" value="@employee.Contractday" class="form-control form-control-lg hidedatepicker datepicker-lg" />
+                                    }
+                                </div>
+                            }
+                            <div class="form-group col-md-2 col-sm-6 col-xs-12">
+                                <label class="control-label">Mức phép năm</label>
+                                @if (isEdit && !isRight)
+                                {
+                                    <p><span>@employee.LeaveLevelYear</span></p>
+                                }
+                                else
+                                {
+                                    <select asp-for="Employee.LeaveLevelYear" class="form-control form-control-lg">
+                                        <option value="12">12 ngày</option>
+                                        <option value="14">14 ngày</option>
+                                        <option value="16">16 ngày</option>
+                                    </select>
+                                }
+                                <span asp-validation-for="Employee.LeaveLevelYear" class="text-danger"></span>
+                            </div>
+                            <div class="form-group col-md-2 col-sm-6 col-xs-12">
+                                <label class="control-label">Điện thoại bàn</label>
+                                <input asp-for="Employee.Tel" class="form-control form-control-lg" />
+                                @if (isChange && !string.IsNullOrEmpty(currentE.Tel))
+                                {
+                                    <p class="change-data">
+                                        <small class="badge badge-info">@Constants.CurrentText</small>
+                                        <a href="tel:@currentE.Tel">@currentE.Tel</a>
+                                    </p>
+                                }
+                            </div>
+                            @{
+                                var mobile1 = string.Empty;
+                                var mobile2 = string.Empty;
+                                var mobiles = employee.Mobiles;
+                                if (mobiles != null && mobiles.Count > 0)
+                                {
+                                    var firstMobile = mobiles.FirstOrDefault();
+                                    mobile1 = firstMobile.Number;
+                                    if (mobiles.Count > 1)
+                                    {
+                                        var secondMobile = mobiles[1];
+                                        mobile2 = secondMobile.Number;
+                                    }
+
+                                }
+                            }
+                            <div class="form-group col-md-2 col-sm-6 col-xs-12">
+                                <label class="control-label">Di động</label>
+                                <input name="Employee.Mobiles[0].Number" value="@mobile1" class="form-control form-control-lg" />
+                            </div>
+                            <div class="form-group col-md-2 col-sm-6 col-xs-12">
+                                <label class="control-label">Di động 2</label>
+                                <input name="Employee.Mobiles[1].Number" value="@mobile2" class="form-control form-control-lg" />
+                            </div>
+                            @{
+                                var checkTimeKeeper = employee.IsTimeKeeper ? "checked" : string.Empty;
+                                var dnoneTime = employee.IsTimeKeeper ? string.Empty : "d-none";
+                            }
+
+                            <div class="col-12">
+                                @{
+                                    var iF = 0;
+                                    <div class="row">
+                                        <div class="form-group col-md-1 col-sm-6 col-xs-12">
+                                            <label class="control-label">
+                                                Chấm công
+                                            </label>
+                                            <input type="checkbox" @checkTimeKeeper class="form-control form-control-lg big-checkbox chkOfficial" id="check-timekeeper" />
+                                            <input type="hidden" mame="Employee.IsTimeKeeper" value="@employee.IsTimeKeeper.ToString().ToLower()" />
+                                        </div>
+                                        @foreach (var item in employee.Workplaces)
+                                        {
+                                            <div class="time-working col-md-5 col-sm-12 node-@item.Code @dnoneTime">
+                                                <div class="row">
+                                                    <input type="hidden" name="Employee.Workplaces[@iF].Code" value="@item.Code" />
+                                                    <input type="hidden" name="Employee.Workplaces[@iF].Name" value="@item.Name" />
+                                                    <div class="form-group col-sm-4 col-xs-12">
+                                                        <label class="control-label">
+                                                            Mã chấm công <span class="badge badge-primary text-uppercase">@item.Code</span>
+                                                        </label>
+                                                        <input name="Employee.Workplaces[@iF].Fingerprint" value="@item.Fingerprint" class="form-control form-control-lg" />
+                                                    </div>
+                                                    <div class="form-group col-sm-7 col-xs-12">
+                                                        <label class="control-label">Thời gian làm việc</label>
+                                                        <select name="Employee.Workplaces[@iF].WorkingScheduleTime" class="form-control form-control-lg">
+                                                            @foreach (var time in Model.WorkTimeTypes)
+                                                            {
+                                                                <option value="@time.Name">@time.Name</option>
+                                                            }
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            iF++;
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane fade show" id="extend1" role="tabpanel">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="row">
+                                    <div class="form-group col-md-6 col-sm-12 col-12">
+                                        <label class="control-label">Thường trú</label>
+                                        <input asp-for="Employee.AddressResident" class="form-control form-control-lg" />
+                                        @if (isChange && !string.IsNullOrEmpty(currentE.AddressResident))
+                                        {
+                                            <p class="change-data">
+                                                <small class="badge badge-info">@Constants.CurrentText</small>
+                                                <span>@currentE.AddressResident</span>
+                                            </p>
+                                        }
+                                    </div>
+                                    <div class="form-group col-md-6 col-sm-12 col-12">
+                                        <label class="control-label">Tạm trú</label>
+                                        <input asp-for="Employee.AddressTemporary" class="form-control form-control-lg" />
+                                        @if (isChange && !string.IsNullOrEmpty(currentE.AddressTemporary))
+                                        {
+                                            <p class="change-data">
+                                                <small class="badge badge-info">@Constants.CurrentText</small>
+                                                <span>@currentE.AddressTemporary</span>
+                                            </p>
+                                        }
+                                    </div>
+                                    <div class="form-group col-md-3 col-sm-6 col-sm-12">
+                                        <label class="control-label">Nơi sinh</label>
+                                        <input asp-for="Employee.Bornplace" class="form-control form-control-lg" />
+                                        @if (isChange && !string.IsNullOrEmpty(currentE.Bornplace))
+                                        {
+                                            <p class="change-data">
+                                                <small class="badge badge-info">@Constants.CurrentText</small>
+                                                <span>@currentE.Bornplace</span>
+                                            </p>
+                                        }
+                                    </div>
+                                    <div class="form-group col-md-3 col-sm-6 col-xs-12">
+                                        <label class="control-label">Email cá nhân</label>
+                                        <input asp-for="Employee.EmailPersonal" class="form-control form-control-lg" />
+                                        @if (isChange && !string.IsNullOrEmpty(currentE.EmailPersonal))
+                                        {
+                                            <p class="change-data">
+                                                <small class="badge badge-info">@Constants.CurrentText</small>
+                                                <span>@currentE.EmailPersonal</span>
+                                            </p>
+                                        }
+                                    </div>
+                                    <div class="form-group col-md-2 col-sm-6 col-xs-12">
+                                        <label class="control-label">Hôn nhân</label>
+                                        <select asp-for="Employee.StatusMarital" class="form-control form-control-lg">
+                                            <option value="">Chọn</option>
+                                            <option value="S">Độc thân</option>
+                                            <option value="M">Kết hôn</option>
+                                        </select>
+                                        @if (isChange && !string.IsNullOrEmpty(currentE.StatusMarital))
+                                        {
+                                            <p class="change-data">
+                                                <small class="badge badge-info">@Constants.CurrentText</small>
+                                                <span>@Constants.Married(currentE.StatusMarital)</span>
+                                            </p>
+                                        }
+                                    </div>
+                                    <div class="form-group col-md-2 col-sm-6 col-xs-12">
+                                        <label class="control-label">Quốc tịch</label>
+                                        <input asp-for="Employee.Nation" class="form-control form-control-lg" />
+                                        @if (isChange && !string.IsNullOrEmpty(currentE.Nation))
+                                        {
+                                            <p class="change-data">
+                                                <small class="badge badge-info">@Constants.CurrentText</small>
+                                                <span>@currentE.StatusMarital</span>
+                                            </p>
+                                        }
+                                    </div>
+                                    <div class="form-group col-md-2 col-sm-6 col-xs-12">
+                                        <label class="control-label">Tôn giáo</label>
+                                        <input asp-for="Employee.Religion" class="form-control form-control-lg" />
+                                        @if (isChange && !string.IsNullOrEmpty(currentE.Religion))
+                                        {
+                                            <p class="change-data">
+                                                <small class="badge badge-info">@Constants.CurrentText</small>
+                                                <span>@currentE.Religion</span>
+                                            </p>
+                                        }
+                                    </div>
+                                    <div class="form-group col-12">
+                                        <label asp-for="Employee.Intro" class="control-label">Giới thiệu</label>
+                                        <textarea asp-for="Employee.Intro" class="form-control form-control-lg js-auto-size"></textarea>
+                                        @if (isChange && !string.IsNullOrEmpty(currentE.Intro))
+                                        {
+                                            <p class="change-data">
+                                                <small class="badge badge-info">@Constants.CurrentText</small>
+                                                <span>@currentE.Intro</span>
+                                            </p>
+                                        }
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-12 text-uppercase">
+                                        <h4 class="title-decorative">Số thẻ định danh</h4>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="row">
+                                            <div class="form-group col-md-2 col-sm-6 col-xs-12">
+                                                <label class="control-label">Số CMND</label>
+                                                <input asp-for="Employee.IdentityCard" class="form-control form-control-lg" />
+                                                @if (isChange && !string.IsNullOrEmpty(currentE.IdentityCard))
+                                                {
+                                                    <p class="change-data">
+                                                        <small class="badge badge-info">@Constants.CurrentText</small>
+                                                        <span>@currentE.IdentityCard</span>
+                                                    </p>
+                                                }
+                                            </div>
+                                            <div class="form-group col-md-2 col-sm-6 col-xs-12">
+                                                <label class="control-label">Ngày cấp</label>
+                                                @{
+                                                    var identityCardDate = employee.IdentityCardDate.HasValue && employee.IdentityCardDate.Value.Year > 1900 ? employee.IdentityCardDate.Value.ToString("dd/MM/yyyy") : string.Empty;
+                                                }
+                                                <input class="form-control form-control-lg datepicker datepicker-lg" value="@identityCardDate" />
+                                                <input type="hidden" name="Employee.IdentityCardDate" class="form-control form-control-lg hidedatepicker" value="@employee.IdentityCardDate" />
+                                                @if (isChange && currentE.IdentityCardDate.HasValue && currentE.IdentityCardDate.Value.Year > 1900)
+                                                {
+                                                    <p class="change-data">
+                                                        <small class="badge badge-info">@Constants.CurrentText</small>
+                                                        <span>@currentE.IdentityCardDate.Value.ToString("dd/MM/yyyy")</span>
+                                                    </p>
+                                                }
+                                            </div>
+                                            <div class="form-group col-md-3 col-sm-6 col-xs-12">
+                                                <label class="control-label">Nơi cấp</label>
+                                                <input asp-for="Employee.IdentityCardPlace" class="form-control form-control-lg" />
+                                                @if (isChange && !string.IsNullOrEmpty(currentE.IdentityCardPlace))
+                                                {
+                                                    <p class="change-data">
+                                                        <small class="badge badge-info">@Constants.CurrentText</small>
+                                                        <span>@currentE.IdentityCardPlace</span>
+                                                    </p>
+                                                }
+                                            </div>
+                                            <div class="form-group col-md-2 col-sm-6 col-xs-12">
+                                                <label class="control-label">Số hộ khẩu</label>
+                                                <input asp-for="Employee.HouseHold" class="form-control form-control-lg" />
+                                                @if (isChange && !string.IsNullOrEmpty(currentE.HouseHold))
+                                                {
+                                                    <p class="change-data">
+                                                        <small class="badge badge-info">@Constants.CurrentText</small>
+                                                        <span>@currentE.HouseHold</span>
+                                                    </p>
+                                                }
+                                            </div>
+                                            <div class="form-group col-md-3 col-sm-6 col-xs-12">
+                                                <label class="control-label">Chủ hộ</label>
+                                                <input asp-for="Employee.HouseHoldOwner" class="form-control form-control-lg" />
+                                                @if (isChange && !string.IsNullOrEmpty(currentE.HouseHoldOwner))
+                                                {
+                                                    <p class="change-data">
+                                                        <small class="badge badge-info">@Constants.CurrentText</small>
+                                                        <span>@currentE.HouseHoldOwner</span>
+                                                    </p>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="row">
+                                            <div class="form-group col-md-2 col-sm-6 col-xs-12">
+                                                <label class="control-label">Mã hộ chiếu</label>
+                                                <input asp-for="Employee.Passport" class="form-control form-control-lg" />
+                                                @if (isChange && !string.IsNullOrEmpty(currentE.Passport))
+                                                {
+                                                    <p class="change-data">
+                                                        <small class="badge badge-info">@Constants.CurrentText</small>
+                                                        <span>@currentE.Passport</span>
+                                                    </p>
+                                                }
+                                            </div>
+                                            <div class="form-group col-md-1 col-sm-6 col-xs-12">
+                                                <label class="control-label">Loại</label>
+                                                <input asp-for="Employee.PassportType" class="form-control form-control-lg" />
+                                                @if (isChange && !string.IsNullOrEmpty(currentE.PassportType))
+                                                {
+                                                    <p class="change-data">
+                                                        <small class="badge badge-info">@Constants.CurrentText</small>
+                                                        <span>@currentE.PassportType</span>
+                                                    </p>
+                                                }
+                                            </div>
+                                            <div class="form-group col-md-2 col-sm-6 col-xs-12">
+                                                <label class="control-label">Passport Code</label>
+                                                <input asp-for="Employee.PassportCode" class="form-control form-control-lg" />
+                                                @if (isChange && !string.IsNullOrEmpty(currentE.PassportCode))
+                                                {
+                                                    <p class="change-data">
+                                                        <small class="badge badge-info">@Constants.CurrentText</small>
+                                                        <span>@currentE.PassportCode</span>
+                                                    </p>
+                                                }
+                                            </div>
+                                            <div class="form-group col-md-2 col-sm-6 col-xs-12">
+                                                <label class="control-label">Ngày cấp</label>
+                                                @{
+                                                    var passportDate = employee.PassportDate.HasValue && employee.PassportDate.Value.Year > 1900 ? employee.PassportDate.Value.ToString("dd/MM/yyyy") : string.Empty;
+                                                }
+                                                <input class="form-control form-control-lg datepicker datepicker-lg" value="@passportDate" />
+                                                <input type="hidden" name="Employee.PassportDate" class="form-control form-control-lg hidedatepicker" value="@employee.PassportDate" />
+                                                @if (isChange && currentE.PassportDate.HasValue && currentE.PassportDate.Value.Year > 1900)
+                                                {
+                                                    <p class="change-data">
+                                                        <small class="badge badge-info">@Constants.CurrentText</small>
+                                                        <span>@currentE.PassportDate.Value.ToString("dd/MM/yyyy")</span>
+                                                    </p>
+                                                }
+                                            </div>
+                                            <div class="form-group col-md-2 col-sm-6 col-xs-12">
+                                                <label class="control-label">Ngày hết hạn</label>
+                                                @{
+                                                    var passportExpireDate = employee.PassportExpireDate.HasValue && employee.PassportDate.Value.Year > 1900 ? employee.PassportDate.Value.ToString("dd/MM/yyyy") : string.Empty;
+                                                }
+                                                <input class="form-control form-control-lg datepicker datepicker-lg" value="@passportExpireDate" />
+                                                <input type="hidden" name="Employee.PassportExpireDate" class="form-control form-control-lg hidedatepicker" value="@employee.PassportExpireDate" />
+                                                @if (isChange && currentE.PassportExpireDate.HasValue && currentE.PassportExpireDate.Value.Year > 1900)
+                                                {
+                                                    <p class="change-data">
+                                                        <small class="badge badge-info">@Constants.CurrentText</small>
+                                                        <span>@currentE.PassportExpireDate.Value.ToString("dd/MM/yyyy")</span>
+                                                    </p>
+                                                }
+                                            </div>
+                                            <div class="form-group col-md-3 col-sm-6 col-xs-12">
+                                                <label class="control-label">Nơi đăng ký</label>
+                                                <input asp-for="Employee.PassportPlace" class="form-control form-control-lg" />
+                                                @if (isChange && !string.IsNullOrEmpty(currentE.PassportPlace))
+                                                {
+                                                    <p class="change-data">
+                                                        <small class="badge badge-info">@Constants.CurrentText</small>
+                                                        <span>@currentE.PassportPlace</span>
+                                                    </p>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="form-group col-xs-12">
+                                            @{
+                                                var check = employee.BhxhEnable ? "checked" : string.Empty;
+                                                var dnone = employee.BhxhEnable ? string.Empty : "d-none";
+                                                var disableBhxh = isEdit && !isRight ? "disabled" : string.Empty;
+                                            }
+                                            <div class="custom-control custom-checkbox custom-checkbox-switch">
+                                                <input type="checkbox" class="custom-control-input" id="public" @check @disableBhxh />
+                                                <label class="custom-control-label text-uppercase" for="public">Bảo hiểm xã hội</label>
+                                                <input name="Employee.BhxhEnable" type="hidden" class="custom-control-input" value="@employee.BhxhEnable" />
+                                            </div>
+                                        </div>
+                                        <div class="col-xs-12 enableBhxh @dnone">
+                                            <div class="row">
+                                                <div class="form-group col-md-2 col-sm-6 col-xs-12">
+                                                    <label class="control-label">Số xổ BHXH</label>
+                                                    <input name="Employee.BhxhBookNo" value="@employee.BhxhBookNo" class="form-control form-control-lg" @disableBhxh />
+                                                    @if (isChange && !string.IsNullOrEmpty(currentE.BhxhBookNo))
+                                                    {
+                                                        <p class="change-data">
+                                                            <small class="badge badge-info">@Constants.CurrentText</small>
+                                                            <span>@currentE.BhxhBookNo</span>
+                                                        </p>
+                                                    }
+                                                </div>
+                                                <div class="form-group col-md-2 col-sm-6 col-xs-12">
+                                                    <label class="control-label">Mã BHXH</label>
+                                                    <input asp-for="Employee.BhxhCode" class="form-control form-control-lg" />
+                                                    @if (isChange && !string.IsNullOrEmpty(currentE.BhxhCode))
+                                                    {
+                                                        <p class="change-data">
+                                                            <small class="badge badge-info">@Constants.CurrentText</small>
+                                                            <span>@currentE.BhxhCode</span>
+                                                        </p>
+                                                    }
+                                                </div>
+                                                <div class="form-group col-md-2 col-sm-6 col-xs-12">
+                                                    <label class="control-label">Bắt đầu</label>
+                                                    @{
+                                                        var bhxhStart = employee.BhxhStart.HasValue && employee.BhxhStart.Value.Year > 1900 ? employee.BhxhStart.Value.ToString("dd/MM/yyyy") : string.Empty;
+                                                    }
+                                                    <input class="form-control form-control-lg datepicker datepicker-lg" value="@bhxhStart" />
+                                                    <input type="hidden" name="Employee.BhxhStart" class="form-control form-control-lg hidedatepicker" value="@employee.BhxhStart" />
+                                                </div>
+                                                <div class="form-group col-md-2 col-sm-6 col-xs-12">
+                                                    <label class="control-label">Kết thúc</label>
+                                                    @{
+                                                        var bhxhEnd = employee.BhxhEnd.HasValue && employee.BhxhEnd.Value.Year > 1900 ? employee.BhxhEnd.Value.ToString("dd/MM/yyyy") : string.Empty;
+                                                    }
+                                                    <input class="form-control form-control-lg datepicker datepicker-lg" value="@bhxhEnd" />
+                                                    <input type="hidden" name="Employee.BhxhEnd" value="@Model.Employee.BhxhEnd" class="form-control form-control-lg hidedatepicker" />
+                                                </div>
+                                                <div class="form-group col-md-1 col-sm-6 col-xs-12">
+                                                    <label class="control-label">Trạng thái</label>
+                                                    <select asp-for="Employee.BhxhStatus" class="form-control form-control-lg">
+                                                        <option value="Chưa đóng">Chưa đóng</option>
+                                                        <option value="Đang đóng">Đang đóng</option>
+                                                    </select>
+                                                </div>
+                                                <div class="form-group col-md-3 col-sm-6 col-xs-12">
+                                                    <label class="control-label">Cơ sở KCB</label>
+                                                    <select asp-for="Employee.BhxhHospital" class="form-control form-control-lg js-select2-basic-single">
+                                                        <option value="">Chọn</option>
+                                                        @{
+                                                            foreach (var hospital in Model.Hospitals)
+                                                            {
+                                                                <option value="@hospital.Name">@hospital.Name</option>
+                                                            }
+                                                        }
+                                                    </select>
+                                                </div>
+                                                @if (isRight)
+                                                {
+                                                    @if (isEdit && employee.BhxhHistories != null && employee.BhxhHistories.Count > 0)
+                                                    {
+                                                        i = 0;
+                                                        <div class="col-12">
+                                                            <span class="badge badge-info">Tác vụ BHXH</span>
+                                                        </div>
+                                                        @foreach (var item in employee.BhxhHistories)
+                                                        {
+                                                            <div class="row nodeBHXH node bd-example">
+                                                                <div class="form-group col-md-3 col-sm-6 col-xs-12">
+                                                                    <label class="control-label">Tác vụ</label>
+                                                                    <select asp-for="Employee.BhxhHistories[i].Task" class="form-control form-control-lg">
+                                                                        <option value="tang-bhxh">Tăng BHXH</option>
+                                                                        <option value="giam-bhxh">Giảm BHXH</option>
+                                                                        <option value="the-bhyt">Thẻ BHYT</option>
+                                                                        <option value="ghi-che-do-thai-san">Ghi chế độ thai sản</option>
+                                                                        <option value="ghi-che-do-om-dau">Ghi chế độ ốm đau</option>
+                                                                        <option value="ghi-che-do-tai-nan-lao-dong">Ghi chế độ tai nan lao động</option>
+                                                                    </select>
+                                                                </div>
+                                                                <div class="form-group col-md-3 col-sm-6 col-xs-12">
+                                                                    <label class="control-label">Ngày thực hiện</label>
+                                                                    @{
+                                                                        if (item.DateAction.HasValue)
+                                                                        {
+                                                                            <input class="form-control form-control-lg datepicker datepicker-lg" value="@item.DateAction.Value.ToString("dd/MM/yyyy")" />
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <input class="form-control form-control-lg datepicker datepicker-lg" />
+                                                                        }
+                                                                    }
+                                                                    <input type="hidden" name="Employee.BhxhHistories[@i].DateAction" value="@item.DateAction" class="form-control form-control-lg hidedatepicker" />
+                                                                </div>
+                                                                <div class="form-group col-md-3 col-sm-6 col-xs-12">
+                                                                    <label class="control-label">Ngày trả kết quả</label>
+                                                                    @{
+                                                                        if (item.DateResult.HasValue)
+                                                                        {
+                                                                            <input class="form-control form-control-lg datepicker datepicker-lg" value="@item.DateResult.Value.ToString("dd/MM/yyyy")" />
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <input class="form-control form-control-lg datepicker datepicker-lg" />
+                                                                        }
+                                                                    }
+                                                                    <input type="hidden" name="Employee.BhxhHistories[@i].DateResult" value="@item.DateResult" class="form-control form-control-lg hidedatepicker" />
+                                                                </div>
+                                                                <div class="form-group col-md-2 col-sm-6 col-xs-12">
+                                                                    <label class="control-label">Tình trạng</label>
+                                                                    <select asp-for="Employee.BhxhHistories[i].Status" class="form-control form-control-lg">
+                                                                        <option value="0">Chờ</option>
+                                                                        <option value="1">Hoàn thành</option>
+                                                                        <option value="2">Không xác định</option>
+                                                                    </select>
+                                                                </div>
+                                                                <div class="col-md-1 col-sm-6 col-xs-12">
+                                                                    <button type="button" class="btn btn-danger btn-sm remove-item"><i class="note-icon-col-remove"></i>Xóa</button>
+                                                                </div>
+                                                                <input type="hidden" class="codeBHXH" value="@i" />
+                                                            </div>
+                                                            i++;
+                                                        }
+                                                    }
+                                                    <div class="form-group col-12 more-task-bhxh">
+                                                        <button class="btn btn-success btn-sm addBHXH" type="button"><i class="icon icon-add-to-list"></i> Thêm tác vụ BHXH</button>
+                                                    </div>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="extend2" role="tabpanel">
+                    <div class="container">
+                        <!-- FAMILY -->
+                        <div class="row">
+                            <div class="col-12 text-uppercase">
+                                <h4 class="title-decorative">Gia đình</h4>
+                            </div>
+                            @{
+                                var fa1 = employee.EmployeeFamilys;
+                                var fa2 = Model.EmployeeChance != null ? Model.EmployeeChance.EmployeeFamilys : null;
+                                if (fa1 != null && fa1.Count > 0)
+                                {
+                                    int iFa = 0;
+                                    foreach (var item in fa1)
+                                    {
+                                        <div class="col-12 nodeFamily node">
+                                            <div class="row bd-example">
+                                                <div class="form-group col-md-3 col-sm-6 col-xs-12">
+                                                    <label class="control-label">Quan hệ</label>
+                                                    <select asp-for="Employee.EmployeeFamilys[iFa].Relation" class="form-control form-control-lg">
+                                                        <option value="">Chọn</option>
+                                                        <option value="3">Con</option>
+                                                        <option value="2">Vợ/chồng</option>
+                                                        <option value="1">Cha/mẹ</option>
+                                                    </select>
+                                                    @if (isChange && fa2.Count >= fa1.Count && fa2[iFa] != null)
+                                                    {
+                                                        if (item.Relation != fa2[iFa].Relation)
+                                                        {
+                                                            var displayRelation = string.Empty;
+                                                            if (fa2[iFa].Relation.HasValue)
+                                                            {
+                                                                displayRelation = Constants.Relation(fa2[iFa].Relation.Value);
+                                                            }
+                                                            if (isRight)
+                                                            {
+                                                                <p class="select-change-data" data-value="@fa2[iFa].Relation"><small class="badge badge-info"><i class="far fa-check-circle"></i> Xác nhận</small> @displayRelation</p>
+                                                            }
+                                                            else
+                                                            {
+                                                                <p class="change-data"><small class="badge badge-info">@Constants.CurrentText</small> @displayRelation</p>
+                                                            }
+                                                        }
+                                                    }
+                                                </div>
+                                                <div class="form-group col-md-3 col-sm-6 col-xs-12">
+                                                    <label class="control-label">Họ và tên</label>
+                                                    <input name="Employee.EmployeeFamilys[@iFa].FullName" value="@item.FullName" class="form-control form-control-lg" />
+                                                    @if (isChange && fa2.Count >= fa1.Count && fa2[iFa] != null)
+                                                    {
+                                                        if (item.FullName != fa2[iFa].FullName)
+                                                        {
+                                                            if (isRight)
+                                                            {
+                                                                <p class="btn-change-data" data-value="@fa2[iFa].FullName"><small class="badge badge-info"><i class="far fa-check-circle"></i> Xác nhận</small> @fa2[iFa].FullName</p>
+                                                            }
+                                                            else
+                                                            {
+                                                                <p class="change-data"><small class="badge badge-info">@Constants.CurrentText</small> @fa2[iFa].FullName</p>
+                                                            }
+                                                        }
+                                                    }
+                                                </div>
+                                                <div class="form-group col-md-3 col-sm-6 col-xs-12">
+                                                    <label class="control-label">Ngày sinh nhật</label>
+                                                    @{
+                                                        if (item.Birthday.HasValue)
+                                                        {
+                                                            <input class="form-control form-control-lg datepicker datepicker-lg" value="@item.Birthday.Value.ToString("dd/MM/yyyy")" />
+                                                        }
+                                                        else
+                                                        {
+                                                            <input class="form-control form-control-lg datepicker datepicker-lg" />
+                                                        }
+                                                    }
+                                                    @if (isChange && fa2.Count >= fa1.Count && fa2[iFa] != null)
+                                                    {
+                                                        if (item.Birthday != fa2[iFa].Birthday)
+                                                        {
+                                                            var displayBirthday = string.Empty;
+                                                            if (fa2[iFa].Birthday.HasValue)
+                                                            {
+                                                                displayBirthday = fa2[iFa].Birthday.Value.ToString("dd/MM/yyyy");
+                                                            }
+                                                            if (isRight)
+                                                            {
+                                                                <p class="btn-change-data" data-value="@fa2[iFa].Birthday"><small class="badge badge-info"><i class="far fa-check-circle"></i> Xác nhận</small> @displayBirthday</p>
+                                                            }
+                                                            else
+                                                            {
+                                                                <p class="change-data"><small class="badge badge-info">@Constants.CurrentText</small> @displayBirthday</p>
+                                                            }
+                                                        }
+                                                    }
+                                                    <input type="hidden" name="Employee.EmployeeFamilys[@iFa].Birthday" value="@item.Birthday" class="hidedatepicker" />
+                                                </div>
+
+                                                @if (iFa != 0)
+                                                {
+                                                    <div class="col-md-3 col-sm-6 col-xs-12">
+                                                        <button type="button" class="btn btn-danger btn-sm remove-item"><i class="glyphicon-remove"></i>Xóa</button>
+                                                    </div>
+                                                }
+                                            </div>
+                                            <input type="hidden" class="codeFamily" value="@iFa" />
+                                        </div>
+                                        iFa++;
+                                    }
+                                }
+                            }
+                            <div class="form-group col-12 more-family">
+                                <button class="btn btn-success btn-sm addFamily" type="button"><i class="icon icon-add-user"></i> Thêm thành viên</button>
+                            </div>
+                        </div>
+
+                        <!-- Certificates -->
+                        <div class="row">
+                            <div class="col-12 text-uppercase">
+                                <h4 class="title-decorative">Học vấn</h4>
+                            </div>
+                            @{
+                                var cer1 = employee.Certificates;
+                                var cer2 = Model.EmployeeChance != null ? Model.EmployeeChance.Certificates : null;
+                                if (cer1 != null && cer1.Count > 0)
+                                {
+                                    var iHocVan = 0;
+                                    foreach (var item in cer1)
+                                    {
+                                        <div class="row nodeCertificate node bd-example">
+                                            <div class="form-group col-sm-6 col-xs-12">
+                                                <label class="control-label">Học vấn</label>
+                                                <input asp-for="Employee.Certificates[iHocVan].Type" class="form-control form-control-lg" />
+                                            </div>
+                                            <div class="form-group col-sm-6 col-xs-12">
+                                                <label class="control-label">Nơi cấp</label>
+                                                <input asp-for="Employee.Certificates[iHocVan].Location" class="form-control form-control-lg" />
+                                            </div>
+                                            <div class="form-group col-sm-6 col-xs-12">
+                                                <label class="control-label">Mô tả</label>
+                                                <textarea asp-for="Employee.Certificates[iHocVan].Description" class="form-control form-control-lg js-auto-size"></textarea>
+                                            </div>
+                                            @if (iHocVan != 0)
+                                            {
+                                                <div class="col-xs-12">
+                                                    <button type="button" class="btn btn-danger btn-sm remove-item"><i class="glyphicon-remove"></i>Xóa</button>
+                                                </div>
+                                            }
+                                            <input type="hidden" class="codeCertificate" value="@iHocVan" />
+                                        </div>
+                                        iHocVan++;
+                                    }
+                                }
+                            }
+                            <div class="form-group col-12 more-certificate">
+                                <button class="btn btn-success btn-sm addCertificate" type="button"><i class="icon icon-add-to-list"></i> Thêm học vấn</button>
+                            </div>
+                        </div>
+
+                        <!-- DAO TAO -->
+                        <div class="row">
+                            <div class="col-12 text-uppercase">
+                                <h4 class="title-decorative">ĐÀO TẠO (THỜI GIAN, CHUYÊN MÔN, CHỨNG CHỈ)</h4>
+                            </div>
+                            @{
+                                var tra1 = employee.EmployeeEducations;
+                                var tra2 = Model.EmployeeChance != null ? Model.EmployeeChance.EmployeeEducations : null;
+                                if (tra1 != null && tra1.Count > 0)
+                                {
+                                    int iTra = 0;
+                                    var iTraNo = 1;
+                                    foreach (var item in tra1)
+                                    {
+                                        if (!string.IsNullOrEmpty(item.Content))
+                                        {
+                                            <div class="col-12 nodeEducation node">
+                                                <div class="row bd-example">
+                                                    <div class="col-12">
+                                                        <div class="form-group">
+                                                            <label class="control-label">Lần @iTraNo - Nội dung</label>
+                                                            <textarea asp-for="Employee.EmployeeEducations[iTra].Content" class="form-control form-control-lg js-auto-size"></textarea>
+                                                            @if (isChange && tra2.Count > tra1.Count && tra2[iTra] != null)
+                                                            {
+                                                                if (item.Content != tra2[iTra].Content)
+                                                                {
+                                                                    if (isRight)
+                                                                    {
+                                                                        <p class="txt-change-data" data-value="@tra2[iTra].Content"><small class="badge badge-info"><i class="far fa-check-circle"></i> Xác nhận</small> @tra2[iTra].Content</p>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <p class="change-data"><small class="badge badge-info">@Constants.CurrentText</small> @tra2[iTra].Content</p>
+                                                                    }
+                                                                }
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                    @if (iTra != 0)
+                                                    {
+                                                        <div class="col-12">
+                                                            <button type="button" class="btn btn-danger btn-sm remove-item"><i class="glyphicon-remove"></i>Xóa</button>
+                                                        </div>
+                                                    }
+                                                </div>
+                                                <input type="hidden" class="codeEducation" value="@iTra" />
+                                            </div>
+                                            iTraNo++;
+                                            iTra++;
+                                        }
+                                    }
+
+
+                                    if (isChange && tra2 != null && tra2.Count > 0 && tra2.Count > tra1.Count)
+                                    {
+                                        for (int iTra2 = iTra; iTra2 < tra2.Count; iTra2++)
+                                        {
+                                            <div class="col-12 nodeEducation node">
+                                                <div class="row bd-example">
+                                                    <div class="col-12">
+                                                        <div class="form-group">
+                                                            <label class="control-label">Nội dung</label>
+                                                            <textarea name="Employee.EmployeeEducations[@iTra2].Content" class="form-control form-control-lg js-auto-size"></textarea>
+                                                            @if (isRight)
+                                                            {
+                                                                <p class="txt-change-data" data-value="@tra2[iTra2].Content"><small class="badge badge-info"><i class="far fa-check-circle"></i> Xác nhận</small> @tra2[iTra2].Content</p>
+                                                            }
+                                                            else
+                                                            {
+                                                                <p class="change-data"><small class="badge badge-info">@Constants.CurrentText</small> @tra2[iTra2].Content</p>
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-12">
+                                                        <button type="button" class="btn btn-danger btn-sm remove-item"><i class="glyphicon-remove"></i>Xóa</button>
+                                                    </div>
+                                                </div>
+                                                <input type="hidden" class="codeEducation" value="@iTra2" />
+                                            </div>
+                                        }
+                                    }
+                                }
+                            }
+                            <div class="form-group col-12 more-education">
+                                <button class="btn btn-success btn-sm addEducation" type="button"><i class="icon icon-add-to-list"></i> Thêm khóa đào tạo</button>
+                            </div>
+                        </div>
+
+                        @if (isRight)
+                        {
+                            <!-- HOP DONG LAO DONG -->
+                            <div class="row">
+                                <div class="col-12 text-uppercase">
+                                    <h4 class="title-decorative">Hợp đồng lao động</h4>
+                                </div>
+                                @if (employee.Contracts != null && employee.Contracts.Count > 0)
+                                {
+                                    foreach (var contract in employee.Contracts)
+                                    {
+                                        if (!string.IsNullOrEmpty(contract.Code))
+                                        {
+                                            <div class="col-12 nodeContract node">
+                                                <div class="bd-example">
+                                                    <div class="col-sm-6 col-xs-12">
+                                                        <div class="form-group">
+                                                            <label class="control-label">Loại hợp đồng</label>
+                                                            <p><span>@contract.TypeName</span></p>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-sm-6 col-xs-12">
+                                                        <div class="form-group">
+                                                            <label class="control-label">Số hợp đồng</label>
+                                                            <p><span>@contract.Code</span></p>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-sm-6 col-xs-12">
+                                                        <div class="form-group">
+                                                            <label class="control-label">PLHĐ</label>
+                                                            <p><span>@contract.PLHD</span></p>
+                                                        </div>
+                                                    </div>
+                                                    @if (contract.Type == "HĐ KHÔNG XÁC ĐỊNH THỜI HẠN")
+                                                    {
+                                                        <div class="col-sm-6 col-xs-12">
+                                                            <div class="form-group">
+                                                                <label class="control-label">Phụ lục điều chỉnh lương</label>
+                                                                <p><span>@contract.PhuLucDieuChinhLuong</span></p>
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                    @if (!string.IsNullOrEmpty(contract.Description))
+                                                    {
+                                                        <div class="col-sm-6 col-xs-12">
+                                                            <div class="form-group">
+                                                                <label class="control-label">Ghi chú</label>
+                                                                <p><span>@contract.Description</span></p>
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                    <div class="col-sm-6 col-xs-12">
+                                                        <div class="form-group">
+                                                            <label class="control-label">Ngày hiệu lực</label>
+                                                            @{
+                                                                var startContract = contract.Start.HasValue && contract.Start.Value.Year > 1900 ? contract.Start.Value.ToString("dd/MM/yyyy") : string.Empty;
+                                                            }
+                                                            <p><span>@startContract</span></p>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-sm-6 col-xs-12">
+                                                        <div class="form-group">
+                                                            <label class="control-label">Ngày hết hiệu lực</label>
+                                                            @{
+                                                                var endContract = contract.End.HasValue && contract.End.Value.Year > 1900 ? contract.End.Value.ToString("dd/MM/yyyy") : string.Empty;
+                                                            }
+                                                            <p><span>@endContract</span></p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    }
+                                }
+                                <div class="form-group col-12 more-contract">
+                                    <button class="btn btn-success btn-sm add-contract" type="button"><i class="icon icon-add-user"></i> Thêm HĐLĐ</button>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="tab-pane fade show" id="extend3" role="tabpanel">
+                    <div class="container">
+                        @if (isRight)
+                        {
+                            <!-- SO LUONG BAN LUU -->
+                            <div class="row">
+                                <div class="col-12 text-uppercase">
+                                    <h4 class="title-decorative">Số lượng bản lưu</h4>
+                                </div>
+                                @if (employee.StorePapers != null && employee.StorePapers.Count > 0)
+                                {
+                                    foreach (var item in employee.StorePapers)
+                                    {
+                                        if (item.Count > 0)
+                                        {
+                                            <div class="col-12 nodeStorePaper node">
+                                                <div class="row bd-example">
+                                                    <div class="col-sm-6 col-xs-12">
+                                                        <div class="form-group">
+                                                            <label class="control-label">Loại bảng lưu</label>
+                                                            <input value="@item.Type" type="text" readonly class="form-control-plaintext" />
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-sm-6 col-xs-12">
+                                                        <div class="form-group">
+                                                            <label class="control-label">Số lượng</label>
+                                                            <input value="@item.Count" type="text" readonly class="form-control-plaintext" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    }
+                                }
+                                <div class="form-group col-12 more-store-paper">
+                                    <button class="btn btn-success btn-sm add-store-paper" type="button"><i class="icon icon-add-user"></i> Thêm bản lưu</button>
+                                </div>
+                            </div>
+
+                            <!-- NGHI VIEC -->
+                            @if (isEdit)
+                            {
+                                var displayLeave = "d-none";
+                                var checkLeave = string.Empty;
+                                if (employee.Leave)
+                                {
+                                    displayLeave = string.Empty;
+                                    checkLeave = "checked";
+                                }
+                                <div class="form-group col-12">
+                                    <label class="control-label">
+                                        Nghỉ việc
+                                    </label>
+                                    <input type="checkbox" @checkLeave class="form-control form-control-lg big-checkbox chkLeave" id="check-enable" />
+                                    <input type="hidden" asp-for="Employee.Leave" />
+                                </div>
+                                <div class="row">
+                                    <div class="form-group col-md-3 col-sm-6 col-xs-12 leave-extend @displayLeave">
+                                        <label class="control-label">Ngày nghỉ</label>
+                                        @{
+                                            var leaveDay = employee.Leaveday.HasValue ? employee.Leaveday.Value.ToString("dd/MM/yyyy") : string.Empty;
+                                        }
+                                        <input class="form-control form-control-lg datepicker datepicker-lg" value="@leaveDay" />
+                                        <input type="hidden" name="Employee.Leaveday" class="form-control form-control-lg hidedatepicker" value="@employee.Leaveday" />
+                                    </div>
+                                    <div class="form-group col-md-9 col-sm-6 col-xs-12 leave-extend @displayLeave">
+                                        <label class="control-label">Lý do</label>
+                                        <input asp-for="Employee.LeaveReason" class="form-control form-control-lg" />
+                                    </div>
+                                    <div class="form-group col-12 leave-extend @displayLeave">
+                                        <label class="control-label">Nội dung bàn giao</label>
+                                        <textarea asp-for="Employee.LeaveHandover" class="form-control form-control-lg"></textarea>
+                                    </div>
+                                </div>
+
+                                @if (!employee.IsLeaveEmail)
+                                {
+                                    <div class="form-group col-12 leave-extend @displayLeave">
+                                        <input type="checkbox" class="big-checkbox chkLeaveEmailSend" />
+                                        <input asp-for="IsLeaveEmail" type="hidden" />
+                                        <b>Gửi email thông báo nhân sự nghỉ việc</b>
+                                    </div>
+                                    <div class="form-group col-12 d-none leaveEmail">
+                                        <input type="checkbox" class="big-checkbox chkLeaveEmailAll">
+                                        <input asp-for="LeaveEmailAll" type="hidden" value="false" />
+                                        <b>Gửi tất cả nhân viên</b>
+                                    </div>
+                                    <div class="form-group col-12 d-none leaveEmail">Danh sách email gửi:</div>
+                                    <div class="form-group col-12 d-none leaveEmail leaveToEmailList" style="font-weight:bold"></div>
+                                    <div class="form-group col-12 d-none leaveEmail leaveCCEmailList" style="font-weight:bold"></div>
+                                    <div class="form-group col-12 d-none leaveEmail col-md-6">
+                                        <label class="control-label">Email khác</label>
+                                        <input asp-for="WelcomeOtherEmail" class="form-control form-control-lg" />
+                                        <small><span class="badge badge-info">1</span> Các email phân tách bằng ký tự <code>;</code>. vd: a@tribat.vn; b@tribat.vn</small>
+                                    </div>
+                                    <div class="form-group col-12 col-md-6 d-none leaveEmail leave-extend @displayLeave">
+                                        <label class="control-label">Nhóm gửi email</label>
+                                        <input asp-for="LeaveEmailGroup" class="form-control form-control-lg" />
+                                        <small><span class="badge badge-info">1</span> Đặt tên nhóm theo ngày, theo ký tự nào đó. Vd: 20122018.</small>
+                                        <small><span class="badge badge-info">2</span> Sau khi hoàn tất muốn gửi mail theo nhóm thì đánh dấu bên dưới. Muốn tạo thêm thông tin theo nhóm thì bỏ chọn bên dưới.</small>
+                                        <small>*** Hệ thống sẽ gửi email thông báo theo tên nhóm. Sau khi lên lịch gửi tên nhóm sẽ hủy.</small>
+                                    </div>
+                                    <div class="col-12 d-none leaveEmail leaveGroupInfo"></div>
+                                }
+                            }
+                        }
+
+                        <!-- WELCOME MESSAGE -->
+                        @if (isRight && !employee.IsWelcomeEmail)
+                        {
+                            <hr />
+                            <div class="row">
+                                <div class="form-group col-12">
+                                    <div class="float-left">
+                                        <input type="checkbox" class="big-checkbox chkWelcomeEmailSend" />
+                                        <input asp-for="IsWelcomeEmail" type="hidden" value="false" />
+                                    </div>
+                                    <div class="float-left" style="margin-left:8px"><b>Gửi email thông báo nhân sự mới</b></div>
+                                </div>
+                                <div class="form-group col-12 d-none welcomeEmail">
+                                    <div class="float-left">
+                                        <input type="checkbox" class="big-checkbox chkWelcomeEmailAll">
+                                        <input asp-for="WelcomeEmailAll" type="hidden" value="false" />
+                                    </div>
+                                    <div class="float-left" style="margin-left:8px"><b>Gửi tất cả nhân viên</b></div>
+                                </div>
+                                <div class="form-group col-12 d-none welcomeEmail">Danh sách email gửi:</div>
+                                <div class="form-group col-12 d-none welcomeEmail welcomeToEmailList" style="font-weight:bold"></div>
+                                <div class="form-group col-12 d-none welcomeEmail welcomeCCEmailList" style="font-weight:bold"></div>
+                                <div class="form-group col-12 col-md-6 d-none welcomeEmail">
+                                    <label class="control-label">Email khác (TO)</label>
+                                    <input asp-for="WelcomeOtherEmail" class="form-control form-control-lg" />
+                                    <small><span class="badge badge-info">1</span> Các email phân tách bằng ký tự <code>;</code>. vd: a@tribat.vn; b@tribat.vn</small>
+                                </div>
+                                <div class="form-group col-12">
+                                    <label class="control-label">Gửi thông báo theo nhóm nhân viên</label>
+                                    <input asp-for="WelcomeEmailGroup" class="form-control form-control-lg" />
+                                    <small><span class="badge badge-info">1</span> Đặt tên nhóm. Vd: 20122018.</small>
+                                    <small><span class="badge badge-info">2</span> Thêm thành viên theo nhóm thì không chọn "Gửi email thông báo nhân sự mới".</small>
+                                    <small>* Sau khi gửi email, thông tin nhóm được xóa.</small>
+                                </div>
+                                <div class="form-group col-12 d-none welcomeEmail welcomeGroupInfo"></div>
+                            </div>
+                        }
+                        <!-- END WELCOME MESSAGE -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="space-xs">
+            <div class="container">
+                <div class="form-group alert alert-info text-small">
+                    <i class="icon-shield"></i>
+                    <span>
+                        Thông tin của bạn luôn được mã hóa và không cho các bên thứ ba truy cập.
+                    </span>
+                    <a href="/chinh-sach-bao-mat" target="_blank">Xem chính sách bảo mật của chúng tôi</a>
+                </div>
+
+                <button class="btn btn-danger btn-lg btn-block btn-submit" id="btn-save-submit" type="submit" data-toggle="tooltip" title="Bấm lưu thay đổi thông tin tài khoản.">
+                    <i class="icon icon-save"></i> Lưu thông tin
+                </button>
+            </div>
+        </section>
+    </form>
+</div>
+
+<partial name="Common/_ExtendPartial" />
+
+@section scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+        <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC7PCKw6JWnv5YTgKQbl-mi2wsxAXQTPeM&libraries=places&region=vn&language=vi" defer></script>
+        <script src="~/js/hr/employee-data.js?@Constants.VersionJs"></script>
+    }
+}
+

@@ -17,6 +17,7 @@ using ViewModels;
 using System.Security.Claims;
 using xcore.Models.TimeKeeper;
 using MongoDB.Bson;
+using Common.Enums;
 
 namespace erp.Controllers
 {
@@ -121,21 +122,29 @@ namespace erp.Controllers
             var userInformation = dbContext.Employees.Find(m => m.Id.Equals(userId)).First();
 
             var owner = isOwner ? userInformation : dbContext.Employees.Find(m => m.Id.Equals(ownerId)).First();
-            if (owner.Avatar == null)
+
+            var avatar = new Img
             {
-                owner.Avatar = new Image
-                {
-                    Path = "/images/placeholder/",
-                    FileName = "120x120.png"
-                };
-            }
-            if (owner.Cover == null)
+                Path = "/images/placeholder/",
+                FileName = "120x120.png"
+            };
+            var cover = new Img
             {
-                owner.Cover = new Image
+                Path = "/images/placeholder/",
+                FileName = "354x167.png"
+            };
+            if (owner.Images != null && owner.Images.Count > 0)
+            {
+                var avatarE = owner.Images.Where(m => m.Type.Equals((int)EImageSize.Avatar)).FirstOrDefault();
+                if (avatarE != null)
                 {
-                    Path = "/images/placeholder/",
-                    FileName = "354x167.png"
-                };
+                    avatar = avatarE;
+                }
+                var coverE = owner.Images.Where(m => m.Type.Equals((int)EImageSize.Cover)).FirstOrDefault();
+                if (coverE != null)
+                {
+                    cover = coverE;
+                }
             }
             // notification
             var sortNotification = Builders<Notification>.Sort.Ascending(m => m.CreatedOn);
@@ -155,6 +164,8 @@ namespace erp.Controllers
             var erpViewModel = new ErpViewModel()
             {
                 OwnerInformation = owner,
+                Avatar = avatar,
+                Cover = cover,
                 NotificationCount = notifications != null ? notifications.Count() : 0,
                 UserInformation = userInformation,
                 TrackingUser = trackingUsers

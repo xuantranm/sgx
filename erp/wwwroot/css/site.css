@@ -63,3 +63,13 @@ body {
     /* Standard */
     transform: rotate(-90.0deg);
 }
+#myProgress {
+    width: 100%;
+    background-color: grey;
+}
+
+#myBar {
+    width: 1%;
+    height: 30px;
+    background-color: green;
+}

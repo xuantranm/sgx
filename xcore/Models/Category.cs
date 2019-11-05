@@ -9,22 +9,22 @@ namespace Models
     /// <summary>
     /// All small data store here: Ca, Cong Doan, Xe, Phan Loại Xe,...
     /// If category belong another category, use [ParentId] (Id of parent category)
+    /// Ex: HR: First time, Category Company => ... (parent => child)
     /// </summary>
     public class Category : Extension
     {
-        public int Type { get; set; } = (int)ECategory.Ca;
+        public int Type { get; set; } = (int)ECategory.Role;
 
+        [Required]
         public string Name { get; set; }
 
         public string Alias { get; set; }
 
         public string Description { get; set; }
 
-        public string Content { get; set; } // Value
+        public IList<Setting> Properties { get; set; }
 
-        public IList<Img> Images { get; set; }
-
-        public IList<Document> Documents { get; set; }
+        public IList<ContentIn> Contents { get; set; }
 
         public string ParentId { get; set; }
     }

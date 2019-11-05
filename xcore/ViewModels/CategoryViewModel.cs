@@ -3,16 +3,15 @@ using System.Collections.Generic;
 
 namespace ViewModels
 {
-    public class CategoryViewModel : PagingExtension
+    public class CategoryViewModel : CommonViewModel
     {
-        #region Menu
-        public MenuViewModel Menu { get; set; }
-        #endregion
+        public Category Category { get; set; }
+        public IList<Category> Categories { get; set; }
+        public IList<CategoryDisplay> CategoriesDisplay { get; set; }
+        public string Domain { get; set; }
+        public string Alias { get; set; }
 
-        public ProductCategorySale Entity { get; set; }
-
-        public IList<ProductSale> Entities { get; set; }
-        public TextSearch Search { get; set; }
-        public IList<Link> Links { get; set; }
+        // Merge add/edit. If edit set value into property
+        public IList<Setting> Properties { get; set; }
     }
 }

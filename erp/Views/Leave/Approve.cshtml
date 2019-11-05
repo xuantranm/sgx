@@ -4,16 +4,13 @@
 
 @{
     ViewData["Title"] = "Xác nhận nghỉ phép";
-    
-}
-
-@{ 
     string alerttype = "alert-success";
     if (Model.Approve == 2)
     {
         alerttype = "alert-dark";
     }
 }
+
 <div class="alert @alerttype" role="alert">
     @ViewData["Status"]
 </div>

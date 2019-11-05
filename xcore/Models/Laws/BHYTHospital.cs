@@ -7,14 +7,6 @@ namespace Models
 {
     public class BHYTHospital: Extension
     {
-        [BsonId]
-        // Mvc don't know how to create ObjectId from string
-        [BsonRepresentation(BsonType.ObjectId)]
-        public string Id { get; set; }
-
-        [Display(Name = "Mã KCB")]
-        public string Code { get; set; }
-
         [Display(Name="Tuyến")]
         public string Local { get; set; }
 
@@ -38,22 +30,8 @@ namespace Models
         [Display(Name = "Ghi chú")]
         public string Note { get; set; }
 
-        public bool Enable { get; set; } = true;
-
-        public bool NoDelete { get; set; } = false;
-
-        // For check use?
-        public int Usage { get; set; } = 0;
-
         public DateTime CreatedDate { get; set; } = DateTime.Now;
 
-        public string CreatedBy { get; set; }
-
         public DateTime ModifiedDate { get; set; } = DateTime.Now;
-
-        public string ModifiedBy { get; set; }
-
-        // For multi update, general by system
-        public string Timestamp { get; set; } = DateTime.Now.ToString("yyyyMMddHHmmssfff");
     }
 }

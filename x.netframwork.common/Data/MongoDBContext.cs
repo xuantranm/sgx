@@ -98,6 +98,30 @@ namespace Data
             }
         }
 
+        public IMongoCollection<Category> Categories
+        {
+            get
+            {
+                return _database.GetCollection<Category>("Categories");
+            }
+        }
+
+        public IMongoCollection<Right> Rights
+        {
+            get
+            {
+                return _database.GetCollection<Right>("Rights");
+            }
+        }
+
+        public IMongoCollection<Content> Contents
+        {
+            get
+            {
+                return _database.GetCollection<Content>("Contents");
+            }
+        }
+
         public IMongoCollection<EmployeeWorkTimeMonthLog> EmployeeWorkTimeMonthLogs
         {
             get

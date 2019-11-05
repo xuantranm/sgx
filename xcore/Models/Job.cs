@@ -10,10 +10,10 @@ namespace Models
     // 10 first code use notice system.
     public class Job : Extension
     {
-        [BsonId]
-        // Mvc don't know how to create ObjectId from string
-        [BsonRepresentation(BsonType.ObjectId)]
-        public string Id { get; set; }
+        //[BsonId]
+        //// Mvc don't know how to create ObjectId from string
+        //[BsonRepresentation(BsonType.ObjectId)]
+        //public string Id { get; set; }
 
         [Required]
         public int Code { get; set; }
@@ -39,10 +39,10 @@ namespace Models
 
         public IList<Image> Images { get; set; }
 
-        [Required]
-        public string Language { get; set; } = Constants.Languages.Vietnamese;
+        //[Required]
+        //public string Language { get; set; } = Constants.Languages.Vietnamese;
 
-        public bool Enable { get; set; } = true;
+        //public bool Enable { get; set; } = true;
         public DateTime CreatedDate { get; set; } = DateTime.Now;
         public string CreatedUserId { get; set; }
 

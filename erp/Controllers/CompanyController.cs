@@ -1,24 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
-using Newtonsoft.Json;
 using Microsoft.Extensions.Configuration;
-using System.Text;
 using Microsoft.AspNetCore.Hosting;
-using System.IO;
-using MongoDB.Driver;
 using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Http;
 using Data;
-using ViewModels;
-using Models;
-using Common.Utilities;
-using NPOI.SS.UserModel;
-using NPOI.HSSF.UserModel;
-using NPOI.XSSF.UserModel;
 using Microsoft.AspNetCore.Authorization;
 
 namespace erp.Controllers

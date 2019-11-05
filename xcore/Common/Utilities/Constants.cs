@@ -7,6 +7,73 @@ namespace Common.Utilities
     {
         public static string VersionJs = "v-" + DateTime.Now.Ticks;
 
+        public static string DataType(int type)
+        {
+            switch (type)
+            {
+                case (int)EData.Content:
+                    return "Content";
+                case (int)EData.Property:
+                    return "Property";
+                default:
+                    return "Setting";
+            }
+        }
+
+        public static class Folder
+        {
+            public const string Image = "images";
+            public const string Document = "documents";
+            public const string Resource = "resources";
+        }
+
+        public static class Texts
+        {
+            public const string Success = "Cập nhật thành công";
+            public const string Duplicate = "Dữ liệu đã có trên hệ thống";
+            public const string NotFound = "Dữ liệu không tồn tại trên hệ thống";
+            public const string ImageSize = "image-size";
+            public const string LogoSize = "logo-size";
+            public const string ModeDirect = "mode-direct";
+        }
+
+        public static class Socials
+        {
+            public const string Facebook = "facebook";
+            public const string Youtube = "youtube";
+            public const string Twitter = "twitter";
+            public const string Instagram = "instagram";
+            public const string Pinterest = "pinterest";
+            public const string Flickr = "flickr";
+        }
+
+        public const string https = "https://";
+
+        public static class GoogleSearchType
+        {
+            public const string WebSite = "WebSite";
+            public const string NewsArticle = "NewsArticle";
+        }
+
+        public static class FacebookType
+        {
+            public const string WebSite = "website";
+            public const string Article = "article";
+        }
+
+        public static class TwitterCard
+        {
+            public const string Summary = "summary";
+        }
+
+        public static class SeoIndex
+        {
+            public const string indexFollow = "index, follow";
+            public const string indexNoFollow = "index, nofollow";
+            public const string noIndexFollow = "noindex, follow";
+            public const string noIndexNoFollow = "noindex, nofollow";
+        }
+
         public static class Controllers
         {
             public const string Account = "account";
@@ -22,6 +89,7 @@ namespace Common.Utilities
             public const string ImagesFolder = "imagesFolder";
             public const string UserName = "userName";
             public const string GodMode = "godmode";
+            public const string isEdit = "isEdit";
         }
 
         public static decimal RoundOff(this decimal i)
@@ -59,6 +127,7 @@ namespace Common.Utilities
             public const string Template = "mau-du-lieu";
             public const string Import = "nhap-du-lieu";
             public const string Export = "xuat-du-lieu";
+            public const string Report = "bao-cao";
 
             public const string Read = "xem";
             public const string Create = "tao-moi";
@@ -74,6 +143,7 @@ namespace Common.Utilities
             
             public const string Post = "post";
             public const string Calculator = "tinh-toan";
+            public const string Api = "api";
         }
 
         public static string Location(int loc)
@@ -220,7 +290,7 @@ namespace Common.Utilities
             public const string List = "danh-sach";
             public const string TonSx = "ton-sx";
             public const string ReportTonSx = "bao-cao-ton-san-xuat";
-            public const string ReportXCG = "bao-cao-xe-co-gioi";
+            public const string XCG = "xe-co-gioi";
             public const string ReportDG = "bao-cao-dong-goi";
             public const string ReportBH = "bao-cao-boc-hang";
             public const string ReportVanHanh = "bao-cao-van-hanh";
@@ -517,6 +587,13 @@ namespace Common.Utilities
 
         public static class Link
         {
+            public const string TuyenDung = "tuyen-dung";
+            public const string ThongBao = "thong-bao";
+            public const string DaoTao = "dao-tao";
+            public const string TinTuc = "tin-tuc";
+            public const string Category = "doanh-muc";
+            public const string Right = "quyen";
+
             public const string Product = "p";
             public const string News = "n";
             public const string Job = "j";
@@ -569,7 +646,7 @@ namespace Common.Utilities
 
         public static string MissTitle = "Đang cập nhật";
 
-        public static string CurrentText = "Dữ liệu hiện tại";
+        public static string CurrentText = "Dữ liệu thay đổi";
 
         public static string Godmode = "godmode";
 

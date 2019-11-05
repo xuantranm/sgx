@@ -8,12 +8,9 @@
         formSubmit();
     });
 
-    //$('.btn-chart-save').on('click', function () {
-    //    $('#chart-config').collapse('hide');
-    //    loadChart();
-    //});
-
-    //loadChart();
+    $('.ddl-employees').on('change', function (e) {
+        formSubmit();
+    });
 
     $('#requestTimeKeeperModal').on('show.bs.modal', function (event) {
         var a = $(event.relatedTarget); // Button that triggered the modal
@@ -42,12 +39,7 @@
         var frmValues = $this.serialize();
         console.log(frmValues);
 
-        // loading button
         $('.btn-submit-timekeeping').prop('disabled', true);
-        //$('input', $('.data-form')).prop('disabled', true);
-        //$('select', $('.data-form')).prop('disabled', true);
-        //$('textarea', $('.data-form')).prop('disabled', true);
-
         var loadingText = '<i class="fas fa-spinner"></i> đang xử lý...';
         $('.btn-submit-timekeeping').html(loadingText);
         $.ajax({

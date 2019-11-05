@@ -4,281 +4,116 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
-using Newtonsoft.Json;
 using Microsoft.Extensions.Configuration;
-using System.Text;
 using Microsoft.AspNetCore.Hosting;
 using System.IO;
 using MongoDB.Driver;
-using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Http;
 using Data;
 using ViewModels;
 using Models;
 using Common.Utilities;
-using NPOI.SS.UserModel;
-using NPOI.HSSF.UserModel;
-using NPOI.XSSF.UserModel;
 using System.Globalization;
 using Microsoft.AspNetCore.Authorization;
 using Services;
 using MimeKit;
-using MimeKit.Text;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Common.Enums;
 using Helpers;
 using MongoDB.Bson;
 
-namespace erp.Controllers
+namespace Controllers
 {
-    /// <summary>
-    /// Approve by EmployeeId,
-    /// Load list approver by Chuc Vu quan ly nhân viên đó.
-    /// </summary>
     [Authorize]
     [Route(Constants.LinkLeave.Main)]
-    public class LeaveController : Controller
+    public class LeaveController : BaseController
     {
         readonly MongoDBContext dbContext = new MongoDBContext();
-        private readonly IDistributedCache _cache;
         IHostingEnvironment _env;
-
-        private readonly ILogger _logger;
-
         public IConfiguration Configuration { get; }
         private readonly IEmailSender _emailSender;
-        private readonly ISmsSender _smsSender;
 
-        public LeaveController(IDistributedCache cache, IConfiguration configuration, IHostingEnvironment env, IEmailSender emailSender,
-            ISmsSender smsSender, ILogger<LeaveController> logger)
+        public LeaveController(
+            IConfiguration configuration,
+            IHostingEnvironment env,
+            IEmailSender emailSender)
         {
-            _cache = cache;
             Configuration = configuration;
             _env = env;
             _emailSender = emailSender;
-            _smsSender = smsSender;
-            _logger = logger;
         }
 
         [Route(Constants.LinkLeave.Index)]
         public async Task<IActionResult> Index(string id)
         {
             #region Authorization
-            var login = User.Identity.Name;
-            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
-            ViewData["LoginUserName"] = loginUserName;
-
-            var loginE = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(login)).FirstOrDefault();
-            if (loginE == null)
+            LoginInit(string.Empty, (int)ERights.View);
+            if (!(bool)ViewData[Constants.ActionViews.IsLogin])
             {
-                #region snippet1
                 await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                #endregion
-                return RedirectToAction("login", "account");
+                return RedirectToAction(Constants.ActionViews.Login, Constants.Controllers.Account);
             }
-            bool isRight = false;
-            if (loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.XinNghiPhepDum, (int)ERights.Add))
+            var loginId = User.Identity.Name;
+            var loginE = dbContext.Employees.Find(m => m.Id.Equals(loginId)).FirstOrDefault();
+            bool isHr = Utility.IsRight(loginId, Constants.Rights.NhanSu, (int)ERights.Add);
+
+            bool isNghiPhepDum = Utility.IsRight(loginId, Constants.Rights.XinNghiPhepDum, (int)ERights.Add);
+            if (!isNghiPhepDum)
             {
-                isRight = true;
-            }
-
-            var managerList = dbContext.Employees.CountDocuments(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.ManagerId.Equals(loginE.ChucVu));
-            if (managerList > 0)
-            {
-                isRight = true;
-            }
-
-            // HR
-            isRight = Utility.IsHrRole(loginE.ChucVuName);
-
-            #endregion
-
-            id = string.IsNullOrEmpty(id) ? login : id;
-            if (id != login)
-            {
-                loginE = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.Id.Equals(id)).FirstOrDefault();
-            }
-
-            var approves = new List<IdName>();
-            var phone = string.Empty;
-            var start = new TimeSpan(8, 0, 0);
-            var end = new TimeSpan(17, 0, 0);
-            var workingScheduleTime = "8:00-17:00";
-            if (loginE != null)
-            {
-                if (loginE.Mobiles != null && loginE.Mobiles.Count > 0)
+                var countManager = dbContext.Employees.CountDocuments(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.ManagerEmployeeId.Equals(loginId));
+                if (countManager > 0)
                 {
-                    phone = loginE.Mobiles.First().Number;
-                }
-                if (!string.IsNullOrEmpty(loginE.ManagerId))
-                {
-                    var approveEntity = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.ChucVu.Equals(loginE.ManagerId)).FirstOrDefault();
-                    if (approveEntity != null)
-                    {
-                        approves.Add(new IdName
-                        {
-                            Id = approveEntity.Id,
-                            Name = approveEntity.FullName + " (" + approveEntity.ChucVuName + ")"
-                        });
-                    }
-                }
-                if (loginE.Workplaces != null && loginE.Workplaces.Count > 0)
-                {
-                    foreach (var workplace in loginE.Workplaces)
-                    {
-                        if (!string.IsNullOrEmpty(workplace.WorkingScheduleTime))
-                        {
-                            workingScheduleTime = workplace.WorkingScheduleTime;
-                            start = TimeSpan.Parse(workplace.WorkingScheduleTime.Split("-")[0]);
-                            end = TimeSpan.Parse(workplace.WorkingScheduleTime.Split("-")[1]);
-                        }
-                    }
+                    isNghiPhepDum = true;
                 }
             }
-
-            // Create new leave
-            var leave = new Leave
+            if (!isNghiPhepDum)
             {
-                EmployeeId = loginE.Id,
-                EmployeeName = loginE.FullName,
-                Reason = "Nghỉ phép",
-                Phone = phone,
-                Start = start,
-                End = end,
-                WorkingScheduleTime = workingScheduleTime
-            };
-
-            // History leave
-            var sort = Builders<Leave>.Sort.Descending(m => m.UpdatedOn);
-            var leaves = await dbContext.Leaves.Find(m => m.EmployeeId.Equals(login)).Sort(sort).ToListAsync();
-
-            #region Dropdownlist
-            var types = dbContext.LeaveTypes.Find(m => m.Enable.Equals(true) && m.Display.Equals(true)).ToList();
-            if (approves.Count == 0)
-            {
-                var rolesApprove = dbContext.RoleUsers.Find(m => m.Enable.Equals(true) && m.Role.Equals("xac-nhan-nghi-phep")).ToList();
-
-                foreach (var roleApprove in rolesApprove)
-                {
-                    var employeeRole = dbContext.Employees.Find(m => m.Id.Equals(roleApprove.User)).FirstOrDefault();
-                    approves.Add(new IdName
-                    {
-                        Id = employeeRole.Id,
-                        Name = employeeRole.FullName + " (" + employeeRole.ChucVuName + ")"
-                    });
-                }
+                isNghiPhepDum = isHr;
             }
-            #endregion
 
-            // Quản lý số ngày nghỉ phép còn lại (nghỉ phép, các loại nghỉ bù,...)
-            var leaveEmployees = await dbContext.LeaveEmployees.Find(m => m.EmployeeId.Equals(id)).ToListAsync();
-
+            // Enable link Approve Leave
             var approver = false;
-            if (dbContext.Leaves.CountDocuments(m => m.Enable.Equals(true) && m.ApprovedBy.Equals(login)) > 0)
+            if (dbContext.Leaves.CountDocuments(m => m.Enable.Equals(true) && m.ApprovedBy.Equals(loginId)) > 0)
             {
                 approver = true;
             }
-
-            var viewModel = new LeaveViewModel
-            {
-                Leave = leave,
-                Leaves = leaves,
-                Employee = loginE,
-                Approves = approves,
-                Types = types,
-                LeaveEmployees = leaveEmployees,
-                RightRequest = isRight,
-                Approver = approver
-            };
-
-            return View(viewModel);
-        }
-
-        [Route(Constants.LinkLeave.HelpLeave)]
-        public async Task<IActionResult> HelpLeave(string id, string thang)
-        {
-            #region Authorization
-            var login = User.Identity.Name;
-            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
-            ViewData["LoginUserName"] = loginUserName;
-            var loginE = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(login)).FirstOrDefault();
-            if (loginE == null)
-            {
-                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                return RedirectToAction("login", "account");
-            }
-
-            bool isHr = Utility.IsHrRole(loginE.ChucVuName);
-            bool isManager = false;
-            var directors = new List<string>()
-            {
-                "C.01", "C.02", "C.03"
-            };
-            var managerList = new List<Employee>();
-            if (isHr)
-            {
-                managerList = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && !directors.Contains(m.NgachLuongCode)).ToList();
-            }
-            else
-            {
-                var builderE = Builders<Employee>.Filter;
-                var filterE = builderE.Eq(m => m.Enable, true) & builderE.Eq(m => m.Leave, false);
-                filterE = filterE & builderE.Eq(m => m.ManagerId, loginE.ChucVu);
-                managerList = dbContext.Employees.Find(filterE).SortBy(m => m.FullName).ToList();
-                if (managerList != null && managerList.Count > 0)
-                {
-                    isManager = true;
-                }
-                else
-                {
-                    return RedirectToAction("AccessDenied", "Account");
-                }
-            }
             #endregion
 
-            var employee = new Employee();
-            id = string.IsNullOrEmpty(id) ? login : id;
-            if (id != login)
-            {
-                employee = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.Id.Equals(id)).FirstOrDefault();
-            }
-
-            var leave = new Leave();
-            var leaves = new List<Leave>();
-            var leaveEmployees = new List<LeaveEmployee>();
-
-            var phone = string.Empty;
-            var start = new TimeSpan(7, 0, 0);
-            var end = new TimeSpan(16, 0, 0);
-            var workingScheduleTime = "7:00-16:00";
-
-            if (employee.Mobiles != null && employee.Mobiles.Count > 0)
-            {
-                phone = employee.Mobiles.First().Number;
-            }
-            if (employee.Workplaces != null && employee.Workplaces.Count > 0)
-            {
-                foreach (var workplace in employee.Workplaces)
-                {
-                    if (!string.IsNullOrEmpty(workplace.WorkingScheduleTime))
-                    {
-                        workingScheduleTime = workplace.WorkingScheduleTime;
-                        start = TimeSpan.Parse(workplace.WorkingScheduleTime.Split("-")[0]);
-                        end = TimeSpan.Parse(workplace.WorkingScheduleTime.Split("-")[1]);
-                    }
-                }
-            }
+            id = string.IsNullOrEmpty(id) ? loginId : id;
+            var account = id == loginId ? loginE : dbContext.Employees.Find(m => m.Id.Equals(id)).FirstOrDefault();
 
             #region Dropdownlist
+            var sortTimes = Utility.DllMonths();
             var types = dbContext.LeaveTypes.Find(m => m.Enable.Equals(true) && m.Display.Equals(true)).ToList();
+            var approves = Utility.Approves(account, true, Constants.Rights.XacNhanNghiPhep, (int)ERights.Edit);
+            var employees = Utility.EmployeesBase(isHr, account.ManagerEmployeeId);
             #endregion
 
-            #region Create new leave
-            leave = new Leave
+            #region Create Leave
+            var phone = string.Empty;
+            if (account.Mobiles != null && account.Mobiles.Count > 0)
             {
-                EmployeeId = employee.Id,
-                EmployeeName = employee.FullName,
+                phone = account.Mobiles.First().Number;
+            }
+            var start = new TimeSpan(8, 0, 0);
+            var end = new TimeSpan(17, 0, 0);
+            var workingScheduleTime = "8:00-17:00";
+            if (account.Workplaces != null)
+            {
+                var workplaceNM = account.Workplaces.Where(m => m.Code.Equals("NM")).FirstOrDefault();
+                if (workplaceNM != null && !string.IsNullOrEmpty(workplaceNM.Fingerprint))
+                {
+                    workingScheduleTime = workplaceNM.WorkingScheduleTime;
+                    start = TimeSpan.Parse(workplaceNM.WorkingScheduleTime.Split("-")[0]);
+                    end = TimeSpan.Parse(workplaceNM.WorkingScheduleTime.Split("-")[1]);
+                }
+            }
+
+            var leave = new Leave
+            {
+                EmployeeId = account.Id,
+                EmployeeName = account.FullName,
                 Reason = "Nghỉ phép",
                 Phone = phone,
                 Start = start,
@@ -289,20 +124,25 @@ namespace erp.Controllers
 
             // History leave
             var sort = Builders<Leave>.Sort.Descending(m => m.UpdatedOn);
-            leaves = await dbContext.Leaves.Find(m => m.EmployeeId.Equals(employee.Id)).Sort(sort).ToListAsync();
+            var leaves = await dbContext.Leaves.Find(m => m.EmployeeId.Equals(account.Id)).Sort(sort).ToListAsync();
 
             // Quản lý số ngày nghỉ phép còn lại (nghỉ phép, các loại nghỉ bù,...)
-            leaveEmployees = await dbContext.LeaveEmployees.Find(m => m.EmployeeId.Equals(employee.Id)).ToListAsync();
+            var leaveEmployees = await dbContext.LeaveEmployees.Find(m => m.EmployeeId.Equals(account.Id)).ToListAsync();
 
             var viewModel = new LeaveViewModel
             {
                 Leave = leave,
                 Leaves = leaves,
-                Employee = employee,
+                Employee = account,
+                Employees = employees,
+                Approves = approves,
                 Types = types,
-                Employees = managerList,
-                LeaveEmployees = leaveEmployees
+                LeaveEmployees = leaveEmployees,
+                RightRequest = isNghiPhepDum,
+                Approver = approver,
+                IsMe = id == loginId ? true : false
             };
+
             return View(viewModel);
         }
 
@@ -310,542 +150,335 @@ namespace erp.Controllers
         public async Task<IActionResult> Approvement(string id, string thang, string phep)
         {
             #region Authorization
-            var login = User.Identity.Name;
-            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
-            ViewData["LoginUserName"] = loginUserName;
-
-            var userInformation = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(login)).FirstOrDefault();
-            if (userInformation == null)
+            LoginInit(string.Empty, (int)ERights.View);
+            if (!(bool)ViewData[Constants.ActionViews.IsLogin])
             {
-                #region snippet1
                 await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                #endregion
-                return RedirectToAction("login", "account");
+                return RedirectToAction(Constants.ActionViews.Login, Constants.Controllers.Account);
             }
-            bool isRight = false;
-            if (loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.XinNghiPhepDum, (int)ERights.Add))
+            var loginId = User.Identity.Name;
+            var loginE = dbContext.Employees.Find(m => m.Id.Equals(loginId)).FirstOrDefault();
+            bool isHr = Utility.IsRight(loginId, Constants.Rights.NhanSu, (int)ERights.Add);
+            bool isNghiPhepDum = Utility.IsRight(loginId, Constants.Rights.XinNghiPhepDum, (int)ERights.Add);
+            if (!isNghiPhepDum)
             {
-                isRight = true;
+                var countManager = dbContext.Employees.CountDocuments(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.ManagerEmployeeId.Equals(loginId));
+                if (countManager > 0)
+                {
+                    isNghiPhepDum = true;
+                }
             }
-            //if (!isRight)
-            //{
-            //    return RedirectToAction("AccessDenied", "Account");
-            //}
+            if (!isNghiPhepDum)
+            {
+                isNghiPhepDum = isHr;
+            }
             #endregion
 
-            id = string.IsNullOrEmpty(id) ? login : id;
-            if (id != login)
-            {
-                userInformation = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.Id.Equals(id)).FirstOrDefault();
-            }
-
-            var myDepartment = userInformation.PhongBan;
+            id = string.IsNullOrEmpty(id) ? loginId : id;
+            var account = id == loginId ? loginE : dbContext.Employees.Find(m => m.Id.Equals(id)).FirstOrDefault();
 
             #region Dropdownlist
+            var sortTimes = Utility.DllMonths();
             var types = dbContext.LeaveTypes.Find(m => m.Enable.Equals(true) && m.Display.Equals(true)).ToList();
-            // Danh sách nhân viên để tạo phép dùm
-            var builder = Builders<Employee>.Filter;
-            var filter = builder.Eq(m => m.Enable, true);
-            filter = filter & !builder.Eq(m => m.UserName, Constants.System.account);
-            // Remove cấp cao ra (theo mã số lương)
-            filter = filter & !builder.In(m => m.NgachLuongCode, new string[] { "C.01", "C.02", "C.03" });
-            var employees = await dbContext.Employees.Find(filter).SortBy(m => m.FullName).ToListAsync();
-            var approves = new List<IdName>();
+            var approves = Utility.Approves(account, true, Constants.Rights.XacNhanNghiPhep, (int)ERights.Edit);
+            var employees = Utility.EmployeesBase(isHr, account.ManagerEmployeeId);
             #endregion
 
+            var myDepartment = account.PhongBanName;
+
             // View list approved or no.
-            var leaves = new List<Leave>();
+            var leaves = await dbContext.Leaves.Find(m => m.ApproverId.Equals(account.Id)).SortByDescending(m => m.ApprovedOn).ToListAsync();
             // View số ngày phép của nhân viên
             var leaveEmployees = new List<LeaveEmployee>();
-
-            leaves = await dbContext.Leaves.Find(m => m.ApproverId.Equals(userInformation.Id)).SortByDescending(m => m.ApprovedOn).ToListAsync();
 
             // Quản lý số ngày nghỉ phép còn lại (nghỉ phép, các loại nghỉ bù,...)
             if (!string.IsNullOrEmpty(myDepartment))
             {
-                leaveEmployees = await dbContext.LeaveEmployees.Find(m => m.Enable.Equals(true) && m.Department.Equals(myDepartment) && !m.EmployeeId.Equals(userInformation.Id)).SortBy(m => m.EmployeeName).ToListAsync();
+                leaveEmployees = await dbContext.LeaveEmployees.Find(m => m.Enable.Equals(true) && m.Department.Equals(myDepartment) && !m.EmployeeId.Equals(account.Id)).SortBy(m => m.EmployeeName).ToListAsync();
             }
 
             var viewModel = new LeaveViewModel
             {
-                RightRequest = isRight,
+                RightRequest = isNghiPhepDum,
                 Leaves = leaves,
-                Employee = userInformation,
+                Employee = account,
                 Types = types,
                 Employees = employees,
                 LeaveEmployees = leaveEmployees
             };
             return View(viewModel);
-        }
-
-        [Route(Constants.LinkLeave.Manage)]
-        public async Task<IActionResult> Manage(string id)
-        {
-            #region Authorization
-            var login = User.Identity.Name;
-            var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
-            ViewData["LoginUserName"] = loginUserName;
-
-            var userInformation = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(login)).FirstOrDefault();
-            if (userInformation == null)
-            {
-                #region snippet1
-                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                #endregion
-                return RedirectToAction("login", "account");
-            }
-            bool isRight = false;
-            if (loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.XinNghiPhepDum, (int)ERights.Add))
-            {
-                isRight = true;
-            }
-            if (!isRight)
-            {
-                return RedirectToAction("AccessDenied", "Account");
-            }
-            #endregion
-
-            id = string.IsNullOrEmpty(id) ? login : id;
-            if (id != login)
-            {
-                userInformation = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(id)).FirstOrDefault();
-            }
-
-            #region Dropdownlist
-            var types = dbContext.LeaveTypes.Find(m => m.Enable.Equals(true) && m.Display.Equals(true)).ToList();
-            // Danh sách nhân viên để tạo phép dùm
-            var builder = Builders<Employee>.Filter;
-            var filter = builder.Eq(m => m.Enable, true);
-            filter = filter & !builder.Eq(m => m.UserName, Constants.System.account);
-            // Remove cấp cao ra (theo mã số lương)
-            filter = filter & !builder.In(m => m.NgachLuongCode, new string[] { "C.01", "C.02", "C.03" });
-            var employees = await dbContext.Employees.Find(filter).SortBy(m => m.FullName).ToListAsync();
-            var approves = new List<IdName>();
-            #endregion
-
-            var leave = new Leave();
-            var leaves = new List<Leave>();
-            var leaveEmployees = new List<LeaveEmployee>();
-
-            var phone = string.Empty;
-            var start = new TimeSpan(7, 0, 0);
-            var end = new TimeSpan(16, 0, 0);
-            var workingScheduleTime = "7:00-16:00";
-
-            if (userInformation.Mobiles != null && userInformation.Mobiles.Count > 0)
-            {
-                phone = userInformation.Mobiles.First().Number;
-            }
-            if (!string.IsNullOrEmpty(userInformation.ManagerId))
-            {
-                var approveEntity = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.ChucVu.Equals(userInformation.ManagerId)).FirstOrDefault();
-                if (approveEntity != null)
-                {
-                    approves.Add(new IdName
-                    {
-                        Id = approveEntity.Id,
-                        Name = approveEntity.FullName
-                    });
-                }
-            }
-            if (userInformation.Workplaces != null && userInformation.Workplaces.Count > 0)
-            {
-                foreach (var workplace in userInformation.Workplaces)
-                {
-                    if (!string.IsNullOrEmpty(workplace.WorkingScheduleTime))
-                    {
-                        workingScheduleTime = workplace.WorkingScheduleTime;
-                        start = TimeSpan.Parse(workplace.WorkingScheduleTime.Split("-")[0]);
-                        end = TimeSpan.Parse(workplace.WorkingScheduleTime.Split("-")[1]);
-                    }
-                }
-            }
-
-            // Create new leave
-            leave = new Leave
-            {
-                EmployeeId = userInformation.Id,
-                EmployeeName = userInformation.FullName,
-                Reason = "Nghỉ phép",
-                Phone = phone,
-                Start = start,
-                End = end,
-                WorkingScheduleTime = workingScheduleTime
-            };
-
-            // History leave
-            var sort = Builders<Leave>.Sort.Descending(m => m.UpdatedOn);
-            leaves = await dbContext.Leaves.Find(m => m.EmployeeId.Equals(userInformation.Id)).Sort(sort).ToListAsync();
-
-            // Quản lý số ngày nghỉ phép còn lại (nghỉ phép, các loại nghỉ bù,...)
-            leaveEmployees = await dbContext.LeaveEmployees.Find(m => m.EmployeeId.Equals(userInformation.Id)).ToListAsync();
-
-
-            var rolesApprove = dbContext.RoleUsers.Find(m => m.Enable.Equals(true) && m.Role.Equals(Constants.Rights.XacNhanNghiPhep)).ToList();
-            foreach (var roleApprove in rolesApprove)
-            {
-                if (!approves.Any(item => item.Id == roleApprove.User))
-                {
-                    approves.Add(new IdName
-                    {
-                        Id = roleApprove.User,
-                        Name = roleApprove.FullName
-                    });
-                }
-            }
-
-            var viewModel = new LeaveViewModel
-            {
-                Leave = leave,
-                Leaves = leaves,
-                Employee = userInformation,
-                Approves = approves,
-                Types = types,
-                Employees = employees,
-                LeaveEmployees = leaveEmployees
-            };
-            return View(viewModel);
-        }
-
-        // Run first time. then comment. No use seconds
-        [Route(Constants.LinkLeave.UpdateLeaveDay)]
-        public IActionResult UpdateLeaveDay()
-        {
-            InitLeaveTypes();
-            var employees = dbContext.Employees.Find(m => m.Enable.Equals(true)).ToList();
-            var leaveEmployees = new List<LeaveEmployee>();
-            // Update ngày phép, phep bu` = 0;
-
-            var types = dbContext.LeaveTypes.Find(m => m.Display.Equals(true) && m.SalaryPay.Equals(true)).ToList();
-
-            double numberDay = 0;
-            foreach (var employee in employees)
-            {
-                foreach (var type in types)
-                {
-                    if (type.Alias == "phep-nam")
-                    {
-                        numberDay = employee.LeaveDayAvailable;
-                    }
-                    leaveEmployees.Add(new LeaveEmployee
-                    {
-                        LeaveTypeId = type.Id,
-                        EmployeeId = employee.Id,
-                        LeaveTypeName = type.Name,
-                        EmployeeName = employee.FullName,
-                        Number = numberDay
-                    });
-                    numberDay = 0;
-                }
-            }
-            dbContext.LeaveEmployees.DeleteMany(new BsonDocument());
-            dbContext.LeaveEmployees.InsertMany(leaveEmployees);
-            return Json(new { result = true });
         }
 
         [HttpPost]
         [Route(Constants.LinkLeave.Create)]
         public async Task<IActionResult> Create(LeaveViewModel viewModel)
         {
-            try
+            #region Authorization
+            LoginInit(string.Empty, (int)ERights.View);
+            if (!(bool)ViewData[Constants.ActionViews.IsLogin])
             {
-                #region Authorization
-                var login = User.Identity.Name;
-                var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
-                ViewData["LoginUserName"] = loginUserName;
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                return RedirectToAction(Constants.ActionViews.Login, Constants.Controllers.Account);
+            }
+            var loginId = User.Identity.Name;
+            var loginE = dbContext.Employees.Find(m => m.Id.Equals(loginId)).FirstOrDefault();
+            #endregion
 
-                var loginE = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Id.Equals(login)).FirstOrDefault();
-                if (loginE == null)
+            double phepcon = 0;
+            var entity = viewModel.Leave;
+            if (string.IsNullOrEmpty(entity.EmployeeId))
+            {
+                return Json(new { result = false, message = "Lỗi: Vui lòng chọn nhân viên." });
+            }
+
+            var isMe = entity.EmployeeId == loginId ? true : false;
+            var account = isMe ? loginE : dbContext.Employees.Find(m => m.Id.Equals(entity.EmployeeId)).FirstOrDefault();
+            var approveE = new Employee();
+            if (isMe)
+            {
+                approveE = dbContext.Employees.Find(m => m.Id.Equals(entity.ApproverId)).FirstOrDefault();
+                if (approveE == null)
                 {
-                    #region snippet1
-                    await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                    #endregion
-                    return RedirectToAction("login", "account");
-                }
-                #endregion
-
-                double phepcon = 0;
-                var entity = viewModel.Leave;
-                if (string.IsNullOrEmpty(entity.EmployeeId))
-                {
-                    return Json(new { result = false, message = "Lỗi: Vui lòng chọn nhân viên." });
-                }
-
-                // Tự yêu cầu
-                var employee = loginE;
-                var help = false;
-                // Làm cho người khác
-                if (entity.EmployeeId != login)
-                {
-                    employee = dbContext.Employees.Find(m => m.Id.Equals(entity.EmployeeId)).FirstOrDefault();
-                    help = true;
-                }
-
-                var workdayStartTime = new TimeSpan(7, 0, 0);
-                var workdayEndTime = new TimeSpan(16, 0, 0);
-                if (!string.IsNullOrEmpty(entity.WorkingScheduleTime))
-                {
-                    workdayStartTime = TimeSpan.Parse(entity.WorkingScheduleTime.Split("-")[0]);
-                    workdayEndTime = TimeSpan.Parse(entity.WorkingScheduleTime.Split("-")[1]);
-                }
-
-                // Get working day later
-                entity.From = entity.From.Date.Add(entity.Start);
-                entity.To = entity.To.Date.Add(entity.End);
-                entity.Number = Utility.GetBussinessDaysBetweenTwoDates(entity.From, entity.To, workdayStartTime, workdayEndTime);
-
-                #region QUAN LY LOAI PHEP, BU, NGHI KO TINH LUONG,...
-                var typeLeave = dbContext.LeaveTypes.Find(m => m.Id.Equals(entity.TypeId)).FirstOrDefault();
-                if (typeLeave.SalaryPay == true)
-                {
-                    double leaveDayAvailable = 0;
-                    // Get phép năm, bù còn
-                    var leaveEmployeePhep = dbContext.LeaveEmployees.Find(m => m.EmployeeId.Equals(entity.EmployeeId) && m.LeaveTypeId.Equals(entity.TypeId)).FirstOrDefault();
-                    if (leaveEmployeePhep != null)
-                    {
-                        leaveDayAvailable = leaveEmployeePhep.Number;
-                    }
-                    // Nghỉ hưởng lương dc phép tạo (thai sản, cưới, sự kiện,...) 
-                    if (typeLeave.Alias != "nghi-huong-luong")
-                    {
-                        if (leaveDayAvailable < entity.Number)
-                        {
-                            return Json(new { result = false, message = typeLeave.Name + " không đủ ngày." });
-                        }
-                    }
-                }
-                #endregion
-
-                #region Tạo trùng ngày
-                var builderExist = Builders<Leave>.Filter;
-                var filterExist = builderExist.Eq(m => m.Enable, true);
-                filterExist = filterExist & builderExist.Eq(m => m.EmployeeId, entity.EmployeeId);
-                filterExist = filterExist & builderExist.Gte(m => m.From, entity.From);
-                filterExist = filterExist & builderExist.Lte(m => m.To, entity.To);
-
-                var exists = await dbContext.Leaves.Find(filterExist).ToListAsync();
-                if (exists != null && exists.Count > 0)
-                {
-                    return Json(new { result = false, message = "Ngày yêu cầu đã được duyệt. Xem danh sách nghỉ bên dưới. Vui lòng yêu cầu ngày khác." });
-                }
-                #endregion
-
-                entity.SecureCode = Helper.HashedPassword(Guid.NewGuid().ToString("N").Substring(0, 12));
-                entity.EmployeeName = employee.FullName;
-                entity.EmployeeDepartment = employee.PhongBanName;
-                entity.EmployeePart = employee.BoPhanName;
-                entity.EmployeeTitle = employee.ChucVuName;
-                entity.Status = (int)StatusLeave.New;
-
-                if (help)
-                {
-                    entity.Status = (int)StatusLeave.Accept;
-                    entity.ApproverId = loginE.Id;
-                    entity.ApprovedBy = loginE.Id;
-                }
-
-                var approverE = new Employee();
-                if (!string.IsNullOrEmpty(entity.ApproverId))
-                {
-                    approverE = dbContext.Employees.Find(m => m.Id.Equals(entity.ApproverId)).FirstOrDefault();
-                    entity.ApproverName = approverE.FullName + " (" + approverE.ChucVuName + ")";
-                }
-
-                entity.CreatedBy = loginE.Id;
-                entity.UpdatedBy = loginE.Id;
-
-                dbContext.Leaves.InsertOne(entity);
-
-                #region QUAN LY LOAI PHEP, BU, NGHI KO TINH LUONG,...
-                if (typeLeave.SalaryPay == true)
-                {
-                    #region update Leave Date
-                    // phep nam, bu
-                    // Nghỉ hưởng lương dc phép tạo (thai sản, cưới, sự kiện,...) 
-                    if (typeLeave.Alias != "nghi-huong-luong")
-                    {
-                        var builderLeaveEmployee = Builders<LeaveEmployee>.Filter;
-                        var filterLeaveEmployee = builderLeaveEmployee.Eq(m => m.EmployeeId, entity.EmployeeId)
-                                                & builderLeaveEmployee.Eq(x => x.LeaveTypeId, entity.TypeId);
-                        var updateLeaveEmployee = Builders<LeaveEmployee>.Update.Inc(m => m.Number, -entity.Number)
-                                                                                .Inc(m => m.NumberUsed, entity.Number);
-                        dbContext.LeaveEmployees.UpdateOne(filterLeaveEmployee, updateLeaveEmployee);
-                    }
-                    #endregion
-
-                    phepcon = dbContext.LeaveEmployees.AsQueryable().Where(x => x.EmployeeId.Equals(entity.EmployeeId)).Sum(x => x.Number);
-                }
-                #endregion
-
-                #region Send Mail
-                if (!help)
-                {
-                    var tos = new List<EmailAddress>();
-                    if (!string.IsNullOrEmpty(entity.ApproverId))
-                    {
-                        tos.Add(new EmailAddress { Name = approverE.FullName, Address = approverE.Email });
-                    }
-                    var webRoot = Environment.CurrentDirectory;
-                    var pathToFile = _env.WebRootPath
-                            + Path.DirectorySeparatorChar.ToString()
-                            + "Templates"
-                            + Path.DirectorySeparatorChar.ToString()
-                            + "EmailTemplate"
-                            + Path.DirectorySeparatorChar.ToString()
-                            + "LeaveRequest.html";
-
-                    var subject = "Xác nhận nghỉ phép.";
-                    var requester = employee.FullName;
-                    var var3 = employee.FullName;
-                    if (entity.EmployeeId != login)
-                    {
-                        requester += " (người tạo phép: " + loginE.FullName + ")";
-                    }
-                    var dateRequest = entity.From.ToString("dd/MM/yyyy HH:mm") + " - " + entity.To.ToString("dd/MM/yyyy HH:mm") + " (" + entity.Number + " ngày)";
-                    // Api update, generate code.
-                    var linkapprove = Constants.System.domain + "/xacnhan/phep";
-                    var linkAccept = linkapprove + "?id=" + entity.Id + "&approve=1&secure=" + entity.SecureCode;
-                    var linkCancel = linkapprove + "?id=" + entity.Id + "&approve=2&secure=" + entity.SecureCode;
-                    var linkDetail = Constants.System.domain;
-                    var bodyBuilder = new BodyBuilder();
-                    using (StreamReader SourceReader = System.IO.File.OpenText(pathToFile))
-                    {
-                        bodyBuilder.HtmlBody = SourceReader.ReadToEnd();
-                    }
-                    string messageBody = string.Format(bodyBuilder.HtmlBody,
-                        subject,
-                        approverE.FullName,
-                        requester,
-                        var3,
-                        employee.Email,
-                        employee.ChucVuName,
-                        dateRequest,
-                        entity.Reason,
-                        entity.TypeName,
-                        entity.Phone,
-                        linkAccept,
-                        linkCancel,
-                        linkDetail,
-                        Constants.System.domain
-                        );
-
-                    var emailMessage = new EmailMessage()
-                    {
-                        ToAddresses = tos,
-                        Subject = subject,
-                        BodyContent = messageBody,
-                        Type = "yeu-cau-nghi-phep",
-                        EmployeeId = employee.Id
-                    };
-
-                    // For faster. Add to schedule.
-                    // Send later
-                    var scheduleEmail = new ScheduleEmail
-                    {
-                        Status = (int)EEmailStatus.Schedule,
-                        To = emailMessage.ToAddresses,
-                        CC = emailMessage.CCAddresses,
-                        BCC = emailMessage.BCCAddresses,
-                        Type = emailMessage.Type,
-                        Title = emailMessage.Subject,
-                        Content = emailMessage.BodyContent,
-                        EmployeeId = emailMessage.EmployeeId
-                    };
-                    dbContext.ScheduleEmails.InsertOne(scheduleEmail);
+                    return Json(new { result = false, message = "Lỗi: Vui lòng chọn người duyệt phép." });
                 }
                 else
                 {
-                    // KO CÓ EMAIL,...
-                    // [To] nếu có email, người tạo
-                    var tos = new List<EmailAddress>();
-                    if (!string.IsNullOrEmpty(employee.Email))
+                    entity.ApproverName = approveE.FullName + " - " + approveE.ChucVuName;
+                }
+            }
+
+            #region Fill Data
+            var workdayStartTime = TimeSpan.Parse(entity.WorkingScheduleTime.Split("-")[0]);
+            var workdayEndTime = TimeSpan.Parse(entity.WorkingScheduleTime.Split("-")[1]);
+            entity.From = entity.From.Date.Add(entity.Start);
+            entity.To = entity.To.Date.Add(entity.End);
+            entity.Number = Utility.GetBussinessDaysBetweenTwoDates(entity.From, entity.To, workdayStartTime, workdayEndTime);
+
+            #region QUAN LY LOAI PHEP, BU, NGHI KO TINH LUONG,...
+            var typeLeave = dbContext.LeaveTypes.Find(m => m.Id.Equals(entity.TypeId)).FirstOrDefault();
+            if (typeLeave.SalaryPay == true)
+            {
+                double leaveDayAvailable = 0;
+                // Get phép năm, bù còn
+                var leaveEmployeePhep = dbContext.LeaveEmployees.Find(m => m.EmployeeId.Equals(entity.EmployeeId) && m.LeaveTypeId.Equals(entity.TypeId)).FirstOrDefault();
+                if (leaveEmployeePhep != null)
+                {
+                    leaveDayAvailable = leaveEmployeePhep.Number;
+                }
+                // Nghỉ hưởng lương dc phép tạo (thai sản, cưới, sự kiện,...) 
+                if (typeLeave.Alias != "nghi-huong-luong")
+                {
+                    if (leaveDayAvailable < entity.Number)
                     {
-                        tos.Add(new EmailAddress { Name = employee.FullName, Address = employee.Email });
+                        return Json(new { result = false, message = typeLeave.Name + " không đủ ngày." });
                     }
-                    tos.Add(new EmailAddress { Name = loginE.FullName, Address = loginE.Email });
+                }
+            }
+            #endregion
 
-                    // CC HR
-                    var ccs = new List<EmailAddress>();
-                    var listHrRoles = dbContext.RoleUsers.Find(m => m.Role.Equals(Constants.Rights.NhanSu) && (m.Expired.Equals(null) || m.Expired > DateTime.Now)).ToList();
-                    if (listHrRoles != null && listHrRoles.Count > 0)
-                    {
-                        foreach (var item in listHrRoles)
-                        {
-                            if (item.Action == 3)
-                            {
-                                var fields = Builders<Employee>.Projection.Include(p => p.Email).Include(p => p.FullName);
-                                var emailEntity = dbContext.Employees.Find(m => m.Id.Equals(item.User)).Project<Employee>(fields).FirstOrDefault();
-                                if (emailEntity != null)
-                                {
-                                    ccs.Add(new EmailAddress { Name = emailEntity.FullName, Address = emailEntity.Email });
-                                }
-                            }
-                        }
-                    }
+            #region Tạo trùng ngày
+            var builderExist = Builders<Leave>.Filter;
+            var filterExist = builderExist.Eq(m => m.Enable, true);
+            filterExist &= builderExist.Eq(m => m.EmployeeId, entity.EmployeeId);
+            filterExist &= builderExist.Gte(m => m.From, entity.From);
+            filterExist &= builderExist.Lte(m => m.To, entity.To);
 
-                    var webRoot = Environment.CurrentDirectory;
-                    var pathToFile = _env.WebRootPath
-                            + Path.DirectorySeparatorChar.ToString()
-                            + "Templates"
-                            + Path.DirectorySeparatorChar.ToString()
-                            + "EmailTemplate"
-                            + Path.DirectorySeparatorChar.ToString()
-                            + "LeaveHelp.html";
+            var exists = await dbContext.Leaves.Find(filterExist).ToListAsync();
+            if (exists != null && exists.Count > 0)
+            {
+                return Json(new { result = false, message = "Ngày yêu cầu đã được duyệt. Xem danh sách nghỉ bên dưới. Vui lòng yêu cầu ngày khác." });
+            }
+            #endregion
 
-                    var subject = "Thông tin nghỉ phép.";
-                    var dateRequest = entity.From.ToString("dd/MM/yyyy HH:mm") + " - " + entity.To.ToString("dd/MM/yyyy HH:mm") + " (" + entity.Number + " ngày)";
-                    // Api update, generate code.
-                    var linkDetail = Constants.System.domain;
-                    var bodyBuilder = new BodyBuilder();
-                    using (StreamReader SourceReader = System.IO.File.OpenText(pathToFile))
-                    {
-                        bodyBuilder.HtmlBody = SourceReader.ReadToEnd();
-                    }
-                    string messageBody = string.Format(bodyBuilder.HtmlBody,
-                        subject,
-                        employee.FullName,
-                        loginE.FullName,
-                        dateRequest,
-                        entity.Reason,
-                        entity.TypeName,
-                        entity.Phone,
-                        linkDetail,
-                        Constants.System.domain
-                        );
+            entity.SecureCode = Helper.HashedPassword(Guid.NewGuid().ToString("N").Substring(0, 12));
+            entity.EmployeeName = account.FullName;
+            entity.EmployeeDepartment = account.PhongBanName;
+            entity.EmployeePart = account.BoPhanName;
+            entity.EmployeeTitle = account.ChucVuName;
+            entity.Status = (int)StatusLeave.New;
+            entity.CreatedBy = loginE.Id;
+            entity.UpdatedBy = loginE.Id;
+            if (!isMe)
+            {
+                entity.Status = (int)StatusLeave.Accept;
+                entity.ApproverId = loginE.Id;
+                entity.ApproverName = loginE.FullName + " - " + loginE.ChucVuName;
+                entity.ApprovedBy = loginE.Id;
+            }
+            #endregion
 
-                    var emailMessage = new EmailMessage()
-                    {
-                        ToAddresses = tos,
-                        CCAddresses = ccs,
-                        Subject = subject,
-                        BodyContent = messageBody,
-                        Type = "nghi-phep-thong-tin",
-                        EmployeeId = employee.Id
-                    };
+            dbContext.Leaves.InsertOne(entity);
 
-                    // For faster. Add to schedule.
-                    // Send later
-                    var scheduleEmail = new ScheduleEmail
-                    {
-                        Status = (int)EEmailStatus.Schedule,
-                        To = emailMessage.ToAddresses,
-                        CC = emailMessage.CCAddresses,
-                        BCC = emailMessage.BCCAddresses,
-                        Type = emailMessage.Type,
-                        Title = emailMessage.Subject,
-                        Content = emailMessage.BodyContent,
-                        EmployeeId = emailMessage.EmployeeId
-                    };
-                    dbContext.ScheduleEmails.InsertOne(scheduleEmail);
+            #region CAP NHAT PHEP, BU, NGHI KO TINH LUONG,...
+            if (typeLeave.SalaryPay == true)
+            {
+                #region update Leave Date
+                // phep nam, bu
+                // Nghỉ hưởng lương dc phép tạo (thai sản, cưới, sự kiện,...) 
+                if (typeLeave.Alias != "nghi-huong-luong")
+                {
+                    var builderLeaveEmployee = Builders<LeaveEmployee>.Filter;
+                    var filterLeaveEmployee = builderLeaveEmployee.Eq(m => m.EmployeeId, entity.EmployeeId)
+                                            & builderLeaveEmployee.Eq(x => x.LeaveTypeId, entity.TypeId);
+                    var updateLeaveEmployee = Builders<LeaveEmployee>.Update.Inc(m => m.Number, -entity.Number)
+                                                                            .Inc(m => m.NumberUsed, entity.Number);
+                    dbContext.LeaveEmployees.UpdateOne(filterLeaveEmployee, updateLeaveEmployee);
                 }
                 #endregion
 
-                return Json(new { result = true, message = "Thông tin sẽ được gửi các bộ phận liên quan, thời gian tùy theo qui định của công ty và các yếu tố khách quan." });
+                phepcon = dbContext.LeaveEmployees.AsQueryable().Where(x => x.EmployeeId.Equals(entity.EmployeeId)).Sum(x => x.Number);
             }
-            catch (Exception ex)
+            #endregion
+
+            #region Send Mail
+            if (isMe)
             {
-                return Json(new { result = false, message = "Lỗi: " + ex.Message });
+                var tos = new List<EmailAddress>();
+                if (!string.IsNullOrEmpty(entity.ApproverId))
+                {
+                    tos.Add(new EmailAddress { Name = approveE.FullName, Address = approveE.Email });
+                }
+                var webRoot = Environment.CurrentDirectory;
+                var pathToFile = _env.WebRootPath
+                        + Path.DirectorySeparatorChar.ToString()
+                        + "Templates"
+                        + Path.DirectorySeparatorChar.ToString()
+                        + "EmailTemplate"
+                        + Path.DirectorySeparatorChar.ToString()
+                        + "LeaveRequest.html";
+
+                var subject = "Xác nhận nghỉ phép.";
+                var requester = account.FullName;
+                var var3 = account.FullName;
+                var dateRequest = entity.From.ToString("dd/MM/yyyy HH:mm") + " - " + entity.To.ToString("dd/MM/yyyy HH:mm") + " (" + entity.Number + " ngày)";
+                // Api update, generate code.
+                var linkapprove = Constants.System.domain + "/xacnhan/phep";
+                var linkAccept = linkapprove + "?id=" + entity.Id + "&approve=1&secure=" + entity.SecureCode;
+                var linkCancel = linkapprove + "?id=" + entity.Id + "&approve=2&secure=" + entity.SecureCode;
+                var linkDetail = Constants.System.domain;
+                var bodyBuilder = new BodyBuilder();
+                using (StreamReader SourceReader = System.IO.File.OpenText(pathToFile))
+                {
+                    bodyBuilder.HtmlBody = SourceReader.ReadToEnd();
+                }
+                string messageBody = string.Format(bodyBuilder.HtmlBody,
+                    subject,
+                    approveE.FullName,
+                    requester,
+                    var3,
+                    approveE.Email,
+                    account.ChucVuName,
+                    dateRequest,
+                    entity.Reason,
+                    entity.TypeName,
+                    entity.Phone,
+                    linkAccept,
+                    linkCancel,
+                    linkDetail,
+                    Constants.System.domain
+                    );
+
+                var emailMessage = new EmailMessage()
+                {
+                    ToAddresses = tos,
+                    Subject = subject,
+                    BodyContent = messageBody,
+                    Type = "yeu-cau-nghi-phep",
+                    EmployeeId = account.Id
+                };
+                var scheduleEmail = new ScheduleEmail
+                {
+                    Status = (int)EEmailStatus.Schedule,
+                    To = emailMessage.ToAddresses,
+                    CC = emailMessage.CCAddresses,
+                    BCC = emailMessage.BCCAddresses,
+                    Type = emailMessage.Type,
+                    Title = emailMessage.Subject,
+                    Content = emailMessage.BodyContent,
+                    EmployeeId = emailMessage.EmployeeId
+                };
+                dbContext.ScheduleEmails.InsertOne(scheduleEmail);
             }
+            else
+            {
+                // KO CÓ EMAIL,...
+                // [To] nếu có email, người tạo
+                var tos = new List<EmailAddress>();
+                if (!string.IsNullOrEmpty(account.Email))
+                {
+                    tos.Add(new EmailAddress { Name = account.FullName, Address = account.Email });
+                }
+
+                tos.Add(new EmailAddress { Name = loginE.FullName, Address = loginE.Email });
+                
+                var ccs = new List<EmailAddress>();
+                var hrs = Utility.EmailGet(Constants.Rights.NhanSu, (int)ERights.Edit);
+                if (hrs != null && hrs.Count > 0)
+                {
+                    foreach (var item in hrs)
+                    {
+                        if (tos.Count(m => m.Address.Equals(item.Address)) == 0)
+                        {
+                            ccs.Add(item);
+                        }
+                    }
+                }
+
+                var webRoot = Environment.CurrentDirectory;
+                var pathToFile = _env.WebRootPath
+                        + Path.DirectorySeparatorChar.ToString()
+                        + "Templates"
+                        + Path.DirectorySeparatorChar.ToString()
+                        + "EmailTemplate"
+                        + Path.DirectorySeparatorChar.ToString()
+                        + "LeaveHelp.html";
+
+                var subject = "Thông tin nghỉ phép.";
+                var dateRequest = entity.From.ToString("dd/MM/yyyy HH:mm") + " - " + entity.To.ToString("dd/MM/yyyy HH:mm") + " (" + entity.Number + " ngày)";
+                // Api update, generate code.
+                var linkDetail = Constants.System.domain;
+                var bodyBuilder = new BodyBuilder();
+                using (StreamReader SourceReader = System.IO.File.OpenText(pathToFile))
+                {
+                    bodyBuilder.HtmlBody = SourceReader.ReadToEnd();
+                }
+                string messageBody = string.Format(bodyBuilder.HtmlBody,
+                    subject,
+                    account.FullName,
+                    loginE.FullName,
+                    dateRequest,
+                    entity.Reason,
+                    entity.TypeName,
+                    entity.Phone,
+                    linkDetail,
+                    Constants.System.domain
+                    );
+
+                var emailMessage = new EmailMessage()
+                {
+                    ToAddresses = tos,
+                    CCAddresses = ccs,
+                    Subject = subject,
+                    BodyContent = messageBody,
+                    Type = "nghi-phep-thong-tin",
+                    EmployeeId = account.Id
+                };
+                var scheduleEmail = new ScheduleEmail
+                {
+                    Status = (int)EEmailStatus.Schedule,
+                    To = emailMessage.ToAddresses,
+                    CC = emailMessage.CCAddresses,
+                    BCC = emailMessage.BCCAddresses,
+                    Type = emailMessage.Type,
+                    Title = emailMessage.Subject,
+                    Content = emailMessage.BodyContent,
+                    EmployeeId = emailMessage.EmployeeId
+                };
+                dbContext.ScheduleEmails.InsertOne(scheduleEmail);
+            }
+            #endregion
+
+            return Json(new { result = true, message = "Thông tin sẽ được gửi các bộ phận liên quan, thời gian tùy theo qui định của công ty và các yếu tố khách quan." });
         }
 
         [Route(Constants.LinkLeave.ApprovePost)]
@@ -937,7 +570,7 @@ namespace erp.Controllers
                         if (item.Action == 3)
                         {
                             var fields = Builders<Employee>.Projection.Include(p => p.Email).Include(p => p.FullName);
-                            var emailEntity = dbContext.Employees.Find(m => m.Id.Equals(item.User)).Project<Employee>(fields).FirstOrDefault();
+                            var emailEntity = dbContext.Employees.Find(m => m.Id.Equals(item.User) && m.Enable.Equals(true) && m.Leave.Equals(false)).Project<Employee>(fields).FirstOrDefault();
                             if (emailEntity != null)
                             {
                                 tos.Add(new EmailAddress { Name = emailEntity.FullName, Address = emailEntity.Email });

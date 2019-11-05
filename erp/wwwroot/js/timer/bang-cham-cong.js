@@ -224,14 +224,14 @@
             url: "/api/GetByKhoiChucNang",
             contentType: "application/json; charset=utf-8",
             data: {
-                khoichucnang: khoichucnang,
+                id: khoichucnang,
                 removes: "5c88d094d59d56225c43240f,5c88d094d59d56225c432412"
             },
             dataType: "json",
             success: function (data) {
+                console.log(data);
                 if (data.result === true) {
-                    $('.ddlNl').val(data.congTyChiNhanhId);
-
+                    //$('.ddlNl').val(data.congTyChiNhanhId);
                     var $pb = $(".ddlPb");
                     $pb.empty();
                     if (data.phongbans.length > 1) {

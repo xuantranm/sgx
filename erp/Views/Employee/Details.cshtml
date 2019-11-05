@@ -4,22 +4,45 @@
 @model ViewModels.EmployeeViewModel
 
 @{
-    ViewData["title"] = "NHÂN SỰ | THÔNG TIN " + Model.Employee.FullName.ToUpper();
-
-    var login = User.Identity.Name;
-    var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
-    var rightSystem = false;
-    var rightHr = false;
-    var rightLuong = false;
-    var rightNhaMay = false;
-    if (!string.IsNullOrEmpty(login))
+    var employee = Model.Employee;
+    ViewData["title"] = "NHÂN SỰ | THÔNG TIN " + employee.FullName.ToUpper();
+    var isRight = (bool)ViewData[Constants.ActionViews.IsRight];
+    var isChange = (bool)ViewData["isChange"];
+    var sizeValueAvatar = (int)EImageSize.Avatar;
+    var sizeValueCover = (int)EImageSize.Cover;
+    var isImg = false;
+    var images = new List<Img>
     {
-        rightSystem = Utility.IsRight(login, Constants.Rights.System, (int)ERights.View);
-        rightHr = Utility.IsRight(login, Constants.Rights.HR, (int)ERights.View);
-        rightLuong = Utility.IsRight(login, Constants.Rights.Luong, (int)ERights.View);
-        rightNhaMay = Utility.IsRight(login, Constants.Rights.NhaMay, (int)ERights.View);
+        new Img() { Type = sizeValueAvatar },
+        new Img() { Type = sizeValueCover }
+    };
+    if (employee != null && employee.Images != null && employee.Images.Count > 0)
+    {
+        isImg = true;
+        images = employee.Images.ToList();
+    }
+    var avatarDisplay = "/images/placeholder/120x120.png";
+    var coverDisplay = "background-image: url('/images/placeholder/354x167.png')";
+    if (isImg)
+    {
+        var avatar = images.Where(m => m.Type.Equals(sizeValueAvatar)).FirstOrDefault();
+        var cover = images.Where(m => m.Type.Equals(sizeValueCover)).FirstOrDefault();
+        if (avatar != null)
+        {
+            avatarDisplay = "/" + System.IO.Path.Combine(avatar.Path, avatar.FileName).Replace("\\", "/");
+        }
+        if (cover != null)
+        {
+            coverDisplay = "background-image: url('/" + System.IO.Path.Combine(avatar.Path, avatar.FileName).Replace("\\", "/") + "'); height:167px";
+        }
     }
 }
+
+<style>
+    .form-group p {
+        font-weight: bold;
+    }
+</style>
 
 <div class="main-container">
     <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
@@ -31,9 +54,9 @@
                             <a href="/">Trang chủ</a>
                         </li>
                         <li class="breadcrumb-item">
-                            <a href="/hr/nhan-su">Nhân sự</a>
+                            <a href="/@Constants.LinkHr.Human">Nhân sự</a>
                         </li>
-                        <li class="breadcrumb-item active" aria-current="page">Thông tin @Model.Employee.FullName</li>
+                        <li class="breadcrumb-item active" aria-current="page">Thông tin @employee.FullName</li>
                     </ol>
                 </div>
             </div>
@@ -44,1326 +67,502 @@
         <div class="container">
             <div class="row justify-content-between align-items-center">
                 <div class="col-auto">
-                    <h1 class="h2">Thông tin</h1>
+                    <h1 class="h2">Thông tin @employee.FullName</h1>
                 </div>
                 <div class="col-auto text-right">
-                    <a href="/hr/nhan-su/cap-nhat/@Model.Employee.Id" class="btn btn-success" data-toggle="tooltip" title="Bấm thay đổi thông tin tài khoản."><i class="icon icon-edit"></i> Chỉnh sửa</a>
+                    <a href="/@Constants.LinkHr.Human/@Constants.ActionLink.Data/@employee.Id" class="btn btn-success">Chỉnh sửa</a>
                 </div>
             </div>
         </div>
     </section>
-    <div class="container">
-        <div class="row">
-            @{
-                var avatarDisplay = Constants.System.domain + "/images/placeholder/120x120.png";
-                var coverDisplay = string.Empty;
-                var avatar = Model.Employee.Avatar;
-                var cover = Model.Employee.Cover;
 
-                if (Model.StatusChange)
-                {
-                    if (Model.EmployeeChance != null)
-                    {
-                        if (Model.EmployeeChance.Avatar != null)
-                        {
-                            if (avatar == null)
-                            {
-                                avatar = Model.EmployeeChance.Avatar;
-                            }
-                            else if (avatar != null && avatar.FileName != Model.EmployeeChance.Avatar.FileName)
-                            {
-                                avatar = Model.EmployeeChance.Avatar;
-                            }
-                        }
-
-                        if (Model.EmployeeChance.Cover != null)
-                        {
-                            if (cover == null)
-                            {
-                                cover = Model.EmployeeChance.Cover;
-                            }
-                            else if (cover != null && cover.FileName != Model.EmployeeChance.Cover.FileName)
-                            {
-                                cover = Model.EmployeeChance.Cover;
-                            }
-                        }
-                    }
-                }
-
-                if (avatar != null)
-                {
-                    avatarDisplay = Url.Content(avatar.Path) + Url.Content(avatar.FileName);
-                }
-                if (cover != null)
-                {
-                    var pathCover = Url.Content(Constants.System.domain + cover.Path + cover.FileName);
-                    coverDisplay = "background-image: url(" + pathCover.Replace("\\", "/") + "); width:354px;height:167px";
-                }
-            }
-            <div class="col-12" id="cover" style="@coverDisplay">
-                <div class="media flex-wrap mb-0 align-items-center" id="avatar-upload">
-                    <img id="avatarShow" alt="@Model.Employee.FullName" src="@avatarDisplay" class="avatar avatar-lg mb-3 mb-md-0" />
-                    <div class="media-body d-none">
-                        <label class="custom-file mb-2" for="file2">
-                            <input type="file" id="avatar-input" name="avatar" class="custom-file-input height-0">
-                            <span class="btn btn-primary"><i class="icon-upload-to-cloud">&nbsp;</i>Chọn hình</span>
-                        </label>
-                        <div>
-                            <small>
-                                Để có kết quả tốt nhất, hãy sử dụng hình ảnh có kích thước tối thiểu 256px x 256px ở định dạng .jpg hoặc .png
-                            </small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <hr />
-        <div class="row mb-4">
-            <div class="col">
-                <h5><i class="icon icon-info"></i>Thông tin</h5>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-12 col-md-4 order-md-2">
-                <div class="alert alert-info text-small" role="alert">
-                    <i class="icon-shield"></i>
-                    <span>
-                        Thông tin của bạn luôn được mã hóa và không bao giờ cho các bên thứ ba truy cập.
-                    </span>
-                    <a href="/pp/chinh-sach-bao-mat">@*See our privacy policy*@Xem chính sách bảo mật của chúng tôi</a>
-                </div>
-            </div>
-            <!--end of col-->
-            <div class="col-12 col-md-8 order-md-1">
+    <section class="flush-with-above space-0">
+        <div class="bg-white">
+            <div class="container">
                 <div class="row">
-                    <div class="col-12">
-                        <div class="form-group">
-                            <i class="icon icon-text"></i>
-                            <label class="control-label">Tên</label>
-                            <p>@Model.Employee.FullName</p>
-                            <small>Thông tin này hiển thị trên hồ sơ công khai của bạn</small>
+                    <div class="col">
+                        <ul class="nav nav-tabs" id="myTab" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="overview-tab" data-toggle="tab" href="#general" role="tab" aria-selected="true">Thông tin</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="extend1-tab" data-toggle="tab" href="#extend1" role="tab" aria-selected="true">Cá nhân</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="extend2-tab" data-toggle="tab" href="#extend2" role="tab" aria-selected="false">Mở rộng</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="extend3-tab" data-toggle="tab" href="#extend3" role="tab" aria-selected="false">Tài liệu & Thông báo</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="space-sm">
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="general" role="tabpanel">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-12" id="cover" style="@coverDisplay">
+                            <div class="media flex-wrap mb-0 align-items-center" id="avatar-upload">
+                                <img id="avatarShow" alt="@employee.FullName" src="@avatarDisplay" class="avatar avatar-lg mb-3 mb-md-0" />
+                            </div>
                         </div>
                     </div>
-                    <div class="col-12">
-                        <div class="form-group">
+                    <hr>
+                    <div class="row mb-4">
+                        <div class="col">
+                            <h5>Thông tin</h5>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group col-md-4 col-sm-6 col-xs-12">
+                            <i class="icon icon-text"></i>
+                            <label class="control-label">Họ và Tên</label>
+                            <p>@employee.FullName</p>
+                        </div>
+                        <div class="form-group col-md-4 col-sm-6 col-xs-12">
                             <i class="icon icon-login"></i>
                             <label class="control-label">Tên đăng nhập</label>
-                            <p>@Model.Employee.UserName  | @Model.Employee.Email</p>
-                            <small>Thông tin này hiển thị trên hồ sơ công khai của bạn</small>
+                            <p>@employee.UserName  | @employee.Email</p>
                         </div>
-                    </div>
-                    <div class="col-12">
-                        <div class="form-group">
+                        <div class="form-group col-md-4 col-sm-6 col-xs-12">
                             <i class="far fa-envelope"></i>
                             <label class="control-label">Email</label>
-                            @if (!string.IsNullOrEmpty(Model.Employee.Email))
-                            {
-                                <p><a href="mailto:@Model.Employee.Email" target="_top">@Model.Employee.Email</a></p>
-                            }
-                            else
-                            {
-                                <small>@Constants.MissTitle</small>
-                            }
+                            <p><a href="mailto:@employee.Email" target="_top">@employee.Email</a></p>
                         </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="form-group">
+                        <div class="form-group col-md-4 col-sm-6 col-xs-12">
                             <i class="icon icon-phone"></i> <label class="control-label">Điện thoại bàn</label>
-                            @if (!string.IsNullOrEmpty(Model.Employee.Tel))
+                            @if (!string.IsNullOrEmpty(employee.Tel))
                             {
-                                <p><a href="tel:@Model.Employee.Tel">@Model.Employee.Tel</a></p>
-                            }
-                            else
-                            {
-                                <small>@Constants.MissTitle</small>
-                            }
-                            @if (Model.StatusChange && Model.Employee.Tel != Model.EmployeeChance.Tel)
-                            {
-                                <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> <a href="tel:@Model.EmployeeChance.Tel">@Model.EmployeeChance.Tel</a></p>
+                                <p><a href="tel:@employee.Tel">@employee.Tel</a></p>
                             }
                         </div>
-                    </div>
-
-                    @{
-                        if (Model.Employee.Mobiles != null && Model.Employee.Mobiles.Count > 0)
+                        @if (employee.Mobiles != null && employee.Mobiles.Count > 0)
                         {
-                            int iChangeMobile = 0;
-                            var iMobile = 1;
-                            foreach (var mobile in Model.Employee.Mobiles)
+                            foreach (var mobile in employee.Mobiles)
                             {
-                                <div class="col-6 nodeMobile node">
-                                    <div class="form-group">
+                                @if (!string.IsNullOrEmpty(mobile.Number))
+                                {
+                                    <div class="form-group col-md-4 col-sm-6 col-xs-12 nodeMobile node">
                                         <i class="icon icon-phone"></i>
-                                        <label class="control-label">Số di động @iMobile</label>
-                                        @if (!string.IsNullOrEmpty(mobile.Number))
-                                        {
-                                            <p><a href="tel:@mobile.Number">@mobile.Number</a></p>
-                                        }
-                                        else
-                                        {
-                                            <small>@Constants.MissTitle</small>
-                                        }
-                                        @if (Model.EmployeeChance != null && Model.EmployeeChance.Mobiles != null && Model.EmployeeChance.Mobiles.Count > 0 && mobile.Number != Model.EmployeeChance.Mobiles[iChangeMobile].Number)
-                                        {
-                                            <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> <a href="tel:@Model.EmployeeChance.Mobiles[iChangeMobile].Number">@Model.EmployeeChance.Mobiles[iChangeMobile].Number</a></p>
-                                        }
+                                        <label class="control-label">Số di động</label>
+                                        <p><a href="tel:@mobile.Number">@mobile.Number</a></p>
                                     </div>
-                                </div>
-                                iChangeMobile++;
-                                iMobile++;
+                                }
                             }
                         }
-                    }
-                    <div class="col-6">
-                        <div class="form-group">
+                        <div class="form-group col-md-4 col-sm-6 col-xs-12">
                             <i class="icon icon-cake"></i>
                             <label class="control-label">Ngày sinh</label>
                             @{
-                                var birthday = Model.Employee.Birthday.Year > 1900 ? Model.Employee.Birthday.ToString("dd/MM/yyyy") : string.Empty;
+                                var birthday = employee.Birthday.Year > 1900 ? employee.Birthday.ToString("dd/MM/yyyy") : string.Empty;
                             }
                             <p>@birthday</p>
                         </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="form-group">
+                        <div class="form-group col-md-4 col-sm-6 col-xs-12">
                             <i class="icon icon-select-arrows"></i>
                             <label class="control-label">Giới tính</label>
-                            <p>@Model.Employee.Gender</p>
+                            <p>@employee.Gender</p>
                         </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="form-group">
-                            <i class="icon icon-select-arrows"></i>
-                            <label class="control-label">Nơi quản lý</label>
-                            <p>
-                                @Model.Employee.CongTyChiNhanhName
-                            </p>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="form-group">
+                        <div class="form-group col-md-4 col-sm-6 col-xs-12">
                             <i class="icon icon-select-arrows"></i>
                             <label class="control-label">Khối chức năng</label>
-                            <p>
-                                @Model.Employee.KhoiChucNangName
-                            </p>
+                            <p>@employee.KhoiChucNangName</p>
                         </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="form-group">
+                        <div class="form-group col-md-4 col-sm-6 col-xs-12">
                             <i class="icon icon-select-arrows"></i>
-                            <label class="control-label">Phòng/ban</label>
-                            <p>
-                                @Model.Employee.PhongBanName
-                            </p>
+                            <label class="control-label">Phòng ban</label>
+                            <p>@employee.PhongBanName</p>
                         </div>
-                    </div>
-
-                    <div class="col-6">
-                        <div class="form-group">
+                        <div class="form-group col-md-4 col-sm-6 col-xs-12">
                             <i class="icon icon-select-arrows"></i>
                             <label class="control-label">Bộ phận</label>
-                            <p>
-                                @Model.Employee.BoPhanName
-                            </p>
+                            <p>@employee.BoPhanName</p>
                         </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="form-group">
+                        <div class="form-group col-md-4 col-sm-6 col-xs-12">
                             <i class="icon icon-select-arrows"></i>
-                            <label class="control-label">Bộ phận (thuộc bộ phận trên)</label>
-                            <p>
-                                @Model.Employee.BoPhanConName
-                            </p>
+                            <label class="control-label">Nơi làm việc chính</label>
+                            <p>@employee.CongTyChiNhanhName</p>
                         </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="form-group">
+                        <div class="form-group col-md-4 col-sm-6 col-xs-12">
                             <i class="icon icon-select-arrows"></i>
                             <label class="control-label">Chức vụ</label>
-                            <p>
-                                @Model.Employee.ChucVuName
-                            </p>
+                            <p>@employee.ChucVuName</p>
                         </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="form-group">
+                        <div class="form-group col-md-4 col-sm-6 col-xs-12">
                             <i class="icon icon-select-arrows"></i>
                             <label class="control-label">Quản lý trực tiếp</label>
-                            <p>
-                                @Model.Employee.ManagerInformation
-                            </p>
+                            <p>@employee.ManagerInformation</p>
                         </div>
-                    </div>
-
-                    <div class="col-6">
-                        <div class="form-group">
+                        <div class="form-group col-md-4 col-sm-6 col-xs-12">
                             <i class="icon icon-time-slot"></i>
                             <label class="control-label">Ngày vào làm</label>
                             @{
-                                var joinday = Model.Employee.Joinday.Year > 1900 ? Model.Employee.Joinday.ToString("dd/MM/yyyy") : string.Empty;
+                                var joinday = employee.Joinday.Year > 1900 ? employee.Joinday.ToString("dd/MM/yyyy") : string.Empty;
                             }
                             <p>@joinday</p>
                         </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="form-group">
+                        <div class="form-group col-md-4 col-sm-6 col-xs-12">
                             <i class="icon icon-archive"></i>
                             <label class="control-label">Mức phép năm</label>
-                            <p>@Model.Employee.LeaveLevelYear ngày</p>
+                            <p>@employee.LeaveLevelYear ngày</p>
                         </div>
-                    </div>
-
-                    <div class="col-6 workplace">
-                        <div class="form-group">
+                        <div class="form-group col-12 workplace">
                             <i class="icon icon-location"></i>
                             <label class="control-label">Nơi làm việc</label>
                         </div>
-                    </div>
-                    <div class="col-6">
-                        @if (Model.Employee.IsTimeKeeper)
+                        @if (employee.IsTimeKeeper)
                         {
-                            <p>Không tính thời gian làm việc</p>
-                        }
-                    </div>
-
-                    @if (!Model.Employee.IsTimeKeeper)
-                    {
-                        if (Model.Employee.Workplaces != null && Model.Employee.Workplaces.Count > 0)
-                        {
-                            foreach (var workplace in Model.Employee.Workplaces)
+                            if (employee.Workplaces != null)
                             {
-                                <div class="col-6 nodeWorkplace node">
-                                    <div class="form-group">
-                                        <span class="badge badge-primary">@workplace.Name</span>
-                                        @if (!string.IsNullOrEmpty(workplace.Fingerprint))
-                                        {
-                                            <p>
-                                                <i class="icon icon-fingerprint"></i>
-                                                <label class="control-label">Mã chấm công</label>
+                                foreach (var workplace in employee.Workplaces)
+                                {
+                                    @if (!string.IsNullOrEmpty(workplace.Fingerprint))
+                                    {
+                                        <div class="form-group col-md-5 col-sm-12 nodeWorkplace node">
+                                            <div class="form-group col-xs-12">
+                                                <label class="control-label">
+                                                    <span class="badge badge-primary text-uppercase">@workplace.Code</span> Mã chấm công
+                                                </label>
                                                 <span class="badge badge-info">@workplace.Fingerprint</span>
-                                            </p>
-                                            <p>
-                                                <i class="far fa-clock"></i>
                                                 <label class="control-label">Thời gian làm việc</label>
                                                 <span class="badge badge-info">@workplace.WorkingScheduleTime</span>
-                                            </p>
-                                        }
-                                    </div>
-                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                }
                             }
                         }
-                    }
+                        else
+                        {
+                            <div class="form-group col-md-4 col-sm-6 col-xs-12">
+                                <p>Không tính thời gian làm việc</p>
+                            </div>
+                        }
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="row">
-            @{
-                var showFilter = "";
-                var iconFilter = "icon-add-to-list";
-                var textFilter = "Mở rộng";
-                if (!rightHr)
-                {
-                    showFilter = "show";
-                    iconFilter = "icon-list";
-                    textFilter = "Thu gọn";
-                }
-            }
-            <a class="nav-link custom-more collapsed" data-toggle="collapse" href="#more" aria-expanded="false" aria-controls="more">
-                <i class="icon @iconFilter"></i> @textFilter
-            </a>
-        </div>
-        <div class="row">
-            <div id="more" class="col-12 collapse @showFilter">
-                <!-- PERSONAL INFORMATION -->
-                <div class="row mb-4">
-                    <div class="col">
-                        <h5>Thông tin cá nhân</h5>
-                    </div>
-                    <!--end of col-->
-                </div>
-                <div class="row">
-                    @{
-                        var enableStatus = string.Empty;
-                        var displayLeave = "d-none";
-                        if (!Model.Employee.Enable)
-                        {
-                            enableStatus = "checked";
-                            displayLeave = "";
-                        }
-                    }
-                    <div class="col-6 @displayLeave">
-                        <div>
-                            <div class="custom-control custom-checkbox">
-                                <input type="checkbox" class="custom-control-input" @enableStatus readonly id="check-enable">
-                                <label class="custom-control-label text-small" for="check-enable">
-                                    Nghỉ việc
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-6 leave-extend @displayLeave">
-                        <div class="form-group">
-                            <label class="control-label">Ngày nghỉ việc</label>
-                            @{
-                                var leaveDay = Model.Employee.Leaveday.HasValue ? Model.Employee.Leaveday.Value.ToString("dd/MM/yyyy") : string.Empty;
-                            }
-                            <p>@leaveDay</p>
-                        </div>
-                    </div>
-                    <div class="col-12 leave-extend @displayLeave">
-                        <div class="form-group">
-                            <label class="control-label">Lý do</label>
-                            <p>@Model.Employee.LeaveReason</p>
-                        </div>
-                    </div>
-
-                    <div class="col-12">
-                        <div class="form-group">
-                            <label class="control-label">Nguyên quán</label>
-                            @if (!string.IsNullOrEmpty(Model.Employee.Bornplace))
-                            {
-                                <p>@Model.Employee.Bornplace</p>
-                            }
-                            else
-                            {
-                                <small>@Constants.MissTitle</small>
-                            }
-                            @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.Bornplace) && Model.Employee.Bornplace != Model.EmployeeChance.Bornplace)
-                            {
-                                <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @Model.EmployeeChance.Bornplace</p>
-                            }
-                        </div>
-                    </div>
-                    <div class="col-12">
-                        <div class="form-group">
+            <div class="tab-pane fade show" id="extend1" role="tabpanel">
+                <div class="container">
+                    <div class="row">
+                        <div class="form-group col-md-6 col-sm-12">
                             <label class="control-label">Thường trú</label>
-                            @if (!string.IsNullOrEmpty(Model.Employee.AddressResident))
-                            {
-                                <p><a target="_blank" href="https://www.google.com/maps/search/?api=1&query=@Model.Employee.AddressResident" data-toggle="tooltip" title="Bấm để đi đến bản đồ">@Model.Employee.AddressResident</a></p>
-                            }
-                            else
-                            {
-                                <small>@Constants.MissTitle</small>
-                            }
-                            @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.AddressResident) && Model.Employee.AddressResident != Model.EmployeeChance.AddressResident)
-                            {
-                                <p class="change-data">
-                                    <small class="badge badge-info">Chờ xác nhận</small>
-                                    @Model.EmployeeChance.AddressResident
-                                </p>
-                            }
+                            <p><a target="_blank" href="https://www.google.com/maps/search/?api=1&query=@employee.AddressResident" data-toggle="tooltip" title="Bấm để đi đến bản đồ">@employee.AddressResident</a></p>
                         </div>
-                    </div>
-                    <div class="col-12">
-                        <div class="form-group">
+                        <div class="form-group col-md-6 col-sm-12">
                             <label class="control-label">Tạm trú</label>
-                            @if (!string.IsNullOrEmpty(Model.Employee.AddressTemporary))
-                            {
-                                <p><a target="_blank" href="https://www.google.com/maps/search/?api=1&query=@Model.Employee.AddressTemporary" data-toggle="tooltip" title="Bấm để đi đến bản đồ">@Model.Employee.AddressTemporary</a></p>
-                            }
-                            else
-                            {
-                                <small>@Constants.MissTitle</small>
-                            }
-                            @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.AddressTemporary) && Model.Employee.AddressTemporary != Model.EmployeeChance.AddressTemporary)
-                            {
-                                <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @Model.EmployeeChance.AddressTemporary</p>
-                            }
+                            <p><a target="_blank" href="https://www.google.com/maps/search/?api=1&query=@employee.AddressTemporary" data-toggle="tooltip" title="Bấm để đi đến bản đồ">@employee.AddressTemporary</a></p>
                         </div>
-                    </div>
-                    <div class="col-12">
-                        <div class="form-group">
+                        <div class="form-group col-md-4 col-sm-6 col-xs-12">
+                            <label class="control-label">Nguyên quán</label>
+                            <p>@employee.Bornplace</p>
+                        </div>
+                        <div class="form-group col-md-4 col-sm-6 col-xs-12">
                             <i class="icon icon-email"></i>
                             <label class="control-label">Email cá nhân</label>
-                            @if (!string.IsNullOrEmpty(Model.Employee.EmailPersonal))
-                            {
-                                <p><a href="mailto:@Model.Employee.EmailPersonal" target="_top">@Model.Employee.EmailPersonal</a></p>
-                            }
-                            else
-                            {
-                                <small>@Constants.MissTitle</small>
-                            }
-                            @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.EmailPersonal) && Model.Employee.EmailPersonal != Model.EmployeeChance.EmailPersonal)
-                            {
-                                <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> <a href="mailto:@Model.EmployeeChance.EmailPersonal" target="_top">@Model.EmployeeChance.EmailPersonal</a></p>
-                            }
+                            <p><a href="mailto:@employee.EmailPersonal" target="_top">@employee.EmailPersonal</a></p>
                         </div>
-                    </div>
-                    <div class="col-sm-6 col-xs-12">
-                        <div class="form-group">
+                        <div class="form-group col-md-4 col-sm-6 col-xs-12">
                             <label class="control-label">Tình trạng hôn nhân</label>
-                            @if (!string.IsNullOrEmpty(Model.Employee.StatusMarital))
-                            {
-                                <p>@Constants.Married(Model.Employee.StatusMarital)</p>
-                            }
-                            else
-                            {
-                                <small>@Constants.MissTitle</small>
-                            }
-                            @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.StatusMarital) && Model.Employee.StatusMarital != Model.EmployeeChance.StatusMarital)
-                            {
-                                <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @Constants.Married(Model.EmployeeChance.StatusMarital)</p>
-                            }
+                            <p>@Constants.Married(employee.StatusMarital)</p>
                         </div>
-                    </div>
-                    <div class="col-sm-6 col-xs-12">
-                        <div class="form-group">
+                        <div class="form-group col-md-4 col-sm-6 col-xs-12">
                             <label class="control-label">Quốc tịch</label>
-                            @if (!string.IsNullOrEmpty(Model.Employee.Nation))
-                            {
-                                <p>@Model.Employee.Nation</p>
-                            }
-                            else
-                            {
-                                <small>@Constants.MissTitle</small>
-                            }
-                            @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.Nation) && Model.Employee.Nation != Model.EmployeeChance.Nation)
-                            {
-                                <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @Model.EmployeeChance.Nation</p>
-                            }
+                            <p>@employee.Nation</p>
                         </div>
-                    </div>
-                    <div class="col-sm-6 col-xs-12">
-                        <div class="form-group">
+                        <div class="form-group col-md-4 col-sm-6 col-xs-12">
                             <label class="control-label">Tôn giáo</label>
-                            @if (!string.IsNullOrEmpty(Model.Employee.Religion))
-                            {
-                                <p>@Model.Employee.Religion</p>
-                            }
-                            else
-                            {
-                                <small>@Constants.MissTitle</small>
-                            }
-                            @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.Religion) && Model.Employee.Religion != Model.EmployeeChance.Religion)
-                            {
-                                <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @Model.EmployeeChance.Religion</p>
-                            }
+                            <p>@employee.Religion</p>
                         </div>
-                    </div>
-                    <div class="col-12">
-                        <div class="form-group">
+                        <div class="form-group col-12">
                             <label class="control-label">Giới thiệu</label>
-                            @if (!string.IsNullOrEmpty(Model.Employee.Intro))
-                            {
-                                <p>@Model.Employee.Intro</p>
-                            }
-                            else
-                            {
-                                <small>@Constants.MissTitle</small>
-                            }
-                            @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.Intro) && Model.Employee.Intro != Model.EmployeeChance.Intro)
-                            {
-                                <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @Model.EmployeeChance.Intro</p>
-                            }
+                            <p>@employee.Intro</p>
                         </div>
                     </div>
-                </div>
 
-                <!-- CMND/PASSPORT, BHXH -->
-                <hr />
-                <div class="row mb-4">
-                    <div class="col">
-                        <h5>Số thẻ định danh</h5>
-                    </div>
-                    <!--end of col-->
-                </div>
-                <div class="row">
-                    <div class="col-12 col-md-4 order-md-2">
-                        <div class="alert alert-info text-small" role="alert">
-                            <i class="icon-user"></i>
-                            <span>
-                                Thông tin này được bảo mật.
-                            </span>
-                            <a href="/pp/chinh-sach-bao-mat">Xem chính sách bảo mật</a>
+                    <div class="row">
+                        <div class="col-12 text-uppercase">
+                            <h4 class="title-decorative">Số thẻ định danh</h4>
                         </div>
-                    </div>
-                    <!--end of col-->
-                    <div class="col-12 col-md-8 order-md-1">
-                        <div class="row">
-                            <!-- CMND -->
-                            @if (!string.IsNullOrEmpty(Model.Employee.IdentityCard))
-                            {
-                                <div class="col-12">
-                                    <div class="form-group">
-                                        <label class="control-label">CMND</label>
-                                        @if (!string.IsNullOrEmpty(Model.Employee.IdentityCard))
-                                        {
-                                            <p>@Model.Employee.IdentityCard</p>
-                                        }
-                                        else
-                                        {
-                                            <small>@Constants.MissTitle</small>
-                                        }
-                                        @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.IdentityCard) && Model.Employee.IdentityCard != Model.EmployeeChance.IdentityCard)
-                                        {
-                                            <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @Model.EmployeeChance.IdentityCard</p>
-                                        }
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="form-group">
-                                        <label class="control-label">Ngày cấp</label>
-                                        @{
-                                            var identityCardDate = Model.Employee.IdentityCardDate.HasValue && Model.Employee.IdentityCardDate.Value.Year > 1900 ? Model.Employee.IdentityCardDate.Value.ToString("dd/MM/yyyy") : string.Empty;
-                                            var identityCardDateChange = string.Empty;
-                                            if (Model.StatusChange && Model.EmployeeChance != null)
-                                            {
-                                                identityCardDateChange = Model.EmployeeChance.IdentityCardDate.HasValue && Model.EmployeeChance.IdentityCardDate.Value.Year > 1900 ? Model.EmployeeChance.IdentityCardDate.Value.ToString("dd/MM/yyyy") : string.Empty;
-                                            }
-                                        }
-                                        @if (!string.IsNullOrEmpty(identityCardDate))
-                                        {
-                                            <p>@identityCardDate</p>
-                                        }
-                                        else
-                                        {
-                                            <small>@Constants.MissTitle</small>
-                                        }
-                                        @if (Model.StatusChange && !string.IsNullOrEmpty(identityCardDateChange) && Model.Employee.IdentityCardDate != Model.EmployeeChance.IdentityCardDate)
-                                        {
-                                            <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @identityCardDateChange</p>
-                                        }
-                                    </div>
-                                </div>
-
-                                <div class="col-6">
-                                    <div class="form-group">
-                                        <label class="control-label">Nơi cấp</label>
-                                        @if (!string.IsNullOrEmpty(Model.Employee.IdentityCardPlace))
-                                        {
-                                            <p>@Model.Employee.IdentityCardPlace</p>
-                                        }
-                                        else
-                                        {
-                                            <small>@Constants.MissTitle</small>
-                                        }
-                                        @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.IdentityCardPlace) && Model.Employee.IdentityCardPlace != Model.EmployeeChance.IdentityCardPlace)
-                                        {
-                                            <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @Model.EmployeeChance.IdentityCardPlace</p>
-                                        }
-                                    </div>
-                                </div>
-                                <!-- HO KHAU -->
-                                <hr />
-                            }
-                            <div class="col-12">
-                                <div class="form-group">
-                                    <label class="control-label">Hộ khẩu</label>
-                                    @if (!string.IsNullOrEmpty(Model.Employee.HouseHold))
-                                    {
-                                        <p>@Model.Employee.HouseHold</p>
-                                    }
-                                    else
-                                    {
-                                        <small>@Constants.MissTitle</small>
-                                    }
-                                    @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.HouseHold) && Model.Employee.HouseHold != Model.EmployeeChance.HouseHold)
-                                    {
-                                        <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @Model.EmployeeChance.HouseHold</p>
-                                    }
-                                </div>
-                            </div>
-                            <div class="col-12">
-                                <div class="form-group">
-                                    <label class="control-label">Chủ hộ</label>
-                                    @if (!string.IsNullOrEmpty(Model.Employee.HouseHoldOwner))
-                                    {
-                                        <p>@Model.Employee.HouseHoldOwner</p>
-                                    }
-                                    else
-                                    {
-                                        <small>@Constants.MissTitle</small>
-                                    }
-                                    @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.HouseHoldOwner) && Model.Employee.HouseHoldOwner != Model.EmployeeChance.HouseHoldOwner)
-                                    {
-                                        <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @Model.EmployeeChance.HouseHoldOwner</p>
-                                    }
-                                </div>
-                            </div>
-
-                            @if (!string.IsNullOrEmpty(Model.Employee.Passport))
-                            {
-                                <!-- PASSPORT -->
-                                <hr />
-                                <div class="col-12">
-                                    <div class="form-group">
-                                        <label class="control-label">Hộ chiếu</label>
-                                        @if (!string.IsNullOrEmpty(Model.Employee.Passport))
-                                        {
-                                            <p>@Model.Employee.Passport</p>
-                                        }
-                                        else
-                                        {
-                                            <small>@Constants.MissTitle</small>
-                                        }
-                                        @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.Passport) && Model.Employee.Passport != Model.EmployeeChance.Passport)
-                                        {
-                                            <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @Model.EmployeeChance.Passport</p>
-                                        }
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="form-group">
-                                        <label class="control-label">Loại</label>
-                                        @if (!string.IsNullOrEmpty(Model.Employee.PassportType))
-                                        {
-                                            <p>@Model.Employee.PassportType</p>
-                                        }
-                                        else
-                                        {
-                                            <small>@Constants.MissTitle</small>
-                                        }
-                                        @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.PassportType) && Model.Employee.PassportType != Model.EmployeeChance.PassportType)
-                                        {
-                                            <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @Model.EmployeeChance.PassportType</p>
-                                        }
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="form-group">
-                                        <label class="control-label">Mã số</label>
-                                        @if (!string.IsNullOrEmpty(Model.Employee.PassportCode))
-                                        {
-                                            <p>@Model.Employee.PassportCode</p>
-                                        }
-                                        else
-                                        {
-                                            <small>@Constants.MissTitle</small>
-                                        }
-                                        @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.PassportCode) && Model.Employee.PassportCode != Model.EmployeeChance.PassportCode)
-                                        {
-                                            <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @Model.EmployeeChance.PassportCode</p>
-                                        }
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="form-group">
-                                        <label class="control-label">Ngày cấp</label>
-                                        @{
-                                            var passportDate = Model.Employee.PassportDate.HasValue && Model.Employee.PassportDate.Value.Year > 1900 ? Model.Employee.PassportDate.Value.ToString("dd/MM/yyyy") : string.Empty;
-                                            var passportDateChange = string.Empty;
-                                            if (Model.StatusChange && Model.EmployeeChance != null)
-                                            {
-                                                passportDateChange = Model.EmployeeChance.PassportDate.HasValue && Model.EmployeeChance.PassportDate.Value.Year > 1900 ? Model.EmployeeChance.PassportDate.Value.ToString("dd/MM/yyyy") : string.Empty;
-                                            }
-                                        }
-                                        @if (!string.IsNullOrEmpty(passportDate))
-                                        {
-                                            <p>@passportDate</p>
-                                        }
-                                        else
-                                        {
-                                            <small>@Constants.MissTitle</small>
-                                        }
-                                        @if (Model.StatusChange && !string.IsNullOrEmpty(passportDateChange) && Model.Employee.PassportDate != Model.EmployeeChance.PassportDate)
-                                        {
-                                            <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @passportDateChange</p>
-                                        }
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="form-group">
-                                        <label class="control-label">Ngày hết hạn</label>
-                                        @{
-                                            var passportExpireDate = Model.Employee.PassportExpireDate.HasValue && Model.Employee.PassportExpireDate.Value.Year > 1900 ? Model.Employee.PassportExpireDate.Value.ToString("dd/MM/yyyy") : string.Empty;
-                                            var passportExpireDateChange = string.Empty;
-                                            if (Model.StatusChange && Model.EmployeeChance != null)
-                                            {
-                                                passportExpireDateChange = Model.EmployeeChance.PassportExpireDate.HasValue && Model.EmployeeChance.PassportExpireDate.Value.Year > 1900 ? Model.EmployeeChance.PassportExpireDate.Value.ToString("dd/MM/yyyy") : string.Empty;
-                                            }
-                                        }
-                                        @if (!string.IsNullOrEmpty(passportExpireDate))
-                                        {
-                                            <p>@passportExpireDate</p>
-                                        }
-                                        else
-                                        {
-                                            <small>@Constants.MissTitle</small>
-                                        }
-                                        @if (Model.StatusChange && !string.IsNullOrEmpty(passportDateChange) && Model.Employee.PassportExpireDate != Model.EmployeeChance.PassportExpireDate)
-                                        {
-                                            <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @passportDateChange</p>
-                                        }
-                                    </div>
-                                </div>
-                                <div class="col-12">
-                                    <div class="form-group">
-                                        <label class="control-label">Nơi cấp</label>
-                                        @if (!string.IsNullOrEmpty(Model.Employee.PassportPlace))
-                                        {
-                                            <p>@Model.Employee.PassportPlace</p>
-                                        }
-                                        else
-                                        {
-                                            <small>@Constants.MissTitle</small>
-                                        }
-                                        @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.PassportPlace) && Model.Employee.PassportPlace != Model.EmployeeChance.PassportPlace)
-                                        {
-                                            <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @Model.EmployeeChance.PassportPlace</p>
-                                        }
-                                    </div>
-                                </div>
-                            }
+                        <div class="form-group col-md-4 col-sm-6 col-xs-12">
+                            <label class="control-label">CMND</label>
+                            <p>@employee.IdentityCard</p>
                         </div>
-                    </div>
-                </div>
-
-
-                <!-- BHXH -->
-                <div class="row">
-                    <div class="col-12">
-                        <div class="form-group">
+                        <div class="form-group col-md-4 col-sm-6 col-xs-12">
+                            <label class="control-label">Ngày cấp</label>
                             @{
-                                var check = Model.Employee.BhxhEnable ? "checked" : "";
-                                var dnone = Model.Employee.BhxhEnable ? "" : "d-none";
+                                var identityCardDate = employee.IdentityCardDate.HasValue && employee.IdentityCardDate.Value.Year > 1900 ? employee.IdentityCardDate.Value.ToString("dd/MM/yyyy") : string.Empty;
+                            }
+                            <p>@identityCardDate</p>
+                        </div>
+                        <div class="form-group col-md-4 col-sm-6 col-xs-12">
+                            <label class="control-label">Nơi cấp</label>
+                            <p>@employee.IdentityCardPlace</p>
+                        </div>
+                        <div class="form-group col-md-4 col-sm-6 col-xs-12">
+                            <label class="control-label">Hộ khẩu</label>
+                            <p>@employee.HouseHold</p>
+                        </div>
+                        <div class="form-group col-md-4 col-sm-6 col-xs-12">
+                            <label class="control-label">Chủ hộ</label>
+                            <p>@employee.HouseHoldOwner</p>
+                        </div>
+                        <div class="form-group col-md-4 col-sm-6 col-xs-12">
+                            <label class="control-label">Hộ chiếu</label>
+                            <p>@employee.Passport</p>
+                        </div>
+                        <div class="form-group col-md-4 col-sm-6 col-xs-12">
+                            <label class="control-label">Loại</label>
+                            <p>@employee.PassportType</p>
+                        </div>
+                        <div class="form-group col-md-4 col-sm-6 col-xs-12">
+                            <label class="control-label">Mã số</label>
+                            <p>@employee.PassportCode</p>
+                        </div>
+                        <div class="form-group col-md-4 col-sm-6 col-xs-12">
+                            <label class="control-label">Ngày cấp</label>
+                            @{
+                                var passportDate = employee.PassportDate.HasValue && employee.PassportDate.Value.Year > 1900 ? employee.PassportDate.Value.ToString("dd/MM/yyyy") : string.Empty;
+                            }
+                            <p>@passportDate</p>
+                        </div>
+                        <div class="form-group col-md-4 col-sm-6 col-xs-12">
+                            <label class="control-label">Ngày hết hạn</label>
+                            @{
+                                var passportExpireDate = employee.PassportExpireDate.HasValue && employee.PassportExpireDate.Value.Year > 1900 ? employee.PassportExpireDate.Value.ToString("dd/MM/yyyy") : string.Empty;
+                            }
+                            <p>@passportExpireDate</p>
+                        </div>
+                        <div class="form-group col-md-4 col-sm-6 col-xs-12">
+                            <label class="control-label">Nơi cấp</label>
+                            <p>@employee.PassportPlace</p>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="form-group col-12">
+                            @{
+                                var check = employee.BhxhEnable ? "checked" : "";
                             }
                             <div class="custom-control custom-checkbox custom-checkbox-switch">
                                 <input type="checkbox" class="custom-control-input" id="public" @check disabled />
                                 <label class="custom-control-label" for="public">Bảo hiểm xã hội</label>
                             </div>
                         </div>
-                    </div>
-                    <div class="enableBhxh col-12 @dnone">
-                        <div class="row">
-                            <div class="col-12">
-                                <div class="form-group">
-                                    <label class="control-label">Số sổ BHXH</label>
-                                    @if (!string.IsNullOrEmpty(Model.Employee.BhxhBookNo))
-                                    {
-                                        <p>@Model.Employee.BhxhBookNo</p>
-                                    }
-                                    else
-                                    {
-                                        <small><i class="icon-info"></i>@Constants.MissTitle</small>
-                                    }
-                                </div>
-                            </div>
-                            <div class="col-12">
-                                <div class="form-group">
-                                    <label class="control-label">Số BHXH</label>
-                                    @if (!string.IsNullOrEmpty(Model.Employee.BhxhCode))
-                                    {
-                                        <p>@Model.Employee.BhxhCode</p>
-                                    }
-                                    else
-                                    {
-                                        <small><i class="icon-info"></i>@Constants.MissTitle</small>
-                                    }
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="form-group">
-                                    <label class="control-label">Ngày bắt đầu</label>
-                                    @{
-                                        var bhxhStart = Model.Employee.BhxhStart.HasValue ? Model.Employee.BhxhStart.Value.ToString("dd/MM/yyyy") : string.Empty;
-                                    }
-                                    @if (!string.IsNullOrEmpty(bhxhStart))
-                                    {
-                                        <p>@bhxhStart</p>
-                                    }
-                                    else
-                                    {
-                                        <small><i class="icon-info"></i>@Constants.MissTitle</small>
-                                    }
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="form-group">
-                                    <label class="control-label">Ngày kết thúc</label>
-                                    @{
-                                        var bhxhEnd = Model.Employee.BhxhEnd.HasValue ? Model.Employee.BhxhEnd.Value.ToString("dd/MM/yyyy") : string.Empty;
-                                    }
-                                    @if (!string.IsNullOrEmpty(bhxhEnd))
-                                    {
-                                        <p>@bhxhEnd</p>
-                                    }
-                                    else
-                                    {
-                                        <small><i class="icon-info"></i>@Constants.MissTitle</small>
-                                    }
-                                </div>
-                            </div>
-                            <div class="col-12">
-                                <div class="form-group">
-                                    <label class="control-label">Tình trạng</label>
-                                    @if (!string.IsNullOrEmpty(Model.Employee.BhxhStatus))
-                                    {
-                                        <p>@Model.Employee.BhxhStatus</p>
-                                    }
-                                    else
-                                    {
-                                        <small><i class="icon-info"></i>@Constants.MissTitle</small>
-                                    }
-                                </div>
-                            </div>
-                            <div class="col-12">
-                                <div class="form-group">
-                                    <label class="control-label">KCB ban đầu</label>
-                                    @if (!string.IsNullOrEmpty(Model.Employee.BhxhHospital))
-                                    {
-                                        <p>@Model.Employee.BhxhHospital</p>
-                                    }
-                                    else
-                                    {
-                                        <small>@Constants.MissTitle</small>
-                                    }
-                                    @if (Model.StatusChange && !string.IsNullOrEmpty(Model.EmployeeChance.BhxhHospital) && Model.Employee.BhxhHospital != Model.EmployeeChance.BhxhHospital)
-                                    {
-                                        <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @Model.EmployeeChance.BhxhHospital</p>
-                                    }
-                                </div>
-                            </div>
-                            <div class="col-12">
-                                <div class="form-group">
-                                    <label class="control-label">Số BHYT</label>
-                                    @if (!string.IsNullOrEmpty(Model.Employee.BhytCode))
-                                    {
-                                        <p>@Model.Employee.BhytCode</p>
-                                    }
-                                    else
-                                    {
-                                        <small><i class="icon-info"></i>@Constants.MissTitle</small>
-                                    }
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="form-group">
-                                    <label class="control-label">Ngày hiệu lực</label>
-                                    @{
-                                        var bhytStart = Model.Employee.BhytStart.HasValue && Model.Employee.BhytStart.Value.Year > 1900 ? Model.Employee.BhytStart.Value.ToString("dd/MM/yyyy") : string.Empty;
-                                    }
-                                    @if (!string.IsNullOrEmpty(bhytStart))
-                                    {
-                                        <p>@bhytStart</p>
-                                    }
-                                    else
-                                    {
-                                        <small><i class="icon-info"></i>@Constants.MissTitle</small>
-                                    }
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="form-group">
-                                    <label class="control-label">Ngày kết thúc</label>
-                                    @{
-                                        var bhytEnd = Model.Employee.BhytEnd.HasValue && Model.Employee.BhytEnd.Value.Year > 1900 ? Model.Employee.BhytEnd.Value.ToString("dd/MM/yyyy") : string.Empty;
-                                    }
-                                    @if (!string.IsNullOrEmpty(bhytEnd))
-                                    {
-                                        <p>@bhytEnd</p>
-                                    }
-                                    else
-                                    {
-                                        <small><i class="icon-info"></i>@Constants.MissTitle</small>
-                                    }
-                                </div>
-                            </div>
-                            <div class="col-12">
-                                <div class="form-group">
-                                    <label class="control-label">Nơi BHXH</label>
-                                    @if (!string.IsNullOrEmpty(Model.Employee.BhxhLocation))
-                                    {
-                                        <p>@Model.Employee.BhxhLocation</p>
-                                    }
-                                    else
-                                    {
-                                        <small><i class="icon-info"></i>@Constants.MissTitle</small>
-                                    }
-                                </div>
-                            </div>
-
-                            <span class="badge badge-info">Tác vụ BHXH</span>
-                            @{
-                                if (Model.Employee.BhxhHistories != null && Model.Employee.BhxhHistories.Count > 0)
-                                {
-                                    foreach (var item in Model.Employee.BhxhHistories)
-                                    {
-                                        <div class="col-12 nodeBHXH node">
-                                            <hr />
-                                            <div class="row bd-example">
-                                                <div class="col-12">
-                                                    <div class="form-group">
-                                                        <label class="control-label">Tác vụ</label>
-                                                        <input value="@Constants.TaskBhxh(item.Task)" type="text" readonly class="form-control-plaintext" />
-                                                    </div>
-                                                </div>
-                                                <div class="col-6">
-                                                    <div class="form-group">
-                                                        <label class="control-label">Ngày thực hiện</label>
-                                                        @{
-                                                            var dateAction = item.DateAction.HasValue ? item.DateAction.Value.ToString("dd/MM/yyyy") : string.Empty;
-                                                        }
-                                                        <input value="@dateAction" type="text" readonly class="form-control-plaintext" />
-                                                    </div>
-                                                </div>
-                                                <div class="col-6">
-                                                    <div class="form-group">
-                                                        <label class="control-label">Ngày trả kết quả</label>
-                                                        @{
-                                                            var dateResult = item.DateResult.HasValue ? item.DateResult.Value.ToString("dd/MM/yyyy") : string.Empty;
-                                                        }
-                                                        <input value="@dateResult" type="text" readonly class="form-control-plaintext" />
-                                                    </div>
-                                                </div>
-                                                <div class="col-6">
-                                                    <div class="form-group">
-                                                        <label class="control-label">Tình trạng</label>
-                                                        <input value="@Constants.TaskStatusBhxh(item.Status)" type="text" readonly class="form-control-plaintext" />
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    }
-                                }
-                                else
-                                {
-                                    <small><i class="icon-info"></i>@Constants.MissTitle</small>
-                                }
-                            }
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Certificates -->
-                <hr />
-                <div class="row mb-4">
-                    <div class="col">
-                        <h5>Học vấn</h5>
-                    </div>
-                    <!--end of col-->
-                </div>
-                <div class="row">
-                    @{
-                        var cer1 = Model.Employee.Certificates;
-                        var cer2 = Model.EmployeeChance != null ? Model.EmployeeChance.Certificates : null;
-                        if (cer1 != null && cer1.Count > 0)
+                        @if (employee.BhxhEnable)
                         {
-                            int iHocVan = 0;
-                            foreach (var item in cer1)
+                            <div class="form-group col-md-4 col-sm-6 col-xs-12">
+                                <label class="control-label">Số sổ BHXH</label>
+                                <p>@employee.BhxhBookNo</p>
+                            </div>
+                            <div class="form-group col-md-4 col-sm-6 col-xs-12">
+                                <label class="control-label">Số BHXH</label>
+                                <p>@employee.BhxhCode</p>
+                            </div>
+                            <div class="form-group col-md-4 col-sm-6 col-xs-12">
+                                <label class="control-label">Ngày bắt đầu</label>
+                                @{
+                                    var bhxhStart = employee.BhxhStart.HasValue ? employee.BhxhStart.Value.ToString("dd/MM/yyyy") : string.Empty;
+                                }
+                                <p>@bhxhStart</p>
+                            </div>
+                            <div class="form-group col-md-4 col-sm-6 col-xs-12">
+                                <label class="control-label">Ngày kết thúc</label>
+                                @{
+                                    var bhxhEnd = employee.BhxhEnd.HasValue ? employee.BhxhEnd.Value.ToString("dd/MM/yyyy") : string.Empty;
+                                }
+                                <p>@bhxhEnd</p>
+                            </div>
+                            <div class="form-group col-md-4 col-sm-6 col-xs-12">
+                                <label class="control-label">Tình trạng</label>
+                                <p>@employee.BhxhStatus</p>
+                            </div>
+                            <div class="form-group col-md-4 col-sm-6 col-xs-12">
+                                <label class="control-label">KCB ban đầu</label>
+                                <p>@employee.BhxhHospital</p>
+                            </div>
+                            <div class="form-group col-md-4 col-sm-6 col-xs-12">
+                                <label class="control-label">Số BHYT</label>
+                                <p>@employee.BhytCode</p>
+                            </div>
+                            <div class="form-group col-md-4 col-sm-6 col-xs-12">
+                                <label class="control-label">Ngày hiệu lực</label>
+                                @{
+                                    var bhytStart = employee.BhytStart.HasValue && employee.BhytStart.Value.Year > 1900 ? employee.BhytStart.Value.ToString("dd/MM/yyyy") : string.Empty;
+                                }
+                                <p>@bhytStart</p>
+                            </div>
+                            <div class="form-group col-md-4 col-sm-6 col-xs-12">
+                                <label class="control-label">Ngày kết thúc</label>
+                                @{
+                                    var bhytEnd = employee.BhytEnd.HasValue && employee.BhytEnd.Value.Year > 1900 ? employee.BhytEnd.Value.ToString("dd/MM/yyyy") : string.Empty;
+                                }
+                                <p>@bhytEnd</p>
+                            </div>
+                            <div class="form-group col-md-4 col-sm-6 col-xs-12">
+                                <label class="control-label">Nơi BHXH</label>
+                                <p>@employee.BhxhLocation</p>
+                            </div>
+                            @if (employee.BhxhHistories != null && employee.BhxhHistories.Count > 0)
                             {
-                                <div class="col-12 nodeCertificate node">
-                                    <div class="row bd-example">
-                                        <div class="col-6">
-                                            <div class="form-group">
-                                                <label class="control-label">Học vấn</label>
-                                                <p>@item.Type</p>
-                                                @if (Model.StatusChange && cer2.Count >= cer1.Count && cer2[iHocVan] != null)
-                                                {
-                                                    if (item.Type != cer2[iHocVan].Type)
-                                                    {
-                                                        <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @cer2[iHocVan].Type</p>
-                                                    }
-                                                }
-                                            </div>
-                                        </div>
-                                        <div class="col-6">
-                                            <div class="form-group">
-                                                <label class="control-label">Nơi cấp</label>
-                                                <p>@item.Location</p>
-                                                @if (Model.StatusChange && cer2.Count >= cer1.Count && cer2[iHocVan] != null)
-                                                {
-                                                    if (item.Location != cer2[iHocVan].Location)
-                                                    {
-                                                        <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @cer2[iHocVan].Location</p>
-                                                    }
-                                                }
-                                            </div>
-                                        </div>
-                                        <div class="col-12">
-                                            <div class="form-group">
-                                                <label class="control-label">Nội dung</label>
-                                                <p>@item.Description</p>
-                                                @if (Model.StatusChange && cer2.Count >= cer1.Count && cer2[iHocVan] != null)
-                                                {
-                                                    if (item.Description != cer2[iHocVan].Description)
-                                                    {
-                                                        <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @cer2[iHocVan].Description</p>
-                                                    }
-                                                }
-                                            </div>
-                                        </div>
-                                    </div>
+                                <div class="form-group col-12">
+                                    <span class="badge badge-info">Tác vụ BHXH</span>
                                 </div>
-                                iHocVan++;
-                            }
-                            if (Model.StatusChange && cer2 != null && cer2.Count > 0 && cer2.Count > cer1.Count)
-                            {
-                                for (int icer2 = iHocVan; icer2 < cer2.Count; icer2++)
+
+                                foreach (var item in employee.BhxhHistories)
                                 {
-                                    <div class="col-12 nodeFamily node">
-                                        <div class="row bd-example">
-                                            <div class="col-6">
-                                                <div class="form-group">
-                                                    <label class="control-label">Học vấn</label>
-                                                    <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @cer2[icer2].Type</p>
-                                                </div>
-                                            </div>
-                                            <div class="col-6">
-                                                <div class="form-group">
-                                                    <label class="control-label">Nơi cấp</label>
-                                                    <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @cer2[icer2].Location</p>
-                                                </div>
-                                            </div>
-                                            <div class="col-12">
-                                                <div class="form-group">
-                                                    <label class="control-label">Nội dung</label>
-                                                    <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @cer2[icer2].Description</p>
-                                                </div>
-                                            </div>
-                                        </div>
+                                    <div class="form-group col-md-4 col-sm-6 col-xs-12 nodeBHXH node">
+                                        <label class="control-label">Tác vụ</label>
+                                        <p>@Constants.TaskBhxh(item.Task)</p>
+                                    </div>
+                                    <div class="form-group col-md-4 col-sm-6 col-xs-12">
+                                        <label class="control-label">Ngày thực hiện</label>
+                                        @{
+                                            var dateAction = item.DateAction.HasValue ? item.DateAction.Value.ToString("dd/MM/yyyy") : string.Empty;
+                                        }
+                                        <p>@dateAction</p>
+                                    </div>
+                                    <div class="form-group col-md-4 col-sm-6 col-xs-12">
+                                        <label class="control-label">Ngày trả kết quả</label>
+                                        @{
+                                            var dateResult = item.DateResult.HasValue ? item.DateResult.Value.ToString("dd/MM/yyyy") : string.Empty;
+                                        }
+                                        <p>@dateResult</p>
+                                    </div>
+                                    <div class="form-group col-md-4 col-sm-6 col-xs-12">
+                                        <label class="control-label">Tình trạng</label>
+                                        <p>@Constants.TaskStatusBhxh(item.Status)</p>
                                     </div>
                                 }
                             }
                         }
-                        else
-                        {
-                            <p>@Constants.MissTitle</p>
-                            if (cer2 != null && cer2.Count > 0)
-                            {
-                                foreach (var item in cer2)
-                                {
-                                    <div class="col-12 nodeCertificate node">
-                                        <div class="row bd-example">
-                                            <div class="col-6">
-                                                <div class="form-group">
-                                                    <label class="control-label">Học vấn</label>
-                                                    <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @item.Type</p>
-                                                </div>
-                                            </div>
-                                            <div class="col-6">
-                                                <div class="form-group">
-                                                    <label class="control-label">Nơi cấp</label>
-                                                    <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @item.Location</p>
-                                                </div>
-                                            </div>
-                                            <div class="col-12">
-                                                <div class="form-group">
-                                                    <label class="control-label">Nội dung</label>
-                                                    <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @item.Description</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                }
-                            }
-                        }
-                    }
-                </div>
-
-                <!-- FAMILY -->
-                <hr />
-                <div class="row mb-4">
-                    <div class="col">
-                        <h5>Thành viên gia đình</h5>
                     </div>
-                    <!--end of col-->
                 </div>
-                <div class="row">
+            </div>
+
+            <div class="tab-pane fade show" id="extend2" role="tabpanel">
+                <div class="container">
+                    <!-- FAMILY -->
                     @{
-                        var fa1 = Model.Employee.EmployeeFamilys;
-                        var fa2 = Model.EmployeeChance != null ? Model.EmployeeChance.EmployeeFamilys : null;
-                        if (fa1 != null && fa1.Count > 0)
+                        var families = employee.EmployeeFamilys;
+                        if (families != null && families.Count > 0)
                         {
-                            int iFa = 0;
-                            foreach (var item in fa1)
-                            {
-                                <div class="col-12 nodeFamily node">
-                                    <div class="row bd-example">
-                                        <div class="col-6">
-                                            <div class="form-group">
+                            <div class="row">
+                                <div class="col-12 text-uppercase">
+                                    <h4 class="title-decorative">Thành viên gia đình</h4>
+                                </div>
+                                @foreach (var item in families)
+                                {
+                                    <div class="nodeFamily node col-12">
+                                        <div class="row">
+                                            <div class="form-group col-md-4 col-sm-6 col-xs-12">
                                                 <label class="control-label">Quan hệ</label>
-                                                @if (item.Relation.HasValue)
-                                                {
-                                                    <p>@Constants.Relation(item.Relation.Value)</p>
-                                                }
-                                                @if (Model.StatusChange && fa2.Count >= fa1.Count && fa2[iFa] != null)
-                                                {
-                                                    if (item.Relation != fa2[iFa].Relation)
-                                                    {
-                                                        if (fa2[iFa].Relation.HasValue)
-                                                        {
-                                                            <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @Constants.Relation(fa2[iFa].Relation.Value)</p>
-                                                        }
-                                                    }
-                                                }
+                                                <p>@Constants.Relation(item.Relation.Value)</p>
                                             </div>
-                                        </div>
-                                        <div class="col-6">
-                                            <div class="form-group">
+                                            <div class="form-group col-md-4 col-sm-6 col-xs-12">
                                                 <label class="control-label">Ngày sinh nhật</label>
                                                 @{
                                                     var birthdayfamily = item.Birthday.HasValue && item.Birthday.Value.Year > 1900 ? item.Birthday.Value.ToString("dd/MM/yyyy") : string.Empty;
                                                 }
                                                 <p>@birthdayfamily</p>
-                                                @if (Model.StatusChange && fa2.Count >= fa1.Count && fa2[iFa] != null)
-                                                {
-                                                    if (item.Birthday != fa2[iFa].Birthday)
-                                                    {
-                                                        var birthdayfamilyChange = fa2[iFa].Birthday.HasValue && fa2[iFa].Birthday.Value.Year > 1900 ? fa2[iFa].Birthday.Value.ToString("dd/MM/yyyy") : string.Empty;
-                                                        <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @birthdayfamilyChange</p>
-                                                    }
-                                                }
                                             </div>
-                                        </div>
-                                        <div class="col-12">
-                                            <div class="form-group">
+                                            <div class="form-group col-md-4 col-sm-6 col-xs-12">
                                                 <label class="control-label">Họ và tên</label>
                                                 <p>@item.FullName</p>
-                                                @if (Model.StatusChange && fa2.Count >= fa1.Count && fa2[iFa] != null)
-                                                {
-                                                    if (item.FullName != fa2[iFa].FullName)
-                                                    {
-                                                        <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @fa2[iFa].FullName</p>
-                                                    }
-                                                }
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                iFa++;
-                            }
-                            if (Model.StatusChange && fa2 != null && fa2.Count > 0 && fa2.Count > fa1.Count)
-                            {
-                                for (int iFa2 = iFa; iFa2 < fa2.Count; iFa2++)
-                                {
-                                    <div class="col-12 nodeFamily node">
-                                        <div class="row bd-example">
-                                            <div class="col-6">
-                                                <div class="form-group">
-                                                    <label class="control-label">Quan hệ</label>
-                                                    @if (fa2[iFa2].Relation.HasValue)
-                                                    {
-                                                        <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @Constants.Relation(fa2[iFa2].Relation.Value)</p>
-                                                    }
-                                                </div>
-                                            </div>
-                                            <div class="col-6">
-                                                <div class="form-group">
-                                                    <label class="control-label">Ngày sinh nhật</label>
-                                                    @{
-                                                        var birthdayfamily = fa2[iFa2].Birthday.HasValue && fa2[iFa2].Birthday.Value.Year > 1900 ? fa2[iFa2].Birthday.Value.ToString("dd/MM/yyyy") : string.Empty;
-                                                    }
-                                                    <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @birthdayfamily</p>
-                                                </div>
-                                            </div>
-                                            <div class="col-12">
-                                                <div class="form-group">
-                                                    <label class="control-label">Họ và tên</label>
-                                                    <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @fa2[iFa2].FullName</p>
-                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 }
-                            }
-                        }
-                        else
-                        {
-                            <p>@Constants.MissTitle</p>
-                            if (fa2 != null && fa2.Count > 0)
-                            {
-                                foreach (var item in fa2)
-                                {
-                                    <div class="col-12 nodeFamily node">
-                                        <div class="row bd-example">
-                                            <div class="col-6">
-                                                <div class="form-group">
-                                                    <label class="control-label">Quan hệ</label>
-                                                    @if (item.Relation.HasValue)
-                                                    {
-                                                        <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @Constants.Relation(item.Relation.Value)</p>
-                                                    }
-                                                </div>
-                                            </div>
-                                            <div class="col-6">
-                                                <div class="form-group">
-                                                    <label class="control-label">Ngày sinh nhật</label>
-                                                    @{
-                                                        var birthdayfamily = item.Birthday.HasValue && item.Birthday.Value.Year > 1900 ? item.Birthday.Value.ToString("dd/MM/yyyy") : string.Empty;
-                                                    }
-                                                    <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @birthdayfamily</p>
-                                                </div>
-                                            </div>
-                                            <div class="col-12">
-                                                <div class="form-group">
-                                                    <label class="control-label">Họ và tên</label>
-                                                    <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @item.FullName</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                }
-                            }
+                            </div>
                         }
                     }
-                </div>
 
-                <!-- HOP DONG LAO DONG -->
-                <hr />
-                <div class="row mb-4">
-                    <div class="col">
-                        <h5>Hợp đồng lao động</h5>
-                    </div>
-                    <!--end of col-->
-                </div>
-                <div class="row">
+                    <!-- Certificates -->
                     @{
-                        if (Model.Employee.Contracts != null && Model.Employee.Contracts.Count > 0)
+                        var cers = employee.Certificates;
+                        if (cers != null && cers.Count > 0)
                         {
-                            foreach (var contract in Model.Employee.Contracts)
-                            {
-                                if (!string.IsNullOrEmpty(contract.Code))
+                            <hr />
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <h5>Học vấn</h5>
+                                </div>
+                                @foreach (var item in cers)
                                 {
-                                    <div class="col-12 nodeContract node">
-                                        <div class="row bd-example">
-                                            <div class="col-sm-6 col-xs-12">
-                                                <div class="form-group">
+                                    <div class="node col-12">
+                                        <div class="row">
+                                            <div class="form-group col-md-4 col-sm-6 col-xs-12">
+                                                <label class="control-label">Học vấn</label>
+                                                <p>@item.Type</p>
+                                            </div>
+                                            <div class="form-group col-md-4 col-sm-6 col-xs-12">
+                                                <label class="control-label">Nơi cấp</label>
+                                                <p>@item.Location</p>
+                                            </div>
+                                            <div class="form-group col-12">
+                                                <label class="control-label">Nội dung</label>
+                                                <p>@item.Description</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    }
+
+                    <!-- HOP DONG LAO DONG -->
+                    @{
+                        if (employee.Contracts != null && employee.Contracts.Count > 0)
+                        {
+                            <hr />
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <h5>Hợp đồng lao động</h5>
+                                </div>
+                                @foreach (var contract in employee.Contracts)
+                                {
+                                    if (!string.IsNullOrEmpty(contract.Code))
+                                    {
+                                        <div class="nodeContract node col-12">
+                                            <div class="row">
+                                                <div class="form-group col-md-4 col-sm-6 col-xs-12">
                                                     <label class="control-label">Loại hợp đồng</label>
                                                     <p><span>@contract.TypeName</span></p>
                                                 </div>
-                                            </div>
-                                            <div class="col-sm-6 col-xs-12">
-                                                <div class="form-group">
+                                                <div class="form-group col-md-4 col-sm-6 col-xs-12">
                                                     <label class="control-label">Số hợp đồng</label>
                                                     <p><span>@contract.Code</span></p>
                                                 </div>
-                                            </div>
-                                            <div class="col-md-4 col-sm-6 col-xs-12">
-                                                <div class="form-group">
+                                                <div class="form-group col-md-4 col-sm-6 col-xs-12">
                                                     <label class="control-label">PLHĐ</label>
                                                     <p><span>@contract.PLHD</span></p>
                                                 </div>
-                                            </div>
-                                            @if (contract.Type == "HĐ KHÔNG XÁC ĐỊNH THỜI HẠN")
-                                            {
-                                                <div class="col-md-4 col-sm-6 col-xs-12">
-                                                    <div class="form-group">
+                                                @if (contract.Type == "HĐ KHÔNG XÁC ĐỊNH THỜI HẠN")
+                                                {
+                                                    <div class="form-group col-md-4 col-sm-6 col-xs-12">
                                                         <label class="control-label">Phụ lục điều chỉnh lương</label>
                                                         <p><span>@contract.PhuLucDieuChinhLuong</span></p>
                                                     </div>
-                                                </div>
-                                            }
-                                            @if (!string.IsNullOrEmpty(contract.Description))
-                                            {
-                                                <div class="col-sm-6 col-xs-12">
-                                                    <div class="form-group">
+                                                }
+                                                @if (!string.IsNullOrEmpty(contract.Description))
+                                                {
+                                                    <div class="form-group col-md-4 col-sm-6 col-xs-12">
                                                         <label class="control-label">Ghi chú</label>
                                                         <p><span>@contract.Description</span></p>
                                                     </div>
-                                                </div>
-                                            }
-                                            <div class="col-md-4 col-sm-6 col-xs-12">
-                                                <div class="form-group">
+                                                }
+                                                <div class="form-group col-md-4 col-sm-6 col-xs-12">
                                                     <label class="control-label">Ngày hiệu lực</label>
                                                     @{
                                                         var startContract = contract.Start.HasValue && contract.Start.Value.Year > 1900 ? contract.Start.Value.ToString("dd/MM/yyyy") : string.Empty;
                                                     }
                                                     <p><span>@startContract</span></p>
                                                 </div>
-                                            </div>
-                                            <div class="col-md-4 col-sm-6 col-xs-12">
-                                                <div class="form-group">
+                                                <div class="form-group col-md-4 col-sm-6 col-xs-12">
                                                     <label class="control-label">Ngày hết hiệu lực</label>
                                                     @{
                                                         var endContract = contract.End.HasValue && contract.End.Value.Year > 1900 ? contract.End.Value.ToString("dd/MM/yyyy") : string.Empty;
@@ -1372,164 +571,127 @@
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
+                                    }
                                 }
-
-                            }
-                        }
-                        else
-                        {
-                            <small><i class="icon-info"></i>@Constants.MissTitle</small>
+                            </div>
                         }
                     }
-                </div>
-
-                <!-- SO LUONG BAN LUU -->
-                <hr />
-                <div class="row mb-4">
-                    <div class="col">
-                        <h5>Số lượng bản lưu</h5>
-                    </div>
-                    <!--end of col-->
-                </div>
-                <div class="row">
+ 
+                    <!-- DAO TAO -->
                     @{
-                        if (Model.Employee.StorePapers != null && Model.Employee.StorePapers.Count > 0)
+                        var educations = employee.EmployeeEducations;
+                        if (educations != null && educations.Count > 0)
                         {
-                            foreach (var item in Model.Employee.StorePapers)
+                            <hr />
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <h5>ĐÀO TẠO (THỜI GIAN, CHUYÊN MÔN, CHỨNG CHỈ)</h5>
+                                </div>
+                                @foreach (var item in educations)
+                                {
+                                    if (!string.IsNullOrEmpty(item.Content))
+                                    {
+                                        <div class="nodeEducation node col-12">
+                                            <div class="row">
+                                                <div class="form-group col-12">
+                                                    <label class="control-label">Nội dung</label>
+                                                    <p>@item.Content</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        }
+                    }
+                    <!-- DIEU CHUYEN EmployeeMovements -->
+                    <!-- KHEN THUONG -->
+                    <!-- KY LUAT -->
+                    <!-- DANH GIA NANG LUC -->
+                    <!-- NGUOI LIEN LAC -->
+                    <!-- GIAY TO KHAC -->
+                    <!-- NGUOI CHECK -->
+                </div>
+            </div>
+            <div class="tab-pane fade show" id="extend3" role="tabpanel">
+                <div class="container">
+                    <!-- SO LUONG BAN LUU -->
+                    @if (employee.StorePapers != null && employee.StorePapers.Count > 0)
+                    {
+                        <hr />
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5>Số lượng bản lưu</h5>
+                            </div>
+                            @foreach (var item in employee.StorePapers)
                             {
                                 if (item.Count > 0)
                                 {
-                                    <div class="col-12 nodeStorePaper node">
-                                        <div class="row bd-example">
-                                            <div class="col-sm-6 col-xs-12">
-                                                <div class="form-group">
-                                                    <label class="control-label">Loại bảng lưu</label>
-                                                    <input value="@item.Type" type="text" readonly class="form-control-plaintext" />
-                                                </div>
+                                    <div class="nodeStorePaper node col-12">
+                                        <div class="row">
+                                            <div class="form-group col-md-4 col-sm-6 col-xs-12">
+                                                <label class="control-label">Loại bảng lưu</label>
+                                                <p>@item.Type</p>
                                             </div>
-                                            <div class="col-sm-6 col-xs-12">
-                                                <div class="form-group">
-                                                    <label class="control-label">Số lượng</label>
-                                                    <input value="@item.Count" type="text" readonly class="form-control-plaintext" />
-                                                </div>
+                                            <div class="form-group col-md-4 col-sm-6 col-xs-12">
+                                                <label class="control-label">Số lượng</label>
+                                                <p>@item.Count</p>
                                             </div>
                                         </div>
                                     </div>
                                 }
                             }
-                        }
-                        else
-                        {
-                            <small><i class="icon-info"></i>@Constants.MissTitle</small>
-                        }
+                        </div>
+                    }
+
+                    @if (employee.Leave)
+                    {
+                        <div class="form-control col-sm-6 col-xs-12">
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input" checked readonly>
+                                <label class="custom-control-label text-small" for="check-enable">
+                                    Nghỉ việc
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-group col-sm-6 col-xs-12">
+                            <label class="control-label">Ngày nghỉ việc</label>
+                            @{
+                                var leaveDay = employee.Leaveday.HasValue ? employee.Leaveday.Value.ToString("dd/MM/yyyy") : string.Empty;
+                            }
+                            <p>@leaveDay</p>
+                        </div>
+                        <div class="form-group col-12">
+                            <label class="control-label">Lý do</label>
+                            <p>@employee.LeaveReason</p>
+                        </div>
                     }
                 </div>
-
-                <!-- DAO TAO -->
-                <hr />
-                <div class="row mb-4">
-                    <div class="col">
-                        <h5>ĐÀO TẠO (THỜI GIAN, CHUYÊN MÔN, CHỨNG CHỈ)</h5>
-                    </div>
-                </div>
-                <div class="row">
-                    @{
-                        var tra1 = Model.Employee.EmployeeEducations;
-                        var tra2 = Model.EmployeeChance != null ? Model.EmployeeChance.EmployeeEducations : null;
-                        if (tra1 != null && tra1.Count > 0)
-                        {
-                            int iTra = 0;
-                            var iTraNo = 1;
-                            foreach (var item in tra1)
-                            {
-                                if (!string.IsNullOrEmpty(item.Content))
-                                {
-                                    <div class="col-12 nodeEducation node">
-                                        <div class="row bd-example">
-                                            <div class="col-12">
-                                                <div class="form-group">
-                                                    <label class="control-label">Lần @iTraNo - Nội dung</label>
-                                                    <p>@item.Content</p>
-                                                    @if (Model.StatusChange && tra2.Count > tra1.Count && tra2[iTra] != null)
-                                                    {
-                                                        if (item.Content != tra2[iTra].Content)
-                                                        {
-                                                            <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small> @tra2[iTra].Content</p>
-                                                        }
-                                                    }
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    iTraNo++;
-                                    iTra++;
-                                }
-                            }
-                            if (Model.StatusChange && tra2 != null && tra2.Count > 0 && tra2.Count > tra1.Count)
-                            {
-                                for (int itra2 = iTra; itra2 < tra2.Count; itra2++)
-                                {
-                                    <div class="col-12 nodeEducation node">
-                                        <div class="row bd-example">
-                                            <div class="col-12">
-                                                <div class="form-group">
-                                                    <label class="control-label">Lần @iTraNo - Nội dung</label>
-                                                    <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small>>@tra2[itra2].Content</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                }
-                            }
-                        }
-                        else
-                        {
-                            <p>@Constants.MissTitle</p>
-                            if (tra2 != null && tra2.Count > 0)
-                            {
-                                int iTra2No = 1;
-                                foreach (var item in tra2)
-                                {
-                                    <div class="col-12 nodeEducation node">
-                                        <div class="row bd-example">
-                                            <div class="col-12">
-                                                <div class="form-group">
-                                                    <label class="control-label">Lần @iTra2No - Nội dung</label>
-                                                    <p class="change-data"><small class="badge badge-info">Chờ xác nhận</small>@item.Content</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    iTra2No++;
-                                }
-                            }
-                        }
-                    }
-                </div>
-
-                <!-- DIEU CHUYEN EmployeeMovements -->
-                <!-- KHEN THUONG -->
-                <!-- KY LUAT -->
-                <!-- DANH GIA NANG LUC -->
-                <!-- NGUOI LIEN LAC -->
-                <!-- GIAY TO KHAC -->
-                <!-- NGUOI CHECK -->
             </div>
         </div>
+    </section>
 
-        <hr />
-        <div class="row mb-3">
+    <section class="space-xs">
+        <div class="container">
+            <div class="form-group alert alert-info text-small">
+                <i class="icon-shield"></i>
+                <span>
+                    Thông tin của bạn luôn được mã hóa và không cho các bên thứ ba truy cập.
+                </span>
+                <a href="/chinh-sach-bao-mat" target="_blank">Xem chính sách bảo mật của chúng tôi</a>
+            </div>
+
             <div class="col-12">
-                <a asp-action="Index" class="btn btn-primary"><i class="icon icon-back"></i> Trở về</a>
+                <a asp-action="Index" class="btn btn-primary btn-block"><i class="icon icon-back"></i> Trở về</a>
             </div>
         </div>
-    </div>
+    </section>
 </div>
-@section scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-        <script src="~/js/hr/employee-data.js?@Constants.VersionJs"></script>
-    }
-}
+
+        @section scripts {
+            @{
+                await Html.RenderPartialAsync("_ValidationScriptsPartial");
+                <script src="~/js/hr/employee-data.js?@Constants.VersionJs"></script>
+            }
+        }
 

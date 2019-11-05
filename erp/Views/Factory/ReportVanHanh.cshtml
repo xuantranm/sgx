@@ -4,42 +4,41 @@
 
 @{
     ViewData["Title"] = "Báo cáo vận hành";
-    Layout = "~/Views/Shared/_LayoutData.cshtml";
 }
 
-<form method="get" action="/@Constants.LinkFactory.Main/@Constants.LinkFactory.ReportVanHanh" id="form-main">
+<form method="get" action="/@Constants.LinkFactory.VanHanh/@Constants.ActionLink.Report" id="form-main">
     <div class="form-row mb-3">
         <div class="col-md-3 date-area">
             <label class="control-label">Từ</label>
             @{
-                if (Model.from.HasValue)
+                if (Model.From.HasValue)
                 {
-                    <input class="form-control form-control-lg datepicker datepicker-lg" value="@Model.from.Value.ToString("dd/MM/yyyy")" />
+                    <input class="form-control form-control-lg datepicker datepicker-lg" value="@Model.From.Value.ToString("dd/MM/yyyy")" />
                 }
                 else
                 {
                     <input class="form-control form-control-lg datepicker datepicker-lg" />
                 }
             }
-            <input type="hidden" asp-for="from" class="hidedatepicker" />
+            <input type="hidden" asp-for="From" class="hidedatepicker" />
         </div>
         <div class="col-md-3 date-area">
             <label class="control-label">Đến</label>
             @{
-                if (Model.to.HasValue)
+                if (Model.To.HasValue)
                 {
-                    <input class="form-control form-control-lg datepicker datepicker-lg" value="@Model.to.Value.ToString("dd/MM/yyyy")" />
+                    <input class="form-control form-control-lg datepicker datepicker-lg" value="@Model.To.Value.ToString("dd/MM/yyyy")" />
                 }
                 else
                 {
                     <input class="form-control form-control-lg datepicker datepicker-lg" />
                 }
             }
-            <input type="hidden" asp-for="to" class="hidedatepicker" />
+            <input type="hidden" asp-for="To" class="hidedatepicker" />
         </div>
         <div class="col-md-6">
             <label class="control-label">Xe cơ giới/máy</label>
-            <select asp-for="xm" class="form-control form-control-lg js-select2-basic-single">
+            <select asp-for="Xm" class="form-control form-control-lg js-select2-basic-single">
                 <option value="">Tất cả</option>
                 @{
                     foreach (var item in Model.Vehicles)
@@ -83,17 +82,17 @@
         </thead>
         <tbody>
             @{
-                var groups = (from p in Model.List
+                var groups = (from p in Model.FactoryVanHanhs
                               group p by new
                               {
-                                  p.XeCoGioiMay,
+                                  p.XeCoGioiMayName,
                                   p.Start,
                                   p.End
                               }
                               into d
                               select new
                               {
-                                  XeCoGioiMay = d.Key.XeCoGioiMay,
+                                  XeCoGioiMay = d.Key.XeCoGioiMayName,
                                   start = d.Key.Start,
                                   end = d.Key.End,
                                   reports = d.ToList(),

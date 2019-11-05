@@ -27,10 +27,11 @@ namespace Models
 
         public IList<Workplace> Workplaces { get; set; }
 
-        // true: not chấm công.
-        public bool IsTimeKeeper { get; set; } = false;
+        // false: not chấm công.
+        public bool IsTimeKeeper { get; set; } = true;
 
-        public double LeaveLevelYear { get; set; } = 12;
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal LeaveLevelYear { get; set; } = 12;
 
         public string FullName { get; set; }
 
@@ -54,6 +55,7 @@ namespace Models
 
         public bool Official { get; set; } = true;
 
+        // Last contract date
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime Contractday { get; set; }
 
@@ -107,7 +109,7 @@ namespace Models
 
         public string CountryTemporary { get; set; }
 
-        #region New 08.03.2019. Store Id. Search alias convert to id | Query convert to viewModel, future thay the Deparment, part,...
+        #region New 08.03.2019. Store Id. Search alias convert to id | Query convert to viewModel
         public string CongTyChiNhanh { get; set; }
 
         public string KhoiChucNang { get; set; }
@@ -135,9 +137,11 @@ namespace Models
         public string GhiChu { get; set; }
         #endregion
 
-        public string ManagerId { get; set; }
+        public string ManagerId { get; set; } // Quản lý theo chức vụ
 
-        public string ManagerInformation { get; set; }
+        public string ManagerInformation { get; set; } // Load dynamic...
+
+        public string ManagerEmployeeId { get; set; } // Theo nguoi hien tai
 
         public string Tel { get; set; }
 
@@ -151,6 +155,7 @@ namespace Models
 
         public double LeaveDayAvailable { get; set; } = 0;
 
+        // Checked - Approved
         public string Status { get; set; }
 
         public bool IsOnline { get; set; } = true;
@@ -191,7 +196,9 @@ namespace Models
         public IList<Certificate> Certificates { get; set; }
 
         public IList<Card> Cards { get; set; }
-        
+
+        // Work  manage in Work. No relationship. It big data.
+
         public IList<Contract> Contracts { get; set; }
 
         public IList<StorePaper> StorePapers { get; set; }
@@ -228,7 +235,6 @@ namespace Models
 
         public string BhxhYear { get; set; }
 
-        // Ms.Thoa
         public IList<BhxhHistory> BhxhHistories { get; set; }
         #endregion
 
@@ -252,19 +258,25 @@ namespace Models
 
         public IList<EmployeeCheck> EmployeeChecks { get; set; }
 
-        public IList<Image> Images { get; set; }
+        public IList<Img> Images { get; set; }
 
-        public Image Avatar { get; set; }
+        public Image Avatar { get; set; } // No use
 
-        public Image Cover { get; set; }
+        public Image Cover { get; set; } // No use
 
         public string Intro { get; set; }
 
         public EmployeeBank EmployeeBank { get; set; }
+        // For fast data access, divide other collection
+        //public IList<Notification> Notifications { get; set; }
 
-        public bool IsWelcomeEmail { get; set; } = true;
+        // true: sent
+        // false: unsend
+        public bool IsWelcomeEmail { get; set; } = false;
 
-        public bool IsLeaveEmail { get; set; } = true;
+        // true: sent
+        // false: unsend
+        public bool IsLeaveEmail { get; set; } = false;
 
         #region SALARIES
         public int SalaryType { get; set; } = (int)EKhoiLamViec.VP;
@@ -289,9 +301,10 @@ namespace Models
         // Update on future: 0: hand, 1: bank
         public int SalaryPayMethod { get; set; } = 0;
 
-        public string SalaryChucVu { get; set; }
 
-        public string SalaryChucVuViTriCode { get; set; }
+        public string SalaryChucVu { get; set; } // Don't use
+
+        public string SalaryChucVuViTriCode { get; set; } // Don't use
         #endregion
 
         #region SALES

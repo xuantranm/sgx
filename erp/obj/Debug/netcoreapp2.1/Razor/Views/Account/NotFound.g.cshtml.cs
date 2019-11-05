@@ -74,7 +74,7 @@ using Models;
             WriteLiteral("\r\n");
             EndContext();
             BeginContext(232, 64, false);
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("link", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.SelfClosing, "8d17969523764928a086702adf78faa9", async() => {
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("link", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.SelfClosing, "a09179299ce740829aa4c4080399691a", async() => {
             }
             );
             __Microsoft_AspNetCore_Mvc_Razor_TagHelpers_UrlResolutionTagHelper = CreateTagHelper<global::Microsoft.AspNetCore.Mvc.Razor.TagHelpers.UrlResolutionTagHelper>();
@@ -93,7 +93,7 @@ using Models;
             WriteLiteral("\r\n");
             EndContext();
             BeginContext(298, 2589, false);
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("body", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "235d147e0c9641ac9d80bf282d3a5eee", async() => {
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("body", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "64c384952175432395ab4719be7ded5a", async() => {
                 BeginContext(646, 937, true);
                 WriteLiteral(@"
     <div id=""top"" class=""site"">
@@ -128,7 +128,7 @@ using Models;
                 WriteLiteral("\r\n                                        </strong>\r\n                                    </h4>\r\n                                    ");
                 EndContext();
                 BeginContext(1989, 170, false);
-                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("form", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "35aeacd9f7e44eeab7fae3e55f02909f", async() => {
+                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("form", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "55b88fdcc3c1457c9d00061a80fdd641", async() => {
                     BeginContext(1995, 157, true);
                     WriteLiteral("\r\n                                        <input type=\"button\" value=\"No, really, go back!\" onclick=\"history.go(-1)\" />\r\n                                    ");
                     EndContext();

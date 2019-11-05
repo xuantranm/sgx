@@ -5,6 +5,31 @@ namespace Common.Utilities
 {
     public static class Constants
     {
+        public static class GoogleSearchType
+        {
+            public const string WebSite = "WebSite";
+            public const string NewsArticle = "NewsArticle";
+        }
+
+        public static class FacebookType
+        {
+            public const string WebSite = "website";
+            public const string Article = "article";
+        }
+
+        public static class TwitterCard
+        {
+            public const string Summary = "summary";
+        }
+
+        public static class SeoIndex
+        {
+            public const string indexFollow = "index, follow";
+            public const string indexNoFollow = "index, nofollow";
+            public const string noIndexFollow = "noindex, follow";
+            public const string noIndexNoFollow = "noindex, nofollow";
+        }
+
         public static decimal RoundOff(this decimal i)
         {
             return Convert.ToDecimal((Math.Round((double)i / 10.0)) * 10);
@@ -58,6 +83,8 @@ namespace Common.Utilities
             public const string System = "system";
             public const string HR = "hr";
             public const string NhanSu = "nhan-su";
+            public const string NhanSuVP = "nhan-su-vp";
+            public const string NhanSuNM = "nhan-su-nm";
             public const string HanhChanh = "hanh-chanh";
             public const string Luong = "luong";
             public const string LuongReal = "luong-real";

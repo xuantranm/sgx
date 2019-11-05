@@ -25,7 +25,7 @@
                             <img alt="Đang cập nhật" src="~/images/placeholder/354x167.png" class="bg-image" />
                         </div>
                         <div class="card-body">
-                            <a href="/@Constants.LinkHr.Main/@Constants.LinkHr.Human/@Constants.LinkHr.Information">
+                            <a href="/@Constants.LinkHr.Human/@Constants.LinkHr.Information">
                                 <img alt="Đang cập nhật" src="~/images/placeholder/120x120.png" class="avatar avatar-lg" />
                             </a>
                             <div class="my-3">
@@ -39,18 +39,18 @@
                     </div>
                     <script id="tmplCardInfo" type="text/x-jsrender">
                         <div class="card-header">
-                            <img alt="{{:fullName}}" src="{{:cover.path}}{{:cover.fileName}}" class="bg-image" />
+                            <img alt="{{:userInformation.fullName}}" src="/{{:cover.path}}/{{:cover.fileName}}" class="bg-image" />
                         </div>
                         <div class="card-body">
-                            <a href="/@Constants.LinkHr.Main/@Constants.LinkHr.Human/@Constants.LinkHr.Information/{{:id}}">
-                                <img alt="{{:fullName}}" src="{{:avatar.path}}{{:avatar.fileName}}" class="avatar avatar-lg" />
+                            <a href="/@Constants.LinkHr.Human/@Constants.LinkHr.Information/{{:userInformation.id}}">
+                                <img alt="{{:userInformation.fullName}}" src="/{{:avatar.path}}/{{:avatar.fileName}}" class="avatar avatar-lg" />
                             </a>
                             <div class="my-3">
                                 <div class="mb-2">
-                                    <h5 class="mb-0"><a href="/@Constants.LinkHr.Main/@Constants.LinkHr.Human/@Constants.LinkHr.Information/{{:id}}" alt="{{:fullName}}">{{:fullName}}</a></h5>
-                                    <span class="text-muted">{{:title}} {{:function}}</span>
+                                    <h5 class="mb-0"><a href="/@Constants.LinkHr.Human/@Constants.LinkHr.Information/{{:userInformation.id}}" alt="{{:userInformation.fullName}}">{{:userInformation.fullName}}</a></h5>
+                                    <span class="text-muted">{{:userInformation.title}} {{:userInformation.function}}</span>
                                 </div>
-                                <span class="text-small text-muted"><i class="icon-location"></i> {{:addressResident}}</span>
+                                <span class="text-small text-muted"><i class="icon-location"></i> {{:userInformation.addressResident}}</span>
                             </div>
                         </div>
                     </script>
@@ -66,7 +66,7 @@
                         <div class="card-body collapse show" id="card-body">
                             @if (rightHr)
                             {
-                                <a class="list-group-item" href="/@Constants.LinkHr.Main/@Constants.LinkHr.Human">
+                                <a class="list-group-item" href="/@Constants.LinkHr.Human">
                                     <i class="icon-chevron-right"></i> Hồ sơ nhân sự
                                 </a>
                             }
@@ -407,19 +407,21 @@
                                             {
                                                 if (rightHr)
                                                 {
-                                                    href = "/" + Constants.LinkHr.Main + "/" + Constants.LinkHr.Human + "/" + Constants.LinkHr.Information + "/" + birthday.Id;
+                                                    href = "/" + Constants.LinkHr.Human + "/" + Constants.LinkHr.Information + "/" + birthday.Id;
+                                                }
+                                                var srcAvatar = "/images/svg/no-img-282-180.svg";
+                                                if (birthday.Images != null && birthday.Images.Count > 0)
+                                                {
+                                                    var avatar = birthday.Images.Where(m => m.Type.Equals((int)EImageSize.Avatar)).FirstOrDefault();
+                                                    if (avatar != null)
+                                                    {
+                                                        srcAvatar = avatar.Path + "/" + avatar.FileName;
+                                                    }
                                                 }
                                                 <div class="col-12 col-md-6">
                                                     <a href="@href" alt="@birthday.FullName">
                                                         <div class="card">
-                                                            @if (birthday.Avatar != null)
-                                                            {
-                                                                <img class="card-img-top" src="@birthday.Avatar.Path@birthday.Avatar.FileName" alt="@birthday.FullName" style="width: 100%; height:180px;object-fit: contain;" />
-                                                            }
-                                                            else
-                                                            {
-                                                                <img class="" src="~/images/svg/no-img-282-180.svg" alt="@birthday.FullName" />
-                                                            }
+                                                            <img class="card-img-top" src="@srcAvatar" alt="@birthday.FullName" style="width: 100%; height:180px;object-fit: contain;" />
                                                             <div class="card-body">
                                                                 <h4 class="card-title">@birthday.FullName</h4>
                                                                 <p class="card-text">
@@ -439,7 +441,7 @@
                                             }
                                         }
                                         <div class="col-12">
-                                            <a href="/@Constants.LinkHr.Main/@Constants.LinkHr.Birthday/@Constants.LinkHr.List">Xem thêm ›</a>
+                                            <a href="@Constants.LinkHr.Birthday/@Constants.LinkHr.List">Xem thêm ›</a>
                                         </div>
                                     </div>
                                 </div>

@@ -6,6 +6,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Models
 {
+    /// <summary>
+    /// DON'T USE: Right quan ly quyen theo nguoi dung, chuc vu 
+    /// Move to Right
+    /// </summary>
     public class RoleUser : Common
     {
         [BsonId]

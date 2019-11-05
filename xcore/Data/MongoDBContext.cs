@@ -30,6 +30,22 @@ namespace Data
             }
         }
 
+        public IMongoCollection<Domain> Domains
+        {
+            get
+            {
+                return _database.GetCollection<Domain>("Domains");
+            }
+        }
+
+        public IMongoCollection<Category> Categories
+        {
+            get
+            {
+                return _database.GetCollection<Category>("Categories");
+            }
+        }
+
         #region KE HOACH TONG HOP
         public IMongoCollection<KhoNguyenVatLieu> KhoNguyenVatLieus
         {
@@ -461,6 +477,7 @@ namespace Data
             }
         }
 
+        // Dont use. Use [Category]
         public IMongoCollection<CongTyChiNhanh> CongTyChiNhanhs
         {
             get
@@ -469,6 +486,7 @@ namespace Data
             }
         }
 
+        // Dont use. Use [Category]
         public IMongoCollection<KhoiChucNang> KhoiChucNangs
         {
             get
@@ -477,6 +495,7 @@ namespace Data
             }
         }
 
+        // Dont use. Use [Category]
         public IMongoCollection<PhongBan> PhongBans
         {
             get
@@ -485,6 +504,7 @@ namespace Data
             }
         }
 
+        // Dont use. Use [Category]
         public IMongoCollection<BoPhan> BoPhans
         {
             get
@@ -493,6 +513,7 @@ namespace Data
             }
         }
 
+        // Dont use. Use [Category]
         public IMongoCollection<ChucVu> ChucVus
         {
             get
@@ -859,6 +880,14 @@ namespace Data
             }
         }
 
+        public IMongoCollection<SettingTemp> SettingsTemp
+        {
+            get
+            {
+                return _database.GetCollection<SettingTemp>("SettingsTemp");
+            }
+        }
+
         public IMongoCollection<Setting> Settings
         {
             get
@@ -891,27 +920,12 @@ namespace Data
             }
         }
 
+        // No use, move to Categories
         public IMongoCollection<Role> Roles
         {
             get
             {
                 return _database.GetCollection<Role>("Roles");
-            }
-        }
-
-        public IMongoCollection<GroupPolicy> GroupPolicies
-        {
-            get
-            {
-                return _database.GetCollection<GroupPolicy>("GroupPolicies");
-            }
-        }
-
-        public IMongoCollection<RoleUsage> RoleUsages
-        {
-            get
-            {
-                return _database.GetCollection<RoleUsage>("RoleUsages");
             }
         }
 

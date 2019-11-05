@@ -17,107 +17,91 @@ namespace Models
 
         public string EmployeeId { get; set; }
 
-        [Display(Name = "Tên đăng nhập")]
         public string UserName { get; set; }
 
-        [Display(Name = "Mật khẩu")]
         [DataType(DataType.Password)]
         public string Password { get; set; }
 
-        [Display(Name = "Mã hệ thống")]
         public string Code { get; set; }
 
-        [Display(Name = "Mã nhân viên")]
         public string CodeOld { get; set; }
 
         public IList<Workplace> Workplaces { get; set; }
 
-        // true: not chấm công.
-        public bool IsTimeKeeper { get; set; } = false;
+        // false: not chấm công.
+        public bool IsTimeKeeper { get; set; } = true;
 
         [BsonRepresentation(BsonType.Decimal128)]
         public decimal LeaveLevelYear { get; set; } = 12;
 
-        [Display(Name = "Họ và tên")]
         public string FullName { get; set; }
 
         public string AliasFullName { get; set; }
 
-        [Display(Name = "Họ và tên đệm")]
         public string FirstName { get; set; }
 
-        [Display(Name = "Tên")]
         public string LastName { get; set; }
 
-        [Display(Name = "Ngày sinh")]
         [DataType(DataType.Date)]
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime Birthday { get; set; }
 
-        [Display(Name = "Nguyên quán")]
         public string Bornplace { get; set; }
 
-        [Display(Name = "Giới tính")]
         public string Gender { get; set; }
 
-        [Display(Name = "Ngày vào làm")]
         [DataType(DataType.Date)]
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime Joinday { get; set; }
 
         public int ProbationMonth { get; set; } = 2;
 
-        [Display(Name = "Chính thức")]
         public bool Official { get; set; } = true;
 
         // Last contract date
-        [Display(Name = "Ngày hợp đồng")]
         [DataType(DataType.Date)]
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime Contractday { get; set; }
 
-        [Display(Name = "Nghỉ việc")]
+        public int RemainingBhxh
+        {
+            get
+            {
+                DateTime today = DateTime.Today;
+                DateTime next = Contractday.AddMonths(6);
+                return (next - today).Days;
+            }
+        }
+
         public bool Leave { get; set; } = false;
 
-        [Display(Name = "Ngày nghỉ việc")]
         [DataType(DataType.Date)]
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime? Leaveday { get; set; }
 
-        [Display(Name = "Lý do nghỉ việc")]
         public string LeaveReason { get; set; }
 
         // Nội dung bàn giao
         public string LeaveHandover { get; set; }
 
-        [Display(Name = "Thường trú")]
         public string AddressResident { get; set; }
 
-        [Display(Name = "Phường/Xã")]
         public string WardResident { get; set; }
 
-        [Display(Name = "Quận/Huyện")]
         public string DistrictResident { get; set; }
 
-        [Display(Name = "Tỉnh/Thành phố")]
         public string CityResident { get; set; }
 
-        [Display(Name = "Nước")]
         public string CountryResident { get; set; }
 
-        [Display(Name = "Tạm trú")]
         public string AddressTemporary { get; set; }
 
-        [Display(Name = "Phường/Xã")]
         public string WardTemporary { get; set; }
 
-        [Display(Name = "Quận/Huyện")]
         public string DistrictTemporary { get; set; }
 
-        [Display(Name = "Tỉnh/Thành phố")]
         public string CityTemporary { get; set; }
 
-        [Display(Name = "Nước")]
         public string CountryTemporary { get; set; }
 
         #region New 08.03.2019. Store Id. Search alias convert to id | Query convert to viewModel
@@ -152,87 +136,66 @@ namespace Models
 
         public string ManagerInformation { get; set; } // Load dynamic...
 
-        [Display(Name = "ĐT bàn")]
+        public string ManagerEmployeeId { get; set; } // Theo nguoi hien tai
+
         [DataType(DataType.PhoneNumber)]
         public string Tel { get; set; }
 
-        [Display(Name = "Di động")]
         public IList<EmployeeMobile> Mobiles { get; set; }
 
-        [Display(Name = "Email")]
         [DataType(DataType.EmailAddress)]
         public string Email { get; set; }
 
-        [Display(Name = "Email cá nhân")]
         [DataType(DataType.EmailAddress)]
         public string EmailPersonal { get; set; }
 
         public bool ConfirmEmail { get; set; } = true;
 
-        [Display(Name = "Ngày phép sẵn có")]
         public double LeaveDayAvailable { get; set; } = 0;
 
         // Checked - Approved
-        [Display(Name = "Trạng thái")]
         public string Status { get; set; }
 
-        [Display(Name = "Quyền truy cập")]
         public bool IsOnline { get; set; } = true;
 
-        [Display(Name = "CMND")]
         public string IdentityCard { get; set; }
 
-        [Display(Name = "Ngày cấp")]
         [DataType(DataType.Date)]
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime? IdentityCardDate { get; set; }
 
-        [Display(Name = "Nơi cấp")]
         public string IdentityCardPlace { get; set; }
 
         public bool PassportEnable { get; set; } = false;
 
-        [Display(Name = "Số Hộ chiếu")]
         public string Passport { get; set; }
 
-        [Display(Name = "Loại Hộ chiếu")]
         public string PassportType { get; set; }
 
-        [Display(Name = "Mã số Hộ chiếu")]
         public string PassportCode { get; set; }
 
-        [Display(Name = "Ngày cấp")]
         [DataType(DataType.Date)]
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime? PassportDate { get; set; }
 
-        [Display(Name = "Ngày hết hạn")]
         [DataType(DataType.Date)]
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime? PassportExpireDate { get; set; }
 
-        [Display(Name = "Nơi cấp")]
         public string PassportPlace { get; set; }
 
-        [Display(Name = "Số Hộ khẩu")]
         public string HouseHold { get; set; }
 
-        [Display(Name = "Chủ hộ")]
         public string HouseHoldOwner { get; set; }
 
-        [Display(Name = "Hôn nhân")]
         public string StatusMarital { get; set; }
 
-        [Display(Name = "Dân tộc")]
         public string Nation { get; set; }
 
-        [Display(Name = "Tôn giáo")]
         public string Religion { get; set; }
 
-        [Display(Name = "Bằng cấp")]
         public IList<Certificate> Certificates { get; set; }
 
-        [Display(Name = "Giấy tờ cá nhân")]
         public IList<Card> Cards { get; set; }
         
         // Work  manage in Work. No relationship. It big data.
@@ -244,44 +207,32 @@ namespace Models
         #region BHXH
         public bool BhxhEnable { get; set; } = true;
 
-        // Ngày bắt đầu đóng bhxh ở công ty tribat
-        [Display(Name = "Ngày đóng BHXH")]
         [DataType(DataType.Date)]
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime? BhxhStart { get; set; }
 
-        [Display(Name = "Ngày dừng đóng BHXH")]
         [DataType(DataType.Date)]
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime? BhxhEnd { get; set; }
 
-        [Display(Name = "Số sổ BHXH")]
         public string BhxhBookNo { get; set; }
 
-        [Display(Name = "Mã số BHXH")]
         public string BhxhCode { get; set; }
 
-        [Display(Name = "Trạng thái")]
         public string BhxhStatus { get; set; }
 
-        [Display(Name = "Nơi KCB ban đầu")]
         public string BhxhHospital { get; set; }
 
-        [Display(Name = "Cơ quan BHXH")]
         public string BhxhLocation { get; set; }
 
-        [Display(Name = "Mã số BHYT")]
         public string BhytCode { get; set; }
 
-        [Display(Name = "Hiệu lực BHYT")]
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime? BhytStart { get; set; }
 
-        [Display(Name = "Hết hạn BHYT")]
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime? BhytEnd { get; set; }
 
-        [Display(Name = "Số tháng đóng bảo hiểm")]
         [BsonRepresentation(BsonType.Decimal128)]
         [DisplayFormat(DataFormatString = "{0:n0}")]
         public decimal BhxhMonth { get; set; }
@@ -289,7 +240,6 @@ namespace Models
         [DisplayFormat(DataFormatString = "{0:n0}")]
         public string BhxhYear { get; set; }
 
-        // Ms.Thoa
         public IList<BhxhHistory> BhxhHistories { get; set; }
         #endregion
 
@@ -303,7 +253,6 @@ namespace Models
 
         public IList<EmployeePower> EmployeePowers { get; set; }
 
-        [Display(Name = "Số người phụ thuộc")]
         public int BhxhDependecy { get; set; } = 0;
 
         public IList<EmployeeFamily> EmployeeFamilys { get; set; }
@@ -314,13 +263,12 @@ namespace Models
 
         public IList<EmployeeCheck> EmployeeChecks { get; set; }
 
-        public IList<Image> Images { get; set; }
+        public IList<Img> Images { get; set; }
 
-        public Image Avatar { get; set; }
+        public Image Avatar { get; set; } // No use
 
-        public Image Cover { get; set; }
+        public Image Cover { get; set; } // No use
 
-        [Display(Name = "Giới thiệu")]
         public string Intro { get; set; }
 
         public EmployeeBank EmployeeBank { get; set; }
@@ -444,6 +392,16 @@ namespace Models
             {
                 var culture = new CultureInfo("vi");
                 return culture.Calendar.GetWeekOfYear(NextBirthDays, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
+            }
+        }
+
+        public int ProbationAlert
+        {
+            get
+            {
+                DateTime today = DateTime.Today;
+                DateTime next = Joinday.AddMonths(ProbationMonth);
+                return (next - today).Days;
             }
         }
         #endregion

@@ -3,8 +3,14 @@ using System.Collections.Generic;
 
 namespace ViewModels
 {
-    public class HomeViewModel
+    public class HomeViewModel: CommonViewModel
     {
+        public Category Category { get; set; }
+
+        public Content Content { get; set; }
+
+        public IList<Content> Contents { get; set; }
+
         #region Menu
         public MenuViewModel Menu { get; set; }
         #endregion
