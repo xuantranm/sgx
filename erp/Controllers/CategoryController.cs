@@ -35,16 +35,23 @@ namespace Controllers
         }
 
         [Route(Constants.Link.Category)]
-        public async Task<IActionResult> Index(string alias, int trang, int dong, string sapxep, string thutu)
+        public async Task<IActionResult> Index(string alias, int? type, int trang, int dong, string sapxep, string thutu)
         {
             var linkCurrent = string.Empty;
 
             #region Login Information
-            LoginInit(Constants.Rights.System, (int)ERights.Add);
+            LoginInit(Constants.Rights.System, (int)ERights.View);
             if (!(bool)ViewData[Constants.ActionViews.IsLogin])
             {
                 await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                 return RedirectToAction(Constants.ActionViews.Login, Constants.Controllers.Account);
+            }
+            var loginId = User.Identity.Name;
+            var loginE = dbContext.Employees.Find(m => m.Id.Equals(loginId)).FirstOrDefault();
+            bool isRight = (bool)ViewData[Constants.ActionViews.IsRight];
+            if (!isRight)
+            {
+                return RedirectToAction("Index", "Home");
             }
             #endregion
 
@@ -55,6 +62,10 @@ namespace Controllers
             if (!string.IsNullOrEmpty(alias))
             {
                 filter &= builder.Eq(x => x.Alias, alias);
+            }
+            if (type.HasValue)
+            {
+                filter &= builder.Eq(x => x.Type, type);
             }
             #endregion
 
@@ -81,6 +92,7 @@ namespace Controllers
                 Categories = list,
                 CategoriesDisplay = categoriesDisplay,
                 Alias = alias,
+                Type = type,
                 LinkCurrent = linkCurrent,
                 Records = (int)records
             };
@@ -88,7 +100,8 @@ namespace Controllers
         }
 
         [Route(Constants.Link.Category + "/" + Constants.ActionLink.Data)]
-        public async Task<IActionResult> Data(string Id)
+        [Route(Constants.Link.Category + "/" + Constants.ActionLink.Data +"/{id}")]
+        public async Task<IActionResult> Data(string id)
         {
             #region Login Information
             LoginInit(Constants.Rights.System, (int)ERights.Add);
@@ -97,15 +110,22 @@ namespace Controllers
                 await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                 return RedirectToAction(Constants.ActionViews.Login, Constants.Controllers.Account);
             }
+            var loginId = User.Identity.Name;
+            var loginE = dbContext.Employees.Find(m => m.Id.Equals(loginId)).FirstOrDefault();
+            bool isRight = (bool)ViewData[Constants.ActionViews.IsRight];
+            if (!isRight)
+            {
+                return RedirectToAction("Index", "Home");
+            }
             #endregion
 
             var properties = dbContext.Settings.Find(m => m.Type.Equals((int)EData.Property) && m.Enable.Equals(true)).ToList();
 
             var categoryE = new Category();
 
-            if (!string.IsNullOrEmpty(Id))
+            if (!string.IsNullOrEmpty(id))
             {
-                categoryE = dbContext.Categories.Find(m => m.Id.Equals(Id)).FirstOrDefault();
+                categoryE = dbContext.Categories.Find(m => m.Id.Equals(id)).FirstOrDefault();
                 if (categoryE == null)
                 {
                     categoryE = new Category();

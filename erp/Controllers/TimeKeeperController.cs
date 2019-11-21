@@ -210,6 +210,8 @@ namespace Controllers
             dbContext.EmployeeWorkTimeLogs.UpdateOne(filterEmployeeWorkTimeLog, updateEmployeeWorkTimeLog);
             #endregion
 
+            entity = dbContext.EmployeeWorkTimeLogs.Find(m => m.Id.Equals(entity.Id)).FirstOrDefault();
+
             if (isMe)
             {
                 #region Send Mail

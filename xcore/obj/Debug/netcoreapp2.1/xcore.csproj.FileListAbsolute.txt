@@ -24,4 +24,3 @@ D:\projects\sgx\xcore\obj\Debug\netcoreapp2.1\xcore.AssemblyInfoInputs.cache
 D:\projects\sgx\xcore\obj\Debug\netcoreapp2.1\xcore.AssemblyInfo.cs
 D:\projects\sgx\xcore\obj\Debug\netcoreapp2.1\xcore.dll
 D:\projects\sgx\xcore\obj\Debug\netcoreapp2.1\xcore.pdb
-D:\projects\sgx\xcore\obj\Debug\netcoreapp2.1\xcore.csprojAssemblyReference.cache

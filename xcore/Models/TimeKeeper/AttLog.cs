@@ -10,7 +10,6 @@ namespace Models
     public class AttLog
     {
         [BsonId]
-        // Mvc don't know how to create ObjectId from string
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
 

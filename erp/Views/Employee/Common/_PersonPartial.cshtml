@@ -1,0 +1,108 @@
+﻿@using Common.Utilities;
+@using Common.Enums;
+@model Employee
+@{
+    var person = Model;
+    bool isSystem = (bool)ViewData[Constants.ActionViews.IsSystem];
+    var emptyImg = "https://via.placeholder.com/120x120";
+    var srcAvatar = emptyImg;
+    if (person.Images != null && person.Images.Count > 0)
+    {
+        var avatar = person.Images.Where(m => m.Type.Equals((int)EImageSize.Avatar)).FirstOrDefault();
+        if (avatar != null)
+        {
+            srcAvatar = avatar.Path + "/" + avatar.FileName;
+        }
+    }
+}
+<div class="card border-0">
+    <div class="card-body">
+        <div class="media">
+            <img class="avatar avatar-square avatar-lg" src="@srcAvatar" alt="@person.FullName" />
+            <div class="media-body">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="float-left">
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-outline-primary dropdown-toggle dropdown-toggle-no-arrow" type="button" id="dropdownMenuButton-1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Bấm xem thông tin, chỉnh sửa...">
+                                    <i class="icon-dots-three-horizontal"></i>
+                                </button>
+                                <div class="dropdown-menu dropdown-menu-sm" aria-labelledby="dropdownMenuButton">
+                                    <a class="btn btn-link dropdown-person" href="/@Constants.LinkHr.Human/@Constants.LinkHr.Information/@person.Id"><i class="fas fa-street-view"></i> Xem thông tin</a>
+                                    <br />
+                                    <a class="btn btn-link dropdown-person" href="/@Constants.LinkHr.Human/@Constants.ActionLink.Data/@person.Id"><i class="fas fa-user-edit"></i> Chỉnh sửa</a>
+                                    <br />
+                                    <a class="btn btn-link dropdown-person" href="javascript:;" data-id="@person.Id"><i class="fas fa-user-slash"></i> Xóa</a>
+                                    @if (isSystem)
+                                    {
+                                        <span class="dropdown-divider"></span>
+                                        <form action="/sys/login-as/" method="post" class="navbar-right">
+                                            <input name="userName" type="hidden" value="@person.UserName" />
+                                            <button type="submit" class="btn btn-link dropdown-person disable-person"><i class="fas fa-sign-in-alt"></i> Login as</button>
+                                        </form>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        <div class="float-left ml-2">
+                            <span class="badge badge-primary">@person.CodeOld</span>
+                            <span class="text-uppercase">@person.FullName</span>
+                            <span class="badge badge-danger">@person.ChucVuName</span>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        @if (!string.IsNullOrEmpty(person.Email))
+                        {
+                            <div class="float-left mr-2">
+                                <a href="mailto:@person.Email" target="_top"><i class="fas fa-envelope"></i> @person.Email</a>
+                            </div>
+                        }
+                        <div class="float-left">
+                            <i class="icon-cake mr-1"></i> Ngày sinh
+                            @if (person.Birthday.Year <= 1900)
+                            {
+                                <span>Đang cập nhật</span>
+                                <span class="badge badge-indicator badge-danger">&nbsp;</span>
+                            }
+                            else
+                            {
+                                <span>@person.Birthday.ToString("dd/MM/yyyy")</span>
+                                <span class="badge badge-indicator badge-success">&nbsp;</span>
+                            }
+                        </div>
+                        <div class="float-left ml-2">
+                            <i class="icon-time-slot mr-1"></i>
+                            @if (person.Joinday.Year <= 1900)
+                            {
+                                <span>Ngày làm việc: </span><span class="badge badge-indicator badge-danger">&nbsp;</span>
+                            }
+                            else
+                            {
+                                <span>Ngày làm việc: @person.Joinday.ToString("dd/MM/yyyy")</span>
+                            }
+                        </div>
+                    </div>
+                    @if (person.Workplaces != null && person.Workplaces.Count > 0)
+                    {
+                        <div class="col-12">
+                            <div class="float-left">
+                                @foreach (var workplace in person.Workplaces)
+                                {
+                                    if (!string.IsNullOrEmpty(workplace.Fingerprint))
+                                    {
+                                        <i class="icon-location mr-1"></i>
+                                        <span>@workplace.Name</span>
+                                        <i class="icon-fingerprint mr-1"></i> @workplace.Fingerprint
+                                        <i class="fas fa-clock"></i> @workplace.WorkingScheduleTime
+                                    }
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+

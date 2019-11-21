@@ -1,20 +1,9 @@
 ﻿$(function () {
     setValue();
 
-    var bornplace = new google.maps.places.Autocomplete($("#Employee_Bornplace")[0], { componentRestrictions: { country: 'vn' } });
-    google.maps.event.addListener(bornplace, 'place_changed', function () {
-        var place = bornplace.getPlace();
-    });
+    googleInit();
 
-    var addressResident = new google.maps.places.Autocomplete($("#Employee_AddressResident")[0], { componentRestrictions: { country: 'vn' } });
-    google.maps.event.addListener(addressResident, 'place_changed', function () {
-        var place = addressResident.getPlace();
-    });
-
-    var addressTemporary = new google.maps.places.Autocomplete($("#Employee_AddressTemporary")[0], {});
-    google.maps.event.addListener(addressTemporary, 'place_changed', function () {
-        var place = addressTemporary.getPlace();
-    });
+    eventInit();
 
     $(".data-form").on("submit", function (event) {
         if (!confirm("Bạn chắc chắn thông tin đã được kiểm tra và muốn cập nhật!")) {
@@ -107,514 +96,553 @@
         $('input[name="Employee.EmployeeBank.BankHolder"]').val($(this).val());
     });
 
-    $('#Employee_KhoiChucNang').on('change', function () {
-        getcategory($(this).val(), $('.hid-type-phongban').val()); // parent , data
-    });
-
-    $('#Employee_PhongBan').on('change', function () {
-        getcategory($(this).val(), $('.hid-type-bophan').val());
-    });
-
-    $('#Employee_BoPhan').on('change', function () {
-        $('#Employee_BoPhanName').val($('#Employee_BoPhan option:selected').text());
-        changeByBoPhan($(this).val());
-    });
-
-    $('#Employee_BoPhanCon').on('change', function () {
-        $('#Employee_BoPhanConName').val($('#Employee_BoPhanCon option:selected').text());
-    });
-
-    $('#check-timekeeper').on('change', function () {
-        if ($(this).is(':checked')) {
-            $('input[name="Employee.IsTimeKeeper"]').val(true);
-            $('.time-working').removeClass('d-none');
-        } else {
-            $('input[name="Employee.IsTimeKeeper"]').val(false);
-            $('.time-working').addClass('d-none');
+    $('#newCategoryModal').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget);
+        var ecategory = parseInt(button.data('ecategory'));
+        var categoryName = "";
+        var parent = "";
+        if (ecategory === parseInt($('.egender-val-hide').val())) {
+            categoryName = "Giới tính";
         }
-    });
-
-    $('.chkOfficial').on('change', function () {
-        if ($(this).is(':checked')) {
-            $('#Employee_Official').val(true);
-        } else {
-            $('#Employee_Official').val(false);
+        else if (ecategory === parseInt($('.ekhoichucnang-val-hide').val())) {
+            categoryName = "Khối chức năng";
         }
-    });
-
-    $('#check-enable').on('change', function () {
-        if ($(this).is(':checked')) {
-            $('#Employee_Leave').val(true);
-        } else {
-            $('#Employee_Leave').val(false);
+        else if (ecategory === parseInt($('.ephongban-val-hide').val())) {
+            categoryName = "Phòng ban";
+            parent = $('.ekhoichucnang-val-hide').val();
         }
-    });
-
-    $('.chkWelcomeEmailSend').on('change', function () {
-        if ($(this).is(':checked')) {
-            $('#IsWelcomeEmail').val(true);
-            $('.welcomeEmail').removeClass('d-none');
-            var phongban = $('#Employee_PhongBan').val();
-            if (phongban === "") {
-                $('.welcomeToEmailList').text("Chưa chọn phòng ban! Danh sách email này dựa vào phòng ban.");
+        else if (ecategory === parseInt($('.ebophan-val-hide').val())) {
+            categoryName = "Bộ phận";
+            parent = $('.ephongban-val-hide').val();
+        }
+        else if (ecategory === parseInt($('.echucvu-val-hide').val())) {
+            categoryName = "Chức vụ";
+            if ($('select[name="Employee.BoPhan"]').val() !== "") {
+                parent = $('.ebophan-val-hide').val();
             }
-            else {
+            else if ($('select[name="Employee.PhongBan"]').val() !== "") {
+                parent = $('.ephongban-val-hide').val();
+            }
+            else{
+                parent = $('.ekhoichucnang-val-hide').val();
+            }
+        }
+        else if (ecategory === parseInt($('.ecompany-val-hide').val())) {
+            categoryName = "Công ty/Chi nhánh";
+        }
+        else if (ecategory === parseInt($('.ehospital-val-hide').val())) {
+            categoryName = "Nơi khám chữa bệnh ban đầu";
+        }
+        else if (ecategory === parseInt($('.ebank-val-hide').val())) {
+            categoryName = "Ngân hàng";
+        }
+        else if (ecategory === parseInt($('.econtract-val-hide').val())) {
+            categoryName = "Loại hợp đồng";
+        }
+        else if (ecategory === parseInt($('.etimework-val-hide').val())) {
+            categoryName = "Thời gian làm việc";
+        }
+        else if (ecategory === parseInt($('.eprobation-val-hide').val())) {
+            categoryName = "Thời gian thử việc";
+        }
+        var modal = $(this);
+        $('input', modal).val('');
+        $('textarea', modal).val('');
+        $('.parent-area', modal).addClass('d-none');
+        $('.error-message', modal).addClass('d-none');
+
+        modal.find('.modal-title').text("Thêm mới " + categoryName);
+        modal.find('.type-hide').val(ecategory);
+        modal.find('.modal-body .name-property').html(categoryName);
+        eventModal(modal, ecategory, parent);
+    });
+
+    eventContractType();
+
+    enableRemove();
+
+    function googleInit() {
+        var bornplace = new google.maps.places.Autocomplete($("#Employee_Bornplace")[0], { componentRestrictions: { country: 'vn' } });
+        google.maps.event.addListener(bornplace, 'place_changed', function () {
+            var place = bornplace.getPlace();
+        });
+
+        var addressResident = new google.maps.places.Autocomplete($("#Employee_AddressResident")[0], { componentRestrictions: { country: 'vn' } });
+        google.maps.event.addListener(addressResident, 'place_changed', function () {
+            var place = addressResident.getPlace();
+        });
+
+        var addressTemporary = new google.maps.places.Autocomplete($("#Employee_AddressTemporary")[0], {});
+        google.maps.event.addListener(addressTemporary, 'place_changed', function () {
+            var place = addressTemporary.getPlace();
+        });
+    }
+
+    function eventInit() {
+        $('#Employee_KhoiChucNang').on('change', function () {
+            getcategory($(this).val(), $('.hid-type-phongban').val()); // parent , data
+        });
+
+        $('#Employee_PhongBan').on('change', function () {
+            getcategory($(this).val(), $('.hid-type-bophan').val());
+        });
+
+        $('#Employee_BoPhan').on('change', function () {
+            $('#Employee_BoPhanName').val($('#Employee_BoPhan option:selected').text());
+            changeByBoPhan($(this).val());
+        });
+
+        $('#Employee_BoPhanCon').on('change', function () {
+            $('#Employee_BoPhanConName').val($('#Employee_BoPhanCon option:selected').text());
+        });
+
+        $('#check-timekeeper').on('change', function () {
+            if ($(this).is(':checked')) {
+                $('input[name="Employee.IsTimeKeeper"]').val(true);
+                $('.time-working').removeClass('d-none');
+            } else {
+                $('input[name="Employee.IsTimeKeeper"]').val(false);
+                $('.time-working').addClass('d-none');
+            }
+        });
+
+        $('.chkOfficial').on('change', function () {
+            if ($(this).is(':checked')) {
+                $('#Employee_Official').val(true);
+            } else {
+                $('#Employee_Official').val(false);
+            }
+        });
+
+        $('#check-enable').on('change', function () {
+            if ($(this).is(':checked')) {
+                $('#Employee_Leave').val(true);
+            } else {
+                $('#Employee_Leave').val(false);
+            }
+        });
+
+        $('.chkWelcomeEmailSend').on('change', function () {
+            if ($(this).is(':checked')) {
+                $('#IsWelcomeEmail').val(true);
+                $('.welcomeEmail').removeClass('d-none');
+                var phongban = $('#Employee_PhongBan').val();
+                if (phongban === "") {
+                    $('.welcomeToEmailList').text("Chưa chọn phòng ban! Danh sách email này dựa vào phòng ban.");
+                }
+                else {
+                    $.ajax({
+                        type: "GET",
+                        url: "/api/GetWelcomeToEmails",
+                        contentType: "application/json; charset=utf-8",
+                        data: { PhongBan: $('#Employee_PhongBan').val() },
+                        dataType: "json",
+                        success: function (data) {
+                            if (data.result === true) {
+                                $('.welcomeToEmailList').text("TO: " + data.tohtml);
+                                $('.welcomeCCEmailList').text("CC: " + data.cchtml);
+                            }
+                        }
+                    });
+                }
+            } else {
+                $('#IsWelcomeEmail').val(false);
+                $('.welcomeEmail').addClass('d-none');
+            }
+        });
+
+        $('.chkLeaveEmailSend').on('change', function () {
+            if ($(this).is(':checked')) {
+                $('#IsLeaveEmail').val(true);
+                $('.leaveEmail').removeClass('d-none');
+                var phongban = $('#Employee_PhongBan').val();
+                if (phongban === "") {
+                    $('.welcomeToEmailList').text("Chưa chọn phòng ban! Danh sách email này dựa vào phòng ban.");
+                }
+                else {
+                    $.ajax({
+                        type: "GET",
+                        url: "/api/GetWelcomeToEmails", // dung chung
+                        contentType: "application/json; charset=utf-8",
+                        data: { PhongBan: $('#Employee_PhongBan').val() },
+                        dataType: "json",
+                        success: function (data) {
+                            if (data.result === true) {
+                                $('.leaveToEmailList').text("TO: " + data.tohtml);
+                                $('.leaveCCEmailList').text("CC: " + data.cchtml);
+                            }
+                        }
+                    });
+                }
+            } else {
+                $('#IsLeaveEmail').val(false);
+                $('.leaveEmail').addClass('d-none');
+            }
+        });
+
+        $('.chkWelcomeEmailAll').on('change', function () {
+            if ($(this).is(':checked')) {
+                $('#WelcomeEmailAll').val(true);
                 $.ajax({
                     type: "GET",
                     url: "/api/GetWelcomeToEmails",
                     contentType: "application/json; charset=utf-8",
-                    data: { PhongBan: $('#Employee_PhongBan').val() },
+                    data: { PhongBan: '', All: true },
                     dataType: "json",
                     success: function (data) {
+                        console.log(data.cchtml);
                         if (data.result === true) {
                             $('.welcomeToEmailList').text("TO: " + data.tohtml);
                             $('.welcomeCCEmailList').text("CC: " + data.cchtml);
                         }
                     }
                 });
+            } else {
+                $('#WelcomeEmailAll').val(false);
             }
-        } else {
-            $('#IsWelcomeEmail').val(false);
-            $('.welcomeEmail').addClass('d-none');
-        }
-    });
+        });
 
-    $('.chkLeaveEmailSend').on('change', function () {
-        if ($(this).is(':checked')) {
-            $('#IsLeaveEmail').val(true);
-            $('.leaveEmail').removeClass('d-none');
-            var phongban = $('#Employee_PhongBan').val();
-            if (phongban === "") {
-                $('.welcomeToEmailList').text("Chưa chọn phòng ban! Danh sách email này dựa vào phòng ban.");
-            }
-            else {
+        $('.chkLeaveEmailAll').on('change', function () {
+            if ($(this).is(':checked')) {
+                $('#LeaveEmailAll').val(true);
                 $.ajax({
                     type: "GET",
-                    url: "/api/GetWelcomeToEmails", // dung chung
+                    url: "/api/GetWelcomeToEmails",
                     contentType: "application/json; charset=utf-8",
-                    data: { PhongBan: $('#Employee_PhongBan').val() },
+                    data: { PhongBan: '', All: true },
                     dataType: "json",
                     success: function (data) {
+                        console.log(data.cchtml);
                         if (data.result === true) {
                             $('.leaveToEmailList').text("TO: " + data.tohtml);
                             $('.leaveCCEmailList').text("CC: " + data.cchtml);
                         }
                     }
                 });
+            } else {
+                $('#LeaveEmailAll').val(false);
             }
-        } else {
-            $('#IsLeaveEmail').val(false);
-            $('.leaveEmail').addClass('d-none');
-        }
-    });
+        });
 
-    $('.chkWelcomeEmailAll').on('change', function () {
-        if ($(this).is(':checked')) {
-            $('#WelcomeEmailAll').val(true);
+        $('#check-enable').on('change', function () {
+            if ($(this).is(':checked')) {
+                $('input[name="Employee.Enable"]').val(false);
+                $('.leave-extend').removeClass('d-none');
+            } else {
+                $('input[name="Employee.Enable"]').val(true);
+                $('.leave-extend').addClass('d-none');
+            }
+        });
+
+        $('.js-select2-basic-single').select2(
+            {
+                theme: "bootstrap"
+            });
+
+        $('.datepicker').on('changeDate', function () {
+            var date = moment($(this).datepicker('getFormattedDate'), 'DD-MM-YYYY');
+            $('.hidedatepicker', $(this).closest('.form-group')).val(
+                date.format('MM-DD-YYYY')
+            );
+        });
+
+        $('.multi-select-workplace').multiselect({
+            nonSelectedText: '',
+            nSelectedText: '',
+            allSelectedText: '',
+            onDropdownHide: function (event) {
+                var workplaces = $('.multi-select-workplace').val();
+                $('.nodeWorkplace').remove();
+                var i = 0;
+                workplaces.forEach(function (item) {
+                    var data = [
+                        {
+                            "code": i,
+                            "nameWorkplace": $(".multi-select-workplace option[value='" + item + "']").text(),
+                            "codeWorkplace": item
+                        }
+                    ];
+                    $('.workplace').after($.templates("#tmplWorkplace").render(data));
+                    i++;
+                });
+            }
+        });
+
+        $('.data-form input').each(function () {
+            var elem = $(this);
+            // Save current value of element
+            elem.data('oldVal', elem.val());
+
+            // Look for changes in the value
+            elem.bind("propertychange change click keyup input paste", function (event) {
+                // If value has changed...
+                if (elem.data('oldVal') !== elem.val()) {
+                    // Updated stored value
+                    elem.data('oldVal', elem.val());
+                    // Do action
+                    $('.btn-submit').prop('disabled', false);
+                }
+            });
+        });
+
+        $('#public').on('change', function () {
+            if ($(this).is(':checked')) {
+                $('input[name*="BhxhEnable"]').val(true);
+                $('.enableBhxh').removeClass('d-none');
+            } else {
+                $('input[name*="BhxhEnable"]').val(false);
+                $('.enableBhxh').addClass('d-none');
+            }
+        });
+
+        $('.addMobile').click(function (e) {
+            // Can remove > 1 element
+            e.preventDefault();
+            var code = 0;
+            if ($('.codeMobile')[0]) {
+                code = parseInt($('.codeMobile:last').val()) + 1;
+            }
+
+            var data = [
+                {
+                    "code": code
+                }
+            ];
+            $('.more-mobile').before($.templates("#tmplMobile").render(data));
+            $('.remove-item', $('.nodeMobile')).removeClass('d-none');
+            enableRemoveMobileExist();
+        });
+
+        $('.addBHXH').click(function (e) {
+            e.preventDefault();
+            var code = 0;
+            if ($('.codeBHXH')[0]) {
+                code = parseInt($('.codeBHXH:last').val()) + 1;
+            }
+
+            var data = [
+                {
+                    "code": code
+                }
+            ];
+
+            $('.more-task-bhxh').before($.templates("#tmplBHXH").render(data));
+            registerDatePicker();
+            enableRemove();
+        });
+
+        $('.btn-save-hospital').on('click', function () {
+            var form = $(this).closest('form');
+            var frmValues = form.serialize();
             $.ajax({
-                type: "GET",
-                url: "/api/GetWelcomeToEmails",
-                contentType: "application/json; charset=utf-8",
-                data: { PhongBan: '', All: true },
-                dataType: "json",
+                type: form.attr('method'),
+                url: form.attr('action'),
+                data: frmValues,
                 success: function (data) {
-                    console.log(data.cchtml);
                     if (data.result === true) {
-                        $('.welcomeToEmailList').text("TO: " + data.tohtml);
-                        $('.welcomeCCEmailList').text("CC: " + data.cchtml);
+                        toastr.info(data.message);
+                        // Update ddl
+                        $('select[name="Employee.BhxhHospital"] option:first').after('<option value="' + data.entity.name + '">' + data.entity.name + '</option>');
+                        $('select[name="Employee.BhxhHospital"]').val(data.entity.name);
+                        $('input', form).val('');
+                        $('textarea', form).val('');
+                        $('#newHospital').modal('hide');
+
+                    }
+                    else {
+                        toastr.error(data.message);
                     }
                 }
             });
-        } else {
-            $('#WelcomeEmailAll').val(false);
-        }
-    });
-
-    $('.chkLeaveEmailAll').on('change', function () {
-        if ($(this).is(':checked')) {
-            $('#LeaveEmailAll').val(true);
-            $.ajax({
-                type: "GET",
-                url: "/api/GetWelcomeToEmails",
-                contentType: "application/json; charset=utf-8",
-                data: { PhongBan: '', All: true },
-                dataType: "json",
-                success: function (data) {
-                    console.log(data.cchtml);
-                    if (data.result === true) {
-                        $('.leaveToEmailList').text("TO: " + data.tohtml);
-                        $('.leaveCCEmailList').text("CC: " + data.cchtml);
-                    }
-                }
-            });
-        } else {
-            $('#LeaveEmailAll').val(false);
-        }
-    });
-
-    $('#check-enable').on('change', function () {
-        if ($(this).is(':checked')) {
-            $('input[name="Employee.Enable"]').val(false);
-            $('.leave-extend').removeClass('d-none');
-        } else {
-            $('input[name="Employee.Enable"]').val(true);
-            $('.leave-extend').addClass('d-none');
-        }
-    });
-
-    $('.js-select2-basic-single').select2(
-        {
-            theme: "bootstrap"
         });
 
-    $('.datepicker').on('changeDate', function () {
-        var date = moment($(this).datepicker('getFormattedDate'), 'DD-MM-YYYY');
-        $('.hidedatepicker', $(this).closest('.form-group')).val(
-            date.format('MM-DD-YYYY')
-        );
-    });
-
-    $('.multi-select-workplace').multiselect({
-        //enableFiltering: true,
-        nonSelectedText: '',
-        nSelectedText: '',
-        allSelectedText: '',
-        //onChange: function (option, checked) {
-        //    alert('onChange!');
-        //},
-        onDropdownHide: function (event) {
-            var workplaces = $('.multi-select-workplace').val();
-            $('.nodeWorkplace').remove();
-            //$('.nodeWorkplace').addClass('d-none');
-            var i = 0;
-            workplaces.forEach(function (item) {
-                //if (item === "VP") {
-                //    $('.van-phong').removeClass('d-none');
-                //}
-                //if (item === "NM") {
-                //    $('.nha-may').removeClass('d-none');
-                //}
-
-                var data = [
-                    {
-                        "code": i,
-                        "nameWorkplace": $(".multi-select-workplace option[value='" + item + "']").text(),
-                        "codeWorkplace": item,
-                    }
-                ];
-                $('.workplace').after($.templates("#tmplWorkplace").render(data));
-                i++;
-            });
-        }
-    });
-
-    $('.data-form input').each(function () {
-        var elem = $(this);
-        // Save current value of element
-        elem.data('oldVal', elem.val());
-
-        // Look for changes in the value
-        elem.bind("propertychange change click keyup input paste", function (event) {
-            // If value has changed...
-            if (elem.data('oldVal') !== elem.val()) {
-                // Updated stored value
-                elem.data('oldVal', elem.val());
-                // Do action
-                $('.btn-submit').prop('disabled', false);
-            }
+        $('.task-bhxh').on('change', function () {
+            $('.task-bhxh-display', $(this).closest('.node')).val($(this).find("option:selected").text());
         });
-    });
 
-    $('#public').on('change', function () {
-        if ($(this).is(':checked')) {
-            $('input[name*="BhxhEnable"]').val(true);
-            $('.enableBhxh').removeClass('d-none');
-        } else {
-            $('input[name*="BhxhEnable"]').val(false);
-            $('.enableBhxh').addClass('d-none');
-        }
-    });
-
-    $('#newPhongBanModal').on('show.bs.modal', function (event) {
-        var modal = $(this);
-        modal.find('.CongTyChiNhanhIdModal').val($('select[name="Employee.CongTyChiNhanh"]').val());
-        modal.find('.KhoiChucNangIdModal').val($('select[name="Employee.KhoiChucNang"]').val());
-        eventModal(modal, "phongban");
-    });
-
-    $('#newKhoiChucNangModal').on('show.bs.modal', function (event) {
-        var modal = $(this);
-        eventModal(modal, "khoichucnang");
-    });
-
-    $('#newChucVuModal').on('show.bs.modal', function (event) {
-        var modal = $(this);
-        eventModal(modal, "chucvu");
-    });
-
-    $('.btn-save-khoichucnang').on('click', function () {
-        var form = $(this).closest('form');
-        var frmValues = form.serialize();
-        $.ajax({
-            type: form.attr('method'),
-            url: form.attr('action'),
-            data: frmValues,
-            success: function (data) {
-                if (data.result === true) {
-                    toastr.info(data.message);
-                    $('select[name="Employee.KhoiChucNang"] option:first').after('<option value="' + data.entity.id + '">' + data.entity.name + '</option>');
-                    $('select[name="Employee.KhoiChucNang"]').val(data.entity.id);
-                    $('select[name="Employee.KhoiChucNangName"]').val(data.entity.name);
-                    $('input', form).val('');
-                    $('textarea', form).val('');
-                    $('#newKhoiChucNangModal').modal('hide');
-                }
-                else {
-                    toastr.error(data.message);
-                }
+        $('.addFamily').click(function (e) {
+            e.preventDefault();
+            var code = 0;
+            if ($('.codeFamily')[0]) {
+                code = parseInt($('.codeFamily:last').val()) + 1;
             }
+
+            var data = [
+                {
+                    "code": code
+                }
+            ];
+
+            $('.more-family').before($.templates("#tmplFamily").render(data));
+            registerDatePicker();
+            enableRemove();
         });
-    });
 
-    $('.btn-save-phongban').on('click', function () {
-        var form = $(this).closest('form');
-        var frmValues = form.serialize();
-        $.ajax({
-            type: form.attr('method'),
-            url: form.attr('action'),
-            data: frmValues,
-            success: function (data) {
-                if (data.result === true) {
-                    toastr.info(data.message);
-                    // Update ddl
-                    $('select[name="Employee.PhongBan"] option:first').after('<option value="' + data.entity.id + '">' + data.entity.name + '</option>');
-                    $('select[name="Employee.PhongBan"]').val(data.entity.id);
-                    $('input', form).val('');
-                    $('textarea', form).val('');
-                    $('#newPhongBanModal').modal('hide');
-                }
-                else {
-                    toastr.error(data.message);
-                }
+        $('.add-contract').click(function (e) {
+            e.preventDefault();
+            var code = 0;
+            if ($('.codeContract')[0]) {
+                code = parseInt($('.codeContract:last').val()) + 1;
             }
+
+            var data = [
+                {
+                    "code": code
+                }
+            ];
+            $('.more-contract').before($.templates("#tmplContract").render(data));
+            //setValue();
+            eventContractType();
+            registerDatePicker();
+            enableRemove();
         });
-    });
 
-    $('.btn-save-chucvu').on('click', function () {
-        var form = $(this).closest('form');
-        var frmValues = form.serialize();
-        $.ajax({
-            type: form.attr('method'),
-            url: form.attr('action'),
-            data: frmValues,
-            success: function (data) {
-                if (data.result === true) {
-                    toastr.info(data.message);
-                    $('select[name="Employee.ChucVu"] option:first').after('<option value="' + data.entity.id + '">' + data.entity.name + '</option>');
-                    $('select[name="Employee.ChucVu"]').val(data.entity.id);
-                    $('select[name="Employee.ChucVuName"]').val(data.entity.name);
-                    $('input', form).val('');
-                    $('textarea', form).val('');
-                    $('#newChucVuModal').modal('hide');
-                }
-                else {
-                    toastr.error(data.message);
-                }
+        $('.addCertificate').click(function (e) {
+            e.preventDefault();
+            var code = 0;
+            if ($('.codeCertificate')[0]) {
+                code = parseInt($('.codeCertificate:last').val()) + 1;
             }
+
+            var data = [
+                {
+                    "code": code
+                }
+            ];
+
+            $('.more-certificate').before($.templates("#tmplCertificate").render(data));
+            enableAutoSize();
+            enableRemove();
         });
-    });
 
-    $('.addMobile').click(function (e) {
-        // Can remove > 1 element
-        e.preventDefault();
-        var code = 0;
-        if ($('.codeMobile')[0]) {
-            code = parseInt($('.codeMobile:last').val()) + 1;
-        }
-
-        var data = [
-            {
-                "code": code
+        $('.add-store-paper').click(function (e) {
+            e.preventDefault();
+            var code = 0;
+            if ($('.codeStorePaper')[0]) {
+                code = parseInt($('.codeStorePaper:last').val()) + 1;
             }
-        ];
-        $('.more-mobile').before($.templates("#tmplMobile").render(data));
-        $('.remove-item', $('.nodeMobile')).removeClass('d-none');
-        enableRemoveMobileExist();
-    });
 
-    $('.addBHXH').click(function (e) {
-        e.preventDefault();
-        var code = 0;
-        if ($('.codeBHXH')[0]) {
-            code = parseInt($('.codeBHXH:last').val()) + 1;
-        }
-
-        var data = [
-            {
-                "code": code
-            }
-        ];
-
-        $('.more-task-bhxh').before($.templates("#tmplBHXH").render(data));
-        registerDatePicker();
-        enableRemove();
-    });
-
-    $('.btn-save-hospital').on('click', function () {
-        var form = $(this).closest('form');
-        var frmValues = form.serialize();
-        $.ajax({
-            type: form.attr('method'),
-            url: form.attr('action'),
-            data: frmValues,
-            success: function (data) {
-                if (data.result === true) {
-                    toastr.info(data.message);
-                    // Update ddl
-                    $('select[name="Employee.BhxhHospital"] option:first').after('<option value="' + data.entity.name + '">' + data.entity.name + '</option>');
-                    $('select[name="Employee.BhxhHospital"]').val(data.entity.name);
-                    $('input', form).val('');
-                    $('textarea', form).val('');
-                    $('#newHospital').modal('hide');
-
+            var data = [
+                {
+                    "code": code
                 }
-                else {
-                    toastr.error(data.message);
-                }
-            }
+            ];
+
+            $('.more-store-paper').before($.templates("#tmplStorePaper").render(data));
+            enableRemove();
         });
-    });
 
-    $('.task-bhxh').on('change', function () {
-        $('.task-bhxh-display', $(this).closest('.node')).val($(this).find("option:selected").text());
-    });
-
-    $('.addFamily').click(function (e) {
-        e.preventDefault();
-        var code = 0;
-        if ($('.codeFamily')[0]) {
-            code = parseInt($('.codeFamily:last').val()) + 1;
-        }
-
-        var data = [
-            {
-                "code": code
+        $('.addEducation').click(function (e) {
+            e.preventDefault();
+            var code = 0;
+            if ($('.codeEducation')[0]) {
+                code = parseInt($('.codeEducation:last').val()) + 1;
             }
-        ];
+            var data = [
+                {
+                    "code": code
+                }
+            ];
 
-        $('.more-family').before($.templates("#tmplFamily").render(data));
-        registerDatePicker();
-        enableRemove();
-    });
+            $('.more-education').before($.templates("#tmplEducation").render(data));
+            enableAutoSize();
+            enableRemove();
+        });
+    }
 
-    $('.add-contract').click(function (e) {
-        e.preventDefault();
-        var code = 0;
-        if ($('.codeContract')[0]) {
-            code = parseInt($('.codeContract:last').val()) + 1;
+    function eventModal(modal, ecategory, parent) {
+        var $curr = $('.exist-data', modal);
+        $curr.empty();
+        if (parent !== "") {
+            $('.parent-area', modal).removeClass('d-none');
         }
-
-        var data = [
-            {
-                "code": code
-            }
-        ];
-        $('.more-contract').before($.templates("#tmplContract").render(data));
-        //setValue();
-        eventContractType();
-        registerDatePicker();
-        enableRemove();
-    });
-
-    eventContractType();
-
-    $('.addCertificate').click(function (e) {
-        e.preventDefault();
-        var code = 0;
-        if ($('.codeCertificate')[0]) {
-            code = parseInt($('.codeCertificate:last').val()) + 1;
-        }
-
-        var data = [
-            {
-                "code": code
-            }
-        ];
-
-        $('.more-certificate').before($.templates("#tmplCertificate").render(data));
-        enableAutoSize();
-        enableRemove();
-    });
-
-    $('.add-store-paper').click(function (e) {
-        e.preventDefault();
-        var code = 0;
-        if ($('.codeStorePaper')[0]) {
-            code = parseInt($('.codeStorePaper:last').val()) + 1;
-        }
-
-        var data = [
-            {
-                "code": code
-            }
-        ];
-
-        $('.more-store-paper').before($.templates("#tmplStorePaper").render(data));
-        enableRemove();
-    });
-
-    $('.addEducation').click(function (e) {
-        e.preventDefault();
-        var code = 0;
-        if ($('.codeEducation')[0]) {
-            code = parseInt($('.codeEducation:last').val()) + 1;
-        }
-        var data = [
-            {
-                "code": code
-            }
-        ];
-
-        $('.more-education').before($.templates("#tmplEducation").render(data));
-        enableAutoSize();
-        enableRemove();
-    });
-
-    enableRemove();
-    
-    function getcategory(id, type) {
+        // Load current && Load value to parent-id
         $.ajax({
             type: "GET",
             url: "/api/category",
             contentType: "application/json; charset=utf-8",
-            data: { id: id, type: type },
+            data: { type: ecategory, parentType: parent },
             dataType: "json",
             success: function (data) {
                 if (data.result === true) {
-                    if (type === $('.hid-type-phongban').val()) {
-                        var $pb = $("#Employee_PhongBan");
-                        $pb.empty();
+                    if (data.types.length > 1) {
+                        $curr.addClass('scroll-y');
+                        $curr.append($("<li class='list-group-item'></li>").text('Dữ liệu hiện có:'));
+                        $.each(data.types, function (key, item) {
+                            $curr.append($("<li class='list-group-item'></li>").text(item.name));
+                        });
+                    }
+                    if (parent !== "") {
+                        var $pr = $('.parent-id', modal);
+                        $pr.empty();
                         if (data.categories.length > 1) {
-                            $pb.append($("<option></option>")
-                                .attr("value", "").text("Chọn"));
+                            $pr.append($("<option></option>").attr("value", "").text("Chọn"));
                         }
                         $.each(data.categories, function (key, item) {
-                            $pb.append($("<option></option>")
-                                .attr("value", item.id).text(item.name));
-                        });
-
-                        $("#Employee_BoPhan").empty();
-                    }
-                    else if (type === $('.hid-type-bophan').val()) {
-                        var $bp = $("#Employee_BoPhan");
-                        $bp.empty();
-                        $.each(data.categories, function (key, item) {
-                            $bp.append($("<option></option>")
-                                .attr("value", item.id).text(item.name));
+                            $pr.append($("<option></option>").attr("value", item.id).text(item.name));
                         });
                     }
                 }
             }
+        });
+
+        $('.btn-save-category').on('click', function () {
+            var form = $(this).closest('form');
+            if ($('.name-input-modal', form).val() === "") {
+                $('.error-message', modal).removeClass('d-none');
+                $('.error-message', modal).text($('.name-property', modal).text());
+            }
+            var frmValues = form.serialize();
+            $.ajax({
+                type: form.attr('method'),
+                url: form.attr('action'),
+                data: frmValues,
+                success: function (data) {
+                    if (data.result === true) {
+                        console.log(ecategory);
+                        if (ecategory === parseInt($('.egender-val-hide').val())) {
+                            $('select[name="Employee.Gender"] option:first').after('<option value="' + data.entity.id + '">' + data.entity.name + '</option>');
+                            $('select[name="Employee.Gender"]').val(data.entity.id);
+                        }
+                        else if (ecategory === parseInt($('.ekhoichucnang-val-hide').val())) {
+                            $('select[name="Employee.KhoiChucNang"] option:first').after('<option value="' + data.entity.id + '">' + data.entity.name + '</option>');
+                            $('select[name="Employee.KhoiChucNang"]').val(data.entity.id);
+                        }
+                        else if (ecategory === parseInt($('.ephongban-val-hide').val())) {
+                            $('select[name="Employee.PhongBan"] option:first').after('<option value="' + data.entity.id + '">' + data.entity.name + '</option>');
+                            $('select[name="Employee.PhongBan"]').val(data.entity.id);
+                        }
+                        else if (ecategory === parseInt($('.ebophan-val-hide').val())) {
+                            $('select[name="Employee.BoPhan"] option:first').after('<option value="' + data.entity.id + '">' + data.entity.name + '</option>');
+                            $('select[name="Employee.BoPhan"]').val(data.entity.id);
+                        }
+                        else if (ecategory === parseInt($('.echucvu-val-hide').val())) {
+                            $('select[name="Employee.ChucVu"] option:first').after('<option value="' + data.entity.id + '">' + data.entity.name + '</option>');
+                            $('select[name="Employee.ChucVu"]').val(data.entity.id);
+                        }
+                        else if (ecategory === parseInt($('.ecompany-val-hide').val())) {
+                            $('select[name="Employee.CongTyChiNhanh"] option:first').after('<option value="' + data.entity.id + '">' + data.entity.name + '</option>');
+                            $('select[name="Employee.CongTyChiNhanh"]').val(data.entity.id);
+                        }
+                        else if (ecategory === parseInt($('.ehospital-val-hide').val())) {
+                            $('select[name="Employee.BhxhHospital"] option:first').after('<option value="' + data.entity.id + '">' + data.entity.name + '</option>');
+                            $('select[name="Employee.BhxhHospital"]').val(data.entity.id);
+                        }
+                        else if (ecategory === parseInt($('.eprobation-val-hide').val())) {
+                            $('select[name="Employee.Probation"] option:first').after('<option value="' + data.entity.id + '">' + data.entity.name + '</option>');
+                            $('select[name="Employee.Probation"]').val(data.entity.id);
+                        }
+                        $('input', form).val('');
+                        $('textarea', form).val('');
+                        $('#newCategoryModal').modal('hide');
+                        toastr.info(data.message);
+                    }
+                    else {
+                        $('.error-message', modal).removeClass('d-none');
+                        $('.error-message', modal).text(data.message);
+                    }
+                }
+            });
         });
     }
 
@@ -655,240 +683,5 @@
     function enableAutoSize() {
         $('textarea.js-auto-size').textareaAutoSize();
     }
-
-    function eventModal(modal, mode) {
-        $('.CongTyChiNhanhIdModal').on('change', function () {
-            changeByCongTyChiNhanhModal(modal, mode, $(this).val());
-        });
-        $('.KhoiChucNangIdModal').on('change', function () {
-            changeByKhoiChucNangModal(modal, mode, $(this).val());
-        });
-        $('.PhongBanIdModal').on('change', function () {
-            changeByPhongBanModal(modal, mode, $(this).val());
-        });
-    }
-
-    function changeByCongTyChiNhanhModal(modal, mode, congtychinhanh) {
-        $.ajax({
-            type: "GET",
-            url: "/api/GetByCongTyChiNhanh",
-            contentType: "application/json; charset=utf-8",
-            data: { congtychinhanh: congtychinhanh },
-            dataType: "json",
-            success: function (data) {
-                if (data.result === true) {
-                    var $kcn = $(".KhoiChucNangIdModal", modal);
-                    $kcn.empty();
-                    $kcn.append($("<option></option>")
-                        .attr("value", "").text("Chọn"));
-                    $.each(data.khoichucnangs, function (key, khoichucnang) {
-                        $kcn.append($("<option></option>")
-                            .attr("value", khoichucnang.id).text(khoichucnang.name));
-                    });
-                    if (mode === "phongban") {
-                        if (data.khoichucnangs.length === 1) {
-                            dataPhongBanModal(modal);
-                        }
-                    }
-                    else {
-                        //var $pb = $(".PhongBanIdModal", modal);
-                        //$pb.empty();
-                    }
-                }
-            }
-        });
-    }
-
-    function changeByKhoiChucNangModal(modal, mode, khoichucnang) {
-        $.ajax({
-            type: "GET",
-            url: "/api/GetByKhoiChucNang",
-            contentType: "application/json; charset=utf-8",
-            data: { khoichucnang: khoichucnang },
-            dataType: "json",
-            success: function (data) {
-                if (data.result === true) {
-                    if (mode === "khoichucnang") {
-                        dataKhoiChucNangModal(congtychinhanh);
-                    }
-                    else {
-                        var $pb = $('.PhongBanIdModal', modal);
-                        $pb.empty();
-                        $pb.append($("<option></option>")
-                            .attr("value", "").text("Chọn"));
-                        $.each(data.phongbans, function (key, phongban) {
-                            $pb.append($("<option></option>")
-                                .attr("value", phongban.id).text(phongban.name));
-                        });
-                    }
-                }
-            }
-        });
-    }
-
-    function changeByPhongBanModal(modal, mode, phongban) {
-        dataChucVuModal(modal, "", "", phongban);
-    }
-
-    function dataKhoiChucNangModal(modal, congtychinhanh) {
-        $.ajax({
-            type: "GET",
-            url: "/api/GetKhoiChucNang",
-            contentType: "application/json; charset=utf-8",
-            data: {
-                congtychinhanh: congtychinhanh
-            },
-            dataType: "json",
-            success: function (data) {
-                if (data.result === true) {
-                    var $khoichucnang = $('.existData', modal);
-                    $khoichucnang.empty();
-                    $.each(data.khoichucnangs, function (key, khoichucnang) {
-                        $khoichucnang.append("<small class='badge badge-primary'>" + khoichucnang.name + "</small>");
-                    });
-                }
-            }
-        });
-    }
-
-    function dataPhongBanModal(modal, khoichucnang) {
-        $.ajax({
-            type: "GET",
-            url: "/api/GetPhongBan",
-            contentType: "application/json; charset=utf-8",
-            data: {
-                khoichucnang: khoichucnang
-            },
-            dataType: "json",
-            success: function (data) {
-                if (data.result === true) {
-                    var $phongban = $('.existData', modal);
-                    $phongban.empty();
-                    $.each(data.phongbans, function (key, phongban) {
-                        $phongban.append("<small class='badge badge-primary'>" + phongban.name + "</small>");
-                    });
-                }
-            }
-        });
-    }
-
-    function dataChucVuModal(modal, congtychinhanh, khoichucnang, phongban) {
-        $.ajax({
-            type: "GET",
-            url: "/api/GetChucVu",
-            contentType: "application/json; charset=utf-8",
-            data: {
-                congtychinhanh: congtychinhanh,
-                khoichucnang: khoichucnang,
-                phongban: phongban
-            },
-            dataType: "json",
-            success: function (data) {
-                if (data.result === true) {
-                    var $chucvu = $('.existData', modal);
-                    $chucvu.empty();
-                    $.each(data.chucvus, function (key, chucvu) {
-                        $chucvu.append("<small class='badge badge-primary'>" + chucvu.name + "</small>");
-                    });
-                }
-            }
-        });
-    }
-
-    // COMMENT
-    //function loadAvatar(evt) {
-    //    var files = evt.target.files; // FileList object
-    //    // Loop through the FileList and render image files as thumbnails.
-    //    for (var i = 0, f; f = files[i]; i++) {
-
-    //        // Only process image files.
-    //        if (!f.type.match('image.*')) {
-    //            continue;
-    //        }
-
-    //        var reader = new FileReader();
-
-    //        // Closure to capture the file information.
-    //        reader.onload = (function (theFile) {
-    //            return function (e) {
-    //                // Render thumbnail.
-    //                document.getElementById('avatarShow').src = e.target.result;
-    //                document.getElementById('avatarShow').title = escape(theFile.name);
-    //            };
-    //        })(f);
-
-    //        // Read in the image file as a data URL.
-    //        reader.readAsDataURL(f);
-    //    }
-    //}
-
-    //function readCover() {
-    //    var file = document.getElementById("cover-input").files[0];
-    //    var reader = new FileReader();
-    //    reader.onloadend = function () {
-    //        document.getElementById('cover').style.backgroundImage = "url(" + reader.result + ")";
-    //        document.getElementById('cover').style.width = "357px";
-    //        document.getElementById('cover').style.height = "167px";
-    //    };
-    //    if (file) {
-    //        reader.readAsDataURL(file);
-    //    }
-    //}
-
-    //$('.avatar-current').on('click', function () {
-    //    if ($('#avatar-name-1').val() !== "") {
-    //        $('#avatarShow').attr("src", $('#avatar-path-1').val() + $('#avatar-name-1').val());
-    //    }
-    //});
-
-    //$('.avatar-new').on('click', function () {
-    //    if ($('#avatar-name-2').val() !== "") {
-    //        $('#avatarShow').attr("src", $('#avatar-path-2').val() + $('#avatar-name-2').val());
-    //    }
-    //    $(this).addClass('d-none');
-    //    $('.confirm-avatar-cancel').removeClass('d-none');
-    //    $('#Employee_Avatar_Path').val($('#avatar-path-2').val());
-    //    $('#Employee_Avatar_FileName').val($('#avatar-name-2').val());
-    //    $('#Employee_Avatar_OrginalName').val($('#avatar-orginal-2').val());
-    //});
-
-    //$('.confirm-avatar-cancel').on('click', function () {
-    //    if ($('#avatar-name-1').val() !== "") {
-    //        $('#avatarShow').attr("src", $('#avatar-path-1').val() + $('#avatar-name-1').val());
-    //    }
-    //    else {
-    //        $('#avatarShow').attr("src", window.location.origin + "/images/placeholder/120x120.png");
-    //    }
-    //    $(this).addClass('d-none');
-    //    $('.avatar-new').removeClass('d-none');
-    //    $('#Employee_Avatar_Path').val('');
-    //    $('#Employee_Avatar_FileName').val('');
-    //    $('#Employee_Avatar_OrginalName').val('');
-    //});
-
-    //$('.btn-change-data').on('click', function () {
-    //    $('input', $(this).closest('.form-group')).val($(this).data('value'));
-    //});
-
-    //$('.select-change-data').on('click', function () {
-    //    $('select', $(this).closest('.form-group')).val($(this).data('value'));
-    //});
-
-    //$('.select2-change-data').on('click', function () {
-    //    $('select', $(this).closest('.form-group')).val($(this).data('value')).trigger('change');
-    //});
-
-    //$('.txt-change-data').on('click', function () {
-    //    $('textarea', $(this).closest('.form-group')).val($(this).data('value'));
-    //});
-
-    //document.getElementById('avatar-input').addEventListener('change', loadAvatar, false);
-
-    //document.getElementById('cover-input').addEventListener('change', readCover, true);
-
-    //$('#Employee_CongTyChiNhanh').on('change', function () {
-    //    $('#Employee_CongTyChiNhanhName').val($('#Employee_CongTyChiNhanh option:selected').text());
-    //    changeByCongTyChiNhanh($(this).val());
-    //});
 });
 

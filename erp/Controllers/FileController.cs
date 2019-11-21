@@ -25,6 +25,7 @@ using Services;
 using Microsoft.AspNetCore.Authorization;
 using System.Drawing;
 using Common.Enums;
+using Helpers;
 
 namespace erp.Controllers
 {
@@ -150,53 +151,6 @@ namespace erp.Controllers
             return View();
         }
 
-        [Route("/tai-lieu/nhan-vien/export/")]
-        public async Task<IActionResult> NhanVienExport()
-        {
-            string sWebRootFolder = _env.WebRootPath + Constants.FlagCacheKey;
-            string sFileName = @"demo.xlsx";
-            string URL = string.Format("{0}://{1}/{2}", Request.Scheme, Request.Host, sFileName);
-            FileInfo file = new FileInfo(Path.Combine(sWebRootFolder, sFileName));
-            var memory = new MemoryStream();
-            using (var fs = new FileStream(Path.Combine(sWebRootFolder, sFileName), FileMode.Create, FileAccess.Write))
-            {
-                IWorkbook workbook;
-                workbook = new XSSFWorkbook();
-                ISheet sheet = workbook.CreateSheet("Demo");
-
-                IRow row = sheet.CreateRow(0);
-
-
-
-                row.CreateCell(0).SetCellValue("ID");
-                row.CreateCell(1).SetCellValue("Name");
-                row.CreateCell(2).SetCellValue("Age");
-
-                row = sheet.CreateRow(1);
-                row.CreateCell(0).SetCellValue(1);
-                row.CreateCell(1).SetCellValue("Kane Williamson");
-                row.CreateCell(2).SetCellValue(29);
-
-                row = sheet.CreateRow(2);
-                row.CreateCell(0).SetCellValue(2);
-                row.CreateCell(1).SetCellValue("Martin Guptil");
-                row.CreateCell(2).SetCellValue(33);
-
-                row = sheet.CreateRow(3);
-                row.CreateCell(0).SetCellValue(3);
-                row.CreateCell(1).SetCellValue("Colin Munro");
-                row.CreateCell(2).SetCellValue(23);
-
-                workbook.Write(fs);
-            }
-            using (var stream = new FileStream(Path.Combine(sWebRootFolder, sFileName), FileMode.Open))
-            {
-                await stream.CopyToAsync(memory);
-            }
-            memory.Position = 0;
-            return File(memory, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", sFileName);
-        }
-
         [Route("/tai-lieu/nhan-vien/update/")]
         [HttpPost]
         public ActionResult NhanVienUpdate()
@@ -221,13 +175,58 @@ namespace erp.Controllers
                     if (sFileExtension == ".xls")
                     {
                         HSSFWorkbook hssfwb = new HSSFWorkbook(stream); //This will read the Excel 97-2000 formats  
-                        sheet = hssfwb.GetSheetAt(1);
+                        sheet = hssfwb.GetSheetAt(0);
                     }
                     else
                     {
                         XSSFWorkbook hssfwb = new XSSFWorkbook(stream); //This will read 2007 Excel format  
-                        sheet = hssfwb.GetSheetAt(1); //get first sheet from workbook   
+                        sheet = hssfwb.GetSheetAt(0); //get first sheet from workbook   
                     }
+
+                    #region Settings
+                    var source = Constants.ActionLink.Create;
+                    bool isEdit = false;
+                    var result = true;
+                    var message = Constants.Texts.Success;
+                    var settings = dbContext.Settings.Find(m => m.Enable.Equals(true)).ToList();
+                    var identityCardExpired = Convert.ToInt32(settings.Where(m => m.Key.Equals("identityCardExpired")).First().Value);
+                    var employeeCodeFirst = settings.Where(m => m.Key.Equals("employeeCodeFirst")).First().Value;
+                    var employeeCodeLength = settings.Where(m => m.Key.Equals("employeeCodeLength")).First().Value;
+                    #endregion
+
+                    dbContext.Categories.DeleteMany(m => m.Type.Equals((int)ECategory.KhoiChucNang));
+                    dbContext.Categories.DeleteMany(m => m.Type.Equals((int)ECategory.PhongBan));
+                    dbContext.Categories.DeleteMany(m => m.Type.Equals((int)ECategory.BoPhan));
+                    dbContext.Categories.DeleteMany(m => m.Type.Equals((int)ECategory.ChucVu));
+
+                    var filterA = Builders<Employee>.Filter.Eq(m => m.Enable, true);
+                    var updateA = Builders<Employee>.Update
+                        .Set(m => m.KhoiChucNang, null)
+                        .Set(m => m.KhoiChucNangName, null)
+                        .Set(m => m.PhongBan, null)
+                        .Set(m => m.PhongBanName, null)
+                        .Set(m => m.BoPhan, null)
+                        .Set(m => m.BoPhanName, null)
+                        .Set(m => m.ChucVu, null)
+                        .Set(m => m.ChucVuName, null);
+                    dbContext.Employees.UpdateMany(filterA, updateA);
+                    var phongbanE = new Category()
+                    {
+                        Type = (int)ECategory.PhongBan,
+                        Name = "Ban lãnh đạo",
+                        Alias = Utility.AliasConvert("Ban lãnh đạo")
+                    };
+                    dbContext.Categories.InsertOne(phongbanE);
+
+                    var systemDate = Constants.MinDate;
+                    var kcn = string.Empty;
+                    var phongban = string.Empty;
+                    var bophan = string.Empty;
+                    var kcnE = new Category();
+                    var bophanE = new Category();
+                    int iKcn = 1;
+                    int iPb = 1;
+                    int iBp = 1;
 
                     for (int i = 5; i <= sheet.LastRowNum; i++)
                     {
@@ -237,151 +236,168 @@ namespace erp.Controllers
                         if (row.Cells.All(d => d.CellType == CellType.Error)) continue;
                         if (row.Cells.All(d => d.CellType == CellType.Unknown)) continue;
 
-                        var systemDate = Constants.MinDate;
-                        if (i < 180)
+                        var col0 = GetFormattedCellValue(row.GetCell(0));
+                        var col1 = GetFormattedCellValue(row.GetCell(1));
+                        var col2 = GetFormattedCellValue(row.GetCell(2));
+                        var col3 = GetFormattedCellValue(row.GetCell(3));
+                        var col4 = GetDateCellValue(row.GetCell(4));
+
+                        if (string.IsNullOrEmpty(col1) && string.IsNullOrEmpty(col2) && string.IsNullOrEmpty(col3))
                         {
-                            var fullName = GetFormattedCellValue(row.GetCell(5));
-                            var employeeEntity = dbContext.Employees.Find(m => m.FullName.Equals(fullName)).FirstOrDefault();
-                            if (employeeEntity != null)
+                            kcn = col0.Trim();
+                            phongban = string.Empty;
+                            bophan = string.Empty;
+                            phongbanE = new Category();
+                            bophanE = new Category();
+                            if (!string.IsNullOrEmpty(kcn))
                             {
-                                var statusMarital = GetFormattedCellValue(row.GetCell(22));
-                                var nation = GetFormattedCellValue(row.GetCell(23));
-                                var religion = GetFormattedCellValue(row.GetCell(24));
-
-                                #region Certificates
-                                var certificates = new List<Certificate>();
-                                var hocvan = GetFormattedCellValue(row.GetCell(25));
-                                var description = GetFormattedCellValue(row.GetCell(26));
-                                if (!string.IsNullOrEmpty(hocvan))
+                                kcnE = dbContext.Categories.Find(m => m.Name.Equals(kcn) && m.Type.Equals((int)ECategory.KhoiChucNang)).FirstOrDefault();
+                                if (kcnE == null)
                                 {
-                                    certificates.Add(
-                                                new Certificate()
-                                                {
-                                                    Type = hocvan,
-                                                    Description = description
-                                                });
+                                    kcnE = new Category()
+                                    {
+                                        Type = (int)ECategory.KhoiChucNang,
+                                        Name = kcn,
+                                        Alias = Utility.AliasConvert(kcn),
+                                        CodeInt = iKcn,
+                                        Code = iKcn.ToString()
+                                    };
+                                    dbContext.Categories.InsertOne(kcnE);
+                                    iKcn++;
                                 }
-                                #endregion
-
-                                #region StorePaper
-                                var storePapers = new List<StorePaper>()
+                            }
+                        }
+                        if (string.IsNullOrEmpty(col0) && string.IsNullOrEmpty(col1) && !string.IsNullOrEmpty(col2))
+                        {
+                            bophan = string.Empty;
+                            bophanE = new Category();
+                            phongban = col2.Trim();
+                            phongbanE = dbContext.Categories.Find(m => m.Name.Equals(phongban) && m.Type.Equals((int)ECategory.PhongBan)).FirstOrDefault();
+                            if (phongbanE == null)
+                            {
+                                phongbanE = new Category()
                                 {
-                                    new StorePaper()
-                                    {
-                                        Type = "Bản tự khai ứng viên",
-                                        Description = string.Empty,
-                                        Count = (int)GetNumbericCellValue(row.GetCell(28)),
-                                        Unit = string.Empty
-                                    },
-                                    new StorePaper()
-                                    {
-                                        Type = "Đơn ứng tuyển",
-                                        Description = string.Empty,
-                                        Count = (int)GetNumbericCellValue(row.GetCell(29)),
-                                        Unit = string.Empty
-                                    },
-                                    new StorePaper()
-                                    {
-                                        Type = "Sơ yếu lý lịch",
-                                        Description = string.Empty,
-                                        Count = (int)GetNumbericCellValue(row.GetCell(30)),
-                                        Unit = string.Empty
-                                    },
-                                    new StorePaper()
-                                    {
-                                        Type = "Giấy khai sinh",
-                                        Description = string.Empty,
-                                        Count = (int)GetNumbericCellValue(row.GetCell(31)),
-                                        Unit = string.Empty
-                                    },
-                                    new StorePaper()
-                                    {
-                                        Type = "Chứng minh thư",
-                                        Description = string.Empty,
-                                        Count = (int)GetNumbericCellValue(row.GetCell(32)),
-                                        Unit = string.Empty
-                                    },
-                                    new StorePaper()
-                                    {
-                                        Type = "Bằng/ chứng nhận tốt nghiệp",
-                                        Description = string.Empty,
-                                        Count = (int)GetNumbericCellValue(row.GetCell(33)),
-                                        Unit = string.Empty
-                                    },
-                                    new StorePaper()
-                                    {
-                                        Type = "Bảng điểm hoặc học bạ",
-                                        Description = string.Empty,
-                                        Count = (int)GetNumbericCellValue(row.GetCell(34)),
-                                        Unit = string.Empty
-                                    },
-                                    new StorePaper()
-                                    {
-                                        Type = "Hộ khẩu",
-                                        Description = string.Empty,
-                                        Count = (int)GetNumbericCellValue(row.GetCell(35)),
-                                        Unit = string.Empty
-                                    },
-                                    new StorePaper()
-                                    {
-                                        Type = "Xác nhận nhân sự",
-                                        Description = string.Empty,
-                                        Count = (int)GetNumbericCellValue(row.GetCell(36)),
-                                        Unit = string.Empty
-                                    },
-                                    new StorePaper()
-                                    {
-                                        Type = "Ảnh",
-                                        Description = string.Empty,
-                                        Count = (int)GetNumbericCellValue(row.GetCell(37)),
-                                        Unit = string.Empty
-                                    }
+                                    Type = (int)ECategory.PhongBan,
+                                    Name = phongban,
+                                    Alias = Utility.AliasConvert(phongban),
+                                    ParentId = kcnE.Id,
+                                    CodeInt = iPb,
+                                    Code = iPb.ToString()
                                 };
-                                #endregion
-
-                                #region Eduction
-                                var employeeEducations = new List<EmployeeEducation>()
+                                dbContext.Categories.InsertOne(phongbanE);
+                                iPb++;
+                            }
+                        }
+                        if (string.IsNullOrEmpty(col0) && string.IsNullOrEmpty(col1) && string.IsNullOrEmpty(col2))
+                        {
+                            bophan = col3.Trim();
+                            bophanE = dbContext.Categories.Find(m => m.Name.Equals(bophan) && m.Type.Equals((int)ECategory.BoPhan)).FirstOrDefault();
+                            if (bophanE == null)
+                            {
+                                bophanE = new Category()
                                 {
-                                    new EmployeeEducation()
-                                    {
-                                        No = 1,
-                                        Content = GetFormattedCellValue(row.GetCell(76))
-                                    },
-                                    new EmployeeEducation()
-                                    {
-                                        No = 2,
-                                        Content = GetFormattedCellValue(row.GetCell(77))
-                                    },
-                                    new EmployeeEducation()
-                                    {
-                                        No = 3,
-                                        Content = GetFormattedCellValue(row.GetCell(78))
-                                    }
-                                    ,new EmployeeEducation()
-                                    {
-                                        No = 4,
-                                        Content = GetFormattedCellValue(row.GetCell(79))
-                                    }
+                                    Type = (int)ECategory.BoPhan,
+                                    Name = bophan,
+                                    Alias = Utility.AliasConvert(bophan),
+                                    ParentId = phongbanE.Id,
+                                    CodeInt = iBp,
+                                    Code = iBp.ToString()
                                 };
-                                #endregion
+                                dbContext.Categories.InsertOne(bophanE);
+                                iBp++;
+                            }
+                        }
+                        if (!string.IsNullOrEmpty(col0) && !string.IsNullOrEmpty(col1) && !string.IsNullOrEmpty(col2))
+                        {
+                            var maNV = col1.Trim();
+                            var hoten = col2.Trim();
+                            var hotenalias = Utility.AliasConvert(hoten);
+                            var chucvu = col3.Trim();
+                            var thamnien = col4;
 
+                            var chucvuE = dbContext.Categories.Find(m => m.Enable.Equals(true) && m.Name.Equals(chucvu) && m.Type.Equals((int)ECategory.ChucVu)).FirstOrDefault();
+                            if (chucvuE == null)
+                            {
+                                var parentId = string.Empty;
+                                if (bophanE != null && !string.IsNullOrEmpty(bophanE.Id))
+                                {
+                                    parentId = bophanE.Id;
+                                }
+                                else if (phongbanE != null && !string.IsNullOrEmpty(phongbanE.Id))
+                                {
+                                    parentId = phongbanE.Id;
+                                }
+                                else
+                                {
+                                    parentId = kcnE.Id;
+                                }
+                                chucvuE = new Category()
+                                {
+                                    Type = (int)ECategory.ChucVu,
+                                    Name = chucvu,
+                                    Alias = Utility.AliasConvert(chucvu),
+                                    ParentId = parentId
+                                };
+                                dbContext.Categories.InsertOne(chucvuE);
+                            }
+
+                            var employeeE = dbContext.Employees.Find(m => m.AliasFullName.Equals(hotenalias) && m.Enable.Equals(true)).FirstOrDefault();
+                            if (employeeE != null)
+                            {
                                 var builder = Builders<Employee>.Filter;
-                                var filter = Builders<Employee>.Filter.Eq(m => m.FullName, fullName);
+                                var filter = Builders<Employee>.Filter.Eq(m => m.Id, employeeE.Id);
                                 var update = Builders<Employee>.Update
-                                    .Set(m => m.StatusMarital, statusMarital)
-                                    .Set(m => m.Nation, nation)
-                                    .Set(m => m.Religion, religion)
-                                    .Set(m => m.Certificates, certificates)
-                                    .Set(m => m.StorePapers, storePapers)
-                                    .Set(m => m.EmployeeEducations, employeeEducations);
-
+                                    .Set(m => m.KhoiChucNang, kcnE.Id)
+                                    .Set(m => m.KhoiChucNangName, kcnE.Name)
+                                    .Set(m => m.PhongBan, phongbanE.Id)
+                                    .Set(m => m.PhongBanName, phongbanE.Name)
+                                    .Set(m => m.BoPhan, bophanE.Id)
+                                    .Set(m => m.BoPhanName, bophanE.Name)
+                                    .Set(m => m.ChucVu, chucvuE.Id)
+                                    .Set(m => m.ChucVuName, chucvuE.Name);
+                                //.Set(m => m.Joinday, thamnien);
                                 dbContext.Employees.UpdateOne(filter, update);
+                            }
+                            else
+                            {
+                                var pwdrandom = Guid.NewGuid().ToString("N").Substring(0, 6);
+                                var sysPassword = Helper.HashedPassword(pwdrandom);
+                                var lastEntity = dbContext.Employees.Find(m => m.Enable.Equals(true)).SortByDescending(m => m.Id).Limit(1).First();
+                                var x = 1;
+                                if (lastEntity != null && lastEntity.Code != null)
+                                {
+                                    x = Convert.ToInt32(lastEntity.Code.Replace(employeeCodeFirst, string.Empty)) + 1;
+                                }
+                                var sysCode = employeeCodeFirst + x.ToString($"D{employeeCodeLength}");
+
+                                dbContext.Employees.InsertOne(new Employee()
+                                {
+                                    Code = sysCode,
+                                    Password = sysPassword,
+                                    FullName = hoten,
+                                    AliasFullName = hotenalias,
+                                    KhoiChucNang = kcnE.Id,
+                                    KhoiChucNangName = kcnE.Name,
+                                    PhongBan = phongbanE.Id,
+                                    PhongBanName = phongbanE.Name,
+                                    BoPhan = bophanE.Id,
+                                    BoPhanName = bophanE.Name,
+                                    ChucVu = chucvuE.Id,
+                                    ChucVuName = chucvuE.Name,
+                                    Joinday = thamnien,
+                                    CodeOld = maNV,
+                                    IsTimeKeeper = true,
+                                    Official = false,
+                                    Nation = "Việt Nam",
+                                    Religion = "Kinh",
+                                    BhxhEnable = false
+                                });
                             }
                         }
                     }
                 }
             }
-            return Json(new { url = "/hr/nhan-su" });
+            return Json(new { result = true, url = Constants.LinkHr.Main + "/" + Constants.LinkHr.List });
         }
 
         [Route("/tai-lieu/nhan-vien/update-contract/")]
@@ -1435,7 +1451,7 @@ namespace erp.Controllers
                             CaLamViec = caLamViec,
                             CaLamViecId = caLamViecId,
                             CaLamViecAlias = caLamViecAlias,
-                            Start = thoigianbatdau,
+                            StartVH = thoigianbatdau,
                             End = thoigianketthuc,
                             ThoiGianBTTQ = thoigianbttq,
                             ThoiGianXeHu = thoigianxehu,
@@ -2085,6 +2101,193 @@ namespace erp.Controllers
         //        }
         //    }
         //    return this.Content(sb.ToString());
+        //}
+
+        //[Route("/tai-lieu/nhan-vien/update/")]
+        //[HttpPost]
+        //public ActionResult NhanVienUpdate()
+        //{
+        //    IFormFile file = Request.Form.Files[0];
+        //    string folderName = Constants.Storage.Hr;
+        //    string webRootPath = _env.WebRootPath;
+        //    string newPath = Path.Combine(webRootPath, folderName);
+        //    if (!Directory.Exists(newPath))
+        //    {
+        //        Directory.CreateDirectory(newPath);
+        //    }
+        //    if (file.Length > 0)
+        //    {
+        //        string sFileExtension = Path.GetExtension(file.FileName).ToLower();
+        //        ISheet sheet;
+        //        string fullPath = Path.Combine(newPath, file.FileName);
+        //        using (var stream = new FileStream(fullPath, FileMode.Create))
+        //        {
+        //            file.CopyTo(stream);
+        //            stream.Position = 0;
+        //            if (sFileExtension == ".xls")
+        //            {
+        //                HSSFWorkbook hssfwb = new HSSFWorkbook(stream); //This will read the Excel 97-2000 formats  
+        //                sheet = hssfwb.GetSheetAt(1);
+        //            }
+        //            else
+        //            {
+        //                XSSFWorkbook hssfwb = new XSSFWorkbook(stream); //This will read 2007 Excel format  
+        //                sheet = hssfwb.GetSheetAt(1); //get first sheet from workbook   
+        //            }
+
+        //            for (int i = 5; i <= sheet.LastRowNum; i++)
+        //            {
+        //                IRow row = sheet.GetRow(i);
+        //                if (row == null) continue;
+        //                if (row.Cells.All(d => d.CellType == CellType.Blank)) continue;
+        //                if (row.Cells.All(d => d.CellType == CellType.Error)) continue;
+        //                if (row.Cells.All(d => d.CellType == CellType.Unknown)) continue;
+
+        //                var systemDate = Constants.MinDate;
+        //                if (i < 180)
+        //                {
+        //                    var fullName = GetFormattedCellValue(row.GetCell(5));
+        //                    var employeeEntity = dbContext.Employees.Find(m => m.FullName.Equals(fullName)).FirstOrDefault();
+        //                    if (employeeEntity != null)
+        //                    {
+        //                        var statusMarital = GetFormattedCellValue(row.GetCell(22));
+        //                        var nation = GetFormattedCellValue(row.GetCell(23));
+        //                        var religion = GetFormattedCellValue(row.GetCell(24));
+
+        //                        #region Certificates
+        //                        var certificates = new List<Certificate>();
+        //                        var hocvan = GetFormattedCellValue(row.GetCell(25));
+        //                        var description = GetFormattedCellValue(row.GetCell(26));
+        //                        if (!string.IsNullOrEmpty(hocvan))
+        //                        {
+        //                            certificates.Add(
+        //                                        new Certificate()
+        //                                        {
+        //                                            Type = hocvan,
+        //                                            Description = description
+        //                                        });
+        //                        }
+        //                        #endregion
+
+        //                        #region StorePaper
+        //                        var storePapers = new List<StorePaper>()
+        //                        {
+        //                            new StorePaper()
+        //                            {
+        //                                Type = "Bản tự khai ứng viên",
+        //                                Description = string.Empty,
+        //                                Count = (int)GetNumbericCellValue(row.GetCell(28)),
+        //                                Unit = string.Empty
+        //                            },
+        //                            new StorePaper()
+        //                            {
+        //                                Type = "Đơn ứng tuyển",
+        //                                Description = string.Empty,
+        //                                Count = (int)GetNumbericCellValue(row.GetCell(29)),
+        //                                Unit = string.Empty
+        //                            },
+        //                            new StorePaper()
+        //                            {
+        //                                Type = "Sơ yếu lý lịch",
+        //                                Description = string.Empty,
+        //                                Count = (int)GetNumbericCellValue(row.GetCell(30)),
+        //                                Unit = string.Empty
+        //                            },
+        //                            new StorePaper()
+        //                            {
+        //                                Type = "Giấy khai sinh",
+        //                                Description = string.Empty,
+        //                                Count = (int)GetNumbericCellValue(row.GetCell(31)),
+        //                                Unit = string.Empty
+        //                            },
+        //                            new StorePaper()
+        //                            {
+        //                                Type = "Chứng minh thư",
+        //                                Description = string.Empty,
+        //                                Count = (int)GetNumbericCellValue(row.GetCell(32)),
+        //                                Unit = string.Empty
+        //                            },
+        //                            new StorePaper()
+        //                            {
+        //                                Type = "Bằng/ chứng nhận tốt nghiệp",
+        //                                Description = string.Empty,
+        //                                Count = (int)GetNumbericCellValue(row.GetCell(33)),
+        //                                Unit = string.Empty
+        //                            },
+        //                            new StorePaper()
+        //                            {
+        //                                Type = "Bảng điểm hoặc học bạ",
+        //                                Description = string.Empty,
+        //                                Count = (int)GetNumbericCellValue(row.GetCell(34)),
+        //                                Unit = string.Empty
+        //                            },
+        //                            new StorePaper()
+        //                            {
+        //                                Type = "Hộ khẩu",
+        //                                Description = string.Empty,
+        //                                Count = (int)GetNumbericCellValue(row.GetCell(35)),
+        //                                Unit = string.Empty
+        //                            },
+        //                            new StorePaper()
+        //                            {
+        //                                Type = "Xác nhận nhân sự",
+        //                                Description = string.Empty,
+        //                                Count = (int)GetNumbericCellValue(row.GetCell(36)),
+        //                                Unit = string.Empty
+        //                            },
+        //                            new StorePaper()
+        //                            {
+        //                                Type = "Ảnh",
+        //                                Description = string.Empty,
+        //                                Count = (int)GetNumbericCellValue(row.GetCell(37)),
+        //                                Unit = string.Empty
+        //                            }
+        //                        };
+        //                        #endregion
+
+        //                        #region Eduction
+        //                        var employeeEducations = new List<EmployeeEducation>()
+        //                        {
+        //                            new EmployeeEducation()
+        //                            {
+        //                                No = 1,
+        //                                Content = GetFormattedCellValue(row.GetCell(76))
+        //                            },
+        //                            new EmployeeEducation()
+        //                            {
+        //                                No = 2,
+        //                                Content = GetFormattedCellValue(row.GetCell(77))
+        //                            },
+        //                            new EmployeeEducation()
+        //                            {
+        //                                No = 3,
+        //                                Content = GetFormattedCellValue(row.GetCell(78))
+        //                            }
+        //                            ,new EmployeeEducation()
+        //                            {
+        //                                No = 4,
+        //                                Content = GetFormattedCellValue(row.GetCell(79))
+        //                            }
+        //                        };
+        //                        #endregion
+
+        //                        var builder = Builders<Employee>.Filter;
+        //                        var filter = Builders<Employee>.Filter.Eq(m => m.FullName, fullName);
+        //                        var update = Builders<Employee>.Update
+        //                            .Set(m => m.StatusMarital, statusMarital)
+        //                            .Set(m => m.Nation, nation)
+        //                            .Set(m => m.Religion, religion)
+        //                            .Set(m => m.Certificates, certificates)
+        //                            .Set(m => m.StorePapers, storePapers)
+        //                            .Set(m => m.EmployeeEducations, employeeEducations);
+
+        //                        dbContext.Employees.UpdateOne(filter, update);
+        //                    }
+        //                }
+        //            }
+        //        }
+        //    }
+        //    return Json(new { url = "/hr/nhan-su" });
         //}
         #endregion
 

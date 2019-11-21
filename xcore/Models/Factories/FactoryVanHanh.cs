@@ -66,7 +66,7 @@ namespace Models
 
         public string CaLamViecAlias { get; set; }
 
-        public TimeSpan Start { get; set; }
+        public TimeSpan StartVH { get; set; }
 
         public TimeSpan End { get; set; }
 

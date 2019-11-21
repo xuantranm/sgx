@@ -1,0 +1,126 @@
+﻿@using System.Globalization;
+@using Common.Utilities;
+@using Common.Enums;
+@using ViewModels
+@model RightViewModel
+@{
+
+}
+
+<div class="main-container">
+    <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="/">Trang chủ</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">
+                            <a href="/@Constants.Link.Right">Quyền</a>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="space-sm">
+        <div class="container">
+            <div class="row mb-3">
+                <div class="col-12">
+                    <a href="/@Constants.Link.Right/@Constants.ActionLink.Data" class="btn btn-success">
+                        <i class="icon-add-to-list mr-1"></i> Tạo mới
+                    </a>
+                </div>
+            </div>
+
+            <!-- FILTER  & SORTER -->
+            <form method="get" action="/@Constants.Link.Right" id="form-main">
+                <input asp-for="PageCurrent" type="hidden" value="1" />
+                <input asp-for="SapXep" class="sap-xep" type="hidden" />
+                <input asp-for="ThuTu" class="thu-tu" type="hidden" />
+                <div class="row">
+                    <div class="col-12">
+                        <span class="badge badge-primary">Tìm kiếm:</span>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4 col-sm-6 col-xs-12">
+                        <span class="mr-2 text-muted text-small text-nowrap">Quyền:</span>
+                        <select asp-for="Role" class="form-control form-control-lg js-select2-basic-single" onchange="formSubmit();">
+                            <option value="">Tất cả</option>
+                            @foreach (var item in Model.Categories)
+                            {
+                                <option value="@item.Id">@item.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-4 col-sm-6 col-xs-12">
+                        <span class="mr-2 text-muted text-small text-nowrap">Nhân viên:</span>
+                        
+                        <small>[Enter], [Tab] hoặc rê chuột ra để tìm kiếm</small>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12">
+                        <span>Sắp xếp theo: </span>
+                        @{
+                            var sortFlagKeyDesc = "badge-default";
+                            if (Model.SapXep == "role" && Model.ThuTu == "desc")
+                            {
+                                sortFlagKeyDesc = "badge-success";
+                            }
+                            var sortFlagKeyAsc = "badge-default";
+                            if (Model.SapXep == "role" && Model.ThuTu == "asc")
+                            {
+                                sortFlagKeyAsc = "badge-success";
+                            }
+                            <a href="javascript:;" data-sortby="ton" data-sortorder="asc" class="btn-sort">
+                                <span class="badge @sortFlagKeyAsc"><i class="fas fa-sort-alpha-up"></i> Từ khóa tăng dần</span>
+                            </a>
+                            <a href="javascript:;" data-sortby="ton" data-sortorder="desc" class="btn-sort">
+                                <span class="badge @sortFlagKeyDesc"><i class="fas fa-sort-alpha-down"></i> Từ khóa giảm dần</span>
+                            </a>
+                        }
+                    </div>
+                </div>
+            </form>
+
+            <div class="row">
+                <div class="col-12">Tìm thấy <span class="badge badge-info">@Model.Records</span> kết quả.</div>
+                <div class="col-12 table-responsive mb-1">
+                    <table class="table table-sm table-striped table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th scope="col"></th>
+                                <td scope="col">Quyền</td>
+                                <th scope="col">Nhân viên | Chức vụ | Khối</th>
+                                <th scope="col">Mô tả</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.RightsDisplay)
+                            {
+                                <tr>
+                                    <td>
+                                        <a href="/@Constants.Link.Right/@Constants.ActionLink.Data/@item.Right.Id"><i class="fas fa-edit"></i></a>
+                                    </td>
+                                    <td>@item.Role</td>
+                                    <td>@item.Object</td>
+                                    <td>@item.Right.Type</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+@section scripts {
+    <script type="text/javascript" src="~/js/system/right.js?@Constants.VersionJs"></script>
+}
+

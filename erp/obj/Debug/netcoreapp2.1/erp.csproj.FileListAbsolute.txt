@@ -549,9 +549,6 @@ D:\projects\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Leave\Approvement.g.csht
 D:\projects\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Leave\Index.g.cshtml.cs
 D:\projects\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Module\BirthdayAlert.g.cshtml.cs
 D:\projects\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Recruitment\Index.g.cshtml.cs
-D:\projects\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\RoleUser\Create.g.cshtml.cs
-D:\projects\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\RoleUser\Index.g.cshtml.cs
-D:\projects\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Role\Index.g.cshtml.cs
 D:\projects\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\SalaryFactory\BangLuong.g.cshtml.cs
 D:\projects\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\SalaryFactory\CongTong.g.cshtml.cs
 D:\projects\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\SalaryFactory\CongTongUpdate.g.cshtml.cs
@@ -619,9 +616,11 @@ D:\projects\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Category\Index.g.cshtml.
 D:\projects\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Content\Data.g.cshtml.cs
 D:\projects\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Content\Index.g.cshtml.cs
 D:\projects\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Setting\Data.g.cshtml.cs
-D:\projects\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Setting\Disable.g.cshtml.cs
 D:\projects\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Text\Data.g.cshtml.cs
 D:\projects\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Text\Disable.g.cshtml.cs
 D:\projects\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Text\Index.g.cshtml.cs
 D:\projects\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Employee\Data.g.cshtml.cs
 D:\projects\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Home\Content.g.cshtml.cs
+D:\projects\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Right\Data.g.cshtml.cs
+D:\projects\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Right\Index.g.cshtml.cs
+D:\projects\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Employee\Common\_PersonPartial.g.cshtml.cs

@@ -9,7 +9,7 @@ namespace Models
 {
     /// <summary>
     /// Role quan ly quyen => Move to Categories : Type Role
-    /// Right quan ly quyen theo nguoi dung, chuc vu 
+    /// Right quan ly quyen theo location (NM,VP,...),chuc vu, nguoi dung
     /// </summary>
     public class Right : Extension
     {

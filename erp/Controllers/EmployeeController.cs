@@ -319,6 +319,8 @@ namespace Controllers
             var workTimeTypes = dbContext.Categories.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)ECategory.TimeWork)).ToList();
             var banks = dbContext.Categories.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)ECategory.Bank)).ToList();
             var managers = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && !string.IsNullOrEmpty(m.Email) && !string.IsNullOrEmpty(m.ChucVuName) && !m.UserName.Equals(Constants.System.account)).SortBy(m => m.ChucVuName).ToList();
+            var genders = dbContext.Categories.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)ECategory.Gender)).ToList();
+            var probations = dbContext.Categories.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)ECategory.Probation)).ToList();
             #endregion
 
             bool isEdit = false;
@@ -428,6 +430,8 @@ namespace Controllers
                 WorkTimeTypes = workTimeTypes,
                 Hospitals = hospitals,
                 Contracts = contracts,
+                Genders = genders,
+                Probations = probations,
                 WelcomeEmailGroup = welcomeGroup,
                 LeaveEmailGroup = leaveGroup
             };
@@ -546,6 +550,12 @@ namespace Controllers
                 entity.Leaveday = null;
                 entity.LeaveReason = string.Empty;
                 entity.LeaveHandover = string.Empty;
+            }
+
+            if (!string.IsNullOrEmpty(entity.Gender))
+            {
+                var genderE = dbContext.Categories.Find(m => m.Type.Equals((int)ECategory.Gender) && m.Id.Equals(entity.Gender)).FirstOrDefault();
+                entity.Gender = genderE != null ? genderE.Name : string.Empty;
             }
 
             if (!string.IsNullOrEmpty(entity.CongTyChiNhanh))

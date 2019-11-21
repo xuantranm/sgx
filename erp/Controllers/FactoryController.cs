@@ -73,16 +73,16 @@ namespace Controllers
         public async Task<IActionResult> VanHanh(string Xm, string Ca, string Cd, string Lot, string CaLamViec, string Phieu, string Nvl, DateTime? Tu, DateTime? Den, int? Trang, int? Dong, string SapXep, string Truong)
         {
             #region Login Information
-            //LoginInit("van-hanh", (int)ERights.View);
-            //if (!(bool)ViewData[Constants.ActionViews.IsLogin])
-            //{
-            //    await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            //    return RedirectToAction(Constants.ActionViews.Login, Constants.Controllers.Account);
-            //}
-            //if (!(bool)ViewData[Constants.ActionViews.IsRight])
-            //{
-            //    return RedirectToAction("Index", "Home");
-            //}
+            LoginInit("van-hanh", (int)ERights.View);
+            if (!(bool)ViewData[Constants.ActionViews.IsLogin])
+            {
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                return RedirectToAction(Constants.ActionViews.Login, Constants.Controllers.Account);
+            }
+            if (!(bool)ViewData[Constants.ActionViews.IsRight])
+            {
+                return RedirectToAction("Index", "Home");
+            }
             #endregion
 
             var linkCurrent = string.Empty;

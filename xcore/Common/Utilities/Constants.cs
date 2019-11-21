@@ -35,6 +35,7 @@ namespace Common.Utilities
             public const string ImageSize = "image-size";
             public const string LogoSize = "logo-size";
             public const string ModeDirect = "mode-direct";
+            public const string MissName = "Tên không để trống!";
         }
 
         public static class Socials
@@ -593,6 +594,7 @@ namespace Common.Utilities
             public const string TinTuc = "tin-tuc";
             public const string Category = "doanh-muc";
             public const string Right = "quyen";
+            public const string Setting = "cai-dat";
 
             public const string Product = "p";
             public const string News = "n";

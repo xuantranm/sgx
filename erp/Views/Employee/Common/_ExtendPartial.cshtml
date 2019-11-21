@@ -2,6 +2,46 @@
 @using Common.Enums;
 @model ViewModels.EmployeeViewModel
 
+<div class="modal fade" id="newCategoryModal" tabindex="-1" role="dialog" aria-labelledby="newCategoryLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editItemModalLabel"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Đóng">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form class="data-form" method="post" action="/api/categorydata" enctype="multipart/form-data">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <input type="hidden" name="Id" class="id-hide" />
+                <input type="hidden" name="Type" class="type-hide" />
+                <span class="result"></span>
+                <div class="modal-body">
+                    <div class="form-group parent-area d-none">
+                        <label class="control-label"><span class="parent-property">Doanh mục</span></label>
+                        <select name="ParentId" class="form-control form-control-lg parent-id">
+                            <option value="">Chọn</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label"><span class="name-property"></span></label>
+                        <input name="Name" class="form-control form-control-lg name-input-modal" />
+                    </div>
+                    <ul class="list-group exist-data">
+                    </ul>
+                    <div class="alert alert-danger d-none error-message"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy & Đóng</button>
+                    <button type="button" class="btn btn-primary btn-save-category"><i class="icon-save"></i>&nbsp;Lưu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+
 <div class="modal fade" id="newKhoiChucNangModal" tabindex="-1" role="dialog" aria-labelledby="newKhoiChucNangLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -432,6 +472,7 @@
         <input type="hidden" class="codeStorePaper" value="{{:code}}" />
     </div>
 </script>
+
 @*
     For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
 *@

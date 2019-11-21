@@ -3,11 +3,49 @@
 @model ViewModels.EmployeeViewModel
 @{
     ViewData["title"] = "NHÂN SỰ | CÔNG TY TNHH CNSH SÀI GÒN XANH";
-    bool isSystem = (bool)ViewData[Constants.ActionViews.IsSystem];
     var login = User.Identity.Name;
     var leaveShow = string.Empty;
     var expand = "d-none";
+    var employees = Model.Employees.Where(m => m.Leave.Equals(false)).ToList();
+    var countNs = employees.Count;
+    var leaves = Model.Employees.Where(m => m.Leave.Equals(true)).ToList();
+    var countLeaves = leaves.Count;
 }
+
+<style>
+    ul, #myUL {
+        list-style-type: none;
+    }
+
+    /* Style the caret/arrow */
+    .caret {
+        cursor: pointer;
+        user-select: none; /* Prevent text selection */
+    }
+
+        /* Create the caret/arrow with a unicode, and style it */
+        .caret::before {
+            content: "\25B6";
+            color: black;
+            display: inline-block;
+            margin-right: 6px;
+        }
+
+    /* Rotate the caret/arrow icon when clicked on (using JavaScript) */
+    .caret-down::before {
+        transform: rotate(90deg);
+    }
+
+    /* Hide the nested list */
+    .nested {
+        display: none;
+    }
+
+    /* Show the nested list when the user clicks on the caret/arrow (with JavaScript) */
+    .active {
+        display: block;
+    }
+</style>
 
 <div class="main-container">
     <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
@@ -61,12 +99,6 @@
                                             </select>
                                         </div>
                                     </div>
-                                    @*<div class="form-group row">
-                                            <label class="col-sm-2 col-form-label">Thời gian</label>
-                                            <div class="col-sm-10">
-                                                <input type="text" readonly class="form-control-plaintext" id="staticEmail" value="email@example.com">
-                                            </div>
-                                        </div>*@
                                     <div class="form-group row">
                                         <label class="col-sm-3 col-form-label">Phòng ban</label>
                                         <div class="col-sm-9">
@@ -239,146 +271,156 @@
                     </div>
                 </div>
 
-                <div class="list-group list-group-flush" id="employeeList">
-                    @foreach (var khoichucnang in Model.KhoiChucNangs)
-                    {
-                        <div class="card-header d-flex justify-content-between">
-                            <div>
-                                <span class="h6 font-weight-bold text-uppercase text-primary"><i class="fas fa-cubes"></i> @khoichucnang.Name</span>
-                            </div>
-                        </div>
-                        <div>
-                            @foreach (var phongban in Model.PhongBans.Where(m => m.ParentId.Equals(khoichucnang.Id)).ToList())
-                            {
-                                <a class="list-group-item d-flex justify-content-between pb pb-@phongban.Alias" href="javascript:;" data-alias="@phongban.Alias" data-order="@phongban.CodeInt">
-                                    <div>
-                                        <i class="far fa-building"></i> <span class="text-uppercase">@phongban.Name</span>
-                                    </div>
-                                    <div>
-                                        <i class="icon-mark icon-chevron-down"></i>
-                                    </div>
-                                </a>
-                                <div class="pb-items @expand" id="@phongban.Alias">
-                                    @foreach (var item in Model.Employees.Where(m => m.Enable.Equals(true) && m.Leave.Equals(false) && !string.IsNullOrEmpty(m.PhongBan) && m.PhongBan.Equals(phongban.Id)).OrderBy(m => m.BoPhan))
-                                    {
-                                        <div class="list-group-item list-group-item-action">
-                                            <div class="media">
-                                                @{
-                                                    var srcAvatar = "~/images/svg/no-img-72-72.svg";
-                                                    if (item.Images != null && item.Images.Count > 0)
-                                                    {
-                                                        var avatar = item.Images.Where(m => m.Type.Equals((int)EImageSize.Avatar)).FirstOrDefault();
-                                                        if (avatar != null)
-                                                        {
-                                                            srcAvatar = avatar.Path + "/" + avatar.FileName;
-                                                        }
-                                                    }
-                                                    <img class="avatar" src="@srcAvatar" alt="@item.FullName" />
-                                                }
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <ul id="myUL">
+                            <li>
+                                <h6>Tổng số: <small class="badge badge-secondary">@countNs</small></h6>
+                            </li>
+                            @{
+                                var lanhdaos = employees.Where(m => m.PhongBanName == "Ban lãnh đạo").ToList();
+                                int countLd = lanhdaos.Count;
+                                <li>
+                                    <span class="caret caret-down text-uppercase">Ban lãnh đạo <small class="badge badge-secondary">@countLd</small></span>
+                                    <ul class="nested active">
+                                        @foreach (var person in lanhdaos)
+                                        {
+                                            <li>@Html.Partial("Common/_PersonPartial.cshtml", person)</li>
+                                        }
+                                    </ul>
+                                </li>
 
-                                                <div class="media-body">
-                                                    <div>
-                                                        <span class="badge badge-primary">@item.Code</span>
-                                                        <span class="text-uppercase">@item.FullName</span>
-                                                        <span class="badge badge-danger">@item.BoPhanName</span>
-                                                        <span class="badge badge-danger">@item.ChucVuName</span>
-                                                        <ul class="list-inline text-small text-muted">
-                                                            <li class="list-inline-item">
-                                                                <i class="icon-cake mr-1"></i> Ngày sinh
-                                                                @if (item.Birthday.Year <= 1900)
-                                                                {
-                                                                    <span>Đang cập nhật</span>
-                                                                    <span class="badge badge-indicator badge-danger">&nbsp;</span>
-                                                                }
-                                                                else
-                                                                {
-                                                                    <span>@item.Birthday.ToString("dd/MM/yyyy")</span>
-                                                                    <span class="badge badge-indicator badge-success">&nbsp;</span>
-                                                                }
+                                var kcns = (from s in employees
+                                            group s by new
+                                            {
+                                                s.KhoiChucNang,
+                                                s.KhoiChucNangName
+                                            } into a
+                                            select new
+                                            {
+                                                KhoiChucNangId = a.Key.KhoiChucNang,
+                                                KhoiChucNangName = a.Key.KhoiChucNangName,
+                                                items = a.ToList()
+                                            }).ToList();
+                                foreach (var kcn in kcns)
+                                {
+                                    if (!string.IsNullOrEmpty(kcn.KhoiChucNangName) && kcn.items != null && kcn.items.Count > 0)
+                                    {
+                                        var countKcn = kcn.items.Count;
+                                        <li>
+                                            <span class="caret caret-down">@kcn.KhoiChucNangName <small class="badge badge-secondary">@countKcn</small></span>
+                                            @{
+                                                var kcnP = kcn.items.Where(m => m.KhoiChucNang == kcn.KhoiChucNangId
+                                                            && string.IsNullOrEmpty(m.PhongBan)
+                                                            && string.IsNullOrEmpty(m.BoPhan)).ToList();
+                                                <ul class="nested active">
+                                                    @{
+                                                        foreach (var person in kcnP)
+                                                        {
+                                                            <li>
+                                                                @Html.Partial("Common/_PersonPartial.cshtml", person)
                                                             </li>
-                                                            <li class="list-inline-item">
-                                                                <i class="icon-time-slot mr-1"></i>
-                                                                @if (item.Joinday.Year <= 1900)
-                                                                {
-                                                                    <span>Khởi nghiệp: </span><span class="badge badge-indicator badge-danger">&nbsp;</span>
-                                                                }
-                                                                else
-                                                                {
-                                                                    <span>Khởi nghiệp: @item.Joinday.ToString("dd/MM/yyyy")</span>
-                                                                }
-                                                            </li>
-                                                        </ul>
-                                                        <ul class="list-inline text-small text-muted">
-                                                            <li class="list-inline-item">
-                                                                <div class="dropdown">
-                                                                    <button class="btn btn-sm btn-outline-primary dropdown-toggle dropdown-toggle-no-arrow" type="button" id="dropdownMenuButton-1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Bấm xem thông tin, chỉnh sửa...">
-                                                                        <i class="icon-dots-three-horizontal"></i>
-                                                                    </button>
-                                                                    <div class="dropdown-menu dropdown-menu-sm" aria-labelledby="dropdownMenuButton">
-                                                                        <a class="dropdown-item detail-item" href="/@Constants.LinkHr.Human/@Constants.LinkHr.Information/@item.Id"><i class="fas fa-street-view"></i> Xem thông tin</a>
-                                                                        <a class="dropdown-item edit-item" href="/@Constants.LinkHr.Human/@Constants.ActionLink.Data/@item.Id"><i class="fas fa-user-edit"></i> Chỉnh sửa</a>
-                                                                        <a class="dropdown-item delete-item" href="javascript:;" data-id="@item.Id"><i class="fas fa-user-slash"></i> Xóa</a>
-                                                                        @{
-                                                                            if (item.Workplaces != null && item.Workplaces.Count > 0)
-                                                                            {
-                                                                                var enableFinger = false;
-                                                                                foreach (var finger in item.Workplaces)
+                                                        }
+                                                        var phongbans = (from s in kcn.items
+                                                                         group s by new
+                                                                         {
+                                                                             s.PhongBan,
+                                                                             s.PhongBanName
+                                                                         }
+into b
+                                                                         select new
+                                                                         {
+                                                                             PhongBanId = b.Key.PhongBan,
+                                                                             PhongBanName = b.Key.PhongBanName,
+                                                                             items = b.ToList()
+                                                                         }).ToList();
+
+                                                        foreach (var phongban in phongbans)
+                                                        {
+                                                            if (!string.IsNullOrEmpty(phongban.PhongBanName) && phongban.items != null && phongban.items.Count > 0)
+                                                            {
+                                                                var countPb = phongban.items.Count;
+                                                                <li>
+                                                                    <span class="caret text-uppercase">
+                                                                        @phongban.PhongBanName <small class="badge badge-secondary">@countPb</small>
+                                                                    </span>
+                                                                    @{
+                                                                        var phongBanP = phongban.items.Where(m => m.PhongBan == phongban.PhongBanId
+                                                                                    && string.IsNullOrEmpty(m.BoPhan)).ToList();
+                                                                        <ul class="nested">
+                                                                            @{
+                                                                                foreach (var person in phongBanP)
                                                                                 {
-                                                                                    if (!string.IsNullOrEmpty(finger.Fingerprint))
+                                                                                    <li>
+                                                                                        @Html.Partial("Common/_PersonPartial.cshtml", person)
+                                                                                    </li>
+                                                                                }
+
+                                                                                var bophans = (from s in phongban.items
+                                                                                               group s by new
+                                                                                               {
+                                                                                                   s.BoPhan,
+                                                                                                   s.BoPhanName
+                                                                                               }
+                                                                                into c
+                                                                                               select new
+                                                                                               {
+                                                                                                   BoPhanId = c.Key.BoPhan,
+                                                                                                   BoPhanName = c.Key.BoPhanName,
+                                                                                                   items = c.ToList()
+                                                                                               }).ToList();
+                                                                                @foreach (var bophan in bophans)
+                                                                                {
+                                                                                    if (!string.IsNullOrEmpty(bophan.BoPhanName) && bophan.items != null && bophan.items.Count > 0)
                                                                                     {
-                                                                                        enableFinger = true;
+                                                                                        var countBp = bophan.items.Count;
+                                                                                        <li>
+                                                                                            <span class="caret text-uppercase">@bophan.BoPhanName <small class="badge badge-secondary">@countBp</small></span>
+                                                                                            <ul class="nested">
+                                                                                                @{
+                                                                                                    var bophanP = bophan.items.Where(m => m.BoPhan == bophan.BoPhanId).ToList();
+                                                                                                    foreach (var person in bophanP)
+                                                                                                    {
+                                                                                                        <li>
+                                                                                                            @Html.Partial("Common/_PersonPartial.cshtml", person)
+                                                                                                        </li>
+                                                                                                    }
+                                                                                                }
+                                                                                            </ul>
+                                                                                        </li>
                                                                                     }
                                                                                 }
-                                                                                if (enableFinger)
-                                                                                {
-                                                                                    <div class="dropdown-divider"></div>
-                                                                                    <a class="dropdown-item disable-item" href="/@Constants.LinkTimeKeeper.Index?id=@item.Id"><i class="far fa-clock"></i> Chấm công</a>
-                                                                                }
                                                                             }
-                                                                        }
-
-                                                                        @if (isSystem)
-                                                                        {
-                                                                            <div class="dropdown-divider"></div>
-                                                                            <form action="/sys/login-as/" method="post" class="navbar-right">
-                                                                                <input name="userName" type="hidden" value="@item.UserName" />
-                                                                                <button type="submit" class="btn btn-link dropdown-item disable-item"><i class="fas fa-sign-in-alt"></i> Login as</button>
-                                                                            </form>
-                                                                        }
-                                                                    </div>
-                                                                </div>
-                                                            </li>
-
-                                                            <li class="list-inline-item">
-                                                                <i class="fas fa-code"></i> @item.CodeOld
-                                                            </li>
-                                                            @if (item.Workplaces != null && item.Workplaces.Count > 0)
-                                                            {
-                                                                @foreach (var workplace in item.Workplaces)
-                                                                {
-                                                                    <li class="list-inline-item">
-                                                                        <i class="icon-location mr-1"></i>
-                                                                        <span>@workplace.Name</span>
-                                                                    </li>
-                                                                    @if (!string.IsNullOrEmpty(workplace.Fingerprint))
-                                                                    {
-                                                                        <li class="list-inline-item"><i class="icon-fingerprint mr-1"></i>@workplace.Fingerprint</li>
+                                                                        </ul>
                                                                     }
-                                                                }
+                                                                </li>
                                                             }
-                                                            <li class="list-inline-item">
-                                                                <small>Cập nhật: @item.UpdatedOn.ToString("dd/MM/yyyy HH:mm")</small>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
+                                                        }
+                                                    }
+                                                </ul>
+                                            }
+                                        </li>
                                     }
-                                </div>
+                                }
                             }
-                        </div>
-                    }
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <ul id="myUL">
+                            <li>
+                                <span class="caret text-uppercase">Nhân sự nghỉ <small class="badge badge-secondary">@countLeaves</small></span>
+                                <ul class="nested">
+                                    @foreach (var person in leaves)
+                                    {
+                                        <li>@Html.Partial("Common/_PersonPartial.cshtml", person)</li>
+                                    }
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
@@ -387,6 +429,18 @@
 
 
 @section scripts {
+    @*https://www.cssscript.com/folder-tree-treejs/*@
     <script type="text/javascript" src="~/js/hr/employee.js?@Constants.VersionJs"></script>
+    <script>
+        var toggler = document.getElementsByClassName("caret");
+        var i;
+
+        for (i = 0; i < toggler.length; i++) {
+            toggler[i].addEventListener("click", function () {
+                this.parentElement.querySelector(".nested").classList.toggle("active");
+                this.classList.toggle("caret-down");
+            });
+        }
+    </script>
 }
 

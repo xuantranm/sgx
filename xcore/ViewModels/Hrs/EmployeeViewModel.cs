@@ -39,6 +39,10 @@ namespace ViewModels
 
         public IList<Category> Contracts { get; set; }
 
+        public IList<Category> Genders { get; set; }
+
+        public IList<Category> Probations { get; set; }
+
         public IList<NgachLuong> NgachLuongs { get; set; }
 
         #region Search

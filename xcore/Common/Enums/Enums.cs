@@ -54,7 +54,8 @@ namespace Common.Enums
     public enum ERightType
     {
         User = 1,
-        ChucVu = 2
+        ChucVu = 2,
+        Location = 3
     }
 
     public enum ECategory
@@ -78,7 +79,9 @@ namespace Common.Enums
         Contract = 17,
         TimeWork = 18,
         Bank = 19,
-        Hospital = 20
+        Hospital = 20,
+        Gender = 21,
+        Probation = 22
     }
 
     public enum EPropertyValue

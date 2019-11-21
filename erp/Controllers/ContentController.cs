@@ -44,11 +44,18 @@ namespace Controllers
         public async Task<IActionResult> Index(string category, string code, string name, int Trang, int Dong, string SapXep, string ThuTu)
         {
             #region Login Information
-            LoginInit(Constants.Rights.System, (int)ERights.Add);
+            LoginInit(Constants.Rights.System, (int)ERights.View);
             if (!(bool)ViewData[Constants.ActionViews.IsLogin])
             {
                 await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                 return RedirectToAction(Constants.ActionViews.Login, Constants.Controllers.Account);
+            }
+            var loginId = User.Identity.Name;
+            var loginE = dbContext.Employees.Find(m => m.Id.Equals(loginId)).FirstOrDefault();
+            bool isRight = (bool)ViewData[Constants.ActionViews.IsRight];
+            if (!isRight)
+            {
+                return RedirectToAction("Index", "Home");
             }
             #endregion
 

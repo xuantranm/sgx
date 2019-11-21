@@ -1,5 +1,6 @@
 ﻿@using System.Globalization;
 @using Common.Utilities;
+@using Common.Enums;
 @using ViewModels
 @model CategoryViewModel
 @{
@@ -16,7 +17,7 @@
                             <a href="/">Trang chủ</a>
                         </li>
                         <li class="breadcrumb-item active" aria-current="page">
-                            <a href="/category">Doanh mục</a>
+                            <a href="/@Constants.Link.Category">Doanh mục</a>
                         </li>
                     </ol>
                 </div>
@@ -28,14 +29,14 @@
         <div class="container">
             <div class="row mb-3">
                 <div class="col-12">
-                    <a href="/category/data" class="btn btn-success">
+                    <a href="/@Constants.Link.Category/@Constants.ActionLink.Data" class="btn btn-success">
                         <i class="icon-add-to-list mr-1"></i> Tạo mới
                     </a>
                 </div>
             </div>
 
             <!-- FILTER  & SORTER -->
-            <form method="get" action="/category" id="form-main">
+            <form method="get" action="/@Constants.Link.Category" id="form-main">
                 <input asp-for="PageCurrent" type="hidden" value="1" />
                 <input asp-for="SapXep" class="sap-xep" type="hidden" />
                 <input asp-for="ThuTu" class="thu-tu" type="hidden" />
@@ -45,6 +46,16 @@
                     </div>
                 </div>
                 <div class="row mb-3">
+                    <div class="col-md-4 col-sm-6 col-xs-12">
+                        <span class="mr-2 text-muted text-small text-nowrap">Loại:</span>
+                        <select asp-for="Type" class="form-control form-control-lg js-select2-basic-single" onchange="formSubmit();">
+                            <option value="">Tất cả</option>
+                            @foreach (var item in Html.GetEnumSelectList<ECategory>())
+                            {
+                                <option value="@item.Value">@item.Text</option>
+                            }
+                        </select>
+                    </div>
                     <div class="col-md-4 col-sm-6 col-xs-12">
                         <span class="mr-2 text-muted text-small text-nowrap">Từ khóa:</span>
                         <input asp-for="Alias" class="form-control form-control-lg" onfocusout="formSubmit();" />
@@ -84,9 +95,9 @@
                         <thead>
                             <tr>
                                 <th scope="col"></th>
-                                <td scope="col">Picture</td>
-                                <th scope="col">Name</th>
-                                <th scope="col">Description</th>
+                                <td scope="col">Loại</td>
+                                <th scope="col">Doanh mục</th>
+                                <th scope="col">Mô tả</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -100,36 +111,9 @@
                                 }
                                 <tr>
                                     <td>
-                                        <a href="/category/data?Id=@item.Category.Id"><i class="fas fa-edit"></i></a>
+                                        <a href="/@Constants.Link.Category/@Constants.ActionLink.Data/@item.Category.Id"><i class="fas fa-edit"></i></a>
                                     </td>
-                                    <td>
-                                        <a class="media align-items-center" href="@link" target="_blank">
-                                            @{
-                                                var src = "http://via.placeholder.com/48x30";
-                                                if (item.Category.Contents != null && item.Category.Contents.Count > 0)
-                                                {
-                                                    var content = item.Category.Contents.FirstOrDefault();
-                                                    if (content != null)
-                                                    {
-                                                        var images = content.Imgs;
-                                                        if (images != null && images.Count > 0)
-                                                        {
-                                                            var image = images.Where(m => m.Main.Equals(true)).FirstOrDefault();
-                                                            if (image != null)
-                                                            {
-                                                                try
-                                                                {
-                                                                    src = "/" + image.Path.Replace("\\", "/") + "/" + image.FileName;
-                                                                }
-                                                                catch(Exception){}
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                            <img src="@src" class="thumbnail" />
-                                        </a>
-                                    </td>
+                                    <td>@Enum.GetName(typeof(ECategory), item.Category.Type)</td>
                                     <td>@name</td>
                                     <td>@Constants.Truncate(item.Category.Description, 100)</td>
                                 </tr>
@@ -143,6 +127,6 @@
 </div>
 
 @section scripts {
-    <script type="text/javascript" src="~/js/category.js?@Constants.VersionJs"></script>
+    <script type="text/javascript" src="~/js/system/category.js?@Constants.VersionJs"></script>
 }
 

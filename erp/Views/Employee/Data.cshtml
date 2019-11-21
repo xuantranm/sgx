@@ -10,10 +10,6 @@
     var title = "NHÂN SỰ | TẠO MỚI";
     var breadcrumb = "Cài đặt thông tin nhân sự";
     var action = "/" + Constants.LinkHr.Human + "/" + Constants.ActionLink.Data;
-    var typeCompany = (int)ECategory.Company;
-    var typeKhoiChucNang = (int)ECategory.KhoiChucNang;
-    var typePhongBan = (int)ECategory.PhongBan;
-    var typeBoPhan = (int)ECategory.BoPhan;
     // If user changed data
     // 1. Employee is changed data
     // 2. Display current HR.
@@ -56,11 +52,33 @@
             coverDisplay = "background-image: url('/" + System.IO.Path.Combine(avatar.Path, avatar.FileName).Replace("\\", "/") + "'); height:167px";
         }
     }
+
+    var eGender = (int)ECategory.Gender;
+    var eKhoichucnang = (int)ECategory.KhoiChucNang;
+    var ePhongban = (int)ECategory.PhongBan;
+    var eBophan = (int)ECategory.BoPhan;
+    var eChucvu = (int)ECategory.ChucVu;
+    var eCompany = (int)ECategory.Company;
+    var eHospital = (int)ECategory.Hospital;
+    var eContract = (int)ECategory.Contract;
+    var eTimeWork = (int)ECategory.TimeWork;
+    var eBank = (int)ECategory.Bank;
+    var eProbation = (int)ECategory.Probation;
 }
-<input value="@typeCompany" type="hidden" class="hid-type-company" />
-<input value="@typeKhoiChucNang" type="hidden" class="hid-type-khoichucnang" />
-<input value="@typePhongBan" type="hidden" class="hid-type-phongban" />
-<input value="@typeBoPhan" type="hidden" class="hid-type-bophan" />
+
+<!-- No effect, get value enum-->
+<input value="@eGender" type="hidden" class="egender-val-hide" />
+<input value="@eKhoichucnang" type="hidden" class="ekhoichucnang-val-hide" />
+<input value="@ePhongban" type="hidden" class="ephongban-val-hide" />
+<input value="@eBophan" type="hidden" class="ebophan-val-hide" />
+<input value="@eChucvu" type="hidden" class="echucvu-val-hide" />
+<input value="@eCompany" type="hidden" class="ecompany-val-hide" />
+<input value="@eHospital" type="hidden" class="ehospital-val-hide" />
+<input value="@eContract" type="hidden" class="econtract-val-hide" />
+<input value="@eTimeWork" type="hidden" class="etimework-val-hide" />
+<input value="@eBank" type="hidden" class="ebank-val-hide" />
+<input value="@eProbation" type="hidden" class="eprobation-val-hide" />
+
 <div class="main-container">
     <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
         <div class="container">
@@ -86,7 +104,8 @@
                 <div class="col-auto">
                     <h1 class="h2">@breadcrumb</h1>
                 </div>
-                @if (isEdit){
+                @if (isEdit)
+                {
                     <div class="col-auto text-right">
                         <a href="/@Constants.LinkHr.Human/@Constants.LinkHr.Information/@employee.Id" class="btn btn-success">Chế độ xem</a>
                     </div>
@@ -216,7 +235,7 @@
                                     <span asp-validation-for="Employee.Email" class="text-danger"></span>
                                 }
                             </div>
-                            <div class="col-md-3 col-sm-12 col-xs-12">
+                            <div class="col-md-4 col-sm-12 col-xs-12">
                                 <div class="row">
                                     <div class="form-group col-md-7 col-sm-6 col-xs-12">
                                         <i class="icon icon-cake"></i>
@@ -233,8 +252,10 @@
                                         }
                                     </div>
                                     <div class="form-group col-md-5 col-sm-6 col-xs-12">
-                                        <i class="icon icon-select-arrows"></i>
-                                        <label class="control-label">Giới tính</label>
+                                        <label class="control-label">
+                                            <span>Giới tính</span>
+                                            <a href="javascript:;" data-toggle="modal" data-target="#newCategoryModal" data-ecategory="@eGender" class="ml-2"class="ml-2"><i class="icon-add-to-list mr-1"></i></a>
+                                        </label>
                                         @if (isEdit && !isRight)
                                         {
                                             <p><span>@employee.Gender</span></p>
@@ -242,16 +263,20 @@
                                         else
                                         {
                                             <select asp-for="Employee.Gender" class="form-control form-control-lg">
-                                                <option value="Nam">Nam</option>
-                                                <option value="Nữ">Nữ</option>
-                                                <option value="Khác">Khác</option>
+                                                @foreach (var item in Model.Genders)
+                                                {
+                                                    <option value="@item.Id">@item.Name</option>
+                                                }
                                             </select>
                                         }
                                     </div>
                                 </div>
                             </div>
                             <div class="form-group col-md-3 col-sm-6 col-xs-12">
-                                <label class="control-label">Khối chức năng</label>
+                                <label class="control-label">
+                                    <span>Khối chức năng</span>
+                                    <a href="javascript:;" data-toggle="modal" data-target="#newCategoryModal" data-ecategory="@eKhoichucnang" class="ml-2"><i class="icon-add-to-list mr-1"></i></a>
+                                </label>
                                 @if (isEdit && !isRight)
                                 {
                                     <p><span>@employee.KhoiChucNangName</span></p>
@@ -267,8 +292,12 @@
                                     </select>
                                 }
                             </div>
+
                             <div class="form-group col-md-3 col-sm-6 col-xs-12">
-                                <label class="control-label">Phòng/Ban</label>
+                                <label class="control-label">
+                                    <span>Phòng/Ban</span>
+                                    <a href="javascript:;" data-toggle="modal" data-target="#newCategoryModal" data-ecategory="@ePhongban" class="ml-2"><i class="icon-add-to-list mr-1"></i></a>
+                                </label>
                                 @if (isEdit && !isRight)
                                 {
                                     <p><span>@employee.PhongBanName</span></p>
@@ -285,7 +314,10 @@
                                 }
                             </div>
                             <div class="form-group col-md-3 col-sm-6 col-xs-12">
-                                <label class="control-label">Bộ phận</label>
+                                <label class="control-label">
+                                    <span>Bộ phận</span>
+                                    <a href="javascript:;" data-toggle="modal" data-target="#newCategoryModal" data-ecategory="@eBophan" class="ml-2"><i class="icon-add-to-list mr-1"></i></a>
+                                </label>
                                 @if (isEdit && !isRight)
                                 {
                                     <p><span>@employee.BoPhanName</span></p>
@@ -303,7 +335,10 @@
                             </div>
                             <div class="form-group col-md-3 col-sm-6 col-sm-12">
                                 <i class="icon icon-select-arrows"></i>
-                                <label class="control-label">Chức vụ</label>
+                                <label class="control-label">
+                                    <span>Chức vụ</span>
+                                    <a href="javascript:;" data-toggle="modal" data-target="#newCategoryModal" data-ecategory="@eChucvu" class="ml-2"><i class="icon-add-to-list mr-1"></i></a>
+                                </label>
                                 @if (isEdit && !isRight)
                                 {
                                     <p><span>@employee.ChucVuName</span></p>
@@ -321,7 +356,10 @@
                             </div>
                             <div class="form-group col-md-3 col-sm-6 col-xs-12">
                                 <i class="icon icon-select-arrows"></i>
-                                <label class="control-label">Nơi làm việc chính</label>
+                                <label class="control-label">
+                                    <span>Nơi làm việc chính</span>
+                                    <a href="javascript:;" data-toggle="modal" data-target="#newCategoryModal" data-ecategory="@eCompany" class="ml-2"><i class="icon-add-to-list mr-1"></i></a>
+                                </label>
                                 @if (isEdit && !isRight)
                                 {
                                     <p><span>@employee.CongTyChiNhanhName</span></p>
@@ -370,19 +408,23 @@
                                 }
                             </div>
                             <div class="form-group col-md-2 col-sm-6 col-xs-12">
-                                <label class="control-label">TG.thử việc</label>
+                                <label class="control-label">
+                                    <span>TG.thử việc</span>
+                                    <a href="javascript:;" data-toggle="modal" data-target="#newCategoryModal" data-ecategory="@eProbation" class="ml-2"><i class="icon-add-to-list mr-1"></i></a>
+                                </label>
                                 @if (isEdit && !isRight)
                                 {
-                                    var probetionMonth = employee.ProbationMonth > 0 ? employee.ProbationMonth + " tháng" : "Không";
-                                    <p><span>@probetionMonth</span></p>
+                                    var probation = employee.Probation > 0 ? employee.ProbationMonth + " ngày" : "Không";
+                                    <p><span>@probation</span></p>
                                 }
                                 else
                                 {
-                                    <select asp-for="Employee.ProbationMonth" class="form-control form-control-lg">
+                                    <select asp-for="Employee.Probation" class="form-control form-control-lg">
                                         <option value="0">Không</option>
-                                        <option value="6">06 ngày</option>
-                                        <option value="30">30 ngày</option>
-                                        <option value="60">60 ngày</option>
+                                        @foreach (var item in Model.Probations)
+                                        {
+                                            <option value="@item.Value">@item.Name</option>
+                                        }
                                     </select>
                                 }
                             </div>
@@ -436,7 +478,6 @@
                                         <option value="16">16 ngày</option>
                                     </select>
                                 }
-                                <span asp-validation-for="Employee.LeaveLevelYear" class="text-danger"></span>
                             </div>
                             <div class="form-group col-md-2 col-sm-6 col-xs-12">
                                 <label class="control-label">Điện thoại bàn</label>
@@ -828,7 +869,10 @@
                                                     </select>
                                                 </div>
                                                 <div class="form-group col-md-3 col-sm-6 col-xs-12">
-                                                    <label class="control-label">Cơ sở KCB</label>
+                                                    <label class="control-label">
+                                                        <span>Cơ sở KCB</span>
+                                                        <a href="javascript:;" data-toggle="modal" data-target="#newCategoryModal" data-ecategory="@eHospital" class="ml-2"><i class="icon-add-to-list mr-1"></i></a>
+                                                    </label>
                                                     <select asp-for="Employee.BhxhHospital" class="form-control form-control-lg js-select2-basic-single">
                                                         <option value="">Chọn</option>
                                                         @{

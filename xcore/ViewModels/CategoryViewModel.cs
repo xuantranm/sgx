@@ -11,6 +11,8 @@ namespace ViewModels
         public string Domain { get; set; }
         public string Alias { get; set; }
 
+        public int? Type { get; set; }
+
         // Merge add/edit. If edit set value into property
         public IList<Setting> Properties { get; set; }
     }

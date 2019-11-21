@@ -4,7 +4,7 @@
 @model HomeErpViewModel;
 
 @{
-    
+
     var login = User.Identity.Name;
     var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
     var rightHr = false;
@@ -14,14 +14,36 @@
     }
 }
 
+<div class="main-container">
+    <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="/">Trang chủ</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="/@Constants.KeHoachTongHopLink.Main">Kho</a>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="space-sm">
+        <div class="container">
+                <a class="btn btn-danger" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoNguyenVatLieu">KHO NGUYÊN VẬT LIỆU</a>
+                <a class="btn btn-primary" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoThanhPham">KHO THÀNH PHẨM</a>
+                <a class="btn btn-secondary" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoHangTraVe">KHO HÀNG TRẢ VỀ</a>
+                <a class="btn btn-warning" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuKhoBun">KHO BÙN</a>
+                <a class="btn btn-success" href="/@Constants.KeHoachTongHopLink.Main/@Constants.KeHoachTongHopLink.DuLieuTramCan">TRẠM CÂN</a>
+        </div>
+    </section>
+</div>
 
 
-<button type="button" class="btn btn-primary">Kho nguyên liệu</button>
-<button type="button" class="btn btn-primary">Kho thành phẩm</button>
-<button type="button" class="btn btn-primary">Kho bùn</button>
-<button type="button" class="btn btn-secondary">Kho xử lý</button>
-<button type="button" class="btn btn-secondary">Kho tiếp nhận xử lý bùn</button>
-<button type="button" class="btn btn-success">Dự án công</button>
 
 @section scripts {
     <script type="text/javascript" src="~/js/ke-hoach-tong-hop.js?@Constants.VersionJs"></script>

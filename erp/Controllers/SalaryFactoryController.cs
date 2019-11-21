@@ -67,7 +67,7 @@ namespace erp.Controllers
                 return RedirectToAction("login", "account");
             }
 
-            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.LuongNM, (int)ERights.View)))
+            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.LuongVP, (int)ERights.View)))
             {
                 return RedirectToAction("AccessDenied", "Account");
             }
@@ -247,7 +247,7 @@ namespace erp.Controllers
                 return RedirectToAction("login", "account");
             }
 
-            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.LuongNM, (int)ERights.View)))
+            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.LuongVP, (int)ERights.View)))
             {
                 return RedirectToAction("AccessDenied", "Account");
             }
@@ -322,7 +322,7 @@ namespace erp.Controllers
                 return RedirectToAction("login", "account");
             }
 
-            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.LuongNM, (int)ERights.View)))
+            if (!(loginUserName == Constants.System.account ? true : Utility.IsRight(login, Constants.Rights.LuongVP, (int)ERights.View)))
             {
                 return RedirectToAction("AccessDenied", "Account");
             }

@@ -10,7 +10,6 @@ namespace timekeepers.Models
     public class AttLog
     {
         [BsonId]
-        // Mvc don't know how to create ObjectId from string
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
 
@@ -18,6 +17,28 @@ namespace timekeepers.Models
         public string VerifyMode { get; set; }
         public string InOutMode { get; set; }
         public string Workcode { get; set; }
+
+        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime Date { get; set; }
+
+        // because datetime in mongo different vietnam. (miss 7 hours)
+        public string DateString { get; set; }
+
+        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
+        public DateTime DateOnlyRecord
+        {
+            get
+            {
+                return Date.Date;
+            }
+        }
+
+        public TimeSpan TimeOnlyRecord
+        {
+            get
+            {
+                return Date.TimeOfDay;
+            }
+        }
     }
 }

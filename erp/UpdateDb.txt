@@ -1,4 +1,12 @@
-﻿// 14.10.2019
+﻿// 18.11.2019
+1. Run /tai-lieu/update-category-21
+2. Run /tai-lieu/update-category-22
+3. Run /tai-lieu/update-category-time
+
+
+
+
+// 14.10.2019
 1. Db: Rename Settings to SettingsTemp
 2. Run /tai-lieu/update-setting
 3. Run /tai-lieu/update-role
@@ -6,8 +14,6 @@
 5. Run /tai-lieu/update-employee
 6. Run /tai-lieu/update-employee-leave
 7. Drop OvertimeEmployees
-
-
 
 // 26.09.2019
 db.FactoryShifts.drop()

@@ -41,7 +41,6 @@ namespace timekeepers
             {
                 if (TimeKeeper_Connect(ip, port))
                 {
-                    Console.WriteLine("Please wait. Reading logs  data...");
                     TimeKeeper_GetData(mode, model, location, ip, port, databaseConnection, databaseName);
                 }
                 else
@@ -66,7 +65,6 @@ namespace timekeepers
                     WriteLog(model, location, ip, port, databaseConnection, databaseName, false, message);
                 }
             }
-
 
             #region Clear logs. BE CAREFULL. Danger remove data finger. CHECK LATER
             //if (TimeKeeper_Connect(ip, port))
@@ -109,30 +107,6 @@ namespace timekeepers
             int idwWorkcode = 0;
 
             int idwErrorCode = 0;
-            #endregion
-
-            // Disable the device
-            //TimeKeeperMachine.EnableDevice(iMachineNumber, false);//disable the device
-            //if (!TimeKeeperMachine.ReadGeneralLogData(iMachineNumber))//read all the attendance records to the memory
-            //{
-            //    TimeKeeperMachine.GetLastError(ref idwErrorCode);
-            //    var message = string.Empty;
-            //    if (idwErrorCode != 0)
-            //    {
-            //        message = "Reading data from terminal failed, ErrorCode: " + idwErrorCode.ToString();
-            //    }
-            //    else
-            //    {
-            //        message = "No data from terminal returns!";
-            //    }
-
-            //    WriteLog(model, location, ip, port, databaseConnection, databaseName, false, message);
-
-            //    TimeKeeperMachine.EnableDevice(iMachineNumber, true); //enable the device
-            //    return;
-            //}
-
-            #region Get Data time
             var getDataDay = Convert.ToInt32(ConfigurationSettings.AppSettings["GetDataDay"]);
             var timeCrawled = DateTime.Now.AddDays(getDataDay);
             timeCrawled = new DateTime(timeCrawled.Year, timeCrawled.Month, timeCrawled.Day, 2, 0, 0);
@@ -141,6 +115,8 @@ namespace timekeepers
             var list = new List<AttLog>();
             // Disable the device
             TimeKeeperMachine.EnableDevice(iMachineNumber, false);
+            Console.WriteLine("Disabled device.");
+            Console.WriteLine("Begin get log data...");
             while (TimeKeeperMachine.SSR_GetGeneralLogData(iMachineNumber, out sdwEnrollNumber, out idwVerifyMode,
                        out idwInOutMode, out idwYear, out idwMonth, out idwDay, out idwHour, out idwMinute, out idwSecond, ref idwWorkcode))//get records from the memory
             {
@@ -174,10 +150,13 @@ namespace timekeepers
                     Console.WriteLine("Added to list " + dateFinger + " , enrollNumber: " + sdwEnrollNumber);
                 }
             }
+            Console.WriteLine("Done log data");
             // Enable the device
             TimeKeeperMachine.EnableDevice(iMachineNumber, true);
+            Console.WriteLine("Enabled device.");
 
             #region Store to db
+            Console.WriteLine("Database processing...");
             var client = new MongoClient(databaseConnection);
             var server = client.GetServer();
             var database = server.GetDatabase(databaseName);
@@ -187,7 +166,6 @@ namespace timekeepers
             {
                 foreach (var item in list)
                 {
-                    // Check exist
                     var query = Query.And(
                                             Query<AttLog>.EQ(e => e.EnrollNumber, item.EnrollNumber),
                                             Query<AttLog>.EQ(e => e.Date, item.Date)
@@ -198,6 +176,10 @@ namespace timekeepers
                         collection.Insert(item);
                         count++;
                         Console.WriteLine("Inserted to db: " + item.Date + " , enrollNumber: " + item.EnrollNumber);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Existed: date: " + item.Date + " , enrollNumber: " + item.EnrollNumber);
                     }
                 }
             }

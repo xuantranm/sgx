@@ -7,6 +7,7 @@ using Models;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -19,15 +20,11 @@ namespace xdatafix
         static void Main(string[] args)
         {
             #region setting
-            //var location = ConfigurationSettings.AppSettings.Get("location").ToString();
-            //var modeData = ConfigurationSettings.AppSettings.Get("modeData").ToString() == "true" ? true : false; // true: Get all data | false get by date
-            //var day = Convert.ToInt32(ConfigurationSettings.AppSettings.Get("day").ToString());
-            //var isMail = ConfigurationSettings.AppSettings.Get("isMail").ToString() == "true" ? true : false;
-            var connection = "mongodb://localhost:27017";
-            var database = "tribat";
+            var connection = ConfigurationSettings.AppSettings.Get("connection").ToString();
+            var database = ConfigurationSettings.AppSettings.Get("database").ToString();
             #endregion
-
-            UpdateRightUser(connection, database);
+            UpdateTimeUser(connection, database);
+            //UpdateRightUser(connection, database);
             //InsertUserRole(connection, database);
             //UpdateLeave(connection, database);
 
@@ -97,6 +94,51 @@ namespace xdatafix
         }
 
         #region ERP
+        static void UpdateTimeUser(string connection, string database)
+        {
+            #region Connection, Setting & Filter
+            MongoDBContext.ConnectionString = connection;
+            MongoDBContext.DatabaseName = database;
+            MongoDBContext.IsSSL = true;
+            MongoDBContext dbContext = new MongoDBContext();
+            #endregion
+
+            var missing = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false)).ToList();
+
+            foreach(var item in missing)
+            {
+                var workplaces = new List<Workplace>();
+                if (item.Workplaces != null && item.Workplaces.Count > 0)
+                {
+                    foreach(var wo in item.Workplaces)
+                    {
+                        if (!string.IsNullOrEmpty(wo.Fingerprint))
+                        {
+                            if (wo.Code == "NM")
+                            {
+                                wo.WorkingScheduleTime = "07:30-16:30";
+                            }
+                            else if (wo.Code == "VP")
+                            {
+                                wo.WorkingScheduleTime = "08:00-17:00";
+                            }
+                            workplaces.Add(wo);
+                        }
+                    }
+                }
+
+                if (item.Workplaces == null || item.Workplaces.Count == 0)
+                {
+                    workplaces = null;
+                }
+
+                var filter = Builders<Employee>.Filter.Eq(m => m.Id, item.Id);
+                var update = Builders<Employee>.Update
+                    .Set(m => m.Workplaces, workplaces);
+                dbContext.Employees.UpdateOne(filter, update);
+            }
+        }
+
         static void UpdateRightUser(string connection, string database)
         {
             #region Connection, Setting & Filter
@@ -107,9 +149,10 @@ namespace xdatafix
             #endregion
 
             var rights = dbContext.Rights.Find(m => m.ObjectId.Equals("5b6bb22fe73a301f941c5887")).ToList();
-            foreach(var item in rights)
+            foreach (var item in rights)
             {
-                dbContext.Rights.InsertOne(new Right() {
+                dbContext.Rights.InsertOne(new Right()
+                {
                     RoleId = item.RoleId,
                     ObjectId = "5d6ddce1d529b01868a6650a"
                 });
@@ -125,7 +168,8 @@ namespace xdatafix
             MongoDBContext dbContext = new MongoDBContext();
             #endregion
 
-            dbContext.RoleUsers.InsertOne(new RoleUser() {
+            dbContext.RoleUsers.InsertOne(new RoleUser()
+            {
                 User = "5da03a82827a4f0fccb8d3ff",
                 FullName = "PHAN THANH TÚ",
                 Role = "nhan-su",
@@ -244,12 +288,12 @@ namespace xdatafix
                         & builder.Eq(m => m.Logs, null);
             var times = dbContext.EmployeeWorkTimeLogs.Find(filter).ToList();
             var update = Builders<EmployeeWorkTimeLog>.Update
-               .Set(m=>m.Mode, (int)ETimeWork.LeavePhep)
-               .Set(m=>m.SoNgayNghi, 1)
+               .Set(m => m.Mode, (int)ETimeWork.LeavePhep)
+               .Set(m => m.SoNgayNghi, 1)
                .Set(m => m.Reason, "Phép năm")
                .Set(m => m.ReasonDetail, "Duyệt tự động. Nghỉ phép năm lễ 30/4.")
                .Set(m => m.Status, (int)EStatusWork.DuCong)
-               .Set(m=>m.WorkDay, 1);
+               .Set(m => m.WorkDay, 1);
             dbContext.EmployeeWorkTimeLogs.UpdateMany(filter, update);
             foreach (var item in times)
             {
@@ -312,7 +356,7 @@ namespace xdatafix
                         & builder.Lte(m => m.Date, enderror);
             var times = dbContext.X928CNMAttLogs.Find(filter).ToList();
 
-            foreach(var item in times)
+            foreach (var item in times)
             {
                 var newTime = item;
                 newTime.Id = null;
@@ -1128,7 +1172,7 @@ namespace xdatafix
                             Department = employee.PhongBanName,
                             Part = employee.BoPhanName,
                             Title = employee.ChucVuName,
-                            LeaveLevel = employee.LeaveLevelYear,
+                            //LeaveLevel = employee.LeaveLevelYear,
                             NumberUsed = 0,
                             UseFlag = true,
                             Year = 2018
@@ -1230,7 +1274,7 @@ namespace xdatafix
                         Department = employee.PhongBanName,
                         Part = employee.BoPhanName,
                         Title = employee.ChucVuName,
-                        LeaveLevel = employee.LeaveLevelYear,
+                        //LeaveLevel = employee.LeaveLevelYear,
                         NumberUsed = 0,
                         UseFlag = true,
                         Year = 2019

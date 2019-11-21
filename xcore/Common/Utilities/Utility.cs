@@ -858,7 +858,9 @@ namespace Common.Utilities
                 if (roleE != null)
                 {
                     var rightExist = dbContext.Rights.CountDocuments(m => m.RoleId.Equals(roleE.Id)
-                                && (m.ObjectId.Equals(loginE.ChucVu) || m.ObjectId.Equals(loginE.Id))
+                                && (m.ObjectId.Equals(loginE.ChucVu) 
+                                || m.ObjectId.Equals(loginE.Id) 
+                                || m.ObjectId.Equals(loginE.CongTyChiNhanh))
                                 && m.Action >= action);
                     if (rightExist > 0)
                     {

@@ -12,19 +12,9 @@
     var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
     var thang = Model.Thang;
 }
-<style>
-    tbody th:nth-child(3), tbody td:nth-child(3) {
-        position: sticky;
-        left: 0px;
-    }
-
-    tbody td:nth-child(3) {
-        background-color: lightgoldenrodyellow;
-    }
-</style>
 <div class="main-container">
     <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
-        <div class="container">
+        <div class="container-fluid">
             <div class="row justify-content-center">
                 <div class="col">
                     <ol class="breadcrumb">
@@ -40,7 +30,7 @@
 
     <section class="flush-with-above space-0">
         <div class="bg-white">
-            <div class="container">
+            <div class="container-fluid">
                 <div class="row">
                     <div class="col">
                         <ul class="nav nav-tabs" id="myTab" role="tablist">
@@ -76,7 +66,7 @@
     <section class="flush-with-above height-80 d-block">
         <div class="tab-content">
             <div class="tab-pane fade show active" id="real" role="tabpanel" aria-labelledby="real-tab">
-                <div class="container">
+                <div class="container-fluid">
                     <div class="row mb-3 d-none">
                         <div class="col-lg-3 col-md-6">
                             <a class="btn btn-lg btn-block btn-success btn-edit-real" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Factory/@Constants.LinkSalary.BangLuong/@Constants.LinkSalary.Update" data-toggle="tooltip" title="Bấm thay đổi thang bảng lương.">

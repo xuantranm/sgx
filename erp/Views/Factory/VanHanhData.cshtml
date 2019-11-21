@@ -12,7 +12,7 @@
         isEdit = true;
         date = entity.Date;
     }
-    entity.Start = TimeSpan.FromHours(6);
+    entity.StartVH = TimeSpan.FromHours(6);
 }
 
 <div class="main-container">
@@ -48,7 +48,7 @@
                         <input type="hidden" id="mode" value="@isEdit.ToString()"/>
                         @if (isEdit)
                         {
-                            <input type="hidden" id="hidStart" value="@entity.Start.ToString(@"hh\:mm")" />
+                            <input type="hidden" id="hidStartVH" value="@entity.StartVH.ToString(@"hh\:mm")" />
                             <input type="hidden" id="hidEnd" value="@entity.End.ToString(@"hh\:mm")" />
                             <input type="hidden" id="hidTgBTTQ" value="@entity.ThoiGianBTTQ.ToString(@"hh\:mm")" />
                             <input type="hidden" id="hidTgNghi" value="@entity.ThoiGianNghi.ToString(@"hh\:mm")" />
@@ -131,8 +131,8 @@
                             </div>
                             <div class="form-group col-md-1 col-sm-6 col-xs-12">
                                 <label class="control-label">TG Bắt đầu</label>
-                                <input asp-for="Entity.Start" id="start" class="form-control form-control-lg datetimepicker-input" data-toggle="datetimepicker" data-target="#start" autocomplete="off" />
-                                <span asp-validation-for="Entity.Start" class="text-danger"></span>
+                                <input asp-for="Entity.StartVH" id="StartVH" class="form-control form-control-lg datetimepicker-input" data-toggle="datetimepicker" data-target="#StartVH" autocomplete="off" />
+                                <span asp-validation-for="Entity.StartVH" class="text-danger"></span>
                             </div>
                             <div class="form-group col-md-1 col-sm-6 col-xs-12">
                                 <label class="control-label">TG Kết thúc</label>

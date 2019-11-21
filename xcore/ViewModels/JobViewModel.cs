@@ -10,7 +10,6 @@ namespace ViewModels
         #endregion
 
         public IList<Job> Entities { get; set; }
-        public TextSearch Search { get; set; }
         public IList<Link> Links { get; set; }
     }
 }

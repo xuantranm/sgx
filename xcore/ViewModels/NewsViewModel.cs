@@ -10,7 +10,7 @@ namespace ViewModels
         #endregion
 
         public IList<News> Entities { get; set; }
-        public TextSearch Search { get; set; }
+  
         public IList<Link> Links { get; set; }
     }
 }

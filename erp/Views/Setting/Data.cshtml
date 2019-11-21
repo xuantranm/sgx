@@ -5,7 +5,7 @@
 @model SettingViewModel
 
 @{
-    var actionForm = "/setting/data";
+    var actionForm = "/" + Constants.Link.Setting + "/"+ Constants.ActionLink.Data;
     var isEdit = false;
     var breadcrumbActive = "Tạo mới";
     var submitLabel = "Tạo mới";
@@ -26,10 +26,10 @@
                 <div class="col">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item">
-                            <a href="/">Home</a>
+                            <a href="/">Trang chủ</a>
                         </li>
                         <li class="breadcrumb-item" aria-current="page">
-                            <a href="/setting">Cài đặt thông số</a>
+                            <a href="/@Constants.Link.Setting">Cài đặt thông số</a>
                         </li>
                         <li class="breadcrumb-item active" aria-current="page">
                             @breadcrumbActive
@@ -43,7 +43,6 @@
     <section>
         <div class="container">
             <form action="@actionForm" method="post" class="data-form">
-                <input type="hidden" asp-for="Setting.Domain" />
                 @if (isEdit)
                 {
                     <input type="hidden" asp-for="Setting.Id" />
@@ -86,6 +85,6 @@
 </div>
 
 @section scripts {
-    <script type="text/javascript" src="~/js/setting-data.js?@Constants.VersionJs"></script>
+    <script type="text/javascript" src="~/js/system/setting-data.js?@Constants.VersionJs"></script>
 }
 

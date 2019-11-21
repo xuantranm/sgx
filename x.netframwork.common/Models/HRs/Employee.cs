@@ -53,6 +53,8 @@ namespace Models
 
         public int ProbationMonth { get; set; } = 2;
 
+        public int Probation { get; set; } = 0; // Day
+
         public bool Official { get; set; } = true;
 
         // Last contract date
@@ -64,7 +66,7 @@ namespace Models
             get
             {
                 DateTime today = DateTime.Today;
-                DateTime next = Contractday.AddMonths(6);
+                DateTime next = Joinday.AddMonths(6);
                 return (next - today).Days;
             }
         }

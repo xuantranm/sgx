@@ -264,3 +264,7 @@ tr.active td {
     height: 30px;
     background-color: green;
 }
+.scroll-y {
+    height: 150px;
+    overflow-y: scroll;
+}

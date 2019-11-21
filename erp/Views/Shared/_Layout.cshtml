@@ -4,7 +4,7 @@
     var isLogin = false;
     var rightSystem = false;
     var rightHr = false;
-    var rightFactory = false;
+    var rightNhaMay = false;
     var rightLuong = false;
     var login = User.Identity.Name;
     if (!string.IsNullOrEmpty(login))
@@ -18,7 +18,7 @@
         isLogin = true;
         rightSystem = Utility.IsRight(login, Constants.Rights.System, (int)ERights.View);
         rightHr = Utility.IsRight(login, Constants.Rights.HR, (int)ERights.View);
-        rightFactory = Utility.IsRight(login, Constants.Rights.NhaMay,(int)ERights.View);
+        rightNhaMay = Utility.IsRight(login, Constants.Rights.NhaMay,(int)ERights.View);
         rightLuong = Utility.IsRight(login, Constants.Rights.Luong, (int)ERights.View);
     }
 
@@ -86,6 +86,7 @@
     <link href="~/lib/bootstrap-datepicker-1.6.4-dist/css/bootstrap-datepicker.min.css" rel="stylesheet" />
     <link href="~/lib/datetimepicker-tempusdominus/css/tempusdominus-bootstrap-4.css" rel="stylesheet" />
     <link href="~/lib/daterangepicker/daterangepicker.css" rel="stylesheet" />
+    <link href="~/lib/summernote-0.8.9-dist/dist/summernote.css" rel="stylesheet" />
     <link href="~/lib/select2/select2.min.css" rel="stylesheet" />
     <link href="~/lib/select2/select2-bootstrap.min.css" rel="stylesheet" />
     <link href="~/assets/wingman/css/custom.css" rel="stylesheet" type="text/css" media="all" />
@@ -163,8 +164,22 @@
                                                 <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.BangLuong">
                                                     <i class="fas fa-money-bill-wave"></i> LƯƠNG
                                                 </a>
+                                                <div class="dropdown-divider"></div>
+                                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.VanPhong/@Constants.LinkSalary.BangLuong">
+                                                    <i class="fas fa-money-bill-wave"></i> LƯƠNG VP
+                                                </a>
+                                                <div class="dropdown-divider"></div>
+                                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Factory/@Constants.LinkSalary.BangLuong">
+                                                    <i class="fas fa-money-bill-wave"></i> LƯƠNG NM
+                                                </a>
                                             }
                                         </div>
+                                    </li>
+                                }
+                                @if (rightNhaMay)
+                                {
+                                    <li class="nav-item">
+                                        <a href="/@Constants.LinkFactory.Index" class="nav-link" data-toggle="tooltip" title="Nhà máy Sài Gòn Xanh"><i class="fas fa-industry"></i> NHÀ MÁY</a>
                                     </li>
                                 }
                                 @if (rightSystem)
@@ -191,28 +206,18 @@
                                                 <p class="text-small text-muted">Configuration information system</p>
                                             </a>
                                             <div class="dropdown-divider"></div>
-
                                             <a class="dropdown-item" href="/text/">
                                                 <span class="h6 mb-0">Văn bản</span>
                                                 <p class="text-small text-muted">Multi languages display control</p>
                                             </a>
-
                                             <div class="dropdown-divider"></div>
                                             <a class="dropdown-item" href="/@Constants.LinkSystem.Main/@Constants.LinkSystem.Mail/">
                                                 <span class="h6 mb-0">Mail</span>
                                                 <p class="text-small text-muted">Tình trạng gửi mail</p>
                                             </a>
-
                                         </div>
                                     </li>
                                 }
-                                @if (rightFactory)
-                                {
-                                    <li class="nav-item">
-                                        <a href="/@Constants.LinkFactory.Index" class="nav-link" data-toggle="tooltip" title="Nhà máy Sài Gòn Xanh"><i class="fas fa-industry"></i> NHÀ MÁY</a>
-                                    </li>
-                                }
-
                                 <li class="nav-item">
                                     <span data-toggle="modal" data-target="#pwdModal">
                                         <a href="javascript:;" class="nav-link" title="Bấm thay đổi mật khẩu." data-toggle="tooltip">
@@ -322,6 +327,7 @@
     <script type="text/javascript" src="~/assets/wingman/js/theme.js"></script>
     <script type="text/javascript" src="~/lib/bootstrap-multiselect/dist/js/bootstrap-multiselect.js"></script>
     <script type="text/javascript" src="~/lib/autosize/jquery.textarea_autosize.js"></script>
+    <script type="text/javascript" src="~/lib/summernote-0.8.9-dist/dist/summernote.js"></script>
 
     <!-- TIENG VIET : Datepicker-->
     <script type="text/javascript" src="~/lib/bootstrap-datepicker-1.6.4-dist/js/bootstrap-datepicker.min.js"></script>

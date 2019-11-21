@@ -31,8 +31,6 @@
     <Content Remove="Views\Factory\PhieuInCa - A4.cshtml" />
     <Content Remove="Views\Factory\ReportDG.cshtml" />
     <Content Remove="Views\KeHoachTongHop\DuLieuDuAnCong.cshtml" />
-    <Content Remove="Views\PhanQuyen\Create.cshtml" />
-    <Content Remove="Views\PhanQuyen\Index.cshtml" />
     <Content Remove="Views\SalaryProduction\CongTong.cshtml" />
     <Content Remove="Views\SalaryProduction\CongTongUpdate.cshtml" />
     <Content Remove="Views\Shared\_LayoutData.cshtml" />
@@ -77,7 +75,6 @@
     <None Include="Views\Salary\ThangLuong.cshtml" />
     <None Include="Views\Salary\ThangLuongUpdate.cshtml" />
     <None Include="Views\Setting\Data.cshtml" />
-    <None Include="Views\Setting\Disable.cshtml" />
     <None Include="Views\Setting\Index.cshtml" />
     <None Include="Views\Text\Data.cshtml" />
     <None Include="Views\Text\Disable.cshtml" />
@@ -827,12 +824,6 @@
     <Content Update="Views\Leave\Approvement.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
-    <Content Update="Views\RoleUser\Index.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Role\Index.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
     <Content Update="Views\SalaryProduction\DinhMuc.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
@@ -926,7 +917,6 @@
 
   <ItemGroup>
     <Folder Include="Areas\Identity\Services\" />
-    <Folder Include="Views\PhanQuyen\" />
     <Folder Include="wwwroot\lib\entypo-master\support\font-builder\" />
     <Folder Include="wwwroot\lib\paper-css-master\" />
   </ItemGroup>

@@ -50,6 +50,8 @@
             nghikhongluong += item.NghiViecRieng;
         }
     }
+
+    var employee = Model.Employee;
 }
 
 <div class="main-container">
@@ -81,6 +83,25 @@
                         <div class="card-body">
                             <span>Tổng quan (dữ liệu tính tới ngày @lastUpdated)</span>
                             <ul class="list-group list-group-flush">
+                                @if (employee.IsTimeKeeper)
+                                {
+                                    if (employee.Workplaces != null)
+                                    {
+
+                                        @foreach (var workplace in employee.Workplaces)
+                                        {
+                                            @if (!string.IsNullOrEmpty(workplace.Fingerprint))
+                                            {
+                                                <li class="list-group-item">
+                                                    <div class="d-flex justify-content-between">
+                                                        <div><i class="fas fa-fingerprint"></i> Mã chấm công | TG. làm việc: <span class="badge badge-primary text-uppercase">@workplace.Code</span></div>
+                                                        <span class="badge badge-light">@workplace.Fingerprint | @workplace.WorkingScheduleTime</span>
+                                                    </div>
+                                                </li>
+                                            }
+                                        }
+                                    }
+                                }
                                 <li class="list-group-item">
                                     <div class="d-flex justify-content-between">
                                         <div><i class="icon-calculator mr-1"></i> Số ngày làm việc: (@Model.StartWorkingDate.ToString("dd/MM/yyyy") - @Model.EndWorkingDate.ToString("dd/MM/yyyy"))</div>
@@ -181,17 +202,17 @@
                                 <label class="col-form-label">Nhân viên</label>
                                 <select asp-for="Id" class="form-control form-control-lg js-select2-basic-single ddl-employees">
                                     <option value="">Chọn</option>
-                                    @foreach (var employee in Model.Employees)
+                                    @foreach (var item in Model.Employees)
                                     {
                                         string displayTitle = string.Empty;
-                                        if (!string.IsNullOrEmpty(employee.Email))
+                                        if (!string.IsNullOrEmpty(item.Email))
                                         {
-                                            displayTitle += "- " + employee.Email + "";
+                                            displayTitle += "- " + item.Email + "";
                                         }
-                                        <option value="@employee.Id">@employee.FullName @displayTitle</option>
+                                        <option value="@item.Id">@item.FullName @displayTitle</option>
                                     }
                                 </select>
-                                </div>
+                            </div>
                             <div class="form-group">
                                 <label class="col-sm-1 col-form-label">Tháng</label>
                                 <select asp-for="Thang" class="form-control form-control-lg js-select2-basic-single ddl-times">

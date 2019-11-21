@@ -8,6 +8,7 @@ using MongoDB.Driver;
 using Services;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -20,15 +21,15 @@ namespace xbhxhalert
         static void Main(string[] args)
         {
             #region setting
-            //var debug = ConfigurationSettings.AppSettings.Get("debugString").ToString();
-            var connection = "mongodb://localhost:27017";
-            var database = "tribat";
+            int month = Convert.ToInt32(ConfigurationSettings.AppSettings.Get("month"));
+            var connection = ConfigurationSettings.AppSettings.Get("connection").ToString();
+            var database = ConfigurationSettings.AppSettings.Get("database").ToString();
             #endregion
 
-            SendMailBHXH(connection, database);
+            SendMailBHXH(connection, database, month);
         }
 
-        static void SendMailBHXH(string connection, string database)
+        static void SendMailBHXH(string connection, string database, int month)
         {
             #region Connection, Setting & Filter
             MongoDBContext.ConnectionString = connection;

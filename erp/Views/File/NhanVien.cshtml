@@ -16,22 +16,25 @@
     }
 </style>
 
-<h2>@ViewData["Title"]</h2>
-<form method="post" action="/tai-lieu/nhan-vien/update/" enctype="multipart/form-data">
-    <div class="row">
-        <div class="col-md-4">
-            <input type="file" id="fUpload" name="files" class="form-control" />
+<div class="container">
+    <h2>@ViewData["Title"]</h2>
+    <form method="post" action="/tai-lieu/nhan-vien/update/" enctype="multipart/form-data">
+        <div class="row">
+            <div class="col-md-4">
+                <input type="file" id="fUpload" name="files" class="form-control" />
+            </div>
+            <div class="col-md-8">
+                <input type="button" id="btnUpload" class="hidden" value="Tải lên" />
+            </div>
         </div>
-        <div class="col-md-8">
-            <input type="button" id="btnUpload" class="hidden" value="Tải lên" />
+        <br />
+        <div class="progress">
+            <div class="progress-bar progress-bar-striped progress-bar-animated" style="width:0%"></div>
         </div>
-    </div>
-    <br />
-    <div class="progress">
-        <div class="progress-bar progress-bar-striped progress-bar-animated" style="width:0%"></div>
-    </div>
-    <div id="dvData"></div>
-</form>
+        <div id="dvData"></div>
+    </form>
+
+</div>
 
 @section scripts {
     @{

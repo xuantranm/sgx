@@ -18,29 +18,22 @@ namespace xtime
     {
         static void Main(string[] args)
         {
-            #region setting
+            #region Connection, Setting & Filter
+            var connection = ConfigurationSettings.AppSettings.Get("connection").ToString();
+            var database = ConfigurationSettings.AppSettings.Get("database").ToString();
             var location = ConfigurationSettings.AppSettings.Get("location").ToString();
             var modeData = ConfigurationSettings.AppSettings.Get("modeData").ToString() == "1" ? true : false; // true: Get all data | false get by date
             var isMail = ConfigurationSettings.AppSettings.Get("isMail").ToString() == "1" ? true : false;
-            var debug = ConfigurationSettings.AppSettings.Get("debug").ToString() == "1" ? true : false;
-            var connection = "mongodb://localhost:27017";
-            var database = "tribat";
-            #endregion
+            var debug = ConfigurationSettings.AppSettings.Get("debug").ToString();
+            var monthConfig = Convert.ToInt32(ConfigurationSettings.AppSettings.Get("month").ToString());
 
-            UpdateTimeKeeper(location, modeData, isMail, connection, database, debug);
-        }
-
-        static void UpdateTimeKeeper(string location, bool modeData, bool isMail, string connection, string database, bool debug)
-        {
-            #region Connection, Setting & Filter
             MongoDBContext.ConnectionString = connection;
             MongoDBContext.DatabaseName = database;
             MongoDBContext.IsSSL = true;
             MongoDBContext dbContext = new MongoDBContext();
-            var monthConfig = Convert.ToInt32(ConfigurationSettings.AppSettings.Get("month").ToString());
 
             var today = DateTime.Now.Date;
-            var dateCrawled = today.Day > 25? new DateTime(today.Year, today.Month, 26): new DateTime(today.AddMonths(-1).Year, today.AddMonths(-1).Month, 26);
+            var dateCrawled = today.Day > 25 ? new DateTime(today.Year, today.Month, 26) : new DateTime(today.AddMonths(-1).Year, today.AddMonths(-1).Month, 26);
             if (monthConfig < 0)
             {
                 dateCrawled = dateCrawled.AddMonths(monthConfig);
@@ -48,9 +41,9 @@ namespace xtime
             var builder = Builders<AttLog>.Filter;
             var filter = builder.Gte(m => m.Date, dateCrawled);
 
-            if (debug)
+            if (!string.IsNullOrEmpty(debug))
             {
-                filter &= builder.Eq(m => m.EnrollNumber, Convert.ToInt32(ConfigurationSettings.AppSettings.Get("debugString")).ToString());
+                filter &= builder.Eq(m => m.EnrollNumber, debug);
             }
             #endregion
 
@@ -79,13 +72,12 @@ namespace xtime
                 attlogs = modeData ? dbContext.X628CVPAttLogs.Find(m => true).ToList() : dbContext.X628CVPAttLogs.Find(filter).ToList();
             }
 
-            Proccess(dbContext, location, modeData, isMail, attlogs, debug);
+            Proccess(dbContext, location, modeData, isMail, attlogs, monthConfig, debug);
         }
 
-        private static void Proccess(MongoDBContext dbContext, string location, bool modeData, bool isMail, List<AttLog> attlogs, bool debug)
+        private static void Proccess(MongoDBContext dbContext, string location, bool modeData, bool isMail, List<AttLog> attlogs, int monthConfig, string debug)
         {
             #region Config
-            var monthConfig = Convert.ToInt32(ConfigurationSettings.AppSettings.Get("month").ToString());
             var linkChamCong = Constants.System.domain + "/" + Constants.LinkTimeKeeper.Main + "/" + Constants.LinkTimeKeeper.Index;
             var dateNewPolicy = new DateTime(2018, 10, 01);
             var lunch = TimeSpan.FromHours(1);
@@ -103,36 +95,6 @@ namespace xtime
 
             var startWorkingScheduleTime = new TimeSpan(7, 30, 0);
             var endWorkingScheduleTime = new TimeSpan(16, 30, 0);
-            #endregion
-
-            #region Get Hrs: For case empty Email of user and manager
-            //var hrsCongTy = new List<Employee>();
-            //var hrsNhaMay = new List<Employee>();
-
-            //var listHrRoles = dbContext.RoleUsers.Find(m => m.Role.Equals(Constants.Rights.NhanSu) && (m.Expired.Equals(null) || m.Expired > DateTime.Now)).ToList();
-            //if (listHrRoles != null && listHrRoles.Count > 0)
-            //{
-            //    foreach (var item in listHrRoles)
-            //    {
-            //        if (item.Action == 3)
-            //        {
-            //            var fieldHrs = Builders<Employee>.Projection.Include(p => p.Email).Include(p => p.FullName).Include(p => p.CongTyChiNhanh);
-            //            var employeeHr = dbContext.Employees.Find(m => m.Id.Equals(item.User) && !string.IsNullOrEmpty(m.Email)).Project<Employee>(fieldHrs).FirstOrDefault();
-            //            if (employeeHr != null)
-            //            {
-            //                // Because data not good, set hand
-            //                if (employeeHr.Id == "5b6bb22fe73a301f941c5887") // Anh
-            //                {
-            //                    hrsCongTy.Add(employeeHr);
-            //                }
-            //                else if (employeeHr.Id == "5b6bb231e73a301f941c58dd") //Thoa
-            //                {
-            //                    hrsNhaMay.Add(employeeHr);
-            //                }
-            //            }
-            //        }
-            //    }
-            //}
             #endregion
 
             var holidays = dbContext.Holidays.Find(m => m.Enable.Equals(true)).ToEnumerable().Where(m => m.Year.Equals(DateTime.Now.Year)).ToList();
@@ -158,10 +120,9 @@ namespace xtime
             var filterEmp = Builders<Employee>.Filter.Eq(m => m.Enable, true) & Builders<Employee>.Filter.Eq(m => m.Leave, false)
                     & Builders<Employee>.Filter.ElemMatch(z => z.Workplaces, a => a.Code == location);
             var employees = dbContext.Employees.Find(filterEmp).ToList();
-            if (debug)
+            if (!string.IsNullOrEmpty(debug))
             {
-                var debugString = ConfigurationSettings.AppSettings.Get("debugString").ToString();
-                employees = dbContext.Employees.Find(m => m.Workplaces.Any(w => w.Code.Equals(location) && w.Fingerprint.Equals(debugString))).ToList();
+                employees = dbContext.Employees.Find(m => m.Workplaces.Any(w => w.Code.Equals(location) && w.Fingerprint.Equals(debug))).ToList();
             }
 
             // FUTURE SET CAP BAC. QUÉT HẾT CHỪA BGĐ ...
@@ -170,6 +131,11 @@ namespace xtime
             // FIX ASAP
             var hrVP = dbContext.Employees.Find(m => m.Id.Equals("5b6bb22fe73a301f941c5887")).FirstOrDefault();
             var hrNM = dbContext.Employees.Find(m => m.Id.Equals("5d6ddce1d529b01868a6650a")).FirstOrDefault();
+            var hrs = new List<Employee>
+            {
+                hrVP,
+                hrNM
+            };
             foreach (var employee in employees)
             {
                 #region Employee Information
@@ -196,17 +162,13 @@ namespace xtime
                 }
 
                 var approveE = Utility.GetManager(employee, false, string.Empty, 1).FirstOrDefault();
-                if (approveE == null)
-                {
-                    approveE = location == "VP" ? hrVP : hrNM;
-                }
-
                 var linkFinger = linkChamCong + employee.Id;
                 #endregion
 
                 var leaves = dbContext.Leaves.Find(m => m.EmployeeId.Equals(employeeId)).ToList();
 
                 var flagDate = startDate;
+
                 #region PROCESS
                 while (flagDate <= endDate)
                 {
@@ -686,12 +648,27 @@ namespace xtime
                                 }
                                 else
                                 {
+                                    var tos = new List<EmailAddress>();
                                     // KO CO EMAIL
                                     // SEND QUAN LY TRUC TIEP, XAC NHAN => OK
-                                    var tos = new List<EmailAddress>
+                                    if (approveE != null && !string.IsNullOrEmpty(approveE.Email))
+                                    {
+                                        tos.Add( new EmailAddress { Name = approveE.FullName, Address = approveE.Email });
+                                    }
+                                    else
+                                    {
+                                        if (location == "VP") {
+                                            tos.Add(new EmailAddress { Name = hrVP.FullName, Address = hrVP.Email });
+                                        }
+                                        else
                                         {
-                                            new EmailAddress { Name = approveE.FullName, Address = approveE.Email }
-                                        };
+                                            foreach(var hr in hrs)
+                                            {
+                                                tos.Add(new EmailAddress { Name = hr.FullName, Address = hr.Email });
+                                            }
+                                        }
+                                    }
+                                    
                                     var webRoot = Environment.CurrentDirectory;
                                     var pathToFile = @"C:\Projects\App.Schedule\Templates\TimeKeeperRequest.html";
                                     var subject = "Hỗ trợ xác nhận công.";
@@ -797,7 +774,7 @@ namespace xtime
                         #endregion
                     }
 
-                    Summary(dbContext, employee, location, month, year, modeData, debug);
+                    Summary(dbContext, employee, location, month, year);
 
                     flagDate = flagDate.AddMonths(1);
                 }
@@ -805,7 +782,7 @@ namespace xtime
             }
         }
 
-        private static void Summary(MongoDBContext dbContext, Employee employee, string location, int month, int year, bool modeData, bool debug)
+        private static void Summary(MongoDBContext dbContext, Employee employee, string location, int month, int year)
         {
             var now = DateTime.Now;
             var workplace = employee.Workplaces.FirstOrDefault(a => a.Code == location);
@@ -849,6 +826,7 @@ namespace xtime
             var times = dbContext.EmployeeWorkTimeLogs.Find(m => m.Enable.Equals(true)
             && m.EmployeeId.Equals(employee.Id) && m.WorkplaceCode.Equals(location)
             && m.Month.Equals(month) && m.Year.Equals(year)).SortBy(m => m.Date).ToList();
+
             #region Declare
             double Workday = 0;
             double WorkTime = 0; // store miliseconds
@@ -869,6 +847,7 @@ namespace xtime
             double NghiLe = 0;
 
             #endregion
+
             foreach (var time in times)
             {
                 switch (time.Mode)

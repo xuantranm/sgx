@@ -1,39 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
-using Newtonsoft.Json;
 using Microsoft.Extensions.Configuration;
-using System.Text;
 using Microsoft.AspNetCore.Hosting;
 using System.IO;
 using MongoDB.Driver;
 using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Http;
 using Data;
-using ViewModels;
 using Models;
 using Common.Utilities;
-using NPOI.SS.UserModel;
-using NPOI.HSSF.UserModel;
-using NPOI.XSSF.UserModel;
 using MimeKit;
 using Services;
-using Common.Enums;
 
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-// Link: https://docs.microsoft.com/en-us/aspnet/core/tutorials/first-web-api?view=aspnetcore-2.1
-// more: https://docs.microsoft.com/en-us/aspnet/core/web-api/advanced/formatting?view=aspnetcore-2.1
-
-namespace erp.Controllers
+namespace Controllers
 {
-    // No mapping url. USE Orginal.
     public class ApiController : Controller
     {
         MongoDBContext dbContext = new MongoDBContext();
-        private readonly IDistributedCache _cache;
         IHostingEnvironment _env;
 
         private readonly ILogger _logger;
@@ -41,57 +26,31 @@ namespace erp.Controllers
         public IConfiguration Configuration { get; }
 
         private readonly IEmailSender _emailSender;
-        private readonly ISmsSender _smsSender;
 
-        public ApiController(IDistributedCache cache,
+        public ApiController(
             IConfiguration configuration,
             IHostingEnvironment env,
             IEmailSender emailSender,
-            ISmsSender smsSender,
             ILogger<ApiController> logger)
         {
-            _cache = cache;
             Configuration = configuration;
             _env = env;
             _emailSender = emailSender;
-            _smsSender = smsSender;
             _logger = logger;
         }
 
-        #region NEW HR
-        public JsonResult Category(string id, int type)
+        #region NEW CODE
+        public JsonResult Category(int type, int parentType)
         {
             try
             {
                 var watch = System.Diagnostics.Stopwatch.StartNew();
                 var elapsedMs = watch.ElapsedMilliseconds;
-                var categories = new List<Category>();
-                switch (type)
-                {
-                    case (int)ECategory.KhoiChucNang:
-                        categories = dbContext.Categories.Find(m => m.Enable.Equals(true) 
-                        && m.Type.Equals((int)ECategory.KhoiChucNang) 
-                        && m.ParentId.Equals(id)).SortBy(m => m.Alias).ToList();
-                        break;
-                    case (int)ECategory.PhongBan:
-                        categories = dbContext.Categories.Find(m => m.Enable.Equals(true)
-                        && m.Type.Equals((int)ECategory.PhongBan)
-                        && m.ParentId.Equals(id)).SortBy(m => m.Alias).ToList();
-                        break;
-                    case (int)ECategory.BoPhan:
-                        categories = dbContext.Categories.Find(m => m.Enable.Equals(true)
-                        && m.Type.Equals((int)ECategory.BoPhan)
-                        && m.ParentId.Equals(id)).SortBy(m => m.Alias).ToList();
-                        break;
-                    case (int)ECategory.ChucVu:
-                        categories = dbContext.Categories.Find(m => m.Enable.Equals(true)
-                        && m.Type.Equals((int)ECategory.ChucVu)
-                        && m.ParentId.Equals(id)).SortBy(m => m.Alias).ToList();
-                        break;
-                }
+                var categories = dbContext.Categories.Find(m => m.Enable.Equals(true) && m.Type.Equals(parentType)).ToList();
+                var types = dbContext.Categories.Find(m => m.Enable.Equals(true) && m.Type.Equals(type)).ToList();
                 watch.Stop();
                 elapsedMs = watch.ElapsedMilliseconds;
-                return Json(new { elapsedMs = elapsedMs + "ms", result = true, categories });
+                return Json(new { elapsedMs = elapsedMs + "ms", result = true, categories, types });
             }
             catch (Exception ex)
             {
@@ -99,29 +58,29 @@ namespace erp.Controllers
             }
         }
 
+        [HttpPost]
         public IActionResult CategoryData(Category entity)
         {
-            // Define Type
-            try
+            if (string.IsNullOrEmpty(entity.Id))
             {
-                if (string.IsNullOrEmpty(entity.Name))
-                {
-                    return Json(new { result = false, source = "create", entity, message = "Tên không để trống! Vui lòng kiểm tra tên." });
-                }
-
                 entity.Alias = Utility.AliasConvert(entity.Name);
-                if (string.IsNullOrEmpty(entity.Id))
+                var isExist = dbContext.Categories.CountDocuments(m => m.Alias.Equals(entity.Alias) && m.Type.Equals(entity.Type));
+                if (isExist == 0)
                 {
-                    var existE = dbContext.Categories.Find(m => m.Alias.Equals(entity.Alias)).FirstOrDefault();
-                    if (existE == null)
-                    {
-                        entity.Code = "KHOI" + entity.CodeInt;
-                        dbContext.Categories.InsertOne(entity);
-                        return Json(new { result = true, source = "create", entity, message = Constants.DataSuccess });
-                    }
-                    entity.Id = existE.Id;
+                    var lastE = dbContext.Categories.Find(m => m.Type.Equals(entity.Type)).SortByDescending(m => m.CodeInt).FirstOrDefault();
+                    var newCode = lastE.CodeInt + 1;
+                    entity.CodeInt = newCode;
+                    entity.Code = newCode.ToString();
+                    dbContext.Categories.InsertOne(entity);
+                    return Json(new { result = true, source = "create", entity, message = Constants.DataSuccess });
                 }
-
+                else
+                {
+                    return Json(new { result = false, source = "create", entity, message = Constants.Texts.Duplicate });
+                }
+            }
+            else
+            {
                 var filter = Builders<Category>.Filter.Eq(m => m.Id, entity.Id);
                 var update = Builders<Category>.Update
                     .Set(m => m.ParentId, entity.ParentId)
@@ -133,18 +92,7 @@ namespace erp.Controllers
                     .Set(m => m.Enable, entity.Enable);
                 dbContext.Categories.UpdateOne(filter, update);
 
-                #region Relations
-                var filterEmployee = Builders<Employee>.Filter.Eq(m => m.KhoiChucNang, entity.Id);
-                var updateEmployee = Builders<Employee>.Update
-                    .Set(m => m.KhoiChucNangName, entity.Name);
-                dbContext.Employees.UpdateMany(filterEmployee, updateEmployee);
-                #endregion
-
-                return Json(new { result = true, source = "create", entity, message = Constants.DataSuccess });
-            }
-            catch (Exception ex)
-            {
-                return Json(new { result = false, source = "create", entity, message = ex.Message });
+                return Json(new { result = true, source = "update", entity, message = Constants.DataSuccess });
             }
         }
         #endregion
@@ -419,7 +367,7 @@ namespace erp.Controllers
                     elapsedMs = watch.ElapsedMilliseconds;
                     return Json(new { elapsedMs = elapsedMs + "ms", result = true, khoichucnang = khoichucnangE, phongbans });
                 }
-                
+
                 watch.Stop();
                 elapsedMs = watch.ElapsedMilliseconds;
                 return Json(new { elapsedMs = elapsedMs + "ms", result = false });
@@ -468,7 +416,7 @@ namespace erp.Controllers
                         return Json(new { elapsedMs = elapsedMs + "ms", result = true, phongban = phongBanE, phongbans, bophans, managers });
                     }
                 }
-                
+
                 var lastestE = dbContext.PhongBans.Find(m => m.Enable.Equals(true)).SortByDescending(m => m.Order).Limit(1).FirstOrDefault();
                 var lastestCode = lastestE != null ? lastestE.Order + 1 : 1;
                 phongBanE = new PhongBan()

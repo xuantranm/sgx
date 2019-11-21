@@ -1775,7 +1775,7 @@ WriteAttributeValue("", 14437, employee.EmailPersonal, 14437, 23, false);
                 ");
             EndContext();
             BeginContext(39740, 97, false);
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("a", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "0f4bf22062d34a959d57d65d63431450", async() => {
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("a", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "7734974a69464329b9ecf448edb065ab", async() => {
                 BeginContext(39796, 37, true);
                 WriteLiteral("<i class=\"icon icon-back\"></i> Trở về");
                 EndContext();
@@ -1811,7 +1811,7 @@ WriteAttributeValue("", 14437, employee.EmailPersonal, 14437, 23, false);
                 WriteLiteral("                ");
                 EndContext();
                 BeginContext(40038, 69, false);
-                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("script", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "ba96c4b35bd54880912fc796cc1691f9", async() => {
+                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("script", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "4ac43c61876341a3bd45029a7a6c5822", async() => {
                 }
                 );
                 __Microsoft_AspNetCore_Mvc_Razor_TagHelpers_UrlResolutionTagHelper = CreateTagHelper<global::Microsoft.AspNetCore.Mvc.Razor.TagHelpers.UrlResolutionTagHelper>();

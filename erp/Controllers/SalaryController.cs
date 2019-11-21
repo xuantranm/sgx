@@ -62,6 +62,7 @@ namespace erp.Controllers
             return View(viewModel);
         }
 
+        #region VP
         [Route(Constants.LinkSalary.VanPhong + "/" + Constants.LinkSalary.BangLuong)]
         public async Task<IActionResult> BangLuong(string Thang, string Id, string PhongBan, string SapXep, string ThuTu)
         {
@@ -343,6 +344,12 @@ namespace erp.Controllers
                 return Json(new { result = false, source = "update", id = string.Empty, message = ex.Message });
             }
         }
+        #endregion
+
+
+        #region NM: Do later
+
+        #endregion
 
         #region THANG LUONG
         [Route(Constants.LinkSalary.VanPhong + "/" + Constants.LinkSalary.ThangLuong)]

@@ -278,6 +278,113 @@ namespace Controllers
         public IActionResult Document(string type)
         {
             ViewData["Type"] = type;
+            if (type == "update-category-21")
+            {
+                dbContext.Categories.DeleteMany(m => m.Type.Equals((int)ECategory.Gender));
+                var genders = new List<NameValue>
+                {
+                    new NameValue()
+                    {
+                        Name = "Nam",
+                        Value = "Nam"
+                    },
+                    new NameValue()
+                    {
+                        Name = "Nữ",
+                        Value = "Nữ"
+                    },
+                    new NameValue()
+                    {
+                        Name = "Khác",
+                        Value = "Khác"
+                    }
+                };
+                var iGender = 1;
+                foreach (var item in genders)
+                {
+                    dbContext.Categories.InsertOne(new Category()
+                    {
+                        Type = (int)ECategory.Gender,
+                        Name = item.Name,
+                        Alias = Utility.AliasConvert(item.Name),
+                        Value = item.Value,
+                        Description = string.Empty,
+                        Code = iGender.ToString(),
+                        CodeInt = iGender
+                    });
+                    iGender++;
+                }
+            }
+            if (type == "update-category-22")
+            {
+                dbContext.Categories.DeleteMany(m => m.Type.Equals((int)ECategory.Probation));
+                var probations = new List<NameValue>
+                {
+                    new NameValue()
+                    {
+                        Name = "06 ngày",
+                        Value = "6"
+                    },
+                    new NameValue()
+                    {
+                        Name = "30 ngày",
+                        Value = "30"
+                    },
+                    new NameValue()
+                    {
+                        Name = "60 ngày",
+                        Value = "60"
+                    }
+                };
+                var iProbation = 1;
+                foreach (var item in probations)
+                {
+                    dbContext.Categories.InsertOne(new Category()
+                    {
+                        Type = (int)ECategory.Probation,
+                        Name = item.Name,
+                        Alias = Utility.AliasConvert(item.Name),
+                        Value = item.Value,
+                        Description = string.Empty,
+                        Code = iProbation.ToString(),
+                        CodeInt = iProbation
+                    });
+                    iProbation++;
+                }
+            }
+            if (type == "update-category-time")
+            {
+                dbContext.Categories.DeleteMany(m => m.Type.Equals((int)ECategory.TimeWork));
+                var times = new List<NameValue>
+                {
+                    new NameValue()
+                    {
+                        Name = "07:30-16:30",
+                        Value = "07:30-16:30"
+                    },
+                    new NameValue()
+                    {
+                        Name = "08:00-17:00",
+                        Value = "08:00-17:00"
+                    },
+                };
+                var iTime = 1;
+                foreach (var item in times)
+                {
+                    dbContext.Categories.InsertOne(new Category()
+                    {
+                        Type = (int)ECategory.TimeWork,
+                        Name = item.Name,
+                        Alias = Utility.AliasConvert(item.Name),
+                        Value = item.Value,
+                        Description = string.Empty,
+                        Code = iTime.ToString(),
+                        CodeInt = iTime
+                    });
+                    iTime++;
+                }
+            }
+
             if (type == "update-setting")
             {
                 var settings = dbContext.SettingsTemp.Find(m => true).ToList();
