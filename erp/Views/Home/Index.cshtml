@@ -13,6 +13,8 @@
     {
         rightHr = Utility.IsRight(login, Constants.Rights.HR, (int)ERights.View);
     }
+    var avatarEmpty = "https://via.placeholder.com/120x120";
+    var coverEmpty = "https://via.placeholder.com/354x167";
 }
 
 <div class="main-container">
@@ -22,11 +24,11 @@
                 <div class="col-12 col-md-4 mb-4 mb-md-0 d-none d-md-block">
                     <div class="card card-profile-large text-center card-info">
                         <div class="card-header">
-                            <img alt="Đang cập nhật" src="~/images/placeholder/354x167.png" class="bg-image" />
+                            <img alt="Đang cập nhật" src="@coverEmpty" class="bg-image" />
                         </div>
                         <div class="card-body">
                             <a href="/@Constants.LinkHr.Human/@Constants.LinkHr.Information">
-                                <img alt="Đang cập nhật" src="~/images/placeholder/120x120.png" class="avatar avatar-lg" />
+                                <img alt="Đang cập nhật" src="@avatarEmpty" class="avatar avatar-lg" />
                             </a>
                             <div class="my-3">
                                 <div class="mb-2">

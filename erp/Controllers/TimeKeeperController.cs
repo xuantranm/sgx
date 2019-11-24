@@ -82,7 +82,8 @@ namespace Controllers
             // TẠO TĂNG CA NHÂN VIÊN KHÁC??
             var isManager = Utility.IsManager(loginE);
 
-            var securityPosition = dbContext.Categories.Find(m => m.Type.Equals((int)ECategory.ChucVu) && m.Id.Equals("5c88d098d59d56225c4324a8")).FirstOrDefault();
+            var anninh = Utility.AnNinh();
+            var securityPosition = dbContext.Categories.Find(m => m.Type.Equals((int)ECategory.ChucVu) && m.Name.Equals(anninh)).FirstOrDefault();
             var isSecurity = loginE.ChucVu == securityPosition.Id;
             #endregion
 
@@ -598,7 +599,7 @@ namespace Controllers
 
         #region CHAM CONG
         [Route(Constants.LinkTimeKeeper.Timer)]
-        public async Task<IActionResult> BangChamCong(DateTime Tu, DateTime Den, string Thang, string Nl, string Kcn, string Pb, string Bp, string Fg, string Id)
+        public async Task<IActionResult> BangChamCong(DateTime Tu, DateTime Den, string Thang, string Kcn, string Pb, string Bp, string Fg, string Id)
         {
             #region Authorization
             LoginInit(Constants.Rights.BangChamCong, (int)ERights.View);
@@ -615,27 +616,20 @@ namespace Controllers
 
             #region DDL
             var sortTimes = Utility.DllMonths();
-            var congtychinhanhs = dbContext.Categories.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)ECategory.Company)).ToList();
             var khoichucnangs = dbContext.Categories.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)ECategory.KhoiChucNang)).ToList();
 
             var chucvus = dbContext.Categories.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)ECategory.ChucVu)).ToList();
 
-            Nl = string.IsNullOrEmpty(Nl) ? congtychinhanhs.First().Id : Nl;
-            Kcn = string.IsNullOrEmpty(Kcn) ? khoichucnangs.Where(m => m.ParentId.Equals(Nl)).First().Id : Kcn;
+            Kcn = string.IsNullOrEmpty(Kcn) ? khoichucnangs.First().Id : Kcn;
 
-            var listPBRemove = new List<string>
-            {
-                "5c88d094d59d56225c43240f", // CHU TICH
-                "5c88d094d59d56225c432412" // GIAM DOC
-            };
             var phongbans = dbContext.Categories.Find(m => m.Enable.Equals(true)
             && m.Type.Equals((int)ECategory.PhongBan)
-            && m.ParentId.Equals(Kcn) && !listPBRemove.Contains(m.Id)).ToList();
-            Pb = string.IsNullOrEmpty(Pb) ? phongbans.Where(m => m.ParentId.Equals(Kcn)).First().Id : Pb;
+            && m.ParentId.Equals(Kcn)).ToList();
 
+            var phongbanD = string.IsNullOrEmpty(Pb) ? phongbans.First().Id : Pb;
             var bophans = dbContext.Categories.Find(m => m.Enable.Equals(true)
-            && m.Type.Equals((int)ECategory.BoPhan)
-            && m.ParentId.Equals(Pb) && string.IsNullOrEmpty(m.ParentId)).ToList();
+                && m.Type.Equals((int)ECategory.BoPhan)
+                && m.ParentId.Equals(phongbanD)).ToList();
 
             var employees = await dbContext.Employees.Find(m => !m.UserName.Equals(Constants.System.account)
                             && m.Enable.Equals(true) && m.IsOnline.Equals(true)
@@ -682,7 +676,6 @@ namespace Controllers
                 var employeeEId = dbContext.Employees.Find(m => m.Id.Equals(Id)).FirstOrDefault();
                 if (employeeEId != null)
                 {
-                    Nl = employeeEId.CongTyChiNhanh;
                     Kcn = employeeEId.KhoiChucNang;
                     Pb = employeeEId.PhongBan;
                     Bp = employeeEId.BoPhan;
@@ -690,18 +683,16 @@ namespace Controllers
             }
             else
             {
-                filter &= builder.Eq(m => m.CongTyChiNhanh, Nl);
-                linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "?";
-                linkCurrent += "Nl=" + Nl;
-
                 filter &= builder.Eq(m => m.KhoiChucNang, Kcn);
                 linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "?";
                 linkCurrent += "Kcn=" + Kcn;
 
-                filter &= builder.Eq(m => m.PhongBan, Pb);
-                linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "?";
-                linkCurrent += "Pb=" + Pb;
-
+                if (!string.IsNullOrEmpty(Pb))
+                {
+                    filter &= builder.Eq(m => m.PhongBan, Pb);
+                    linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "?";
+                    linkCurrent += "Pb=" + Pb;
+                }
                 if (!string.IsNullOrEmpty(Bp))
                 {
                     filter &= builder.Eq(m => m.BoPhan, Bp);
@@ -781,7 +772,6 @@ namespace Controllers
                 TimeKeeperDisplays = results,
                 MonthYears = sortTimes,
                 Employees = employees,
-                CongTyChiNhanhs = congtychinhanhs,
                 KhoiChucNangs = khoichucnangs,
                 PhongBans = phongbans,
                 BoPhans = bophans,
@@ -790,7 +780,6 @@ namespace Controllers
                 Den = Den,
                 Id = Id,
                 Fg = Fg,
-                Nl = Nl,
                 Kcn = Kcn,
                 Pb = Pb,
                 Bp = Bp,
@@ -801,7 +790,7 @@ namespace Controllers
         }
 
         [Route(Constants.LinkTimeKeeper.Timer + "/" + Constants.ActionLink.Export)]
-        public async Task<IActionResult> BangChamCongExport(DateTime Tu, DateTime Den, string Thang, string Nl, string Kcn, string Pb, string Bp, string Fg, string Id)
+        public async Task<IActionResult> BangChamCongExport(DateTime Tu, DateTime Den, string Thang, string Kcn, string Pb, string Bp, string Fg, string Id)
         {
             #region Authorization
             LoginInit(Constants.Rights.BangChamCong, (int)ERights.View);
@@ -822,7 +811,6 @@ namespace Controllers
                         && m.IsTimeKeeper.Equals(true))
                         .SortBy(m => m.FullName).ToListAsync();
 
-            var congtychinhanhs = dbContext.Categories.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)ECategory.Company)).ToList();
             var khoichucnangs = dbContext.Categories.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)ECategory.KhoiChucNang)).ToList();
             var phongbans = dbContext.Categories.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)ECategory.KhoiChucNang)).ToList();
             var bophans = dbContext.Categories.Find(m => m.Enable.Equals(true) && string.IsNullOrEmpty(m.ParentId) && m.Type.Equals((int)ECategory.BoPhan)).ToList();
@@ -870,13 +858,6 @@ namespace Controllers
                 linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "";
                 linkCurrent += "Fg=" + Fg;
                 sFileName += "-" + Fg;
-            }
-            if (!string.IsNullOrEmpty(Nl))
-            {
-                filter &= builder.Eq(m => m.CongTyChiNhanh, Nl);
-                linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "";
-                linkCurrent += "Nl=" + Nl;
-                sFileName += "-" + Nl;
             }
             if (!string.IsNullOrEmpty(Kcn))
             {
@@ -2568,7 +2549,8 @@ namespace Controllers
 
                 var directorE = dbContext.Employees.Find(m => m.Id.Equals(overtime.ManagerId)).FirstOrDefault();
 
-                var securityPosition = dbContext.Categories.Find(m => m.Type.Equals((int)ECategory.ChucVu) && m.Id.Equals("5c88d098d59d56225c4324a8")).FirstOrDefault();
+                var anninh = Utility.AnNinh();
+                var securityPosition = dbContext.Categories.Find(m => m.Type.Equals((int)ECategory.ChucVu) && m.Name.Equals(anninh)).FirstOrDefault();
                 var securityE = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.ChucVu.Equals(securityPosition.Id)).FirstOrDefault();
 
                 var genderDE = directorE.Gender == "Nam" ? "Anh" : "Chị";
@@ -3595,22 +3577,14 @@ namespace Controllers
         {
             var currentLog = dbContext.EmployeeWorkTimeLogs.Find(m => m.Id.Equals(id)).FirstOrDefault();
             var employee = currentLog.EmployeeId;
+            var employeeE = dbContext.Employees.Find(m => m.Id.Equals(employee)).FirstOrDefault();
             var result = true;
             var lastLogForget = new EmployeeWorkTimeLog();
             var lastLogOther = new List<EmployeeWorkTimeLog>();
             var approves = new List<IdName>();
             var approvesHr = new List<IdName>();
-            var rolesApprove = dbContext.RoleUsers.Find(m => m.Enable.Equals(true) && m.Role.Equals(Constants.Rights.XacNhanCong)).ToList();
-            foreach (var roleApprove in rolesApprove)
-            {
-                approvesHr.Add(new IdName
-                {
-                    Id = roleApprove.User,
-                    Name = roleApprove.FullName
-                });
-            }
+            var rolesApprove = Utility.ApprovesRole(Constants.Rights.XacNhanCong, (int)ERights.Edit);
 
-            var employeeE = dbContext.Employees.Find(m => m.Id.Equals(employee)).FirstOrDefault();
             var listLyDoQuanLyDuyet = new List<string>
             {
                 "Đi công tác",
@@ -3654,19 +3628,7 @@ namespace Controllers
                     }
                 }
 
-                var approveEntity = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.Leave.Equals(false) && m.ChucVu.Equals(employeeE.ManagerId)).FirstOrDefault();
-                if (approveEntity != null)
-                {
-                    approves.Add(new IdName
-                    {
-                        Id = approveEntity.Id,
-                        Name = approveEntity.FullName
-                    });
-                }
-                else
-                {
-                    approves = approvesHr;
-                }
+                approves = Utility.Approves(employeeE, true, Constants.Rights.XacNhanCong, (int)ERights.Edit);
             }
             else
             {

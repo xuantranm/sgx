@@ -4,28 +4,8 @@
             theme: "bootstrap"
         });
 
-    $('.ddlNl').on('change', function () {
-        changeByCongTyChiNhanh($(this).val());
-    });
-
-    $('.ddlKcn').on('change', function () {
-        changeByKhoiChucNang($(this).val());
-    });
-
-    $('.ddlPb').on('change', function () {
-        changeByPhongBan($(this).val());
-    });
-
-    $('.ddlBp').on('change', function () {
-        changeByBoPhan($(this).val());
-    });
-
-    $('.ddlEmployeeId').on('change', function () {
-        formSubmit();
-    });
-
-    $('#Thang').on('change', function (e) {
-        formSubmit();
+    $('.ddlkhoichucnang').on('change', function () {
+        loadCategory($(this).val(), $('.ephongban-val-hide').val(), $('.ddlphongban')); // parent , data
     });
 
     $('.from-date').on('changeDate', function () {
@@ -184,79 +164,27 @@
         }
     }
 
-    function changeByCongTyChiNhanh(congtychinhanh) {
+    function loadCategory(parentId, type, objectLoad) {
+        console.log("parent:" + parentId + "; type:" + type);
         $.ajax({
             type: "GET",
-            url: "/api/GetByCongTyChiNhanh",
+            url: "/api/loadcategory",
             contentType: "application/json; charset=utf-8",
-            data: { congtychinhanh: congtychinhanh },
-            dataType: "json",
-            success: function (data) {
-                if (data.result === true) {
-                    var $kcn = $(".ddlKcn");
-                    $kcn.empty();
-                    if (data.khoichucnangs.length > 1) {
-                        $kcn.append($("<option></option>")
-                            .attr("value", "").text("Chọn"));
-                    }
-                    $.each(data.khoichucnangs, function (key, khoichucnang) {
-                        $kcn.append($("<option></option>")
-                            .attr("value", khoichucnang.id).text(khoichucnang.name));
-                    });
-
-                    var $pb = $(".ddlPb");
-                    $pb.empty();
-
-                    var $bp = $(".ddlBp");
-                    $bp.empty();
-
-                    if (data.khoichucnangs.length === 1) {
-                        changeByKhoiChucNang($('.ddlKcn').val());
-                    }
-                }
-            }
-        });
-    }
-
-    function changeByKhoiChucNang(khoichucnang) {
-        $.ajax({
-            type: "GET",
-            url: "/api/GetByKhoiChucNang",
-            contentType: "application/json; charset=utf-8",
-            data: {
-                id: khoichucnang,
-                removes: "5c88d094d59d56225c43240f,5c88d094d59d56225c432412"
-            },
+            data: { parentid: parentId, type: type },
             dataType: "json",
             success: function (data) {
                 console.log(data);
                 if (data.result === true) {
-                    //$('.ddlNl').val(data.congTyChiNhanhId);
-                    var $pb = $(".ddlPb");
-                    $pb.empty();
-                    if (data.phongbans.length > 1) {
-                        $pb.append($("<option></option>")
-                            .attr("value", "").text("Chọn"));
+                    objectLoad.empty();
+                    if (data.categories.length > 1) {
+                        objectLoad.append($("<option></option>").attr("value", "").text("Chọn"));
                     }
-                    $.each(data.phongbans, function (key, phongban) {
-                        $pb.append($("<option></option>")
-                            .attr("value", phongban.id).text(phongban.name));
+                    $.each(data.categories, function (key, item) {
+                        objectLoad.append($("<option></option>").attr("value", item.id).text(item.name));
                     });
-
-                    if (data.phongbans.length === 1) {
-                        changeByPhongBan($('.ddlPb').val());
-                    }
                 }
             }
         });
-    }
-
-    function changeByPhongBan() {
-        formSubmit();
-    }
-
-    function changeByBoPhan() {
-        formSubmit();
     }
 });
 

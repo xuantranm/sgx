@@ -135,16 +135,10 @@ function loadCommonData() {
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function (data) {
-            //console.log(data);
-            if (data.result === false) {
-                //console.log("Error.");
-                //console.log(data);
-            }
-            else {
-                if (data.length !== 0) {
-                    $('.card-info').html($.templates("#tmplCardInfo").render(data));
-                    $('#ownerInfo li').html($.templates("#tmplOwnerInfo").render(data));
-                }
+            console.log(data);
+            if (data.length !== 0) {
+                $('.card-info').html($.templates("#tmplCardInfo").render(data));
+                $('#ownerInfo li').html($.templates("#tmplOwnerInfo").render(data));
             }
         }
     });

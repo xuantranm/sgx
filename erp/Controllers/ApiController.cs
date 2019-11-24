@@ -48,6 +48,8 @@ namespace Controllers
                 var elapsedMs = watch.ElapsedMilliseconds;
                 var categories = dbContext.Categories.Find(m => m.Enable.Equals(true) && m.Type.Equals(parentType)).ToList();
                 var types = dbContext.Categories.Find(m => m.Enable.Equals(true) && m.Type.Equals(type)).ToList();
+                // types: current data
+                // categories: doanh muc 
                 watch.Stop();
                 elapsedMs = watch.ElapsedMilliseconds;
                 return Json(new { elapsedMs = elapsedMs + "ms", result = true, categories, types });
@@ -64,19 +66,19 @@ namespace Controllers
             if (string.IsNullOrEmpty(entity.Id))
             {
                 entity.Alias = Utility.AliasConvert(entity.Name);
+                var lastE = dbContext.Categories.Find(m => m.Type.Equals(entity.Type)).SortByDescending(m => m.CodeInt).FirstOrDefault();
+                var newCode = lastE.CodeInt + 1;
+                entity.CodeInt = newCode;
+                entity.Code = newCode.ToString();
                 var isExist = dbContext.Categories.CountDocuments(m => m.Alias.Equals(entity.Alias) && m.Type.Equals(entity.Type));
-                if (isExist == 0)
+                if (isExist > 0)
                 {
-                    var lastE = dbContext.Categories.Find(m => m.Type.Equals(entity.Type)).SortByDescending(m => m.CodeInt).FirstOrDefault();
-                    var newCode = lastE.CodeInt + 1;
-                    entity.CodeInt = newCode;
-                    entity.Code = newCode.ToString();
-                    dbContext.Categories.InsertOne(entity);
-                    return Json(new { result = true, source = "create", entity, message = Constants.DataSuccess });
+                    return Json(new { result = false, source = "create", entity, message = Constants.Texts.Duplicate });
                 }
                 else
                 {
-                    return Json(new { result = false, source = "create", entity, message = Constants.Texts.Duplicate });
+                    dbContext.Categories.InsertOne(entity);
+                    return Json(new { result = true, source = "create", entity, message = Constants.DataSuccess });
                 }
             }
             else
@@ -93,6 +95,23 @@ namespace Controllers
                 dbContext.Categories.UpdateOne(filter, update);
 
                 return Json(new { result = true, source = "update", entity, message = Constants.DataSuccess });
+            }
+        }
+
+        public JsonResult LoadCategory(string parentid, int type)
+        {
+            try
+            {
+                var watch = System.Diagnostics.Stopwatch.StartNew();
+                var elapsedMs = watch.ElapsedMilliseconds;
+                var categories = dbContext.Categories.Find(m => m.Enable.Equals(true) && m.Type.Equals(type) && m.ParentId.Equals(parentid)).ToList();
+                watch.Stop();
+                elapsedMs = watch.ElapsedMilliseconds;
+                return Json(new { elapsedMs = elapsedMs + "ms", result = true, categories });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { result = false, message = ex.Message });
             }
         }
         #endregion

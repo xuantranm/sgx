@@ -1,7 +1,7 @@
 ﻿$(function () {
     setValue();
 
-    googleInit();
+    //googleInit();
 
     eventInit();
 
@@ -180,20 +180,11 @@
 
     function eventInit() {
         $('#Employee_KhoiChucNang').on('change', function () {
-            getcategory($(this).val(), $('.hid-type-phongban').val()); // parent , data
+            loadCategory($(this).val(), $('.ephongban-val-hide').val(), $('#Employee_PhongBan')); // parent , data
         });
 
         $('#Employee_PhongBan').on('change', function () {
-            getcategory($(this).val(), $('.hid-type-bophan').val());
-        });
-
-        $('#Employee_BoPhan').on('change', function () {
-            $('#Employee_BoPhanName').val($('#Employee_BoPhan option:selected').text());
-            changeByBoPhan($(this).val());
-        });
-
-        $('#Employee_BoPhanCon').on('change', function () {
-            $('#Employee_BoPhanConName').val($('#Employee_BoPhanCon option:selected').text());
+            loadCategory($(this).val(), $('.ebophan-val-hide').val(), $('#Employee_BoPhan'));
         });
 
         $('#check-timekeeper').on('change', function () {
@@ -586,7 +577,7 @@
             }
         });
 
-        $('.btn-save-category').on('click', function () {
+        $('.btn-save-category').unbind().on('click', function () {
             var form = $(this).closest('form');
             if ($('.name-input-modal', form).val() === "") {
                 $('.error-message', modal).removeClass('d-none');
@@ -599,7 +590,9 @@
                 data: frmValues,
                 success: function (data) {
                     if (data.result === true) {
-                        console.log(ecategory);
+                        ecategory = parseInt(data.entity.type);
+                        console.log("after save: " + ecategory);
+
                         if (ecategory === parseInt($('.egender-val-hide').val())) {
                             $('select[name="Employee.Gender"] option:first').after('<option value="' + data.entity.id + '">' + data.entity.name + '</option>');
                             $('select[name="Employee.Gender"]').val(data.entity.id);
@@ -643,6 +636,29 @@
                     }
                 }
             });
+        });
+    }
+
+    function loadCategory(parentId, type, objectLoad) {
+        console.log("parent:" + parentId + "; type:" + type);
+        $.ajax({
+            type: "GET",
+            url: "/api/loadcategory",
+            contentType: "application/json; charset=utf-8",
+            data: { parentid: parentId, type: type },
+            dataType: "json",
+            success: function (data) {
+                console.log(data);
+                if (data.result === true) {
+                    objectLoad.empty();
+                    if (data.categories.length > 1) {
+                        objectLoad.append($("<option></option>").attr("value", "").text("Chọn"));
+                    }
+                    $.each(data.categories, function (key, item) {
+                        objectLoad.append($("<option></option>").attr("value", item.id).text(item.name));
+                    });
+                }
+            }
         });
     }
 

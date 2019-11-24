@@ -586,7 +586,7 @@ namespace Controllers
             #endregion
 
             #region Images, each product 1 folder. (return images)
-            var folder = Path.Combine(Constants.Folder.Image, entity.AliasFullName + "-" + entity.Code);
+            var folder = Path.Combine(Constants.Folder.Image, Constants.Folder.Hr, entity.AliasFullName + "-" + entity.Code);
             entity.Images = Utility.ImageProfileProcess(entity.Images.ToList(), _env.WebRootPath, folder, entity.FullName, entity.Code);
             #endregion
 

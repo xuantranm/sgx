@@ -123,14 +123,13 @@ namespace erp.Controllers
 
             var owner = isOwner ? userInformation : dbContext.Employees.Find(m => m.Id.Equals(ownerId)).First();
 
-            var avatar = new Img
-            {
-                Path = "/images/placeholder/",
+            var avatar = new Img { 
+                Path = "images/placeholder",
                 FileName = "120x120.png"
             };
             var cover = new Img
             {
-                Path = "/images/placeholder/",
+                Path = "images/placeholder",
                 FileName = "354x167.png"
             };
             if (owner.Images != null && owner.Images.Count > 0)

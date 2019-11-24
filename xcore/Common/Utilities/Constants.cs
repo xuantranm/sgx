@@ -25,6 +25,7 @@ namespace Common.Utilities
             public const string Image = "images";
             public const string Document = "documents";
             public const string Resource = "resources";
+            public const string Hr = "hr";
         }
 
         public static class Texts

@@ -708,6 +708,12 @@ namespace Common.Utilities
             && (m.ManagerEmployeeId.Equals(loginE.Id) || m.ManagerId.Equals(loginE.ChucVu))) > 0;
             return result;
         }
+
+        public static string AnNinh()
+        {
+            return "Trưởng BP An Ninh";
+        }
+
         // extend: true: allow role. false: only manager direct
         public static List<IdName> Approves(Employee account, bool extend, string role, int action)
         {
@@ -783,6 +789,50 @@ namespace Common.Utilities
             return approves.Distinct().ToList();
         }
 
+        public static List<IdName> ApprovesRole(string role, int action)
+        {
+            var approves = new List<IdName>();
+            var today = DateTime.Now.Date;
+            var roleE = dbContext.Categories.Find(m => m.Type.Equals((int)ECategory.Role) && m.Alias.Equals(role)).FirstOrDefault();
+            if (roleE != null)
+            {
+                var rights = dbContext.Rights.Find(m => m.Enable.Equals(true)
+                                && m.RoleId.Equals(roleE.Id) && m.Action <= action
+                                && (m.Start == null || m.Start <= today)
+                                && (m.Expired == null || m.Expired > today)).ToList();
+
+                foreach (var item in rights)
+                {
+                    // Define chucvu | accountId
+                    var accounts = dbContext.Employees.Find(m => m.ChucVu.Equals(item.ObjectId) && m.Enable.Equals(true) && m.Leave.Equals(false)).ToList();
+                    if (accounts != null && accounts.Count > 0)
+                    {
+                        foreach (var accountE in accounts)
+                        {
+                            approves.Add(new IdName
+                            {
+                                Id = accountE.Id,
+                                Name = accountE.ChucVuName + " - " + accountE.FullName
+                            });
+                        }
+                    }
+                    else
+                    {
+                        var accountE = dbContext.Employees.Find(m => m.Id.Equals(item.ObjectId) && m.Enable.Equals(true) && m.Leave.Equals(false)).FirstOrDefault();
+                        if (accountE != null)
+                        {
+                            approves.Add(new IdName
+                            {
+                                Id = accountE.Id,
+                                Name = accountE.ChucVuName + " - " + accountE.FullName
+                            });
+                        }
+                    }
+                }
+            }
+
+            return approves.Distinct().ToList();
+        }
         public static List<Employee> EmployeesBase(bool isSystem, string managerId)
         {
             var builder = Builders<Employee>.Filter;
@@ -858,8 +908,8 @@ namespace Common.Utilities
                 if (roleE != null)
                 {
                     var rightExist = dbContext.Rights.CountDocuments(m => m.RoleId.Equals(roleE.Id)
-                                && (m.ObjectId.Equals(loginE.ChucVu) 
-                                || m.ObjectId.Equals(loginE.Id) 
+                                && (m.ObjectId.Equals(loginE.ChucVu)
+                                || m.ObjectId.Equals(loginE.Id)
                                 || m.ObjectId.Equals(loginE.CongTyChiNhanh))
                                 && m.Action >= action);
                     if (rightExist > 0)
@@ -2278,60 +2328,73 @@ namespace Common.Utilities
 
             if (images != null && images.Count > 0)
             {
-                #region Directory
-                var fullImagesFolder = Path.Combine(webRootPath, folder);
-                if (!Directory.Exists(fullImagesFolder))
+                var currents = images.Where(m => string.IsNullOrEmpty(m.Temp) && m.IsDelete.Equals(false)).ToList();
+                if (currents != null && currents.Count > 0)
                 {
-                    Directory.CreateDirectory(fullImagesFolder);
+                    result = currents;
                 }
-                #endregion
 
-                foreach (var item in images)
+                // Deletes ... Do later
+
+                var news = images.Where(m => !string.IsNullOrEmpty(m.Temp)).ToList();
+
+                if (news != null && news.Count > 0)
                 {
-                    if (!string.IsNullOrEmpty(item.Temp))
+                    #region Directory
+                    var fullImagesFolder = Path.Combine(webRootPath, folder);
+                    if (!Directory.Exists(fullImagesFolder))
                     {
-                        var source = item.Temp;
-                        var base64Data = Regex.Match(source, @"data:image/(?<type>.+?),(?<data>.+)").Groups["data"].Value;
-                        byte[] imageBytes = Convert.FromBase64String(base64Data);
-                        string imageType = item.Orginal.Split('.').Last();
+                        Directory.CreateDirectory(fullImagesFolder);
+                    }
+                    #endregion
 
-                        #region Generate image, future for resize
-                        //Image image = null;
-                        //using (MemoryStream stream = new MemoryStream(imageBytes))
-                        //{
-                        //    image = Image.FromStream(stream);
-                        //}
-                        //if (ImageFormat.Jpeg.Equals(image.RawFormat))
-                        //{
-                        //    imageType = "jpg";
-                        //}
-                        //else if (ImageFormat.Png.Equals(image.RawFormat))
-                        //{
-                        //    // PNG
-                        //}
-                        //else if (ImageFormat.Gif.Equals(image.RawFormat))
-                        //{
-                        //    // GIF
-                        //}
-                        #endregion
-
-                        // set and save the image
-                        // no delete current
-                        var imageName = alias + "-" + entityCode + "-" + DateTime.Now.ToString("ddMMyyyyHHmmss") + "." + imageType;
-                        var imagePath = Path.Combine(fullImagesFolder, imageName);
-                        File.WriteAllBytes(imagePath, imageBytes);
-
-                        result.Add(new Img()
+                    foreach (var item in news)
+                    {
+                        if (!string.IsNullOrEmpty(item.Temp))
                         {
-                            Path = folder,
-                            FileName = imageName,
-                            Title = title,
-                            Main = item.Main,
-                            Type = item.Type,
-                            Orginal = item.Orginal,
-                            Size = item.Size,
-                            TypeFile = item.TypeFile
-                        });
+                            var source = item.Temp;
+                            var base64Data = Regex.Match(source, @"data:image/(?<type>.+?),(?<data>.+)").Groups["data"].Value;
+                            byte[] imageBytes = Convert.FromBase64String(base64Data);
+                            string imageType = item.Orginal.Split('.').Last();
+
+                            #region Generate image, future for resize
+                            //Image image = null;
+                            //using (MemoryStream stream = new MemoryStream(imageBytes))
+                            //{
+                            //    image = Image.FromStream(stream);
+                            //}
+                            //if (ImageFormat.Jpeg.Equals(image.RawFormat))
+                            //{
+                            //    imageType = "jpg";
+                            //}
+                            //else if (ImageFormat.Png.Equals(image.RawFormat))
+                            //{
+                            //    // PNG
+                            //}
+                            //else if (ImageFormat.Gif.Equals(image.RawFormat))
+                            //{
+                            //    // GIF
+                            //}
+                            #endregion
+
+                            // set and save the image
+                            // no delete current
+                            var imageName = alias + "-" + entityCode + "-" + DateTime.Now.ToString("ddMMyyyyHHmmss") + "." + imageType;
+                            var imagePath = Path.Combine(fullImagesFolder, imageName);
+                            File.WriteAllBytes(imagePath, imageBytes);
+
+                            result.Add(new Img()
+                            {
+                                Path = folder,
+                                FileName = imageName,
+                                Title = title,
+                                Main = item.Main,
+                                Type = item.Type,
+                                Orginal = item.Orginal,
+                                Size = item.Size,
+                                TypeFile = item.TypeFile
+                            });
+                        }
                     }
                 }
             }

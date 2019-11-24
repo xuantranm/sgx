@@ -8,6 +8,11 @@
     var expand = "d-none";
     var employees = Model.Employees.Where(m => m.Leave.Equals(false)).ToList();
     var countNs = employees.Count;
+    var activeflag = string.Empty;
+    if (countNs < 10)
+    {
+        activeflag = "active";
+    }
     var leaves = Model.Employees.Where(m => m.Leave.Equals(true)).ToList();
     var countLeaves = leaves.Count;
 }
@@ -347,7 +352,7 @@ into b
                                                                     @{
                                                                         var phongBanP = phongban.items.Where(m => m.PhongBan == phongban.PhongBanId
                                                                                     && string.IsNullOrEmpty(m.BoPhan)).ToList();
-                                                                        <ul class="nested">
+                                                                        <ul class="nested @activeflag">
                                                                             @{
                                                                                 foreach (var person in phongBanP)
                                                                                 {
@@ -376,7 +381,7 @@ into b
                                                                                         var countBp = bophan.items.Count;
                                                                                         <li>
                                                                                             <span class="caret text-uppercase">@bophan.BoPhanName <small class="badge badge-secondary">@countBp</small></span>
-                                                                                            <ul class="nested">
+                                                                                            <ul class="nested @activeflag">
                                                                                                 @{
                                                                                                     var bophanP = bophan.items.Where(m => m.BoPhan == bophan.BoPhanId).ToList();
                                                                                                     foreach (var person in bophanP)
@@ -402,6 +407,20 @@ into b
                                         </li>
                                     }
                                 }
+                        <li>
+                            @{ 
+                                var unfineP = employees.Where(m => m.PhongBanName != "Ban lãnh đạo" && string.IsNullOrEmpty(m.KhoiChucNang)).ToList();
+                                var countUnDefine = unfineP.Count;
+
+                            }
+                            <span class="caret caret-down text-uppercase">TƯ VẤN & HỖ TRỢ <small class="badge badge-secondary">@countUnDefine</small></span>
+                            <ul class="nested active">
+                                @foreach (var person in unfineP)
+                                {
+                                    <li>@Html.Partial("Common/_PersonPartial.cshtml", person)</li>
+                                }
+                            </ul>
+                        </li>
                             }
                         </ul>
                     </div>

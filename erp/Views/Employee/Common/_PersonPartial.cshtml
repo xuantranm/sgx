@@ -20,7 +20,7 @@
         <div class="media">
             <img class="avatar avatar-square avatar-lg" src="@srcAvatar" alt="@person.FullName" />
             <div class="media-body">
-                <div class="row">
+                <div class="row mb-2">
                     <div class="col-12">
                         <div class="float-left">
                             <div class="dropdown">
@@ -50,6 +50,8 @@
                             <span class="badge badge-danger">@person.ChucVuName</span>
                         </div>
                     </div>
+                </div>
+                <div class="row mb-2">
                     <div class="col-12">
                         @if (!string.IsNullOrEmpty(person.Email))
                         {
@@ -57,46 +59,55 @@
                                 <a href="mailto:@person.Email" target="_top"><i class="fas fa-envelope"></i> @person.Email</a>
                             </div>
                         }
-                        <div class="float-left">
-                            <i class="icon-cake mr-1"></i> Ngày sinh
-                            @if (person.Birthday.Year <= 1900)
+                        @if (person.Mobiles != null && person.Mobiles.Count > 0)
+                        {
+                            foreach (var item in person.Mobiles)
                             {
-                                <span>Đang cập nhật</span>
-                                <span class="badge badge-indicator badge-danger">&nbsp;</span>
+                                if (!string.IsNullOrEmpty(item.Number))
+                                {
+                                    <div class="float-left mr-2">
+                                        <a href="tel:@item.Number"><i class="fas fa-phone"></i> @item.Number</a>
+                                    </div>
+                                }
                             }
-                            else
-                            {
+                        }
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-12">
+                        @if (person.Birthday.Year > 1900)
+                        {
+                            <div class="float-left mr-2">
+                                <i class="icon-cake mr-1"></i> Ngày sinh
                                 <span>@person.Birthday.ToString("dd/MM/yyyy")</span>
                                 <span class="badge badge-indicator badge-success">&nbsp;</span>
-                            }
-                        </div>
-                        <div class="float-left ml-2">
-                            <i class="icon-time-slot mr-1"></i>
-                            @if (person.Joinday.Year <= 1900)
-                            {
-                                <span>Ngày làm việc: </span><span class="badge badge-indicator badge-danger">&nbsp;</span>
-                            }
-                            else
-                            {
+                            </div>
+                        }
+                        @if (person.Joinday.Year > 1900)
+                        {
+                            <div class="float-left">
+                                <i class="icon-time-slot mr-1"></i>
                                 <span>Ngày làm việc: @person.Joinday.ToString("dd/MM/yyyy")</span>
-                            }
-                        </div>
+                            </div>
+                        }
                     </div>
+                </div>
+                <div class="row">
                     @if (person.Workplaces != null && person.Workplaces.Count > 0)
                     {
                         <div class="col-12">
-                            <div class="float-left">
-                                @foreach (var workplace in person.Workplaces)
+                            @foreach (var workplace in person.Workplaces)
+                            {
+                                if (!string.IsNullOrEmpty(workplace.Fingerprint))
                                 {
-                                    if (!string.IsNullOrEmpty(workplace.Fingerprint))
-                                    {
+                                    <div class="float-left mr-2">
                                         <i class="icon-location mr-1"></i>
                                         <span>@workplace.Name</span>
                                         <i class="icon-fingerprint mr-1"></i> @workplace.Fingerprint
                                         <i class="fas fa-clock"></i> @workplace.WorkingScheduleTime
-                                    }
+                                    </div>
                                 }
-                            </div>
+                            }
                         </div>
                     }
                 </div>

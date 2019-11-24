@@ -15,9 +15,13 @@
     {
         isMonth = true;
     }
+    var eKhoichucnang = (int)ECategory.KhoiChucNang;
+    var ePhongban = (int)ECategory.PhongBan;
 }
 
 <div class="main-container">
+    <input value="@eKhoichucnang" type="hidden" class="ekhoichucnang-val-hide" />
+    <input value="@ePhongban" type="hidden" class="ephongban-val-hide" />
     <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
         <div class="container">
             <div class="row justify-content-center">
@@ -55,18 +59,8 @@
                 }
                 <div class="form-group row">
                     <div class="col-md-4 col-sm-6 col-12">
-                        <label class="control-label">Nơi làm việc</label>
-                        <select asp-for="Nl" class="form-control ddlNl">
-                            <option value="">Tất cả</option>
-                            @foreach (var congtychinhanh in Model.CongTyChiNhanhs)
-                            {
-                                <option value="@congtychinhanh.Id">@congtychinhanh.Name</option>
-                            }
-                        </select>
-                    </div>
-                    <div class="col-md-4 col-sm-6 col-12">
                         <label class="control-label">Khối chức năng:</label>
-                        <select asp-for="Kcn" class="form-control ddlKcn">
+                        <select asp-for="Kcn" class="form-control ddlkhoichucnang">
                             <option value="">Tất cả</option>
                             @foreach (var item in Model.KhoiChucNangs)
                             {
@@ -76,7 +70,7 @@
                     </div>
                     <div class="col-md-4 col-sm-6 col-12">
                         <label class="control-label">Phòng ban:</label>
-                        <select asp-for="Pb" class="form-control ddlPb">
+                        <select asp-for="Pb" class="form-control ddlphongban" onchange="formSubmit();">
                             <option value="">Tất cả</option>
                             @foreach (var item in Model.PhongBans)
                             {
@@ -86,7 +80,7 @@
                     </div>
                     <div class="col-md-4 col-sm-6 col-12">
                         <label class="control-label">Bộ phận:</label>
-                        <select asp-for="Bp" class="form-control ddlBp">
+                        <select asp-for="Bp" class="form-control" onchange="formSubmit();">
                             <option value="">Tất cả</option>
                             @foreach (var item in Model.BoPhans)
                             {
@@ -97,7 +91,7 @@
                     <div class="col-md-4 col-sm-6 col-12">
                         <div class="form-group select2-sm-container">
                             <label class="control-label">Nhân viên</label>
-                            <select asp-for="Id" class="form-control js-select2-basic-single ddlEmployeeId">
+                            <select asp-for="Id" class="form-control js-select2-basic-single" onchange="formSubmit();">
                                 <option value="">Tất cả</option>
                                 @foreach (var employee in Model.Employees)
                                 {
@@ -108,7 +102,7 @@
                                     }
                                     if (employee.Leave)
                                     {
-                                         displayTitle += " (đã nghỉ, còn công)";
+                                        displayTitle += " (đã nghỉ, còn công)";
                                     }
                                     <option value="@employee.Id">@employee.FullName @displayTitle</option>
                                 }
@@ -123,7 +117,7 @@
                     </div>
                     <div class="col-md-4 col-sm-6 col-12">
                         <label class="control-label">Tháng:</label>
-                        <select asp-for="Thang" class="form-control custom-select ddl-times">
+                        <select asp-for="Thang" class="form-control custom-select ddl-times" onchange="formSubmit();">
                             @foreach (var item in Model.MonthYears)
                             {
                                 <option value="@item.Month-@item.Year">@item.Month/@item.Year</option>
@@ -258,15 +252,8 @@
                                                         }
                                                     case (int)EStatusWork.DaGuiXacNhan:
                                                         {
-                                                            //if (isMonth)
-                                                            //{
-                                                            //    isMiss = true;
-                                                            //}
-                                                            //else
-                                                            //{
                                                             item.WorkDay = 1;
                                                             ngayCongNT++;
-                                                            //}
                                                             break;
                                                         }
                                                     case (int)EStatusWork.DongY:
