@@ -24,6 +24,32 @@
 
     //tangca = new AutoNumeric('.form-control-tang-ca', { decimalPlaces: 2 });
 
+    $('.btn-edit-overtime').on('click', function () {
+        var parentId = $(this).data('parentid');
+        $('.edit-overtime-' + parentId).removeClass('d-none');
+    });
+
+    $('.btn-xac-nhan-overtime').on('click', function () {
+        var parentId = $(this).data('parentid');
+        event.preventDefault();
+        //grab all form data  
+        var formData = $('.form-' + parentId).find('select, textarea, input').serialize();
+        console.log(formData);
+        //// loading button
+        $(this).prop('disabled', true);
+        $('.form-' + parentId).find('select, textarea, input').prop('disabled', true);
+        var loadingText = '<i class="fas fa-spinner"></i> đang xử lý...';
+        $(this).html(loadingText);
+        $.ajax({
+            type: 'post',
+            url: 'tang-ca/hr-xac-nhan',
+            data: formData,
+            success: function (data) {
+                formSubmit();
+            }
+        });
+    });
+
     $('.xac-nhan-tang-ca-form').on("submit", function (event) {
         event.preventDefault();
         //grab all form data  

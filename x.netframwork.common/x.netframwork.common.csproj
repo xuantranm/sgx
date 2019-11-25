@@ -84,6 +84,7 @@
     <Compile Include="Models\Extensions\Extension.cs" />
     <Compile Include="Models\Extensions\IdName.cs" />
     <Compile Include="Models\Extensions\Img.cs" />
+    <Compile Include="Models\Extensions\Property.cs" />
     <Compile Include="Models\Extensions\Seo.cs" />
     <Compile Include="Models\Extensions\Tracking.cs" />
     <Compile Include="Models\Factories\FactoryCongViec.cs" />

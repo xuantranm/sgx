@@ -33,6 +33,8 @@ namespace Models
         [BsonRepresentation(BsonType.Decimal128)]
         public decimal LeaveLevelYear { get; set; } = 12;
 
+        public IList<Property> Properties { get; set; }
+
         public string FullName { get; set; }
 
         public string AliasFullName { get; set; }

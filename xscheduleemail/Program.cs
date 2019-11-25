@@ -23,8 +23,8 @@ namespace xscheduleemail
             var mode = Convert.ToInt32(ConfigurationSettings.AppSettings.Get("mode").ToString());
             var isMail = ConfigurationSettings.AppSettings.Get("isMail").ToString() == "true" ? true : false;
             var debug = ConfigurationSettings.AppSettings.Get("debug").ToString();
-            var connection = "mongodb://localhost:27017";
-            var database = "tribat";
+            var connection = ConfigurationSettings.AppSettings.Get("connection").ToString();
+            var database = ConfigurationSettings.AppSettings.Get("database").ToString(); ;
             #endregion
 
             Console.WriteLine("Start send mail...");

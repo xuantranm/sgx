@@ -38,6 +38,14 @@ namespace Data
             }
         }
 
+        public IMongoCollection<Property> Properties
+        {
+            get
+            {
+                return _database.GetCollection<Property>("Properties");
+            }
+        }
+
         public IMongoCollection<Category> Categories
         {
             get

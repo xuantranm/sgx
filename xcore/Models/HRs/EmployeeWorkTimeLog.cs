@@ -77,10 +77,14 @@ namespace Models
         // Giờ tăng ca thực tế
         public TimeSpan TangCaThucTe { get; set; }
 
+        public double OtThucTeD { get; set; }
+
         public int StatusTangCa { get; set; } = (int)ETangCa.None;
 
         // Sau khi xác nhận
         public TimeSpan TangCaDaXacNhan { get; set; }
+
+        public double OtXacNhanD { get; set; }
 
         public int Status { get; set; } = (int)EStatusWork.DuCong;
 
@@ -149,6 +153,5 @@ namespace Models
         public int StatusLate { get; set; } = (int)EStatusWork.DuCong;
         public int StatusEarly { get; set; } = (int)EStatusWork.DuCong;
         #endregion
-
     }
 }

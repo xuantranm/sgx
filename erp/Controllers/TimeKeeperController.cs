@@ -1720,6 +1720,32 @@ namespace Controllers
             memory.Position = 0;
             return File(memory, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", sFileName);
         }
+
+        [Route(Constants.LinkTimeKeeper.Overtime + "/hr-xac-nhan")]
+        [HttpPost]
+        public IActionResult XacNhanOT(TimeKeeperViewModel viewModel)
+        {
+            try
+            {
+                foreach (var item in viewModel.EmployeeWorkTimeLogs)
+                {
+                    var otTimespan = TimeSpan.FromHours(item.OtXacNhanD);
+                    var filter = Builders<EmployeeWorkTimeLog>.Filter.Eq(m => m.Id, item.Id);
+                    var update = Builders<EmployeeWorkTimeLog>.Update
+                        .Set(m => m.OtXacNhanD, item.OtXacNhanD)
+                        .Set(m => m.TangCaDaXacNhan, otTimespan)
+                        .Set(m => m.StatusTangCa, (int)ETangCa.DongY)
+                        .Set(m => m.UpdatedOn, DateTime.Now);
+                    dbContext.EmployeeWorkTimeLogs.UpdateOne(filter, update);
+                }
+                return Json(new { result = true, message = Constants.Texts.Success });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { result = false, message = "Lỗi: " + ex.Message });
+            }
+        }
+
         #endregion
 
         #region TANG CA

@@ -14,6 +14,6 @@ namespace ViewModels
         public int? Type { get; set; }
 
         // Merge add/edit. If edit set value into property
-        public IList<Setting> Properties { get; set; }
+        public IList<Property> Properties { get; set; }
     }
 }

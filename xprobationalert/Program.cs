@@ -22,8 +22,8 @@ namespace xprobationalert
         {
             #region setting
             var debug = ConfigurationSettings.AppSettings.Get("debugString").ToString();
-            var connection = "mongodb://localhost:27017";
-            var database = "tribat";
+            var connection = ConfigurationSettings.AppSettings.Get("connection").ToString();
+            var database = ConfigurationSettings.AppSettings.Get("database").ToString();
             #endregion
 
             AlertProbation(connection, database, debug);

@@ -35,6 +35,6 @@ namespace Models
 
         public IList<ContentIn> Contents { get; set; }
 
-        public IList<Setting> Properties { get; set; }
+        public IList<Property> Properties { get; set; }
     }
 }

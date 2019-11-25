@@ -469,6 +469,7 @@ namespace xtime
                             
                             employeeWorkTimeLog.WorkTime = workTime;
                             employeeWorkTimeLog.TangCaThucTe = overTime;
+                            employeeWorkTimeLog.OtThucTeD = overTime.TotalHours;
                             employeeWorkTimeLog.WorkDay = workDay;
                             employeeWorkTimeLog.Late = late;
                             employeeWorkTimeLog.Early = early;
@@ -516,6 +517,7 @@ namespace xtime
                                     .Set(m => m.SoNgayNghi, employeeWorkTimeLog.SoNgayNghi)
                                     .Set(m => m.StatusTangCa, employeeWorkTimeLog.StatusTangCa)
                                     .Set(m => m.TangCaThucTe, employeeWorkTimeLog.TangCaThucTe)
+                                    .Set(m => m.OtThucTeD, employeeWorkTimeLog.OtThucTeD)
                                     .Set(m => m.Reason, employeeWorkTimeLog.Reason)
                                     .Set(m => m.UpdatedOn, DateTime.Now);
                                 dbContext.EmployeeWorkTimeLogs.UpdateOne(filter, update);

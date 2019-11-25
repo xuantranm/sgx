@@ -704,7 +704,8 @@ namespace Controllers
                                 .Set(m => m.SalaryChucVuViTriCode, entity.SalaryChucVuViTriCode)
                                 .Set(m => m.SaleChucVu, entity.SaleChucVu)
                                 .Set(m => m.LogisticChucVu, entity.LogisticChucVu)
-                                .Set(m => m.Images, entity.Images);
+                                .Set(m => m.Images, entity.Images)
+                                .Set(m => m.Properties, entity.Properties);
 
                             dbContext.Employees.UpdateOne(filter, update);
                         }

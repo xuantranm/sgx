@@ -522,40 +522,58 @@
                             <div class="col-12">
                                 @{
                                     var iF = 0;
-                                    <div class="row">
-                                        <div class="form-group col-md-1 col-sm-6 col-xs-12">
-                                            <label class="control-label">
-                                                Chấm công
-                                            </label>
-                                            <input type="checkbox" @checkTimeKeeper class="form-control form-control-lg big-checkbox chkOfficial" id="check-timekeeper" />
-                                            <input type="hidden" mame="Employee.IsTimeKeeper" value="@employee.IsTimeKeeper.ToString().ToLower()" />
-                                        </div>
-                                        @foreach (var item in employee.Workplaces)
-                                        {
-                                            <div class="time-working col-md-5 col-sm-12 node-@item.Code @dnoneTime">
-                                                <div class="row">
-                                                    <input type="hidden" name="Employee.Workplaces[@iF].Code" value="@item.Code" />
-                                                    <input type="hidden" name="Employee.Workplaces[@iF].Name" value="@item.Name" />
-                                                    <div class="form-group col-sm-4 col-xs-12">
-                                                        <label class="control-label">
-                                                            Mã chấm công <span class="badge badge-primary text-uppercase">@item.Code</span>
-                                                        </label>
-                                                        <input name="Employee.Workplaces[@iF].Fingerprint" value="@item.Fingerprint" class="form-control form-control-lg" />
-                                                    </div>
-                                                    <div class="form-group col-sm-7 col-xs-12">
-                                                        <label class="control-label">Thời gian làm việc</label>
-                                                        <select name="Employee.Workplaces[@iF].WorkingScheduleTime" class="form-control form-control-lg">
-                                                            @foreach (var time in Model.WorkTimeTypes)
-                                                            {
-                                                                <option value="@time.Name">@time.Name</option>
-                                                            }
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            iF++;
-                                        }
-                                    </div>
+                                                                <div class="row">
+                                                                    <div class="form-group col-md-1 col-sm-6 col-xs-12">
+                                                                        <label class="control-label">
+                                                                            Chấm công
+                                                                        </label>
+                                                                        <input type="checkbox" @checkTimeKeeper class="form-control form-control-lg big-checkbox chkOfficial" id="check-timekeeper" />
+                                                                        <input type="hidden" mame="Employee.IsTimeKeeper" value="@employee.IsTimeKeeper.ToString().ToLower()" />
+                                                                    </div>
+                                                                    <div class="form-group col-md-1 col-sm-6 col-xs-12">
+                                                                        <small class="control-label">
+                                                                            Vô trước (giờ)
+                                                                        </small>
+                                                                        @{
+                                                                            var propertyWorkTime = 0;
+                                                                            if (employee.Properties != null && employee.Properties.Count > 0)
+                                                                            {
+                                                                                var propertyWorkTimeE = employee.Properties.Where(m => m.Key == "work-time-before").FirstOrDefault();
+                                                                                if (propertyWorkTimeE != null)
+                                                                                {
+                                                                                    propertyWorkTime = Convert.ToInt32(propertyWorkTimeE.Value);
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                        <input name="Employee.Properties[0].Value" value="@propertyWorkTime" class="form-control form-control-lg" />
+                                                                        <input type="hidden" name="Employee.Properties[0].Key" value="work-time-before" class="form-control form-control-lg" />
+                                                                    </div>
+                                                                    @foreach (var item in employee.Workplaces)
+                                                                    {
+                                                                        <div class="time-working col-md-5 col-sm-12 node-@item.Code @dnoneTime">
+                                                                            <div class="row">
+                                                                                <input type="hidden" name="Employee.Workplaces[@iF].Code" value="@item.Code" />
+                                                                                <input type="hidden" name="Employee.Workplaces[@iF].Name" value="@item.Name" />
+                                                                                <div class="form-group col-sm-4 col-xs-12">
+                                                                                    <label class="control-label">
+                                                                                        Mã chấm công <span class="badge badge-primary text-uppercase">@item.Code</span>
+                                                                                    </label>
+                                                                                    <input name="Employee.Workplaces[@iF].Fingerprint" value="@item.Fingerprint" class="form-control form-control-lg" />
+                                                                                </div>
+                                                                                <div class="form-group col-sm-7 col-xs-12">
+                                                                                    <label class="control-label">Thời gian làm việc</label>
+                                                                                    <select name="Employee.Workplaces[@iF].WorkingScheduleTime" class="form-control form-control-lg">
+                                                                                        @foreach (var time in Model.WorkTimeTypes)
+                                                                                        {
+                                                                                            <option value="@time.Name">@time.Name</option>
+                                                                                        }
+                                                                                    </select>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                        iF++;
+                                                                    }
+                                                                </div>
                                 }
                             </div>
                         </div>

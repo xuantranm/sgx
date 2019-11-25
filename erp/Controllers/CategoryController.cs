@@ -119,7 +119,7 @@ namespace Controllers
             }
             #endregion
 
-            var properties = dbContext.Settings.Find(m => m.Type.Equals((int)EData.Property) && m.Enable.Equals(true)).ToList();
+            var properties = dbContext.Properties.Find(m => m.Type.Equals((int)EData.Property) && m.Enable.Equals(true)).ToList();
 
             var categoryE = new Category();
 

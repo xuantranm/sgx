@@ -74,7 +74,11 @@ namespace Models
 
         // Sau khi xác nhận
         public TimeSpan TangCaDaXacNhan { get; set; }
-        
+
+        public double OtThucTeD { get; set; }
+
+        public double OtXacNhanD { get; set; }
+
         public int Status { get; set; } = (int)EStatusWork.DuCong;
 
         // Save History

@@ -27,8 +27,8 @@ namespace xmailtimer
             #region setting
             var location = ConfigurationSettings.AppSettings.Get("location").ToString();
             var debug = ConfigurationSettings.AppSettings.Get("debugString").ToString();
-            var connection = "mongodb://localhost:27017";
-            var database = "tribat";
+            var connection = ConfigurationSettings.AppSettings.Get("connection").ToString();
+            var database = ConfigurationSettings.AppSettings.Get("database").ToString();
             #endregion
 
             SendTimeKeeper(location, connection, database, debug);
@@ -45,8 +45,8 @@ namespace xmailtimer
             #endregion
 
             var congtychinhanhs = dbContext.Categories.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)ECategory.Company)).ToList();
-            var vanPhong = congtychinhanhs.Where(m => m.Code.Equals("VP")).FirstOrDefault();
-            var nhaMay = congtychinhanhs.Where(m => m.Code.Equals("NM")).FirstOrDefault();
+            var vanPhong = congtychinhanhs.Where(m => m.CodeInt.Equals(1)).FirstOrDefault();
+            var nhaMay = congtychinhanhs.Where(m => m.CodeInt.Equals(2)).FirstOrDefault();
 
             #region Times : 26 run
             var today = DateTime.Now;
@@ -59,12 +59,12 @@ namespace xmailtimer
             var builder = Builders<Employee>.Filter;
             var filter = !builder.Eq(i => i.UserName, Constants.System.account)
                         & builder.Eq(m => m.Enable, true) & builder.Eq(m => m.IsOnline, true)
-                        & builder.Eq(m => m.IsTimeKeeper, false);
-            if (!string.IsNullOrEmpty(location))
-            {
-                var locationId = location == "NM" ? nhaMay.Id : vanPhong.Id;
-                filter &= builder.Eq(m => m.CongTyChiNhanh, locationId);
-            }
+                        & builder.Eq(m => m.IsTimeKeeper, true);
+            //if (!string.IsNullOrEmpty(location))
+            //{
+            //    var locationId = location == "1" ? vanPhong.Id : nhaMay.Id;
+            //    filter &= builder.Eq(m => m.CongTyChiNhanh, locationId);
+            //}
             if (!string.IsNullOrEmpty(debug))
             {
                 filter &= builder.Eq(m => m.Id, debug);

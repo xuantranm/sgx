@@ -100,6 +100,25 @@
         Holiday = 60
     }
 
+    public enum EData
+    {
+        System = 1,
+        Hcns = 2,
+        Salary = 3,
+        Setting = 4,
+        Content = 5,
+        Property = 6
+    }
+
+    public enum EValueType
+    {
+        String = 1,
+        Interger = 2,
+        Double = 3,
+        Decimal = 4,
+        Bool = 5
+    }
+
     public enum ESetting
     {
         System = 1,

@@ -11,7 +11,7 @@ namespace ViewModels
 
         public IList<Category> Categories { get; set; }
 
-        public IList<Setting> Properties { get; set; }
+        public IList<Property> Properties { get; set; }
 
         public IList<CategoryDisplay> CategoriesDisplay { get; set; }
 

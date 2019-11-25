@@ -8,6 +8,7 @@ using MongoDB.Driver;
 using Services;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -19,16 +20,12 @@ namespace xbirthday
     {
         static void Main(string[] args)
         {
-            SendMailBirthday();
-        }
-
-        static void SendMailBirthday()
-        {
             #region Connection
             //var connectString = "mongodb://192.168.2.223:27017";
-            var connectString = "mongodb://localhost:27017";
-            MongoDBContext.ConnectionString = connectString;
-            MongoDBContext.DatabaseName = "tribat";
+            var connection = ConfigurationSettings.AppSettings.Get("connection").ToString();
+            var database = ConfigurationSettings.AppSettings.Get("database").ToString();
+            MongoDBContext.ConnectionString = connection;
+            MongoDBContext.DatabaseName = database;
             MongoDBContext.IsSSL = true;
             MongoDBContext dbContext = new MongoDBContext();
             #endregion

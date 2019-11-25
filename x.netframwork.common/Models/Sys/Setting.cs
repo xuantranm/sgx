@@ -16,7 +16,7 @@ namespace Models
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
 
-        public int Type { get; set; } = (int)ESetting.System;
+        public int Type { get; set; } = (int)EData.System;
 
         public string Key { get; set; }
 
