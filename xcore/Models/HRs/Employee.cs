@@ -290,12 +290,12 @@ namespace Models
         #region SALARIES
         public int SalaryType { get; set; } = (int)EKhoiLamViec.VP;
 
-        [BsonRepresentation(BsonType.Decimal128)]
-        public decimal LuongBHXH { get; set; } = 0;
+        public string NgachLuongCode { get; set; } // Ma so
 
         public int NgachLuongLevel { get; set; } = 1; // bậc lương thang bang luong
 
-        public string NgachLuongCode { get; set; } // Ma so
+        [BsonRepresentation(BsonType.Decimal128)]
+        public decimal LuongBHXH { get; set; } = 0;
 
         public double ThamSoTinhLuong { get; set; } = 26; // bv:27
 
@@ -310,21 +310,17 @@ namespace Models
         // Update on future: 0: hand, 1: bank
         public int SalaryPayMethod { get; set; } = 0;
 
+        public string SaleChucVu { get; set; }
+
+        public string LogisticChucVu { get; set; }
+
+        public PhuCapPhucLoi PhuCapPhucLoi { get; set; }
 
         public string SalaryChucVu { get; set; } // Don't use
 
         public string SalaryChucVuViTriCode { get; set; } // Don't use
-        #endregion
 
-        #region SALES
-        public string SaleChucVu { get; set; }
         #endregion
-
-        #region LOGISTICS
-        public string LogisticChucVu { get; set; }
-        #endregion
-
-        public PhuCapPhucLoi PhuCapPhucLoi { get; set; }
 
         #region Get
         public int Age

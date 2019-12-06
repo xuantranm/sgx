@@ -22,8 +22,6 @@
         );
     });
 
-    //tangca = new AutoNumeric('.form-control-tang-ca', { decimalPlaces: 2 });
-
     $('.btn-edit-overtime').on('click', function () {
         var parentId = $(this).data('parentid');
         $('.edit-overtime-' + parentId).removeClass('d-none');

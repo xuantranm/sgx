@@ -4,10 +4,8 @@ using Data;
 using MimeKit;
 using Models;
 using MongoDB.Driver;
-using Services;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Configuration;
@@ -72,6 +70,24 @@ namespace xtime
                 attlogs = modeData ? dbContext.X628CVPAttLogs.Find(m => true).ToList() : dbContext.X628CVPAttLogs.Find(filter).ToList();
             }
 
+            // DEBUG FOR TESTING
+            attlogs = new List<AttLog>
+            {
+                new AttLog()
+                {
+                    EnrollNumber = "259",
+                    Workcode ="NM",
+                    Date = new DateTime(2019,11,26,7,30,0)
+                },
+                new AttLog()
+                {
+                    EnrollNumber = "259",
+                    Workcode ="NM",
+                    Date = new DateTime(2019,11,27,4,0,0)
+                }
+            };
+            // DEBUG 
+
             Proccess(dbContext, location, modeData, isMail, attlogs, monthConfig, debug);
         }
 
@@ -93,21 +109,31 @@ namespace xtime
                 startDate = startDate.AddMonths(monthConfig);
             }
 
-            var startWorkingScheduleTime = new TimeSpan(7, 30, 0);
-            var endWorkingScheduleTime = new TimeSpan(16, 30, 0);
-            #endregion
+            // FIX ASAP
+            var hrVP = dbContext.Employees.Find(m => m.Id.Equals("5b6bb22fe73a301f941c5887")).FirstOrDefault();
+            var hrNM = dbContext.Employees.Find(m => m.Id.Equals("5d6ddce1d529b01868a6650a")).FirstOrDefault();
+            var hrs = new List<Employee>
+            {
+                hrVP,
+                hrNM
+            };
+
+            var shifts = Utility.GetShift();
 
             var holidays = dbContext.Holidays.Find(m => m.Enable.Equals(true)).ToEnumerable().Where(m => m.Year.Equals(DateTime.Now.Year)).ToList();
 
             var leaveTypes = dbContext.LeaveTypes.Find(m => m.Enable.Equals(true) && m.Display.Equals(true)).ToList();
+            #endregion
+            // TEMP
+            var startWorkingScheduleTime = new TimeSpan(7, 30, 0);
+            var endWorkingScheduleTime = new TimeSpan(16, 30, 0);
 
             var times = (from p in attlogs
                          group p by new
                          {
                              p.EnrollNumber,
                              p.Date.Date
-                         }
-                              into d
+                         } into d
                          select new
                          {
                              d.Key.Date,
@@ -125,17 +151,6 @@ namespace xtime
                 employees = dbContext.Employees.Find(m => m.Workplaces.Any(w => w.Code.Equals(location) && w.Fingerprint.Equals(debug))).ToList();
             }
 
-            // FUTURE SET CAP BAC. QUÉT HẾT CHỪA BGĐ ...
-            //var hrVP = Utility.GetApprove(Constants.Rights.NhanSuVP, (int)ERights.Edit).FirstOrDefault();
-            //var hrNM = Utility.GetApprove(Constants.Rights.NhanSuNM, (int)ERights.Edit).FirstOrDefault();
-            // FIX ASAP
-            var hrVP = dbContext.Employees.Find(m => m.Id.Equals("5b6bb22fe73a301f941c5887")).FirstOrDefault();
-            var hrNM = dbContext.Employees.Find(m => m.Id.Equals("5d6ddce1d529b01868a6650a")).FirstOrDefault();
-            var hrs = new List<Employee>
-            {
-                hrVP,
-                hrNM
-            };
             foreach (var employee in employees)
             {
                 #region Employee Information
@@ -148,11 +163,13 @@ namespace xtime
                 var employeeId = employee.Id;
                 var employeeFinger = employeeLocation.Fingerprint;
                 var fingerInt = employeeFinger != null ? Convert.ToInt32(employeeFinger) : 0;
+
                 if (!string.IsNullOrEmpty(employeeLocation.WorkingScheduleTime))
                 {
                     startWorkingScheduleTime = TimeSpan.Parse(employeeLocation.WorkingScheduleTime.Split('-')[0].Trim());
                     endWorkingScheduleTime = TimeSpan.Parse(employeeLocation.WorkingScheduleTime.Split('-')[1].Trim());
                 }
+
                 var email = employee.Email;
                 var fullName = employee.FullName;
                 var phone = string.Empty;
@@ -169,16 +186,15 @@ namespace xtime
 
                 var flagDate = startDate;
 
-                #region PROCESS
+                //#region PROCESS
                 while (flagDate <= endDate)
                 {
-                    Console.WriteLine("Date: " + flagDate);
                     int year = flagDate.Day > 25 ? flagDate.AddMonths(1).Year : flagDate.Year;
                     int month = flagDate.Day > 25 ? flagDate.AddMonths(1).Month : flagDate.Month;
                     var endDateMonth = new DateTime(year, month, 25);
                     var startDateMonth = endDateMonth.AddMonths(-1).AddDays(1);
 
-                    var timekeepings = times.Where(m => m.groupCode.Equals(fingerInt.ToString()) 
+                    var timekeepings = times.Where(m => m.groupCode.Equals(fingerInt.ToString())
                                     && m.Date >= startDateMonth && m.Date <= endDateMonth)
                                     .OrderBy(m => m.Date).ToList();
                     for (DateTime date = startDateMonth; date <= endDateMonth; date = date.AddDays(1))
@@ -212,18 +228,11 @@ namespace xtime
                                 Month = month,
                                 Date = date,
                                 Workcode = employee.SalaryType,
-                                Start = startWorkingScheduleTime,
-                                End = endWorkingScheduleTime,
+                                //Start = startWorkingScheduleTime,
+                                //End = endWorkingScheduleTime,
                                 Mode = (int)ETimeWork.Normal
                             };
                         }
-
-                        //// debug
-                        //if (date == new DateTime(2019, 7, 19))
-                        //{
-                        //    var dd = "here";
-                        //}
-                        ////end
 
                         #region HOLIDAY & LEAVES
                         var holiday = holidays.Where(m => m.Date.Equals(date)).FirstOrDefault();
@@ -263,10 +272,6 @@ namespace xtime
                                 {
                                     employeeWorkTimeLog.Mode = (int)ETimeWork.LeaveHuongLuong;
                                 }
-                                else if (leaveType.Alias == "nghi-bu")
-                                {
-                                    // do later
-                                }
                             }
 
                             employeeWorkTimeLog.SoNgayNghi = 1;
@@ -278,7 +283,7 @@ namespace xtime
                                 if (date == dateL.Date)
                                 {
                                     var leaveTimeSpan = TimeSpan.FromHours(8);
-                                    
+
                                     leaveTimeSpan = endWorkingScheduleTime - dateL.TimeOfDay;
                                     // check 0.5
                                     if (leaveTimeSpan.TotalHours > 5 && leaveTo.Date == dateL.Date)
@@ -317,17 +322,13 @@ namespace xtime
                             #region Procees Times
                             var inLogTime = records.First().TimeOnlyRecord;
                             var outLogTime = records.Last().TimeOnlyRecord;
+                            // ANALYTICS SHIFTS
+                            // 07:00 - 16:00
+                            // 07:30 - 16:30
+                            // 08:00 - 17:00
+                            // 19:00 - 03:00
 
-                            // PROCESS................
-                            // Phan tich thoi gian lam viec
-                            // 1. 7:30-16:30 - 08:00 - 17:00
-                            // 2. Tang ca
-                            // 3. Ca 2 (vd: 19:00-04:00)
                             var workingArr = new int[] { employeeWorkTimeLog.Start.Hours, employeeWorkTimeLog.End.Hours };
-                            // phan tich
-                            // nhieu gio vo <12
-                            // nhieu gio sau > 13
-                            // 1 records...
                             var incheck = workingArr.ClosestTo(inLogTime.Hours);
                             var outcheck = workingArr.ClosestTo(outLogTime.Hours);
 
@@ -398,6 +399,7 @@ namespace xtime
                             }
                             else
                             {
+                                employeeWorkTimeLog.Status = (int)EStatusWork.DuCong;
                                 employeeWorkTimeLog.In = inLogTime;
                                 employeeWorkTimeLog.Out = outLogTime;
                                 workTime = (outLogTime - inLogTime) - lunch;
@@ -466,7 +468,7 @@ namespace xtime
                             }
                             employeeWorkTimeLog.VerifyMode = records[0].VerifyMode;
                             employeeWorkTimeLog.InOutMode = records[0].InOutMode;
-                            
+
                             employeeWorkTimeLog.WorkTime = workTime;
                             employeeWorkTimeLog.TangCaThucTe = overTime;
                             employeeWorkTimeLog.OtThucTeD = overTime.TotalHours;
@@ -486,7 +488,7 @@ namespace xtime
                         }
 
                         #region DB
-                        
+
                         if (string.IsNullOrEmpty(employeeWorkTimeLog.Id))
                         {
                             dbContext.EmployeeWorkTimeLogs.InsertOne(employeeWorkTimeLog);
@@ -619,27 +621,32 @@ namespace xtime
                                 }
                                 else
                                 {
+                                    var approveName = string.Empty;
                                     var tos = new List<EmailAddress>();
                                     // KO CO EMAIL
                                     // SEND QUAN LY TRUC TIEP, XAC NHAN => OK
                                     if (approveE != null && !string.IsNullOrEmpty(approveE.Email))
                                     {
-                                        tos.Add( new EmailAddress { Name = approveE.FullName, Address = approveE.Email });
+                                        approveName = approveE.FullName;
+                                        tos.Add(new EmailAddress { Name = approveE.FullName, Address = approveE.Email });
                                     }
                                     else
                                     {
-                                        if (location == "VP") {
+                                        if (location == "VP")
+                                        {
+                                            approveName = hrVP.FullName;
                                             tos.Add(new EmailAddress { Name = hrVP.FullName, Address = hrVP.Email });
                                         }
                                         else
                                         {
-                                            foreach(var hr in hrs)
+                                            foreach (var hr in hrs)
                                             {
+                                                approveName += string.IsNullOrEmpty(approveName) ? hr.FullName : ", " + hr.FullName;
                                                 tos.Add(new EmailAddress { Name = hr.FullName, Address = hr.Email });
                                             }
                                         }
                                     }
-                                    
+
                                     var webRoot = Environment.CurrentDirectory;
                                     var pathToFile = @"C:\Projects\App.Schedule\Templates\TimeKeeperRequest.html";
                                     var subject = "Hỗ trợ xác nhận công.";
@@ -696,7 +703,7 @@ namespace xtime
                                     }
                                     string messageBody = string.Format(bodyBuilder.HtmlBody,
                                         subject,
-                                        approveE.FullName,
+                                        approveName,
                                         requester,
                                         requester,
                                         "chưa khởi tạo email",
@@ -749,7 +756,6 @@ namespace xtime
 
                     flagDate = flagDate.AddMonths(1);
                 }
-                #endregion
             }
         }
 

@@ -1,0 +1,20 @@
+﻿@using Common.Utilities;
+@using Common.Enums;
+@{
+
+}
+    <form method="post" action="/@Constants.LinkSalary.BangLuong/@Constants.LinkSalary.VanPhong/@Constants.ActionLink.Import/" enctype="multipart/form-data">
+        <div class="row">
+            <div class="col-md-4">
+                <input type="file" name="files" class="form-control fUpload" />
+            </div>
+            <div class="col-md-8">
+                <input type="button" class="hidden btnUpload" value="Tải lên" />
+            </div>
+        </div>
+        <br />
+        <div class="progress">
+            <div class="progress-bar progress-bar-striped progress-bar-animated" style="width:0%"></div>
+        </div>
+        <div class="upload-result d-none"></div>
+    </form>

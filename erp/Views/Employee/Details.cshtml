@@ -27,11 +27,11 @@
     {
         var avatar = images.Where(m => m.Type.Equals(sizeValueAvatar)).FirstOrDefault();
         var cover = images.Where(m => m.Type.Equals(sizeValueCover)).FirstOrDefault();
-        if (avatar != null)
+        if (avatar != null && !string.IsNullOrEmpty(avatar.Path) && !string.IsNullOrEmpty(avatar.FileName))
         {
             avatarDisplay = "/" + System.IO.Path.Combine(avatar.Path, avatar.FileName).Replace("\\", "/");
         }
-        if (cover != null)
+        if (cover != null && !string.IsNullOrEmpty(cover.Path) && !string.IsNullOrEmpty(cover.FileName))
         {
             coverDisplay = "background-image: url('/" + System.IO.Path.Combine(avatar.Path, avatar.FileName).Replace("\\", "/") + "'); height:167px";
         }

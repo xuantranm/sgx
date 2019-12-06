@@ -29,6 +29,7 @@ namespace Models
         public string UpdatedBy { get; set; } = string.Empty;
         public string CheckedBy { get; set; } = string.Empty;
         public string ApprovedBy { get; set; } = string.Empty;
+
         #region SEO
         public string SeoTitle { get; set; }
         public string KeyWords { get; set; }

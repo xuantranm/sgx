@@ -1,6 +1,13 @@
 ﻿
 namespace Common.Enums
 {
+    public enum ESalary
+    {
+        VP = 1,
+        NM = 2,
+        SX = 3,
+        Law =4
+    }
     public enum EModeDirect
     {
         Content = 1,
@@ -81,7 +88,8 @@ namespace Common.Enums
         Bank = 19,
         Hospital = 20,
         Gender = 21,
-        Probation = 22
+        Probation = 22,
+        SalaryBase = 23
     }
 
     public enum EPropertyValue

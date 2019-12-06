@@ -1,0 +1,82 @@
+﻿@using Common.Utilities;
+@using Common.Enums;
+@{
+
+}
+
+<div class="row mb-3">
+    <a class="nav-link help-more collapsed" data-toggle="collapse" href="#helparea" aria-expanded="false" aria-controls="help">
+        <i class="fas fa-info-circle"></i> Hướng dẫn tạo bảng lương tháng.
+    </a>
+</div>
+
+<div id="helparea" class="col-12 collapse">
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="wizard">
+                <ul class="nav nav-tabs text-center row mb-5">
+                    <li class="col-3"><a href="#first" class="step-circle step-circle-sm">1</a></li>
+                    <li class="col-3"><a href="#second" class="step-circle step-circle-sm">2</a></li>
+                    <li class="col-3"><a href="#third" class="step-circle step-circle-sm">3</a></li>
+                    <li class="col-3"><a href="#fourth" class="step-circle step-circle-sm">4</a></li>
+                </ul><!--end of col-->
+                <div class="tab-content">
+                    <div id="first">
+                        <div class="row justify-content-around align-items-center">
+                            <div class="col-12">
+                                <div>
+                                    <h6 class="title-decorative mb-2">Bước 1.</h6>
+                                    <h4 class="mb-2">Chọn tháng tính lương của Logistics, Sales.</h4>
+                                    <p>Đường dẫn: <a href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Duration">Mốc thời gian Logistics/ Sales</a></p>
+                                </div>
+                                <button class="btn btn-success sw-btn-next" type="button">Bước tiếp theo</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="second">
+                        <div class="row justify-content-around align-items-center">
+                            <div class="col-12">
+                                <div>
+                                    <h6 class="title-decorative mb-2">Bước 2.</h6>
+                                    <h4 class="mb-2">Cập nhật dữ liệu của Logistics.</h4>
+                                    <p>Đường dẫn: <a href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.LogisticCong" target="_blank">Logistics</a></p>
+                                    <p>Bấm <code>Đẩy dữ liệu</code>. Sau đó thao tác: </p>
+                                    <p><code>Tải mẫu dữ liệu</code> với tháng dữ liệu tương ứng</p>
+                                    <p><code>Tải lên</code></p>
+                                </div>
+                                <button class="btn btn-success sw-btn-next" type="button">Bước tiếp theo</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="third">
+                        <div class="row justify-content-around align-items-center">
+                            <div class="col-12">
+                                <div>
+                                    <h6 class="title-decorative mb-2">Bước 3.</h6>
+                                    <h4 class="mb-2">Cập nhật dữ liệu: Sales.</h4>
+                                    <p>Đường dẫn: <a href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.SaleKPIEmployee" target="_blank">Sales</a></p>
+                                    <p>Bấm <code>Đẩy dữ liệu</code>. Sau đó thao tác: </p>
+                                    <p><code>Tải mẫu dữ liệu</code> với tháng dữ liệu tương ứng</p>
+                                    <p><code>Tải lên</code></p>
+                                </div>
+                                <button class="btn btn-success sw-btn-next" type="button">Bước tiếp theo</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="fourth">
+                        <div class="row justify-content-around align-items-center">
+                            <div class="col-12">
+                                <div>
+                                    <h6 class="title-decorative mb-2">Bước 4.</h6>
+                                    <h5 class="mb-2">Kiểm tra lại dữ liệu lương. </h5>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<hr />

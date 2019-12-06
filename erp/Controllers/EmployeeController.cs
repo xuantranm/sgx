@@ -321,6 +321,7 @@ namespace Controllers
             var managers = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && !string.IsNullOrEmpty(m.Email) && !string.IsNullOrEmpty(m.ChucVuName) && !m.UserName.Equals(Constants.System.account)).SortBy(m => m.ChucVuName).ToList();
             var genders = dbContext.Categories.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)ECategory.Gender)).ToList();
             var probations = dbContext.Categories.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)ECategory.Probation)).ToList();
+            var salaryBases = dbContext.Categories.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)ECategory.SalaryBase)).ToList();
             #endregion
 
             bool isEdit = false;
@@ -368,6 +369,31 @@ namespace Controllers
                 if (entity.Workplaces == null)
                 {
                     entity.Workplaces = workplaces;
+                }
+                else
+                {
+                    if (entity.Workplaces.Count < 2)
+                    {
+                        var wpNM = entity.Workplaces.Where(m => m.Code == "NM").FirstOrDefault();
+                        var wpNME = congtychinhanhs.Where(m => m.CodeInt == 2).FirstOrDefault();
+                        var wpVPE = congtychinhanhs.Where(m => m.CodeInt == 1).FirstOrDefault();
+                        if (wpNM != null)
+                        {
+                            entity.Workplaces.Add(new Workplace()
+                            {
+                                Code = wpVPE.Code,
+                                Name = wpVPE.Name
+                            });
+                        }
+                        else
+                        {
+                            entity.Workplaces.Add(new Workplace()
+                            {
+                                Code = wpNME.Code,
+                                Name = wpNME.Name
+                            });
+                        }
+                    }
                 }
 
                 employeeChanged = await dbContext.EmployeeHistories.Find(m => m.EmployeeId.Equals(id)).SortByDescending(m => m.UpdatedOn).Limit(1).FirstOrDefaultAsync();
@@ -432,6 +458,7 @@ namespace Controllers
                 Contracts = contracts,
                 Genders = genders,
                 Probations = probations,
+                SalaryBases = salaryBases,
                 WelcomeEmailGroup = welcomeGroup,
                 LeaveEmailGroup = leaveGroup
             };

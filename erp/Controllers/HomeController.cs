@@ -278,6 +278,44 @@ namespace Controllers
         public IActionResult Document(string type)
         {
             ViewData["Type"] = type;
+            if (type == "update-category-23")
+            {
+                dbContext.Categories.DeleteMany(m => m.Type.Equals((int)ECategory.SalaryBase));
+                var list = new List<NameValue>
+                {
+                    new NameValue()
+                    {
+                        Name = "VP",
+                        Value = EKhoiLamViec.VP.ToString()
+                    },
+                    new NameValue()
+                    {
+                        Name = "NM",
+                        Value = EKhoiLamViec.NM.ToString()
+                    },
+                    new NameValue()
+                    {
+                        Name = "SX",
+                        Value = EKhoiLamViec.SX.ToString()
+                    }
+                };
+                var i = 1;
+                foreach (var item in list)
+                {
+                    dbContext.Categories.InsertOne(new Category()
+                    {
+                        Type = (int)ECategory.SalaryBase,
+                        Name = item.Name,
+                        Alias = Utility.AliasConvert(item.Name),
+                        Value = item.Value,
+                        Description = string.Empty,
+                        Code = i.ToString(),
+                        CodeInt = i
+                    });
+                    i++;
+                }
+            }
+
             if (type == "update-category-21")
             {
                 dbContext.Categories.DeleteMany(m => m.Type.Equals((int)ECategory.Gender));

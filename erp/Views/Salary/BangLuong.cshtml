@@ -3,232 +3,169 @@
 @using ViewModels;
 @model BangLuongViewModel
 @{
-    
+
     var login = User.Identity.Name;
     var loginUserName = User.Claims.Where(m => m.Type.Equals("UserName")).FirstOrDefault().Value;
+    var logisticDuration = Model.SalaryDuration.LogisticMonth + "/" + Model.SalaryDuration.LogisticYear;
+    var saleDuration = Model.SalaryDuration.SalaryMonth + "/" + Model.SalaryDuration.SalaryYear;
 }
 
-<div class="main-container">
-    <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
-        <div class="container-fluid">
-            <div class="row justify-content-center">
-                <div class="col">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item">
-                            <a href="/">Trang chủ</a>
-                        </li>
-                        <li class="breadcrumb-item active" aria-current="page">Bảng lương Văn phòng</li>
-                    </ol>
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <section class="flush-with-above space-0">
-        <div class="bg-white">
+    <div class="main-container">
+        <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
             <div class="container-fluid">
-                <div class="row">
+                <div class="row justify-content-center">
                     <div class="col">
-                        <ul class="nav nav-tabs" id="myTab" role="tablist">
-                            <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.VanPhong/@Constants.LinkSalary.ThangLuong">THANG LƯƠNG</a>
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">
+                                <a href="/">Trang chủ</a>
                             </li>
-                            <li class="nav-item">
-                                <a class="nav-link active" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.VanPhong/@Constants.LinkSalary.BangLuong">BẢNG LƯƠNG</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" target="_blank" href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Timer?khoi=@EKhoiLamViec.VP">CHẤM CÔNG</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.LogisticCong">LOGISTICS</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.SaleKPIEmployee">SALES</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="/@Constants.LinkCredit.Main/@Constants.LinkCredit.Credits?thang=@Model.Thang&khoi=@EKhoiLamViec.VP">VAY & TẠM ỨNG</a>
-                            </li>
-                        </ul>
+                            <li class="breadcrumb-item active" aria-current="page">Bảng lương</li>
+                        </ol>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </nav>
 
-    <!-- MAIN -->
-    <section class="flush-with-above height-80 d-block">
-        <div class="tab-content">
-            <div class="tab-pane fade show active" id="real" role="tabpanel" aria-labelledby="real-tab">
-                <div class="container-fluid">
-                    <div class="row mb-3">
-                        <a class="nav-link help-more collapsed" data-toggle="collapse" href="#helparea" aria-expanded="false" aria-controls="help">
-                            <i class="fas fa-info-circle"></i> Hướng dẫn tạo bảng lương tháng.
-                        </a>
-                    </div>
+        @await Html.PartialAsync("Common/_TagPartial.cshtml")
 
-                    <div id="helparea" class="col-12 collapse">
+        <!-- MAIN -->
+        <section class="flush-with-above height-80 d-block">
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="real" role="tabpanel" aria-labelledby="real-tab">
+                    <div class="container-fluid">
+                        @await Html.PartialAsync("Common/_HelpPartial.cshtml")
+
+                        @await Html.PartialAsync("Common/_UploadPartial.cshtml")
+
                         <div class="row mb-3">
                             <div class="col-12">
-                                <div class="wizard">
-                                    <ul class="nav nav-tabs text-center row mb-5">
-                                        <li class="col-3"><a href="#first" class="step-circle step-circle-sm">1</a></li>
-                                        <li class="col-3"><a href="#second" class="step-circle step-circle-sm">2</a></li>
-                                        <li class="col-3"><a href="#third" class="step-circle step-circle-sm">3</a></li>
-                                        <li class="col-3"><a href="#fourth" class="step-circle step-circle-sm">4</a></li>
-                                    </ul><!--end of col-->
-                                    <div class="tab-content">
-                                        <div id="first">
-                                            <div class="row justify-content-around align-items-center">
-                                                <div class="col-12">
-                                                    <div>
-                                                        <h6 class="title-decorative mb-2">Bước 1.</h6>
-                                                        <h4 class="mb-2">Chọn tháng tính lương của Logistics, Sales.</h4>
-                                                        <p>Đường dẫn: <a href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Duration">Mốc thời gian Logistics/ Sales</a></p>
-                                                    </div>
-                                                    <button class="btn btn-success sw-btn-next" type="button">Bước tiếp theo</button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div id="second">
-                                            <div class="row justify-content-around align-items-center">
-                                                <div class="col-12">
-                                                    <div>
-                                                        <h6 class="title-decorative mb-2">Bước 2.</h6>
-                                                        <h4 class="mb-2">Cập nhật dữ liệu của Logistics.</h4>
-                                                        <p>Đường dẫn: <a href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.LogisticCong" target="_blank">Logistics</a></p>
-                                                        <p>Bấm <code>Đẩy dữ liệu</code>. Sau đó thao tác: </p>
-                                                        <p><code>Tải mẫu dữ liệu</code> với tháng dữ liệu tương ứng</p>
-                                                        <p><code>Tải lên</code></p>
-                                                    </div>
-                                                    <button class="btn btn-success sw-btn-next" type="button">Bước tiếp theo</button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div id="third">
-                                            <div class="row justify-content-around align-items-center">
-                                                <div class="col-12">
-                                                    <div>
-                                                        <h6 class="title-decorative mb-2">Bước 3.</h6>
-                                                        <h4 class="mb-2">Cập nhật dữ liệu: Sales.</h4>
-                                                        <p>Đường dẫn: <a href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.SaleKPIEmployee" target="_blank">Sales</a></p>
-                                                        <p>Bấm <code>Đẩy dữ liệu</code>. Sau đó thao tác: </p>
-                                                        <p><code>Tải mẫu dữ liệu</code> với tháng dữ liệu tương ứng</p>
-                                                        <p><code>Tải lên</code></p>
-                                                    </div>
-                                                    <button class="btn btn-success sw-btn-next" type="button">Bước tiếp theo</button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div id="fourth">
-                                            <div class="row justify-content-around align-items-center">
-                                                <div class="col-12">
-                                                    <div>
-                                                        <h6 class="title-decorative mb-2">Bước 4.</h6>
-                                                        <h5 class="mb-2">Kiểm tra lại dữ liệu lương. </h5>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
+                                <h6>BẢNG LƯƠNG</h6>(đvt: 1,000vnđ)
+                                <br />
+                                <small>THAM SỐ <span class="badge badge-info">@Model.ThamSo</span></small>
+                                <small>LOGISTICS <span class="badge badge-info"> @logisticDuration</span></small>
+                                <small>KINH DOANH <span class="badge badge-info"> @logisticDuration</span></small>
+                            </div>
+                        </div>
+
+                        <!-- FILTER  & SORTER -->
+                        <form method="get" action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.VanPhong/@Constants.LinkSalary.BangLuong" id="form-main">
+                            <div class="row mb-3">
+                                <div class="col-12"><span class="badge badge-primary">Tìm kiếm:</span></div>
+                            </div>
+                            <div class="form-group row">
+                                <div class="col-md-4 col-sm-6 col-12">
+                                    <label class="control-label">Khối chức năng:</label>
+                                    <select asp-for="Kcn" class="form-control ddlkhoichucnang">
+                                        <option value="">Tất cả</option>
+                                        @foreach (var item in Model.KhoiChucNangs)
+                                        {
+                                            <option value="@item.Id">@item.Name</option>
+                                        }
+                                    </select>
+                                </div>
+                                <div class="col-md-4 col-sm-6 col-12">
+                                    <label class="control-label">Phòng ban:</label>
+                                    <select asp-for="Pb" class="form-control ddlphongban" onchange="formSubmit();">
+                                        <option value="">Tất cả</option>
+                                        @foreach (var item in Model.PhongBans)
+                                        {
+                                            <option value="@item.Id">@item.Name.ToUpper()</option>
+                                        }
+                                    </select>
+                                </div>
+                                <div class="col-md-4 col-sm-6 col-12">
+                                    <label class="control-label">Bộ phận:</label>
+                                    <select asp-for="Bp" class="form-control" onchange="formSubmit();">
+                                        <option value="">Tất cả</option>
+                                        @foreach (var item in Model.BoPhans)
+                                        {
+                                            <option value="@item.Id">@item.Name.ToUpper()</option>
+                                        }
+                                    </select>
+                                </div>
+                                <div class="col-md-4 col-sm-6 col-12">
+                                    <div class="form-group select2-sm-container">
+                                        <label class="control-label">Nhân viên</label>
+                                        <select asp-for="Id" class="form-control js-select2-basic-single" onchange="formSubmit();">
+                                            <option value="">Tất cả</option>
+                                            @foreach (var employee in Model.Employees)
+                                            {
+                                                string displayTitle = string.Empty;
+                                                if (!string.IsNullOrEmpty(employee.Email))
+                                                {
+                                                    displayTitle += " - " + employee.Email;
+                                                }
+                                                if (employee.Leave)
+                                                {
+                                                    displayTitle += " (đã nghỉ, còn công)";
+                                                }
+                                                <option value="@employee.Id">@employee.FullName @displayTitle</option>
+                                            }
+                                        </select>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <hr />
-
-                    <div>
-                        <h6>BẢNG LƯƠNG</h6>(đvt: 1,000vnđ)
-                        <br />
-                        <small>THAM SỐ <span class="badge badge-info">@Model.ThamSoTinhLuong</span></small>
-                        @{
-                            var logisticDuration = Model.SalaryDuration.LogisticMonth + "/" + Model.SalaryDuration.LogisticYear;
-                            var saleDuration = Model.SalaryDuration.SalaryMonth + "/" + Model.SalaryDuration.SalaryYear;
-                        }
-                        <small>LOGISTICS <span class="badge badge-info"> @logisticDuration</span></small>
-                        <small>KINH DOANH <span class="badge badge-info"> @logisticDuration</span></small>
-                        <small><a href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.Duration"><i class="fas fa-edit"></i> Sửa</a></small>
-                    </div>
-                    <!-- FILTER  & SORTER -->
-                    <form method="get" action="/@Constants.LinkSalary.Main/@Constants.LinkSalary.VanPhong/@Constants.LinkSalary.BangLuong" id="form-main">
-                        <input asp-for="Trang" type="hidden" value="1" />
-                        <input asp-for="SapXep" class="sap-xep" type="hidden" />
-                        <input asp-for="ThuTu" class="thu-tu" type="hidden" />
-                        <div class="row">
-                            <div class="col-12"><span class="badge badge-primary">Tìm kiếm:</span></div>
-                        </div>
-
-                        <div class="row mb-3">
-                            <div class="col-md-4 col-xs-12">
-                                <span class="mr-2 text-muted text-small text-nowrap">Tháng:</span>
-                                <select asp-for="Thang" class="custom-select form-control-lg" onchange="formSubmit();">
-                                    <option value="">Tất cả</option>
-                                    @foreach (var item in Model.MonthYears)
-                                    {
-                                        <option value="@item.Month-@item.Year">@item.Month/@item.Year</option>
-                                    }
-                                </select>
-                            </div>
-                            <div class="col-md-4 col-sm-6 col-xs-12">
-                                <span class="mr-2 text-muted text-small text-nowrap">Phòng ban</span>
-                                <select asp-for="PhongBan" class="custom-select js-select2-basic-single ddlEmployeeId">
-                                    <option value="">Tất cả</option>
-                                    @foreach (var item in Model.PhongBans)
-                                    {
-                                        <option value="@item.Id">@item.Name</option>
-                                    }
-                                </select>
-                            </div>
-                            <div class="col-md-4 col-sm-6 col-xs-12">
-                                <span class="mr-2 text-muted text-small text-nowrap">Nhân viên</span>
-                                <select asp-for="Id" class="custom-select js-select2-basic-single ddlEmployeeId">
-                                    <option value="">Tất cả</option>
-                                    @foreach (var employee in Model.Employees)
-                                    {
-                                        string displayTitle = string.Empty;
-                                        if (!string.IsNullOrEmpty(employee.Email))
+                                <div class="col-md-4 col-sm-6 col-12">
+                                    <label class="control-label">Tháng:</label>
+                                    <select asp-for="Thang" class="form-control custom-select ddl-times" onchange="formSubmit();">
+                                        @foreach (var item in Model.MonthYears)
                                         {
-                                            displayTitle += "- " + employee.Email + "";
+                                            <option value="@item.Month-@item.Year">@item.Month/@item.Year</option>
                                         }
-                                        <option value="@employee.Id">@employee.FullName @displayTitle</option>
-                                    }
-                                </select>
+                                    </select>
+                                </div>
+                                <div class="col-md-4 col-sm-6 col-12">
+                                    <label class="control-label">Location:</label>
+                                    <select asp-for="Ct" class="form-control" onchange="formSubmit();">
+                                        <option value="">Tất cả</option>
+                                        @foreach (var item in Model.CongTyChiNhanhs)
+                                        {
+                                            <option value="@item.Code">@item.Code</option>
+                                        }
+                                    </select>
+                                </div>
                             </div>
-                        </div>
-
-                        <div class="row mb-3">
-                            <div class="col-12">
-                                <span>Sắp xếp theo: </span>
-                                @{
-                                    var sortFlagNameDesc = "badge-default";
-                                    if (Model.SapXep == "ten" && Model.ThuTu == "desc")
-                                    {
-                                        sortFlagNameDesc = "badge-success";
-                                    }
-                                    var sortFlagNameAsc = "badge-default";
-                                    if (Model.SapXep == "ten" && Model.ThuTu == "asc")
-                                    {
-                                        sortFlagNameAsc = "badge-success";
-                                    }
-                                    var sortFlagMaDesc = "badge-default";
-                                    if (Model.SapXep == "ma" && Model.ThuTu == "desc")
-                                    {
-                                        sortFlagMaDesc = "badge-success";
-                                    }
-                                    var sortFlagMaAsc = "badge-default";
-                                    if (Model.SapXep == "ma" && Model.ThuTu == "asc")
-                                    {
-                                        sortFlagMaAsc = "badge-success";
-                                    }
-                                    var sortFlagLuongDesc = "badge-default";
-                                    if (Model.SapXep == "luong" && Model.ThuTu == "desc")
-                                    {
-                                        sortFlagLuongDesc = "badge-success";
-                                    }
-                                    var sortFlagLuongAsc = "badge-default";
-                                    if (Model.SapXep == "luong" && Model.ThuTu == "asc")
-                                    {
-                                        sortFlagLuongAsc = "badge-success";
+                            <div class="form-group row">
+                                <div class="col-12">
+                                    <label class="control-label"><small>Bấm nút hoặc Enter</small></label>
+                                    <button class="btn btn-primary btn-block btn-search" type="submit"><i class="icon-magnifying-glass"></i> Tìm kiếm</button>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <input asp-for="SapXep" class="sap-xep" type="hidden" />
+                                <input asp-for="ThuTu" class="thu-tu" type="hidden" />
+                                <div class="col-12">
+                                    <span>Sắp xếp theo: </span>
+                                    @{
+                                        var sortFlagNameDesc = "badge-default";
+                                        if (Model.SapXep == "ten" && Model.ThuTu == "desc")
+                                        {
+                                            sortFlagNameDesc = "badge-success";
+                                        }
+                                        var sortFlagNameAsc = "badge-default";
+                                        if (Model.SapXep == "ten" && Model.ThuTu == "asc")
+                                        {
+                                            sortFlagNameAsc = "badge-success";
+                                        }
+                                        var sortFlagMaDesc = "badge-default";
+                                        if (Model.SapXep == "ma" && Model.ThuTu == "desc")
+                                        {
+                                            sortFlagMaDesc = "badge-success";
+                                        }
+                                        var sortFlagMaAsc = "badge-default";
+                                        if (Model.SapXep == "ma" && Model.ThuTu == "asc")
+                                        {
+                                            sortFlagMaAsc = "badge-success";
+                                        }
+                                        var sortFlagLuongDesc = "badge-default";
+                                        if (Model.SapXep == "luong" && Model.ThuTu == "desc")
+                                        {
+                                            sortFlagLuongDesc = "badge-success";
+                                        }
+                                        var sortFlagLuongAsc = "badge-default";
+                                        if (Model.SapXep == "luong" && Model.ThuTu == "asc")
+                                        {
+                                            sortFlagLuongAsc = "badge-success";
+                                        }
                                     }
                                     <a href="javascript:;" data-sortby="ten" data-sortorder="asc" class="btn-sort">
                                         <span class="badge @sortFlagNameAsc"><i class="fas fa-sort-alpha-up"></i> Tên tăng dần</span>
@@ -248,175 +185,153 @@
                                     <a href="javascript:;" data-sortby="luong" data-sortorder="desc" class="btn-sort">
                                         <span class="badge @sortFlagLuongDesc"><i class="fas fa-sort-alpha-down"></i> Lương giảm dần</span>
                                     </a>
-                                }
+                                </div>
                             </div>
-                        </div>
-                    </form>
+                        </form>
 
-                    <div class="row">
-                        <div class="col-12">Tìm thấy <span class="badge badge-info">@Model.Records</span> kết quả.</div>
-                        <div class="col-12 table-responsive mb-1">
-                            <table class="table table-sm table-striped table-bordered table-hover">
-                                <thead>
-                                    <tr>
-                                        <th scope="col" rowspan="2"></th>
-                                        <th scope="col" rowspan="2">#</th>
-                                        <th scope="col" rowspan="2">Mã</th>
-                                        <th scope="col" rowspan="2">Họ và tên</th>
-                                        <th scope="col" rowspan="2">Chức vụ</th>
-                                        <th scope="col" rowspan="2">Thâm niên làm việc</th>
-                                        <td scope="col" colspan="3">Thâm niên</td>
-                                        <th scope="col" rowspan="2">Bậc</th>
-                                        <th scope="col" rowspan="2">Lương CB</th>
-                                        <td scope="col" colspan="4">PHỤ CẤP (P2)</td>
-                                        <td scope="col" colspan="7">PHÚC LỢI KHÁC (P2)</td>
-                                        <th scope="col" rowspan="2">
-                                            <div class="rotate">Lương cơ bản (tháng) bao gồm phụ cấp</div>
-                                        </th>
-                                        <th scope="col" rowspan="2">
-                                            <div class="rotate">
-                                                Ngày công làm việc
-                                            </div>
-                                        </th>
-                                        <th scope="col" rowspan="2">
-                                            <div class="rotate">
-                                                Ngày nghỉ phép hưởng lương
-                                            </div>
-                                        </th>
-                                        <th scope="col" rowspan="2">
-                                            <div class="rotate">
-                                                Ngày nghỉ Lễ Tết hưởng lương
-                                            </div>
-                                        </th>
-                                        <th scope="col" rowspan="2">
-                                            <div class="rotate">
-                                                Công CN (giờ)
-                                            </div>
-                                        </th>
-                                        <th scope="col" rowspan="2">
-                                            <div class="rotate">
-                                                Công tăng ca ngày thường (giờ)
-                                            </div>
-                                        </th>
-                                        <th scope="col" rowspan="2">
-                                            <div class="rotate">
-                                                Công lễ tết
-                                            </div>
-                                        </th>
-                                        <th scope="col" rowspan="2">
-                                            <div class="rotate">
-                                                Công tác xa
-                                            </div>
-                                        </th>
-                                        <th scope="col" rowspan="2">
-                                            <div class="rotate">
-                                                Mức đạt trong tháng
-                                            </div>
-                                        </th>
-                                        <th scope="col" rowspan="2">
-                                            <div class="rotate">
-                                                Lương theo doanh thu doanh số
-                                            </div>
-                                        </th>
-                                        <th scope="col" rowspan="2">
-                                            <div class="rotate">
-                                                Tổng bùn bốc
-                                            </div>
-                                        </th>
-                                        <th scope="col" rowspan="2">
-                                            <div class="rotate">
-                                                Thành tiền bốc bùn
-                                            </div>
-                                        </th>
-                                        <th scope="col" rowspan="2">
-                                            <div class="rotate">
-                                                Lương khác
-                                            </div>
-                                        </th>
-                                        <th scope="col" rowspan="2">
-                                            <div class="rotate">
-                                                Thi đua
-                                            </div>
-                                        </th>
-                                        <th scope="col" rowspan="2">
-                                            <div class="rotate">
-                                                Hỗ trợ ngoài lương
-                                            </div>
-                                        </th>
-                                        <th scope="col" rowspan="2">Tổng thu nhập</th>
-                                        <th scope="col" rowspan="2">BHXH BHYT</th>
-                                        <th scope="col" rowspan="2">Lương tham gia BHXH</th>
-                                        <th scope="col" rowspan="2">Tạm ứng</th>
-                                        <th scope="col" rowspan="2">Thưởng Lễ Tết</th>
-                                        <th scope="col" rowspan="2">Thực lãnh</th>
-                                    </tr>
-                                    <tr>
-                                        <td>Năm</td>
-                                        <td>Tháng</td>
-                                        <td>Ngày</td>
-                                        <td>
-                                            <div class="rotate">
-                                                NẶNG NHỌC ĐỘC HẠI
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="rotate">TRÁCH NHIỆM</div>
-                                        </td>
-                                        <td>
-                                            <div class="rotate">THÂM NIÊN</div>
-                                        </td>
-                                        <td>
-                                            <div class="rotate">THU HÚT</div>
-                                        </td>
-
-                                        <td>
-                                            <div class="rotate">XĂNG</div>
-                                        </td>
-                                        <td>
-                                            <div class="rotate">ĐIỆN THOẠI</div>
-                                        </td>
-                                        <td>
-                                            <div class="rotate">CƠM</div>
-                                        </td>
-                                        <td>
-                                            <div class="rotate">Kiêm nhiệm</div>
-                                        </td>
-                                        <td>
-                                            <div class="rotate">BHYT ĐẶC BIỆT</div>
-                                        </td>
-                                        <td>
-                                            <div class="rotate">VỊ TRÍ CẦN KN NHIỀU NĂM</div>
-                                        </td>
-                                        <td>
-                                            <div class="rotate">Vị trí đặc thù</div>
-                                        </td>
-                                    </tr>
-                                </thead>
-                                <tbody class="font-14">
-                                    @{
-                                        var groups = (from s in Model.SalaryEmployeeMonths
-                                                      group s by new
-                                                      {
-                                                          s.PhongBanId
-                                                      }
-                                                      into l
-                                                      select new
-                                                      {
-                                                          PhongBanId = l.Key.PhongBanId,
-                                                          salaries = l.ToList()
-                                                      }).ToList();
-
-                                        foreach (var phongban in Model.PhongBans)
-                                        {
-                                            var group = groups.Where(m => m.PhongBanId.Equals(phongban.Id)).FirstOrDefault();
-                                            if (group != null)
+                        <div class="row mb-3">
+                            <div class="col-12">Tìm thấy <span class="badge badge-info">@Model.Records</span> kết quả.</div>
+                            <div class="col-12 table-responsive mb-1">
+                                <table class="table table-sm table-striped table-bordered table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col" rowspan="2"></th>
+                                            <th scope="col" rowspan="2">#</th>
+                                            <th scope="col" rowspan="2">Mã</th>
+                                            <th scope="col" rowspan="2">Họ và tên</th>
+                                            <th scope="col" rowspan="2">Chức vụ</th>
+                                            <th scope="col" rowspan="2">Thâm niên làm việc</th>
+                                            <td scope="col" colspan="3">Thâm niên</td>
+                                            <th scope="col" rowspan="2">Bậc</th>
+                                            <th scope="col" rowspan="2">Lương CB</th>
+                                            <td scope="col" colspan="4">PHỤ CẤP (P2)</td>
+                                            <td scope="col" colspan="7">PHÚC LỢI KHÁC (P2)</td>
+                                            <th scope="col" rowspan="2">
+                                                <div class="rotate">Lương cơ bản (tháng) bao gồm phụ cấp</div>
+                                            </th>
+                                            <th scope="col" rowspan="2">
+                                                <div class="rotate">
+                                                    Ngày công làm việc
+                                                </div>
+                                            </th>
+                                            <th scope="col" rowspan="2">
+                                                <div class="rotate">
+                                                    Ngày nghỉ phép hưởng lương
+                                                </div>
+                                            </th>
+                                            <th scope="col" rowspan="2">
+                                                <div class="rotate">
+                                                    Ngày nghỉ Lễ Tết hưởng lương
+                                                </div>
+                                            </th>
+                                            <th scope="col" rowspan="2">
+                                                <div class="rotate">
+                                                    Công CN (giờ)
+                                                </div>
+                                            </th>
+                                            <th scope="col" rowspan="2">
+                                                <div class="rotate">
+                                                    Công tăng ca ngày thường (giờ)
+                                                </div>
+                                            </th>
+                                            <th scope="col" rowspan="2">
+                                                <div class="rotate">
+                                                    Công lễ tết
+                                                </div>
+                                            </th>
+                                            <th scope="col" rowspan="2">
+                                                <div class="rotate">
+                                                    Công tác xa
+                                                </div>
+                                            </th>
+                                            <th scope="col" rowspan="2">
+                                                <div class="rotate">
+                                                    Mức đạt trong tháng
+                                                </div>
+                                            </th>
+                                            <th scope="col" rowspan="2">
+                                                <div class="rotate">
+                                                    Lương theo doanh thu doanh số
+                                                </div>
+                                            </th>
+                                            <th scope="col" rowspan="2">
+                                                <div class="rotate">
+                                                    Tổng bùn bốc
+                                                </div>
+                                            </th>
+                                            <th scope="col" rowspan="2">
+                                                <div class="rotate">
+                                                    Thành tiền bốc bùn
+                                                </div>
+                                            </th>
+                                            <th scope="col" rowspan="2">
+                                                <div class="rotate">
+                                                    Lương khác
+                                                </div>
+                                            </th>
+                                            <th scope="col" rowspan="2">
+                                                <div class="rotate">
+                                                    Thi đua
+                                                </div>
+                                            </th>
+                                            <th scope="col" rowspan="2">
+                                                <div class="rotate">
+                                                    Hỗ trợ ngoài lương
+                                                </div>
+                                            </th>
+                                            <th scope="col" rowspan="2">Tổng thu nhập</th>
+                                            <th scope="col" rowspan="2">BHXH BHYT</th>
+                                            <th scope="col" rowspan="2">Lương tham gia BHXH</th>
+                                            <th scope="col" rowspan="2">Tạm ứng</th>
+                                            <th scope="col" rowspan="2">Thưởng Lễ Tết</th>
+                                            <th scope="col" rowspan="2">Thực lãnh</th>
+                                        </tr>
+                                        <tr>
+                                            <td>Năm</td>
+                                            <td>Tháng</td>
+                                            <td>Ngày</td>
+                                            <td>
+                                                <div class="rotate">
+                                                    NẶNG NHỌC ĐỘC HẠI
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="rotate">TRÁCH NHIỆM</div>
+                                            </td>
+                                            <td>
+                                                <div class="rotate">THÂM NIÊN</div>
+                                            </td>
+                                            <td>
+                                                <div class="rotate">THU HÚT</div>
+                                            </td>
+                                            <td>
+                                                <div class="rotate">XĂNG</div>
+                                            </td>
+                                            <td>
+                                                <div class="rotate">ĐIỆN THOẠI</div>
+                                            </td>
+                                            <td>
+                                                <div class="rotate">CƠM</div>
+                                            </td>
+                                            <td>
+                                                <div class="rotate">Kiêm nhiệm</div>
+                                            </td>
+                                            <td>
+                                                <div class="rotate">BHYT ĐẶC BIỆT</div>
+                                            </td>
+                                            <td>
+                                                <div class="rotate">VỊ TRÍ CẦN KN NHIỀU NĂM</div>
+                                            </td>
+                                            <td>
+                                                <div class="rotate">Vị trí đặc thù</div>
+                                            </td>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="font-14">
+                                        @{
+                                            var i = 1;
+                                            foreach (var item in Model.SalaryEmployeeMonths)
                                             {
-                                                <tr>
-                                                    <td style="background-color:antiquewhite; color:black; font-weight:bold" colspan="3">@phongban.Name.ToUpper()</td>
-                                                </tr>
-                                                var i = 1;
-                                                foreach (var item in group.salaries)
-                                                {
                                                 <tr>
                                                     <td style="background-color:white">
                                                         <a href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.VanPhong/@Constants.LinkSalary.BangLuong/@Constants.LinkSalary.Update?Id=@item.Id"><i class="fas fa-edit"></i> Sửa</a>
@@ -431,7 +346,7 @@
                                                         @item.EmployeeFullName
                                                     </td>
                                                     <td nowrap>
-                                                        <small class="bold">@item.ChucVuName.ToUpper()</small>
+                                                        <small class="bold text-uppercase">@item.ChucVuName</small>
                                                     </td>
                                                     <td>
                                                         @item.JoinDate.ToString("dd/MM/yyyy")
@@ -548,23 +463,21 @@
                                                         @String.Format("{0:#,###,###}", Math.Round((double)item.ThucLanhTronSo, 0))
                                                     </td>
                                                 </tr>
-                                                    i++;
-                                                }
+                                                i++;
                                             }
                                         }
-                                    }
-                                </tbody>
-                            </table>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
-</div>
+        </section>
+    </div>
 
 @section scripts {
-    <script type="text/javascript" src="~/js/bang-luong.js?@Constants.VersionJs"></script>
+    <script type="text/javascript" src="~/js/salaries/bang-luong.js?@Constants.VersionJs"></script>
 }
 
 

@@ -31,8 +31,11 @@
     <Content Remove="Views\Factory\PhieuInCa - A4.cshtml" />
     <Content Remove="Views\Factory\ReportDG.cshtml" />
     <Content Remove="Views\KeHoachTongHop\DuLieuDuAnCong.cshtml" />
+    <Content Remove="Views\SalaryProduction\BangLuong.cshtml" />
     <Content Remove="Views\SalaryProduction\CongTong.cshtml" />
     <Content Remove="Views\SalaryProduction\CongTongUpdate.cshtml" />
+    <Content Remove="Views\Salary\ThangLuong.cshtml" />
+    <Content Remove="Views\Salary\ThangLuongUpdate.cshtml" />
     <Content Remove="Views\Shared\_LayoutData.cshtml" />
     <Content Remove="Views\TimeKeeper\BangChamCong - Copy.cshtml" />
   </ItemGroup>
@@ -72,8 +75,6 @@
     <None Include="Views\Salary\SaleKPIEmployee.cshtml" />
     <None Include="Views\Salary\SaleKPIEmployeeUpdate.cshtml" />
     <None Include="Views\Salary\SaleKPIUpdate.cshtml" />
-    <None Include="Views\Salary\ThangLuong.cshtml" />
-    <None Include="Views\Salary\ThangLuongUpdate.cshtml" />
     <None Include="Views\Setting\Data.cshtml" />
     <None Include="Views\Setting\Index.cshtml" />
     <None Include="Views\Text\Data.cshtml" />
@@ -835,10 +836,6 @@
     </Content>
     <Content Update="Views\SalaryThangLuong\ThangLuong.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\SalaryProduction\BangLuong.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
     <Content Update="Views\SalaryThangLuong\ThangLuongTaiLieu.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>

@@ -345,6 +345,9 @@ namespace Common.Utilities
 
             public const string Security = "an-ninh";
 
+            public const string ExportDate = "xuat-du-lieu";
+
+            public const string ExportTimeMiss = "xuat-tre-som";
         }
 
         public static class KeHoachTongHopLink

@@ -123,7 +123,7 @@ namespace xmailtimer
                     ChucVu = employee.ChucVuName,
                     Alias = employee.AliasFullName,
                     Email = employee.Email,
-                    ManageId = employee.ManagerId
+                    ManageId = employee.ManagerEmployeeId
                 });
             }
 
@@ -185,7 +185,7 @@ namespace xmailtimer
                     }
                     note = "<b>Anh/chị nhận được email này do nhân viên " + employee.FullName + " không có dữ liệu chấm công. Xin lỗi về bất tiện này và vui lòng kiểm tra lại.</b><br />";
                 }
-  
+
                 var attachments = new List<string>
                 {
                     excelViewModel.FileNameFullPath
@@ -244,7 +244,7 @@ namespace xmailtimer
 
                 if (!string.IsNullOrEmpty(manager.ManageId))
                 {
-                    var managerE = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.ChucVu.Equals(manager.ManageId)).FirstOrDefault();
+                    var managerE = dbContext.Employees.Find(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.Id.Equals(manager.ManageId)).FirstOrDefault();
                     if (managerE != null && !string.IsNullOrEmpty(managerE.Email))
                     {
                         string sFileName = @"bang-cham-cong";

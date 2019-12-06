@@ -95,7 +95,7 @@ namespace erp.Controllers
 
             // MOI THANG SE CO 1 DANH SACH TAI THOI DIEM DO
             // TRANH NGUOI MOI CO TRONG BANG LUONG CU
-            Utility.AutoInitSalary((int)ESalaryType.SX, month, year);
+            //Utility.InitSalary((int)ESalaryType.SX, month, year);
 
             #region Filter
             var builder = Builders<SalaryEmployeeMonth>.Filter;
@@ -153,7 +153,7 @@ namespace erp.Controllers
                 ThuTu = ThuTu,
                 SapXep = SapXep,
                 Records = (int)records,
-                ThamSoTinhLuong = Utility.BusinessDaysUntil(fromDate, toDate)
+                ThamSo = Utility.BusinessDaysUntil(fromDate, toDate)
             };
 
             return View(viewModel);

@@ -43,11 +43,11 @@
     {
         var avatar = images.Where(m => m.Type.Equals(sizeValueAvatar)).FirstOrDefault();
         var cover = images.Where(m => m.Type.Equals(sizeValueCover)).FirstOrDefault();
-        if (avatar != null)
+        if (avatar != null && !string.IsNullOrEmpty(avatar.Path) && !string.IsNullOrEmpty(avatar.FileName))
         {
             avatarDisplay = "/" + System.IO.Path.Combine(avatar.Path, avatar.FileName).Replace("\\", "/");
         }
-        if (cover != null)
+        if (cover != null && !string.IsNullOrEmpty(cover.Path) && !string.IsNullOrEmpty(cover.FileName))
         {
             coverDisplay = "background-image: url('/" + System.IO.Path.Combine(avatar.Path, avatar.FileName).Replace("\\", "/") + "'); height:167px";
         }
@@ -141,6 +141,9 @@
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link" id="extend3-tab" data-toggle="tab" href="#extend3" role="tab" aria-selected="false">Tài liệu & Thông báo</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" id="extend4-tab" data-toggle="tab" href="#extend4" role="tab" aria-selected="false">Tài chính</a>
                                 </li>
                             </ul>
                         </div>
@@ -254,7 +257,7 @@
                                     <div class="form-group col-md-5 col-sm-6 col-xs-12">
                                         <label class="control-label">
                                             <span>Giới tính</span>
-                                            <a href="javascript:;" data-toggle="modal" data-target="#newCategoryModal" data-ecategory="@eGender" class="ml-2"class="ml-2"><i class="icon-add-to-list mr-1"></i></a>
+                                            <a href="javascript:;" data-toggle="modal" data-target="#newCategoryModal" data-ecategory="@eGender" class="ml-2" class="ml-2"><i class="icon-add-to-list mr-1"></i></a>
                                         </label>
                                         @if (isEdit && !isRight)
                                         {
@@ -522,64 +525,64 @@
                             <div class="col-12">
                                 @{
                                     var iF = 0;
-                                                                <div class="row">
-                                                                    <div class="form-group col-md-1 col-sm-6 col-xs-12">
-                                                                        <label class="control-label">
-                                                                            Chấm công
-                                                                        </label>
-                                                                        <input type="checkbox" @checkTimeKeeper class="form-control form-control-lg big-checkbox chkOfficial" id="check-timekeeper" />
-                                                                        <input type="hidden" mame="Employee.IsTimeKeeper" value="@employee.IsTimeKeeper.ToString().ToLower()" />
-                                                                    </div>
-                                                                    <div class="form-group col-md-1 col-sm-6 col-xs-12">
-                                                                        <small class="control-label">
-                                                                            Vô trước (giờ)
-                                                                        </small>
-                                                                        @{
-                                                                            var propertyWorkTime = 0;
-                                                                            if (employee.Properties != null && employee.Properties.Count > 0)
-                                                                            {
-                                                                                var propertyWorkTimeE = employee.Properties.Where(m => m.Key == "work-time-before").FirstOrDefault();
-                                                                                if (propertyWorkTimeE != null)
-                                                                                {
-                                                                                    propertyWorkTime = Convert.ToInt32(propertyWorkTimeE.Value);
-                                                                                }
-                                                                            }
-                                                                        }
-                                                                        <input name="Employee.Properties[0].Value" value="@propertyWorkTime" class="form-control form-control-lg" />
-                                                                        <input type="hidden" name="Employee.Properties[0].Key" value="work-time-before" class="form-control form-control-lg" />
-                                                                    </div>
-                                                                    @foreach (var item in employee.Workplaces)
-                                                                    {
-                                                                        <div class="time-working col-md-5 col-sm-12 node-@item.Code @dnoneTime">
-                                                                            <div class="row">
-                                                                                <input type="hidden" name="Employee.Workplaces[@iF].Code" value="@item.Code" />
-                                                                                <input type="hidden" name="Employee.Workplaces[@iF].Name" value="@item.Name" />
-                                                                                <div class="form-group col-sm-4 col-xs-12">
-                                                                                    <label class="control-label">
-                                                                                        Mã chấm công <span class="badge badge-primary text-uppercase">@item.Code</span>
-                                                                                    </label>
-                                                                                    <input name="Employee.Workplaces[@iF].Fingerprint" value="@item.Fingerprint" class="form-control form-control-lg" />
-                                                                                </div>
-                                                                                <div class="form-group col-sm-7 col-xs-12">
-                                                                                    <label class="control-label">Thời gian làm việc</label>
-                                                                                    <select name="Employee.Workplaces[@iF].WorkingScheduleTime" class="form-control form-control-lg">
-                                                                                        @foreach (var time in Model.WorkTimeTypes)
-                                                                                        {
-                                                                                            <option value="@time.Name">@time.Name</option>
-                                                                                        }
-                                                                                    </select>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                        iF++;
-                                                                    }
-                                                                </div>
+                                    <div class="row">
+                                        <div class="form-group col-md-1 col-sm-6 col-xs-12">
+                                            <label class="control-label">
+                                                Chấm công
+                                            </label>
+                                            <input type="checkbox" @checkTimeKeeper class="form-control form-control-lg big-checkbox chkOfficial" id="check-timekeeper" />
+                                            <input type="hidden" mame="Employee.IsTimeKeeper" value="@employee.IsTimeKeeper.ToString().ToLower()" />
+                                        </div>
+                                        <div class="form-group col-md-1 col-sm-6 col-xs-12">
+                                            <small class="control-label">
+                                                Vô trước (giờ)
+                                            </small>
+                                            @{
+                                                var propertyWorkTime = 0;
+                                                if (employee.Properties != null && employee.Properties.Count > 0)
+                                                {
+                                                    var propertyWorkTimeE = employee.Properties.Where(m => m.Key == "work-time-before").FirstOrDefault();
+                                                    if (propertyWorkTimeE != null)
+                                                    {
+                                                        propertyWorkTime = Convert.ToInt32(propertyWorkTimeE.Value);
+                                                    }
+                                                }
+                                            }
+                                            <input name="Employee.Properties[0].Value" value="@propertyWorkTime" class="form-control form-control-lg" />
+                                            <input type="hidden" name="Employee.Properties[0].Key" value="work-time-before" class="form-control form-control-lg" />
+                                        </div>
+                                        @foreach (var item in employee.Workplaces)
+                                        {
+                                            <div class="time-working col-md-5 col-sm-12 node-@item.Code @dnoneTime">
+                                                <div class="row">
+                                                    <input type="hidden" name="Employee.Workplaces[@iF].Code" value="@item.Code" />
+                                                    <input type="hidden" name="Employee.Workplaces[@iF].Name" value="@item.Name" />
+                                                    <div class="form-group col-sm-4 col-xs-12">
+                                                        <label class="control-label">
+                                                            Mã chấm công <span class="badge badge-primary text-uppercase">@item.Code</span>
+                                                        </label>
+                                                        <input name="Employee.Workplaces[@iF].Fingerprint" value="@item.Fingerprint" class="form-control form-control-lg" />
+                                                    </div>
+                                                    <div class="form-group col-sm-7 col-xs-12">
+                                                        <label class="control-label">Thời gian làm việc</label>
+                                                        <select name="Employee.Workplaces[@iF].WorkingScheduleTime" class="form-control form-control-lg">
+                                                            @foreach (var time in Model.WorkTimeTypes)
+                                                            {
+                                                                <option value="@time.Name">@time.Name</option>
+                                                            }
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            iF++;
+                                        }
+                                    </div>
                                 }
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="tab-pane fade show" id="extend1" role="tabpanel">
+                <div class="tab-pane fade" id="extend1" role="tabpanel">
                     <div class="container">
                         <div class="row">
                             <div class="col-12">
@@ -1306,7 +1309,7 @@
                         }
                     </div>
                 </div>
-                <div class="tab-pane fade show" id="extend3" role="tabpanel">
+                <div class="tab-pane fade" id="extend3" role="tabpanel">
                     <div class="container">
                         @if (isRight)
                         {
@@ -1451,6 +1454,38 @@
                             </div>
                         }
                         <!-- END WELCOME MESSAGE -->
+                    </div>
+                </div>
+                <div id="extend4" class="tab-pane fade">
+                    <div class="container">
+                        <div class="row">
+                            <div class="form-group col-md-3 col-sm-6 col-xs-12">
+                                <label class="control-label">Khối lương</label>
+                                <select asp-for="Employee.SalaryType" class="form-control form-control-lg salary-base-ddl">
+                                    @foreach (var item in Model.SalaryBases)
+                                    {
+                                        <option value="@item.Value">@item.Name</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="form-group col-md-3 col-sm-6 col-xs-">
+                                <label class="control-label">Ngạch lương</label>
+                                <input asp-for="Employee.NgachLuongCode" class="form-control form-control-lg" />
+                            </div>
+                            <div class="form-group col-md-3 col-sm-6 col-xs-">
+                                <label class="control-label">Bậc lương</label>
+                                <input asp-for="Employee.NgachLuongLevel" class="form-control form-control-lg" />
+                            </div>
+
+                            <div class="form-group col-md-3 col-sm-6 col-xs-">
+                                <label class="control-label">Lương</label>
+                                <input asp-for="Employee.Salary" class="form-control form-control-lg" />
+                            </div>
+                            <div class="form-group col-md-3 col-sm-6 col-xs-">
+                                <label class="control-label">Lương BHXH</label>
+                                <input asp-for="Employee.LuongBHXH" class="form-control form-control-lg" />
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

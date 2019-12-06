@@ -573,7 +573,6 @@ D:\projects\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\SalaryFactory\CongTong.c
 D:\projects\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\SalaryFactory\CongTongUpdate.cshtml.g.cs
 D:\projects\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\SalaryLaw\BangLuong.cshtml.g.cs
 D:\projects\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\SalaryLaw\ThangLuong.cshtml.g.cs
-D:\projects\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\SalaryProduction\BangLuong.cshtml.g.cs
 D:\projects\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\SalaryProduction\DinhMuc.cshtml.g.cs
 D:\projects\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\SalaryProduction\TongHopNgoaiGio.cshtml.g.cs
 D:\projects\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\SalaryProduction\TongHopTrongGio.cshtml.g.cs
@@ -590,8 +589,6 @@ D:\projects\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Salary\SaleKPI.cshtml.g.
 D:\projects\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Salary\SaleKPIEmployee.cshtml.g.cs
 D:\projects\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Salary\SaleKPIEmployeeUpdate.cshtml.g.cs
 D:\projects\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Salary\SaleKPIUpdate.cshtml.g.cs
-D:\projects\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Salary\ThangLuong.cshtml.g.cs
-D:\projects\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Salary\ThangLuongUpdate.cshtml.g.cs
 D:\projects\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Setting\Data.cshtml.g.cs
 D:\projects\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Setting\Index.cshtml.g.cs
 D:\projects\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Shared\Empty.cshtml.g.cs
@@ -626,3 +623,4 @@ D:\projects\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\XacNhan\Phep.cshtml.g.cs
 D:\projects\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\XacNhan\TangCa.cshtml.g.cs
 D:\projects\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\_ViewImports.cshtml.g.cs
 D:\projects\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\_ViewStart.cshtml.g.cs
+D:\projects\sgx\erp\obj\Debug\netcoreapp2.1\Razor\Views\Salary\Common\_HelpPartial.cshtml.g.cs

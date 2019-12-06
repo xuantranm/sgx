@@ -16,6 +16,7 @@ using NPOI.SS.UserModel;
 using ViewModels;
 using Microsoft.AspNetCore.Http;
 using System.Xml.Linq;
+using NPOI.XSSF.UserModel;
 //using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 
 namespace Common.Utilities
@@ -26,6 +27,105 @@ namespace Common.Utilities
 
         static Utility()
         {
+        }
+
+        public static void StyleExcel(IWorkbook workbook, out ICellStyle styleDedault, out ICellStyle styleDot, out ICellStyle styleTitle, out ICellStyle styleSubTitle, out ICellStyle styleHeader, out ICellStyle styleDedaultMerge, out ICellStyle styleBold)
+        {
+            var font = workbook.CreateFont();
+            font.FontHeightInPoints = 8;
+            font.FontName = "Arial";
+
+            var fontSmall = workbook.CreateFont();
+            fontSmall.FontHeightInPoints = 5;
+            fontSmall.FontName = "Arial";
+
+            var fontbold = workbook.CreateFont();
+            fontbold.FontHeightInPoints = 8;
+            fontbold.FontName = "Arial";
+            fontbold.Boldweight = (short)FontBoldWeight.Bold;
+
+            var fontbold8 = workbook.CreateFont();
+            fontbold8.FontHeightInPoints = 8;
+            fontbold8.FontName = "Arial";
+            fontbold8.Boldweight = (short)FontBoldWeight.Bold;
+
+            var fontbold10 = workbook.CreateFont();
+            fontbold10.FontHeightInPoints = 10;
+            fontbold10.FontName = "Arial";
+            fontbold10.Boldweight = (short)FontBoldWeight.Bold;
+
+            var fontbold12 = workbook.CreateFont();
+            fontbold12.FontHeightInPoints = 12;
+            fontbold12.FontName = "Arial";
+            fontbold12.Boldweight = (short)FontBoldWeight.Bold;
+
+            var styleBorder = workbook.CreateCellStyle();
+            styleBorder.BorderBottom = BorderStyle.Thin;
+            styleBorder.BorderLeft = BorderStyle.Thin;
+            styleBorder.BorderRight = BorderStyle.Thin;
+            styleBorder.BorderTop = BorderStyle.Thin;
+
+            var styleBorderDot = workbook.CreateCellStyle();
+            styleBorderDot.BorderBottom = BorderStyle.Dotted;
+            styleBorderDot.BorderLeft = BorderStyle.Thin;
+            styleBorderDot.BorderRight = BorderStyle.Thin;
+            styleBorderDot.BorderTop = BorderStyle.Thin;
+
+            var styleCenter = workbook.CreateCellStyle();
+            styleCenter.Alignment = HorizontalAlignment.Center;
+            styleCenter.VerticalAlignment = VerticalAlignment.Center;
+
+            var styleCenterBorder = workbook.CreateCellStyle();
+            styleCenterBorder.CloneStyleFrom(styleBorder);
+            styleCenterBorder.Alignment = HorizontalAlignment.Center;
+            styleCenterBorder.VerticalAlignment = VerticalAlignment.Center;
+
+            var cellStyleBorderAndColorGreen = workbook.CreateCellStyle();
+            cellStyleBorderAndColorGreen.CloneStyleFrom(styleBorder);
+            cellStyleBorderAndColorGreen.CloneStyleFrom(styleCenter);
+            cellStyleBorderAndColorGreen.FillPattern = FillPattern.SolidForeground;
+            ((XSSFCellStyle)cellStyleBorderAndColorGreen).SetFillForegroundColor(new XSSFColor(new byte[] { 198, 239, 206 }));
+
+            var cellStyleBorderAndColorYellow = workbook.CreateCellStyle();
+            cellStyleBorderAndColorYellow.CloneStyleFrom(styleBorder);
+            cellStyleBorderAndColorYellow.FillPattern = FillPattern.SolidForeground;
+            ((XSSFCellStyle)cellStyleBorderAndColorYellow).SetFillForegroundColor(new XSSFColor(new byte[] { 255, 235, 156 }));
+
+            styleDedault = workbook.CreateCellStyle();
+            styleDedault.CloneStyleFrom(styleBorder);
+            styleDedault.SetFont(font);
+
+            styleDot = workbook.CreateCellStyle();
+            styleDot.CloneStyleFrom(styleBorderDot);
+            styleDot.SetFont(font);
+
+            styleTitle = workbook.CreateCellStyle();
+            styleTitle.CloneStyleFrom(styleCenter);
+            styleTitle.SetFont(fontbold12);
+
+            styleSubTitle = workbook.CreateCellStyle();
+            styleSubTitle.CloneStyleFrom(styleCenter);
+            styleSubTitle.SetFont(fontbold8);
+
+            styleHeader = workbook.CreateCellStyle();
+            styleHeader.CloneStyleFrom(styleCenterBorder);
+            styleHeader.SetFont(fontbold8);
+
+            styleDedaultMerge = workbook.CreateCellStyle();
+            styleDedaultMerge.CloneStyleFrom(styleCenter);
+            styleDedaultMerge.SetFont(font);
+            styleDedaultMerge.WrapText = true;
+
+            var styleFullText = workbook.CreateCellStyle();
+            styleDedaultMerge.SetFont(font);
+            styleFullText.WrapText = true;
+
+            styleBold = workbook.CreateCellStyle();
+            styleBold.SetFont(fontbold8);
+
+            var styleSmall = workbook.CreateCellStyle();
+            styleSmall.CloneStyleFrom(styleBorder);
+            styleSmall.SetFont(fontSmall);
         }
 
         public static void SiteMapAuto(string domain, string webRootPath)
@@ -190,180 +290,175 @@ namespace Common.Utilities
             return result;
         }
 
-        public static void AutoInitSalary(int salaryType, int month, int year)
+        public static List<SalaryEmployeeMonth> InitSalary(List<Employee> employees, int month, int year)
         {
+            var result = new List<SalaryEmployeeMonth>();
+            var now = DateTime.Now;
             var endDateMonth = new DateTime(year, month, 25);
-            // Check data in month. If no, create list.
-            // Exist: don't do anything.
-            var congtychinhanhs = dbContext.CongTyChiNhanhs.Find(m => m.Enable.Equals(true)).ToList();
-            var ctcnvp = congtychinhanhs.First(x => x.Code.Equals("CT1"));
-            var ctcnnm = congtychinhanhs.First(x => x.Code.Equals("CT2"));
             var settings = dbContext.Settings.Find(m => m.Type.Equals((int)EData.Salary) && m.Enable.Equals(true)).ToList();
+            var thamsotinhluong = BusinessDaysUntil(endDateMonth.AddMonths(-1).AddDays(1), endDateMonth);
+            var luongtoithieuvungE = dbContext.SalaryMucLuongVungs.Find(m => m.Enable.Equals(true)).SortByDescending(m => m.Year).SortByDescending(m => m.Month).FirstOrDefault();
+            var luongtoithieuvung = luongtoithieuvungE != null ? luongtoithieuvungE.ToiThieuVungDoanhNghiepApDung : 0;
 
-            #region Filter Salary Data
-            var builder = Builders<SalaryEmployeeMonth>.Filter;
-            var filter = builder.Eq(m => m.Year, year)
-                        & builder.Eq(m => m.Month, month);
-            switch (salaryType)
+            foreach (var employee in employees)
             {
-                case (int)ESalaryType.VP:
-                    filter = filter & builder.Eq(x => x.CongTyChiNhanhId, ctcnvp.Id);
-                    break;
-                case (int)ESalaryType.NM:
-                    filter = filter & builder.Eq(x => x.CongTyChiNhanhId, ctcnnm.Id) & !builder.Eq(x => x.ChucVuId, "5c88d09bd59d56225c4324de"); // cong-nhan-dong-goi
-                    break;
-                default:
-                    filter = filter & builder.Eq(x => x.CongTyChiNhanhId, ctcnnm.Id) & builder.Eq(x => x.ChucVuId, "5c88d09bd59d56225c4324de"); // cong-nhan-dong-goi
-                    break;
-            }
-            #endregion
-
-            var exist = dbContext.SalaryEmployeeMonths.CountDocuments(filter);
-            if (exist == 0)
-            {
-                #region Common
-                var thamsotinhluong = BusinessDaysUntil(endDateMonth.AddMonths(-1).AddDays(1), endDateMonth);
-
-                //var settingTSTL = dbContext.Settings.Find(m => m.Key.Equals("mau-so-lam-viec")).FirstOrDefault();
-
-                var luongtoithieuvungE = dbContext.SalaryMucLuongVungs.Find(m => m.Enable.Equals(true)).SortByDescending(m => m.Year).SortByDescending(m => m.Month).FirstOrDefault();
-                var luongtoithieuvung = luongtoithieuvungE != null ? luongtoithieuvungE.ToiThieuVungDoanhNghiepApDung : 0;
-
-                #endregion
-
-                #region Filter Employee Data
-                var builderE = Builders<Employee>.Filter;
-                var filterE = builderE.Eq(m => m.Enable, true)
-                            & builderE.Eq(m => m.Leave, false)
-                            & builderE.Eq(m => m.Official, true)
-                            & !builderE.Eq(m => m.UserName, Constants.System.account);
-                switch (salaryType)
+                // Lương căn bản của công nhân sản xuất là:  4,012,500
+                var luongcanban = GetLuongCanBan(employee.NgachLuongCode, employee.NgachLuongLevel);
+                
+                if (!employee.Official)
                 {
-                    case (int)ESalaryType.VP:
-                        filterE = filterE & builderE.Eq(x => x.CongTyChiNhanh, ctcnvp.Id);
-                        break;
-                    case (int)ESalaryType.NM:
-                        filterE = filterE & builderE.Eq(x => x.CongTyChiNhanh, ctcnnm.Id) & !builderE.Eq(x => x.ChucVu, "5c88d09bd59d56225c4324de"); // cong-nhan-dong-goi
-                        break;
-                    default:
-                        filterE = filterE & builderE.Eq(x => x.CongTyChiNhanh, ctcnnm.Id) & builderE.Eq(x => x.ChucVu, "5c88d09bd59d56225c4324de"); // cong-nhan-dong-goi
-                        break;
-                }
-                #endregion
-                var employees = dbContext.Employees.Find(filterE).ToList();
-                foreach (var employee in employees)
-                {
-                    var luongcanban = GetLuongCanBan(employee.NgachLuongCode, employee.NgachLuongLevel);
-                    // Lương căn bản của công nhân sản xuất là:  4,012,500 
-                    if (salaryType == (int)ESalaryType.SX)
-                    {
-                        luongcanban = 4012500;
-                    }
-                    else if (salaryType == (int)ESalaryType.VP)
-                    {
-                        // base chuc vu
-                        luongcanban = GetLuongCanBanVP(employee.ChucVu, employee.NgachLuongLevel);
-                    }
                     // Thử việc = 85% lương
-                    if (!employee.Official)
-                    {
-                        luongcanban = Convert.ToDecimal((double)luongcanban * 0.85);
-                    }
+                    luongcanban = Convert.ToDecimal((double)luongcanban * 0.85);
+                }
+                // Get direct to employees
+                decimal luongThamGiaBHXH = employee.LuongBHXH;
 
-                    // Get direct to employees
-                    decimal luongThamGiaBHXH = employee.LuongBHXH;
-
-                    #region ThamNien
-                    var ngaythamnien = (endDateMonth - employee.Joinday).TotalDays;
-                    double thangthamnien = Math.Round(ngaythamnien / 30, 0);
-                    double namthamnien = Math.Round(thangthamnien / 12, 0);
-                    var hesothamnien = 0;
+                #region ThamNien
+                var ngaythamnien = (endDateMonth - employee.Joinday).TotalDays;
+                double thangthamnien = Math.Round(ngaythamnien / 30, 0);
+                double namthamnien = Math.Round(thangthamnien / 12, 0);
+                var hesothamnien = 0;
+                if (namthamnien >= 4)
+                {
                     // 3 năm đầu ko tăng, bắt đầu năm thứ 4 sẽ có thâm niên 3%, thêm 1 năm tăng 1%
-                    if (namthamnien >= 4)
+                    hesothamnien = 3;
+                    for (int i = 5; i <= namthamnien; i++)
                     {
-                        hesothamnien = 3;
-                        for (int i = 5; i <= namthamnien; i++)
-                        {
-                            hesothamnien++;
-                        }
+                        hesothamnien++;
                     }
-                    #endregion
+                }
+                #endregion
 
-                    #region PCPL
-                    decimal nangNhocDocHai = 0;
-                    decimal trachNhiem = 0;
-                    decimal thuHut = 0;
-                    decimal xang = 0;
-                    decimal dienThoai = 0;
-                    decimal com = 0;
-                    decimal nhaO = 0;
-                    decimal kiemNhiem = 0;
-                    decimal bhytDacBiet = 0;
-                    decimal viTriCanKnNhieuNam = 0;
-                    decimal viTriDacThu = 0;
-                    if (employee.PhuCapPhucLoi != null)
-                    {
-                        var phucapphucloi = employee.PhuCapPhucLoi;
-                        nangNhocDocHai = phucapphucloi.NangNhocDocHai;
-                        trachNhiem = phucapphucloi.TrachNhiem;
-                        thuHut = phucapphucloi.ThuHut;
-                        xang = phucapphucloi.Xang;
-                        dienThoai = phucapphucloi.DienThoai;
-                        com = phucapphucloi.Com;
-                        nhaO = phucapphucloi.NhaO;
-                        kiemNhiem = phucapphucloi.KiemNhiem;
-                        bhytDacBiet = phucapphucloi.BhytDacBiet;
-                        viTriCanKnNhieuNam = phucapphucloi.ViTriCanKnNhieuNam;
-                        viTriDacThu = phucapphucloi.ViTriDacThu;
-                    }
-                    #endregion
+                #region PCPL
+                decimal nangNhocDocHai = 0;
+                decimal trachNhiem = 0;
+                decimal thuHut = 0;
+                decimal xang = 0;
+                decimal dienThoai = 0;
+                decimal com = 0;
+                decimal nhaO = 0;
+                decimal kiemNhiem = 0;
+                decimal bhytDacBiet = 0;
+                decimal viTriCanKnNhieuNam = 0;
+                decimal viTriDacThu = 0;
+                if (employee.PhuCapPhucLoi != null)
+                {
+                    var phucapphucloi = employee.PhuCapPhucLoi;
+                    nangNhocDocHai = phucapphucloi.NangNhocDocHai;
+                    trachNhiem = phucapphucloi.TrachNhiem;
+                    thuHut = phucapphucloi.ThuHut;
+                    xang = phucapphucloi.Xang;
+                    dienThoai = phucapphucloi.DienThoai;
+                    com = phucapphucloi.Com;
+                    nhaO = phucapphucloi.NhaO;
+                    kiemNhiem = phucapphucloi.KiemNhiem;
+                    bhytDacBiet = phucapphucloi.BhytDacBiet;
+                    viTriCanKnNhieuNam = phucapphucloi.ViTriCanKnNhieuNam;
+                    viTriDacThu = phucapphucloi.ViTriDacThu;
+                }
+                #endregion
 
-                    var salary = new SalaryEmployeeMonth()
-                    {
-                        Year = year,
-                        Month = month,
-                        EmployeeId = employee.Id,
-                        EmployeeCode = employee.CodeOld,
-                        EmployeeFullName = employee.FullName,
-                        CongTyChiNhanhId = employee.CongTyChiNhanh,
-                        CongTyChiNhanhName = employee.CongTyChiNhanhName,
-                        KhoiChucNangId = employee.KhoiChucNang,
-                        KhoiChucNangName = employee.KhoiChucNangName,
-                        PhongBanId = employee.PhongBan,
-                        PhongBanName = employee.PhongBanName,
-                        BoPhanId = employee.BoPhan,
-                        BoPhanName = employee.BoPhanName,
-                        BoPhanConId = employee.BoPhanCon,
-                        BoPhanConName = employee.BoPhanConName,
-                        ChucVuId = employee.ChucVu,
-                        ChucVuName = employee.ChucVuName,
-                        NgachLuongCode = employee.NgachLuongCode,
-                        NgachLuongLevel = employee.NgachLuongLevel,
-                        JoinDate = employee.Joinday,
-                        MauSo = thamsotinhluong,
-                        Type = salaryType,
-                        LuongToiThieuVung = luongtoithieuvung,
-                        LuongCanBan = luongcanban,
-                        ThamNienMonth = (int)thangthamnien,
-                        ThamNienYear = (int)namthamnien,
-                        HeSoThamNien = hesothamnien,
-                        ThamNien = luongcanban * hesothamnien / 100,
-                        NangNhocDocHai = nangNhocDocHai,
-                        TrachNhiem = trachNhiem,
-                        ThuHut = thuHut,
-                        DienThoai = dienThoai,
-                        Xang = xang,
-                        Com = com,
-                        NhaO = nhaO,
-                        KiemNhiem = kiemNhiem,
-                        BhytDacBiet = bhytDacBiet,
-                        ViTriCanKnNhieuNam = viTriCanKnNhieuNam,
-                        ViTriDacThu = viTriDacThu,
-                        LuongThamGiaBHXH = luongThamGiaBHXH
-                    };
+                var salary = new SalaryEmployeeMonth()
+                {
+                    Year = year,
+                    Month = month,
+                    EmployeeId = employee.Id,
+                    EmployeeCode = employee.CodeOld,
+                    EmployeeFullName = employee.FullName,
+                    CongTyChiNhanhId = employee.CongTyChiNhanh,
+                    CongTyChiNhanhName = employee.CongTyChiNhanhName,
+                    KhoiChucNangId = employee.KhoiChucNang,
+                    KhoiChucNangName = employee.KhoiChucNangName,
+                    PhongBanId = employee.PhongBan,
+                    PhongBanName = employee.PhongBanName,
+                    BoPhanId = employee.BoPhan,
+                    BoPhanName = employee.BoPhanName,
+                    BoPhanConId = employee.BoPhanCon,
+                    BoPhanConName = employee.BoPhanConName,
+                    ChucVuId = employee.ChucVu,
+                    ChucVuName = employee.ChucVuName,
+                    NgachLuongCode = employee.NgachLuongCode,
+                    NgachLuongLevel = employee.NgachLuongLevel,
+                    JoinDate = employee.Joinday,
+                    MauSo = thamsotinhluong,
+                    Type = (int)ESalaryType.VP, // Define later
+                    LuongToiThieuVung = luongtoithieuvung,
+                    LuongCanBan = luongcanban,
+                    ThamNienMonth = (int)thangthamnien,
+                    ThamNienYear = (int)namthamnien,
+                    HeSoThamNien = hesothamnien,
+                    ThamNien = luongcanban * hesothamnien / 100,
+                    NangNhocDocHai = nangNhocDocHai,
+                    TrachNhiem = trachNhiem,
+                    ThuHut = thuHut,
+                    DienThoai = dienThoai,
+                    Xang = xang,
+                    Com = com,
+                    NhaO = nhaO,
+                    KiemNhiem = kiemNhiem,
+                    BhytDacBiet = bhytDacBiet,
+                    ViTriCanKnNhieuNam = viTriCanKnNhieuNam,
+                    ViTriDacThu = viTriDacThu,
+                    LuongThamGiaBHXH = luongThamGiaBHXH
+                };
+
+                #region BIND FULL DATA: DO LATER
+                //var results = new List<SalaryEmployeeMonth>();
+                //foreach (var salary in list)
+                //{
+                //    var salaryFull = Utility.SalaryEmployeeMonthFillData(salary);
+                //    results.Add(salaryFull);
+                //}
+                #endregion
+                var existSalary = dbContext.SalaryEmployeeMonths.Find(m => m.EmployeeId.Equals(employee.Id) && m.Month.Equals(month) && m.Year.Equals(year) && m.Enable.Equals(true)).FirstOrDefault();
+                if (existSalary == null)
+                {
                     dbContext.SalaryEmployeeMonths.InsertOne(salary);
+                    result.Add(salary);
+                }
+                else
+                {
+                    var builderU = Builders<SalaryEmployeeMonth>.Filter;
+                    var filterU = builderU.Eq(m => m.Id, existSalary.Id);
+                    var updateU = Builders<SalaryEmployeeMonth>.Update
+                        .Set(m => m.NangNhocDocHai, existSalary.NangNhocDocHai)
+                        .Set(m => m.TrachNhiem, existSalary.TrachNhiem)
+                        .Set(m => m.ThuHut, existSalary.ThuHut)
+                        .Set(m => m.Xang, existSalary.Xang)
+                        .Set(m => m.DienThoai, existSalary.DienThoai)
+                        .Set(m => m.Com, existSalary.Com)
+                        .Set(m => m.NhaO, existSalary.NhaO)
+                        .Set(m => m.KiemNhiem, existSalary.KiemNhiem)
+                        .Set(m => m.BhytDacBiet, existSalary.BhytDacBiet)
+                        .Set(m => m.ViTriCanKnNhieuNam, existSalary.ViTriCanKnNhieuNam)
+                        .Set(m => m.ViTriDacThu, existSalary.ViTriDacThu)
+                        .Set(m => m.LuongCoBanBaoGomPhuCap, existSalary.LuongCoBanBaoGomPhuCap)
+                        .Set(m => m.NgayCongLamViec, existSalary.NgayCongLamViec)
+                        .Set(m => m.NgayNghiPhepHuongLuong, existSalary.NgayNghiPhepHuongLuong)
+                        .Set(m => m.NgayNghiLeTetHuongLuong, existSalary.NgayNghiLeTetHuongLuong)
+                        .Set(m => m.CongCNGio, existSalary.CongCNGio)
+                        .Set(m => m.CongTangCaNgayThuongGio, existSalary.CongTangCaNgayThuongGio)
+                        .Set(m => m.CongLeTet, existSalary.CongLeTet)
+                        .Set(m => m.CongTacXa, existSalary.CongTacXa)
+                        .Set(m => m.MucDatTrongThang, existSalary.MucDatTrongThang)
+                        .Set(m => m.LuongTheoDoanhThuDoanhSo, existSalary.LuongTheoDoanhThuDoanhSo)
+                        .Set(m => m.TongBunBoc, existSalary.TongBunBoc)
+                        .Set(m => m.ThanhTienBunBoc, existSalary.ThanhTienBunBoc)
+                        .Set(m => m.LuongKhac, existSalary.LuongKhac)
+                        .Set(m => m.ThiDua, existSalary.ThiDua)
+                        .Set(m => m.HoTroNgoaiLuong, existSalary.HoTroNgoaiLuong)
+                        .Set(m => m.TongThuNhap, existSalary.TongThuNhap)
+                        .Set(m => m.BHXHBHYT, existSalary.BHXHBHYT)
+                        .Set(m => m.LuongThamGiaBHXH, existSalary.LuongThamGiaBHXH)
+                        .Set(m => m.TamUng, existSalary.TamUng)
+                        .Set(m => m.ThuongLeTet, existSalary.ThuongLeTet)
+                        .Set(m => m.ThucLanh, existSalary.ThucLanh)
+                        .Set(m => m.UpdatedOn, now);
+                    dbContext.SalaryEmployeeMonths.UpdateOne(filterU, updateU);
+                    result.Add(existSalary);
                 }
             }
+            return result;
         }
 
         public static SalaryEmployeeMonth SalaryEmployeeMonthFillData(SalaryEmployeeMonth salary)
@@ -641,39 +736,16 @@ namespace Common.Utilities
 
         public static decimal GetLuongCanBan(string code, int level)
         {
-            decimal result = 0;
-            var lastest = dbContext.NgachLuongs.Find(m => m.Enable.Equals(true) && m.Law.Equals(false)
-                                && m.MaSo.Equals(code) && m.Bac.Equals(level))
-                                .SortByDescending(m => m.Year).SortByDescending(m => m.Month).FirstOrDefault();
+            decimal result = 4013;
+            var lastest = dbContext.NgachLuongs.Find(m => m.Enable.Equals(true)
+                                && m.Code.Equals(code) && m.Level.Equals(level))
+                                .SortByDescending(m => m.Year)
+                                .SortByDescending(m => m.Month).FirstOrDefault();
             if (lastest != null)
             {
-                result = lastest.MucLuongThang;
+                result = lastest.Money;
             }
             return result;
-        }
-
-        public static decimal GetLuongCanBanVP(string chucvuId, int level)
-        {
-            decimal mucluong = 4013;
-            double tile = 1;
-            var lastest = dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true) && m.Law.Equals(false)
-                                && m.ViTriId.Equals(chucvuId))
-                                .SortByDescending(m => m.Year).SortByDescending(m => m.Month).FirstOrDefault();
-            if (lastest != null)
-            {
-                mucluong = lastest.MucLuong;
-                tile = lastest.TiLe;
-            }
-
-            decimal result = Constants.RoundOff(mucluong);
-            for (var iNo = 1; iNo <= level; iNo++)
-            {
-                if (iNo != 1)
-                {
-                    result = Convert.ToDecimal((double)result * tile);
-                }
-            }
-            return Constants.RoundOff(result);
         }
 
         public static List<MonthYear> DllMonths()

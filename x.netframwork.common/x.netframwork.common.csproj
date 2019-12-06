@@ -82,6 +82,7 @@
     <Compile Include="Models\Extensions\Document.cs" />
     <Compile Include="Models\Extensions\ExtensionNew.cs" />
     <Compile Include="Models\Extensions\Extension.cs" />
+    <Compile Include="Models\Extensions\Shift.cs" />
     <Compile Include="Models\Extensions\IdName.cs" />
     <Compile Include="Models\Extensions\Img.cs" />
     <Compile Include="Models\Extensions\Property.cs" />

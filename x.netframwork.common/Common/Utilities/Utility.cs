@@ -23,6 +23,25 @@ namespace Common.Utilities
         {
         }
 
+        public static List<Shift> GetShift()
+        {
+            var result = new List<Shift>();
+            var shifts = dbContext.Categories.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)ECategory.TimeWork) && !string.IsNullOrEmpty(m.Name)).ToList();
+            foreach(var item in shifts)
+            {
+                var startSt = item.Name.Split('-')[0];
+                var endSt = item.Name.Split('-')[1];
+                var startT = TimeSpan.Parse(startSt);
+                var endT = TimeSpan.Parse(endSt);
+                result.Add(new Shift() { 
+                    Start = startT,
+                    End = endT,
+                    Relax = 1
+                });
+            }
+            return result;
+        }
+
         public static List<IdName> Approves(Employee account, bool extend, string role, int action)
         {
             var approves = new List<IdName>();

@@ -1,0 +1,35 @@
+﻿@using Common.Utilities;
+@using Common.Enums;
+@{
+
+}
+<section class="flush-with-above space-0">
+    <div class="bg-white">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col">
+                    <ul class="nav nav-tabs" id="myTab" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="/@Constants.LinkSalary.BangLuong/@Constants.LinkSalary.VanPhong">BẢNG LƯƠNG</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/@Constants.LinkSalary.ThangLuong/@Constants.LinkSalary.VanPhong">THANG LƯƠNG</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" target="_blank" href="/@Constants.LinkTimeKeeper.Main/@Constants.LinkTimeKeeper.Timer?khoi=@EKhoiLamViec.VP">CHẤM CÔNG</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.LogisticCong">LOGISTICS</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/@Constants.LinkSalary.Main/@Constants.LinkSalary.SaleKPIEmployee">SALES</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/@Constants.LinkCredit.Main/@Constants.LinkCredit.Credits?thang=@Model.Thang&khoi=@EKhoiLamViec.VP">VAY & TẠM ỨNG</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

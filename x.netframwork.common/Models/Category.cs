@@ -19,9 +19,11 @@ namespace Models
 
         public string Alias { get; set; }
 
+        public string Value { get; set; } // Probation...
+
         public string Description { get; set; }
 
-        public IList<Setting> Properties { get; set; }
+        public IList<Property> Properties { get; set; }
 
         public IList<ContentIn> Contents { get; set; }
 

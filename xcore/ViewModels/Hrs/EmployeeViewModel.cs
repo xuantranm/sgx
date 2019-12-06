@@ -43,6 +43,8 @@ namespace ViewModels
 
         public IList<Category> Probations { get; set; }
 
+        public IList<Category> SalaryBases { get; set; }
+
         public IList<NgachLuong> NgachLuongs { get; set; }
 
         #region Search

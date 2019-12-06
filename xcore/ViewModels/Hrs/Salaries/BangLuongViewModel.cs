@@ -10,17 +10,15 @@ namespace ViewModels
 {
     public class BangLuongViewModel : CommonViewModel
     {
-        public IList<SalaryEmployeeMonth> SalaryEmployeeMonths { get; set; }
+        public IList<SalaryEmployeeMonth> Salaries { get; set; }
 
         public SalaryEmployeeMonth Salary { get; set; }
 
         public SalaryMucLuongVung SalaryMucLuongVung { get; set; }
 
-        public SalaryThangBangLuong ThangBangLuong { get; set; }
+        public NgachLuong NgachLuong { get; set; }
 
-        public IList<SalaryThangBangLuong> SalaryThangBangLuongLaws { get; set; }
-
-        public IList<SalaryThangBangLuong> SalaryThangBangLuongs { get; set; }
+        public IList<NgachLuong> NgachLuongs { get; set; }
 
         public IList<SalaryThangBangPhuCapPhucLoi> SalaryThangBangPhuCapPhucLois { get; set; }
 
@@ -65,25 +63,25 @@ namespace ViewModels
 
         public string Manv { get; set; }
 
-        public string CongTyChiNhanh { get; set; }
+        public string Ct { get; set; }
 
-        public string KhoiChucNang { get; set; }
+        public string Kcn { get; set; }
 
-        public string PhongBan { get; set; }
-         
-        public string ChucVu { get; set; } // vi tri
+        public string Pb { get; set; }
 
-        public IList<CongTyChiNhanh> CongTyChiNhanhs { get; set; }
+        public string Bp { get; set; }
 
-        public IList<KhoiChucNang> KhoiChucNangs { get; set; }
+        public string Cv { get; set; }
 
-        public IList<PhongBan> PhongBans { get; set; }
+        public IList<Category> CongTyChiNhanhs { get; set; }
 
-        public IList<BoPhan> BoPhans { get; set; }
+        public IList<Category> KhoiChucNangs { get; set; }
 
-        public IList<ChucVu> ChucVus { get; set; }
+        public IList<Category> PhongBans { get; set; }
 
-        public string BoPhan { get; set; }
+        public IList<Category> BoPhans { get; set; }
+
+        public IList<Category> ChucVus { get; set; }
 
         public DateTime Tu { get; set; }
 
@@ -111,6 +109,6 @@ namespace ViewModels
         public IList<FactoryProductDinhMucViewModel> DonGiaDMFulls { get; set; }
         #endregion
 
-        public int ThamSoTinhLuong { get; set; }
+        public int ThamSo { get; set; }
     }
 }

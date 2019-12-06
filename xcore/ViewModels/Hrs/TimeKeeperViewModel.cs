@@ -58,6 +58,8 @@ namespace ViewModels
         public string Pb { get; set; }
 
         public string Bp { get; set; }
+
+        public string Lc { get; set; }
         #endregion
 
         public IList<IdName> Approves { get; set; }

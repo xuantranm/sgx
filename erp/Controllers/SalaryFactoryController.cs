@@ -95,7 +95,7 @@ namespace erp.Controllers
 
             // MOI THANG SE CO 1 DANH SACH TAI THOI DIEM DO
             // TRANH NGUOI MOI CO TRONG BANG LUONG CU
-            Utility.AutoInitSalary((int)ESalaryType.NM, month, year);
+            //Utility.InitSalary((int)ESalaryType.NM, month, year);
 
             #region Filter
             var builder = Builders<SalaryEmployeeMonth>.Filter;
@@ -137,14 +137,14 @@ namespace erp.Controllers
 
             var viewModel = new BangLuongViewModel
             {
-                SalaryEmployeeMonths = salaryEmployeeMonths,
+                Salaries = salaryEmployeeMonths,
                 MonthYears = sortTimes,
                 Thang = Thang,
                 Employees = employees,
                 Id = Id,
-                KhoiChucNang = KhoiChucNang,
-                PhongBan = PhongBan,
-                BoPhan = BoPhan
+                Kcn = KhoiChucNang,
+                Pb = PhongBan,
+                Bp = BoPhan
             };
 
             return View(viewModel);
@@ -194,7 +194,7 @@ namespace erp.Controllers
                 thang = string.IsNullOrEmpty(thang) ? month + "-" + year : thang;
                 #endregion
 
-                var models = viewModel.SalaryEmployeeMonths;
+                var models = viewModel.Salaries;
                 foreach (var item in models)
                 {
                     var builder = Builders<SalaryEmployeeMonth>.Filter;
@@ -1976,10 +1976,10 @@ namespace erp.Controllers
             decimal luongCB = 0;
 
             // NHA MAY & SANXUAT => GET DIRECT [NgachLuongs] base maSo vs bac
-            var lastNgachLuong = dbContext.NgachLuongs.Find(m => m.Enable.Equals(true) && m.Law.Equals(false) && m.MaSo.Equals(maSo) && m.Bac.Equals(bac)).SortByDescending(m => m.Year).SortByDescending(m => m.Month).FirstOrDefault();
+            var lastNgachLuong = dbContext.NgachLuongs.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)ESalary.Law) && m.Code.Equals(maSo) && m.Level.Equals(bac)).SortByDescending(m => m.Year).SortByDescending(m => m.Month).FirstOrDefault();
             if (lastNgachLuong != null)
             {
-                luongCB = lastNgachLuong.MucLuongThang;
+                luongCB = lastNgachLuong.Money;
             }
 
             return luongCB;
