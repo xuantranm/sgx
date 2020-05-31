@@ -89,7 +89,9 @@ namespace Common.Enums
         Hospital = 20,
         Gender = 21,
         Probation = 22,
-        SalaryBase = 23
+        SalaryBase = 23,
+        Holiday = 24,
+        LeaveType = 25
     }
 
     public enum EPropertyValue
@@ -126,7 +128,8 @@ namespace Common.Enums
         Interger = 2,
         Double = 3,
         Decimal = 4,
-        Bool = 5
+        Bool = 5,
+        Date = 6
     }
 
     public enum EText

@@ -10,38 +10,18 @@ using System.Threading.Tasks;
 
 namespace Models
 {
-    public class Setting
+    public class Setting: Extension
     {
-        [BsonId]
-        [BsonRepresentation(BsonType.ObjectId)]
-        public string Id { get; set; }
-
-        public int Type { get; set; } = (int)EData.System;
+        public int Type { get; set; } = (int)EData.Setting;
 
         public string Key { get; set; }
 
         public string Value { get; set; }
 
-        public string Title { get; set; }
+        public int ValueType { get; set; } = (int)EValueType.String;
 
-        public string Content { get; set; }
+        public bool IsCode { get; set; } = false;
 
-        public string Language { get; set; } = Constants.Languages.Vietnamese;
-
-        public bool Enable { get; set; } = true;
-
-        public bool NoDelete { get; set; } = false;
-
-        public int Usage { get; set; } = 0;
-
-        public string Timestamp { get; set; } = DateTime.Now.ToString("yyyyMMddHHmmssfff");
-
-        public DateTime CreatedDate { get; set; } = DateTime.Now;
-
-        public string CreatedBy { get; set; }
-
-        public DateTime ModifiedDate { get; set; } = DateTime.Now;
-
-        public string ModifiedBy { get; set; }
+        public bool IsChoose { get; set; } = false; // Use edit, delete rule
     }
 }

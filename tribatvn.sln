@@ -1,10 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27703.2026
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29519.181
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "tribatvn", "tribatvn\tribatvn.csproj", "{981C469F-C315-494B-842E-2D3E0459E955}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "xcore", "xcore\xcore.csproj", "{1424E226-1723-4302-9181-8A2E1A8A4A81}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "erp", "erp\erp.csproj", "{00F9365A-526A-484E-873C-12B1429BB087}"
@@ -27,16 +25,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "xprobationalert", "xprobati
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "xbhxhalert", "xbhxhalert\xbhxhalert.csproj", "{42EDB0CD-9C97-4AA1-BF14-6604040D0737}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "xtimerstatusauto", "xtimerstatusauto\xtimerstatusauto.csproj", "{CB0838BB-4666-477B-8DC4-03596021150C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{981C469F-C315-494B-842E-2D3E0459E955}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{981C469F-C315-494B-842E-2D3E0459E955}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{981C469F-C315-494B-842E-2D3E0459E955}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{981C469F-C315-494B-842E-2D3E0459E955}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1424E226-1723-4302-9181-8A2E1A8A4A81}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{1424E226-1723-4302-9181-8A2E1A8A4A81}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1424E226-1723-4302-9181-8A2E1A8A4A81}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -81,6 +77,10 @@ Global
 		{42EDB0CD-9C97-4AA1-BF14-6604040D0737}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{42EDB0CD-9C97-4AA1-BF14-6604040D0737}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{42EDB0CD-9C97-4AA1-BF14-6604040D0737}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CB0838BB-4666-477B-8DC4-03596021150C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CB0838BB-4666-477B-8DC4-03596021150C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CB0838BB-4666-477B-8DC4-03596021150C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CB0838BB-4666-477B-8DC4-03596021150C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

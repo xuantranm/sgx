@@ -70,8 +70,13 @@ namespace Controllers
                 var newCode = lastE.CodeInt + 1;
                 entity.CodeInt = newCode;
                 entity.Code = newCode.ToString();
-                var isExist = dbContext.Categories.CountDocuments(m => m.Alias.Equals(entity.Alias) && m.Type.Equals(entity.Type));
-                if (isExist > 0)
+                var isExist = dbContext.Categories.CountDocuments(m => m.Alias.Equals(entity.Alias) && m.Type.Equals(entity.Type)) > 0 ? true : false;
+                if (!string.IsNullOrEmpty(entity.ParentId))
+                {
+                    isExist = dbContext.Categories.CountDocuments(m => m.ParentId.Equals(entity.ParentId) && m.Alias.Equals(entity.Alias) && m.Type.Equals(entity.Type)) > 0 ? true : false;
+                }
+
+                if (isExist)
                 {
                     return Json(new { result = false, source = "create", entity, message = Constants.Texts.Duplicate });
                 }

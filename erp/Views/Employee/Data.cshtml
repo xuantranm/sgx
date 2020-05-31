@@ -37,19 +37,19 @@
         }
     }
     ViewData["title"] = title;
-    var avatarDisplay = "/images/placeholder/120x120.png";
-    var coverDisplay = "background-image: url('/images/placeholder/354x167.png')";
+    var avatarDisplay = "https://via.placeholder.com/120x120";
+    var coverDisplay = "background-image: url('https://via.placeholder.com/354x167')";
     if (isImg)
     {
         var avatar = images.Where(m => m.Type.Equals(sizeValueAvatar)).FirstOrDefault();
         var cover = images.Where(m => m.Type.Equals(sizeValueCover)).FirstOrDefault();
         if (avatar != null && !string.IsNullOrEmpty(avatar.Path) && !string.IsNullOrEmpty(avatar.FileName))
         {
-            avatarDisplay = "/" + System.IO.Path.Combine(avatar.Path, avatar.FileName).Replace("\\", "/");
+            avatarDisplay = System.IO.Path.Combine("/", avatar.Path, avatar.FileName).Replace("\\", "/");
         }
         if (cover != null && !string.IsNullOrEmpty(cover.Path) && !string.IsNullOrEmpty(cover.FileName))
         {
-            coverDisplay = "background-image: url('/" + System.IO.Path.Combine(avatar.Path, avatar.FileName).Replace("\\", "/") + "'); height:167px";
+            coverDisplay = "background-image: url('" + System.IO.Path.Combine("/", cover.Path, cover.FileName).Replace("\\", "/") + "'); height:167px";
         }
     }
 

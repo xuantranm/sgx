@@ -45,6 +45,8 @@ namespace Models
         [BsonRepresentation(BsonType.Decimal128)]
         public decimal Money { get; set; } = 0;
 
+        public string TypeRole { get; set; }
+
         public int Order { get; set; } = 1;
 
         public int Month { get; set; } = DateTime.Now.Month;

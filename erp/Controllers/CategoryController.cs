@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -179,6 +180,14 @@ namespace Controllers
             entity.Name = entity.Name.Trim();
             entity.Alias = Utility.AliasConvert(entity.Name);
 
+            #region Values
+            if (entity.Type == (int)ECategory.Holiday)
+            {
+                entity.ValueType = (int)EValueType.Date;
+                entity.Value = DateTime.Parse(entity.Value, new CultureInfo("en-CA")).ToString();
+            }
+            #endregion
+
             #region Properties
             if (entity.Properties != null && entity.Properties.Count > 0)
             {
@@ -230,7 +239,7 @@ namespace Controllers
                 dbContext.Categories.UpdateOne(filter, update);
             }
 
-            return Redirect("/category");
+            return Redirect("/" + Constants.Link.Category);
         }
 
         [HttpPost]

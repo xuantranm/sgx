@@ -29,6 +29,170 @@ namespace Common.Utilities
         {
         }
 
+        public static TimerAnalytic TimerAnalytics(EmployeeWorkTimeLog item, bool mode)
+        {
+            var isMiss = false;
+            var isSendXN = false;
+            double workDay = 0;
+            double ngayNghiP = 0;
+            double leTet = 0;
+            int late = 0;
+            int vaoTreLan = 0;
+            int early = 0;
+            int raSomLan = 0;
+            var displayInOut = string.Empty;
+            double otNormalReal = 0;
+            double otSundayReal = 0;
+            double otHolidayReal = 0;
+            double tangCaNgayThuong = 0;
+            double tangCaChuNhat = 0;
+            double tangCaLeTet = 0;
+            double vangKP = 0;
+
+            var statusTangCa = item.StatusTangCa;
+
+            if (item.Mode == (int)ETimeWork.Normal)
+            {
+                workDay = item.WorkDay;
+                switch (item.Status)
+                {
+                    case (int)EStatusWork.XacNhanCong:
+                        {
+                            isMiss = true;
+                            break;
+                        }
+                    case (int)EStatusWork.DaGuiXacNhan:
+                        {
+                            //isMiss = true;
+                            //isSendXN = true;
+                            workDay = 1;
+                            break;
+                        }
+                    case (int)EStatusWork.DongY:
+                        {
+                            workDay = 1;
+                            break;
+                        }
+                    case (int)EStatusWork.TuChoi:
+                        {
+                            isMiss = true;
+                            break;
+                        }
+                }
+            }
+            else if (item.Mode == (int)ETimeWork.LeavePhep)
+            {
+                ngayNghiP = item.SoNgayNghi;
+                if (item.SoNgayNghi < 1)
+                {
+                    workDay = 0.5;
+                }
+            }
+            else if (item.Mode == (int)ETimeWork.Holiday)
+            {
+                leTet = 1;
+            }
+
+            // Holiday still work,...
+            if (item.Logs != null)
+            {
+                if (isMiss)
+                {
+                    if (item.Late.TotalMinutes > 1)
+                    {
+                        late = Convert.ToInt32(Math.Floor(item.Late.TotalMinutes));
+                        vaoTreLan = 1;
+                    }
+                    if (item.Early.TotalMinutes > 1)
+                    {
+                        early = Convert.ToInt32(Math.Floor(item.Early.TotalMinutes));
+                        raSomLan = 1;
+                    }
+                    if (mode)
+                    {
+                        if (late > 15)
+                        {
+                            workDay -= 0.5;
+                            late = 0;
+                            vaoTreLan = 0;
+                        }
+                        if (early > 15)
+                        {
+                            workDay -= 0.5;
+                            early = 0;
+                            raSomLan = 0;
+                        }
+                    }
+                    //var timeoutin = item.Out - item.In;
+                    //if (timeoutin.HasValue && timeoutin.Value.TotalHours > 6)
+                    //{
+                    //    // First, không tính 15p
+                    //    item.WorkDay = 1;
+                    //    ngayCongNT++;
+                    //}
+                    //else
+                    //{
+                    //    if (item.Out.HasValue || item.In.HasValue)
+                    //    {
+                    //        item.WorkDay = 0.5;
+                    //    }
+                    //    ngayCongNT += item.WorkDay;
+                    //}
+                }
+                displayInOut = item.In.HasValue ? item.In.Value.ToString(@"hh\:mm") : string.Empty;
+                if (item.Out.HasValue)
+                {
+                    displayInOut += !string.IsNullOrEmpty(displayInOut) ? " - " + item.Out.Value.ToString(@"hh\:mm") : item.Out.Value.ToString(@"hh\:mm");
+                }
+
+                // TANG CA
+                if (item.Mode == (int)ETimeWork.Normal)
+                {
+                    otNormalReal = Math.Round(item.OtThucTeD, 2);
+                    if (statusTangCa == (int)ETangCa.DongY)
+                    {
+                        tangCaNgayThuong = Math.Round(item.OtXacNhanD, 2);
+                    }
+                }
+                else if (item.Mode == (int)ETimeWork.Sunday)
+                {
+                    otSundayReal = Math.Round(item.OtThucTeD, 2);
+                    if (statusTangCa == (int)ETangCa.DongY)
+                    {
+                        tangCaChuNhat = Math.Round(item.OtXacNhanD, 2);
+                    }
+                }
+                else
+                {
+                    otHolidayReal = Math.Round(item.OtThucTeD, 2);
+                    if (statusTangCa == (int)ETangCa.DongY)
+                    {
+                        tangCaLeTet = Math.Round(item.OtXacNhanD, 2);
+                    }
+                }
+            }
+
+            return new TimerAnalytic()
+            {
+                Miss = isMiss,
+                Workday = workDay,
+                NgayNghiP = ngayNghiP,
+                LeTet = leTet,
+                Late = late,
+                VaoTreLan = vaoTreLan,
+                Early = early,
+                RaSomLan = raSomLan,
+                DisplayInOut = displayInOut,
+                OtNormalReal = otNormalReal,
+                OtSundayReal = otSundayReal,
+                OtHolidayReal = otHolidayReal,
+                TangCaNgayThuong = tangCaNgayThuong,
+                TangCaChuNhat = tangCaChuNhat,
+                TangCaLeTet = tangCaLeTet,
+                VangKP = 0
+            };
+        }
+
         public static void StyleExcel(IWorkbook workbook, out ICellStyle styleDedault, out ICellStyle styleDot, out ICellStyle styleTitle, out ICellStyle styleSubTitle, out ICellStyle styleHeader, out ICellStyle styleDedaultMerge, out ICellStyle styleBold)
         {
             var font = workbook.CreateFont();
@@ -304,7 +468,7 @@ namespace Common.Utilities
             {
                 // Lương căn bản của công nhân sản xuất là:  4,012,500
                 var luongcanban = GetLuongCanBan(employee.NgachLuongCode, employee.NgachLuongLevel);
-                
+
                 if (!employee.Official)
                 {
                     // Thử việc = 85% lương
@@ -909,6 +1073,23 @@ namespace Common.Utilities
         {
             var builder = Builders<Employee>.Filter;
             var filter = builder.Eq(m => m.Enable, true) & builder.Eq(m => m.Leave, false);
+            filter &= !builder.Eq(m => m.UserName, Constants.System.account);
+            if (isSystem)
+            {
+                // Remove cấp cao ra (theo mã số lương)
+                filter &= !builder.In(m => m.NgachLuongCode, new string[] { "C.01", "C.02", "C.03" });
+            }
+            else
+            {
+                filter &= builder.Eq(m => m.ManagerEmployeeId, managerId);
+            }
+            return dbContext.Employees.Find(filter).SortBy(m => m.FullName).ToList();
+        }
+
+        public static List<Employee> EmployeesTimeBase(bool isSystem, string managerId)
+        {
+            var builder = Builders<Employee>.Filter;
+            var filter = builder.Eq(m => m.Enable, true) & builder.Eq(m => m.IsOnline, true);
             filter &= !builder.Eq(m => m.UserName, Constants.System.account);
             if (isSystem)
             {

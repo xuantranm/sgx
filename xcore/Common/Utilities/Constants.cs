@@ -488,14 +488,9 @@ namespace Common.Utilities
 
         public static class LinkNotification
         {
-            public const string Main = "nt";
+            public const string Main = "thong-bao";
             public const string Index = "thong-bao";
-
             public const string List = "danh-sach";
-            public const string Create = "tao";
-            public const string CalculatorDate = "calculator-date";
-            // API
-            public const string Approve = "duyet-phep";
         }
 
         public static class LinkSurvey

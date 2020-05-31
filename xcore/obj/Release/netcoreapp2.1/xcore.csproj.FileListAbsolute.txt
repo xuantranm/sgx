@@ -24,3 +24,12 @@ D:\projects\sgx\xcore\obj\Release\netcoreapp2.1\xcore.AssemblyInfoInputs.cache
 D:\projects\sgx\xcore\obj\Release\netcoreapp2.1\xcore.AssemblyInfo.cs
 D:\projects\sgx\xcore\obj\Release\netcoreapp2.1\xcore.dll
 D:\projects\sgx\xcore\obj\Release\netcoreapp2.1\xcore.pdb
+D:\Xuan\Projects\SGX\xcore\bin\Release\netcoreapp2.1\xcore.deps.json
+D:\Xuan\Projects\SGX\xcore\bin\Release\netcoreapp2.1\xcore.dll
+D:\Xuan\Projects\SGX\xcore\bin\Release\netcoreapp2.1\xcore.pdb
+D:\Xuan\Projects\SGX\xcore\obj\Release\netcoreapp2.1\xcore.csprojAssemblyReference.cache
+D:\Xuan\Projects\SGX\xcore\obj\Release\netcoreapp2.1\xcore.csproj.CoreCompileInputs.cache
+D:\Xuan\Projects\SGX\xcore\obj\Release\netcoreapp2.1\xcore.AssemblyInfoInputs.cache
+D:\Xuan\Projects\SGX\xcore\obj\Release\netcoreapp2.1\xcore.AssemblyInfo.cs
+D:\Xuan\Projects\SGX\xcore\obj\Release\netcoreapp2.1\xcore.dll
+D:\Xuan\Projects\SGX\xcore\obj\Release\netcoreapp2.1\xcore.pdb

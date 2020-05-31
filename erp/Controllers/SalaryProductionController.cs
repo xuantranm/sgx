@@ -144,7 +144,7 @@ namespace erp.Controllers
 
             var viewModel = new BangLuongViewModel
             {
-                SalaryEmployeeMonths = results,
+                Salaries = results,
                 Employees = employees,
                 MonthYears = sortTimes,
                 Id = Id,

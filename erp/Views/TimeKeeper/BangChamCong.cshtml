@@ -70,7 +70,7 @@
                 <div class="form-group row">
                     <div class="col-md-4 col-sm-6 col-12">
                         <label class="control-label">Khối chức năng:</label>
-                        <select asp-for="Kcn" class="form-control ddlkhoichucnang">
+                        <select asp-for="Kcn" class="form-control ddlkhoichucnang" onchange="formSubmit();">
                             <option value="">Tất cả</option>
                             @foreach (var item in Model.KhoiChucNangs)
                             {
@@ -266,54 +266,40 @@
                                             var item = timesSort.Where(m => m.Date.Equals(date)).FirstOrDefault();
                                             if (item != null)
                                             {
+                                                var analytic = Utility.TimerAnalytics(item, true);
                                                 var dayString = string.Empty;
                                                 var displayInOut = string.Empty;
                                                 var noilamviec = !string.IsNullOrEmpty(item.WorkplaceCode) ? item.WorkplaceCode : string.Empty;
                                                 var reason = !string.IsNullOrEmpty(item.Reason) ? item.Reason : string.Empty;
                                                 var detail = !string.IsNullOrEmpty(item.ReasonDetail) ? item.ReasonDetail : string.Empty;
-                                                var statusTangCa = item.StatusTangCa;
-                                                var statusBag = statusTangCa == (int)ETangCa.TuChoi ? "badge-pill" : "badge-info";
+                                                var statusBag = item.StatusTangCa == (int)ETangCa.TuChoi ? "badge-pill" : "badge-info";
                                                 var giotangcathucte = Math.Round(item.OtThucTeD, 2);
                                                 var phuttangcathucte = Math.Round(giotangcathucte * 60, 0);
                                                 var giotangcaxacnhan = Math.Round(item.OtXacNhanD, 2);
                                                 int late = 0;
                                                 int early = 0;
-                                                var isMiss = false;
-                                                if (item.Mode == (int)ETimeWork.Normal)
-                                                {
-                                                    switch (item.Status)
-                                                    {
-                                                        case (int)EStatusWork.XacNhanCong:
-                                                            {
-                                                                isMiss = true;
-                                                                break;
-                                                            }
-                                                        case (int)EStatusWork.DaGuiXacNhan:
-                                                            {
-                                                                item.WorkDay = 1;
-                                                                ngayCongNT++;
-                                                                break;
-                                                            }
-                                                        case (int)EStatusWork.DongY:
-                                                            {
-                                                                item.WorkDay = 1;
-                                                                ngayCongNT++;
-                                                                break;
-                                                            }
-                                                        case (int)EStatusWork.TuChoi:
-                                                            {
-                                                                isMiss = true;
-                                                                break;
-                                                            }
-                                                        default:
-                                                            {
-                                                                ngayCongNT++;
-                                                                break;
-                                                            }
-                                                    }
-                                                }
 
-                                                // Calculator = hour
+                                                var isMiss = analytic.Miss;
+                                                item.WorkDay = analytic.Workday;
+                                                late = analytic.Late;
+                                                early = analytic.Early;
+                                                displayInOut = analytic.DisplayInOut;
+                                                ngayCongNT += analytic.Workday;
+                                                ngayNghiP += analytic.NgayNghiP;
+                                                letet += analytic.LeTet;
+                                                vaoTreLan += analytic.VaoTreLan;
+                                                vaoTrePhut += analytic.Late;
+                                                raSomLan += analytic.RaSomLan;
+                                                raSomPhut += analytic.Early;
+                                                otNormalReal += analytic.OtNormalReal;
+                                                otSundayReal += analytic.OtSundayReal;
+                                                otHolidayReal += analytic.OtHolidayReal;
+                                                tangCaNgayThuong += analytic.TangCaNgayThuong;
+                                                tangCaChuNhat += analytic.TangCaChuNhat;
+                                                tangCaLeTet += analytic.TangCaLeTet;
+
+                                                dayString = item.WorkDay + " ngày";
+
                                                 if (item.Mode == (int)ETimeWork.Sunday || item.Mode == (int)ETimeWork.Holiday)
                                                 {
                                                     if (item.WorkTime.TotalHours > 0)
@@ -322,102 +308,27 @@
                                                     }
                                                 }
 
-                                                if (item.Mode == (int)ETimeWork.LeavePhep)
-                                                {
-                                                    ngayNghiP += item.SoNgayNghi;
-                                                    if (item.SoNgayNghi < 1)
-                                                    {
-                                                        item.WorkDay = 0.5;
-                                                        ngayCongNT += 0.5;
-                                                    }
-                                                }
-                                                if (item.Mode == (int)ETimeWork.Holiday)
-                                                {
-                                                    letet += 1;
-                                                }
-
-                                                if (item.Logs != null)
-                                                {
-                                                    if (isMiss)
-                                                    {
-                                                        if (item.Late.TotalMinutes > 1)
-                                                        {
-                                                            late = Convert.ToInt32(Math.Floor(item.Late.TotalMinutes));
-                                                            vaoTreLan++;
-                                                            vaoTrePhut += late;
-                                                        }
-                                                        if (item.Early.TotalMinutes > 1)
-                                                        {
-                                                            early = Convert.ToInt32(Math.Floor(item.Early.TotalMinutes));
-                                                            raSomLan++;
-                                                            raSomPhut += early;
-                                                        }
-                                                        var timeoutin = item.Out - item.In;
-                                                        if (timeoutin.HasValue && timeoutin.Value.TotalHours > 6)
-                                                        {
-                                                            // First, không tính 15p
-                                                            item.WorkDay = 1;
-                                                            ngayCongNT++;
-                                                        }
-                                                        else
-                                                        {
-                                                            if (item.Out.HasValue || item.In.HasValue)
-                                                            {
-                                                                item.WorkDay = 0.5;
-                                                            }
-                                                            ngayCongNT += item.WorkDay;
-                                                        }
-                                                    }
-                                                    displayInOut = item.In.HasValue ? item.In.Value.ToString(@"hh\:mm") : string.Empty;
-                                                    if (item.Out.HasValue)
-                                                    {
-                                                        displayInOut += !string.IsNullOrEmpty(displayInOut) ? " - " + item.Out.Value.ToString(@"hh\:mm") : item.Out.Value.ToString(@"hh\:mm");
-                                                    }
-
-                                                    // TANG CA
-                                                    if (item.Mode == (int)ETimeWork.Normal)
-                                                    {
-                                                        otNormalReal += Math.Round(item.OtThucTeD, 2);
-                                                        if (statusTangCa == (int)ETangCa.DongY)
-                                                        {
-                                                            tangCaNgayThuong += Math.Round(item.OtXacNhanD, 2);
-                                                        }
-                                                    }
-                                                    if (item.Mode == (int)ETimeWork.Sunday)
-                                                    {
-                                                        otSundayReal += Math.Round(item.OtThucTeD, 2);
-                                                        if (statusTangCa == (int)ETangCa.DongY)
-                                                        {
-                                                            tangCaChuNhat += Math.Round(item.OtXacNhanD, 2);
-                                                        }
-                                                    }
-                                                    if (item.Mode == (int)ETimeWork.Holiday)
-                                                    {
-                                                        otHolidayReal += Math.Round(item.OtThucTeD, 2);
-                                                        if (statusTangCa == (int)ETangCa.DongY)
-                                                        {
-                                                            tangCaLeTet += Math.Round(item.OtXacNhanD, 2);
-                                                        }
-                                                    }
-                                                }
-
-                                                dayString = item.WorkDay + " ngày";
-
                                                 <td nowrap>
                                                     <div>
                                                         @if (item.Mode != (int)ETimeWork.Normal)
                                                         {
+                                                            if (item.Logs != null && item.Logs.Count > 0)
+                                                            {
+                                                                <small>Công: <code>@dayString</code></small>
+                                                            }
                                                             <span class="badge badge-info">@Constants.WorkTimeMode(item.Mode)</span>
                                                         }
-                                                        @if (item.WorkDay > 0)
+                                                        else
                                                         {
                                                             <small>Công: <code>@dayString</code></small>
                                                         }
+
                                                         @if (!string.IsNullOrEmpty(displayInOut))
                                                         {
                                                             <br />
                                                             <small>Vào-ra: @displayInOut</small>
                                                         }
+
                                                         @if (item.Logs != null && item.Logs.Count > 0)
                                                         {
                                                             <br />

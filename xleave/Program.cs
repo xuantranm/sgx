@@ -1,17 +1,10 @@
 ﻿using Common.Utilities;
 using Data;
-using MimeKit;
-using MimeKit.Text;
 using Models;
 using MongoDB.Driver;
-using Services;
 using System;
-using System.Collections.Generic;
 using System.Configuration;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace xleave
 {
@@ -19,18 +12,10 @@ namespace xleave
     {
         static void Main(string[] args)
         {
-            #region setting
+            #region Connection, Setting & Filter
             var debug = ConfigurationSettings.AppSettings.Get("debugString").ToString();
             var connection = ConfigurationSettings.AppSettings.Get("connection").ToString();
             var database = ConfigurationSettings.AppSettings.Get("database").ToString();
-            #endregion
-
-            UpdateLeave(connection, database, debug);
-        }
-
-        static void UpdateLeave(string connection, string database, string debug)
-        {
-            #region Connection, Setting & Filter
             MongoDBContext.ConnectionString = connection;
             MongoDBContext.DatabaseName = database;
             MongoDBContext.IsSSL = true;
@@ -48,10 +33,10 @@ namespace xleave
             var builder = Builders<Employee>.Filter;
             var filter = !builder.Eq(i => i.UserName, Constants.System.account)
                         & builder.Eq(m => m.Enable, true)
-                        & builder.Eq(m => m.Leave, false);
+                        & builder.Eq(m => m.IsOnline, true);
             if (!string.IsNullOrEmpty(debug))
             {
-                filter = filter & builder.Eq(m => m.Id, debug);
+                filter &= builder.Eq(m => m.Id, debug);
             }
             #endregion
 
@@ -121,7 +106,8 @@ namespace xleave
                 var leaveE = dbContext.LeaveEmployees.Find(m => m.EmployeeId.Equals(employeeId)).FirstOrDefault();
                 if (leaveE == null)
                 {
-                    var leaveEmployeeNew = new LeaveEmployee() {
+                    var leaveEmployeeNew = new LeaveEmployee()
+                    {
                         LeaveTypeId = leaveTypeId,
                         EmployeeId = employeeId,
                         LeaveTypeName = leaveType.Name,
@@ -150,8 +136,8 @@ namespace xleave
                 else
                 {
                     // No update if updated
-                    var checkUpdated = dbContext.LeaveEmployeeHistories.CountDocuments(m => m.EmployeeId.Equals(employeeId) && m.Month.Equals(month) && m.Year.Equals(year)) == 0 ? true : false;
-                    if (checkUpdated)
+                    var updated = dbContext.LeaveEmployeeHistories.CountDocuments(m => m.EmployeeId.Equals(employeeId) && m.Month.Equals(month) && m.Year.Equals(year)) > 0 ? false : true;
+                    if (updated)
                     {
                         double currentLeaveNum = 0;
                         var currentLeave = dbContext.LeaveEmployees.Find(m => m.EmployeeId.Equals(employeeId) && m.LeaveTypeId.Equals(leaveTypeId)).FirstOrDefault();

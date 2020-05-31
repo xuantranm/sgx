@@ -96,7 +96,8 @@
                             <tr>
                                 <th scope="col"></th>
                                 <td scope="col">Loại</td>
-                                <th scope="col">Doanh mục</th>
+                                <th scope="col">Tên/Doanh mục</th>
+                                <th scope="col">Giá trị</th>
                                 <th scope="col">Mô tả</th>
                             </tr>
                         </thead>
@@ -109,14 +110,15 @@
                                 {
                                     name = item.ParentName + " > " + name;
                                 }
-                                <tr>
-                                    <td>
-                                        <a href="/@Constants.Link.Category/@Constants.ActionLink.Data/@item.Category.Id"><i class="fas fa-edit"></i></a>
-                                    </td>
-                                    <td>@Enum.GetName(typeof(ECategory), item.Category.Type)</td>
-                                    <td>@name</td>
-                                    <td>@Constants.Truncate(item.Category.Description, 100)</td>
-                                </tr>
+                            <tr>
+                                <td>
+                                    <a href="/@Constants.Link.Category/@Constants.ActionLink.Data/@item.Category.Id"><i class="fas fa-edit"></i></a>
+                                </td>
+                                <td>@Enum.GetName(typeof(ECategory), item.Category.Type)</td>
+                                <td>@name</td>
+                                <td>@item.Category.Value</td>
+                                <td>@Constants.Truncate(item.Category.Description, 100)</td>
+                            </tr>
                             }
                         </tbody>
                     </table>

@@ -133,7 +133,7 @@ namespace erp.Controllers
 
             var viewModel = new BangLuongViewModel()
             {
-                SalaryEmployeeMonths = list,
+                Salaries = list,
                 Employees = employees,
                 SalaryMucLuongVung = mucluongvung,
                 MonthYears = sortTimes,
@@ -172,7 +172,7 @@ namespace erp.Controllers
             #endregion
 
             var mucluongvung = await dbContext.SalaryMucLuongVungs.Find(m => m.Enable.Equals(true)).FirstOrDefaultAsync();
-            var ngachluongs = await dbContext.NgachLuongs.Find(m => m.Enable.Equals(true) && m.Law.Equals(true)).ToListAsync();
+            var ngachluongs = await dbContext.NgachLuongs.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)ESalary.Law)).ToListAsync();
             var phucapphuclois = await dbContext.SalaryThangBangPhuCapPhucLois.Find(m => m.Enable.Equals(true)).ToListAsync();
             var viewModel = new ThangBangLuongViewModel
             {
@@ -185,7 +185,7 @@ namespace erp.Controllers
         }
 
         [Route(Constants.LinkSalary.ThangLuong + "/" + Constants.LinkSalary.Calculator)]
-        public IActionResult ThangLuongCalculator(decimal money, double heso, string id)
+        public IActionResult ThangLuongCalculator(decimal money, double Rate, string id)
         {
             var list = new List<IdMoney>();
             decimal salaryMin = dbContext.SalaryMucLuongVungs.Find(m => m.Enable.Equals(true)).First().ToiThieuVungDoanhNghiepApDung; // use reset
@@ -198,23 +198,23 @@ namespace erp.Controllers
             // else: get information by id=> calculator from [Bac] and return by group.
             if (!string.IsNullOrEmpty(id))
             {
-                var currentLevel = dbContext.SalaryThangBangLuongs.Find(m => m.Id.Equals(id)).FirstOrDefault();
+                var currentLevel = dbContext.NgachLuongs.Find(m => m.Id.Equals(id)).FirstOrDefault();
                 if (currentLevel != null)
                 {
-                    var bac = currentLevel.Bac;
-                    var maso = currentLevel.MaSo;
-                    if (heso == 0)
+                    var bac = currentLevel.Level;
+                    var Code = currentLevel.Code;
+                    if (Rate == 0)
                     {
-                        heso = currentLevel.HeSo;
+                        Rate = currentLevel.Rate;
                     }
-                    var salaryDeclareTax = Convert.ToDecimal(heso * (double)salaryMin);
+                    var salaryDeclareTax = Convert.ToDecimal(Rate * (double)salaryMin);
                     if (bac > 1)
                     {
                         var previousBac = bac - 1;
-                        var previousBacEntity = dbContext.SalaryThangBangLuongs.Find(m => m.MaSo.Equals(maso) & m.Bac.Equals(previousBac)).FirstOrDefault();
+                        var previousBacEntity = dbContext.NgachLuongs.Find(m => m.Code.Equals(Code) & m.Level.Equals(previousBac)).FirstOrDefault();
                         if (previousBacEntity != null)
                         {
-                            salaryDeclareTax = Convert.ToDecimal(heso * (double)previousBacEntity.MucLuong);
+                            salaryDeclareTax = Convert.ToDecimal(Rate * (double)previousBacEntity.Money);
                         }
                     }
                     // Add current change
@@ -222,20 +222,20 @@ namespace erp.Controllers
                     {
                         Id = currentLevel.Id,
                         Money = salaryDeclareTax,
-                        Rate = heso
+                        Rate = Rate
                     });
-                    var levels = dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true) & m.Law.Equals(true) & m.MaSo.Equals(maso)).ToList();
+                    var levels = dbContext.NgachLuongs.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)ESalary.Law) & m.Code.Equals(Code)).ToList();
 
                     foreach (var level in levels)
                     {
-                        if (level.Bac > bac)
+                        if (level.Level > bac)
                         {
-                            salaryDeclareTax = Convert.ToDecimal(level.HeSo * (double)salaryDeclareTax);
+                            salaryDeclareTax = Convert.ToDecimal(level.Rate * (double)salaryDeclareTax);
                             list.Add(new IdMoney
                             {
                                 Id = level.Id,
                                 Money = salaryDeclareTax,
-                                Rate = level.HeSo
+                                Rate = level.Rate
                             });
                         }
                     }
@@ -243,17 +243,17 @@ namespace erp.Controllers
             }
             else
             {
-                var levels = dbContext.SalaryThangBangLuongs.Find(m => m.Enable.Equals(true) & m.Law.Equals(true)).ToList();
-                // group by MaSo
+                var levels = dbContext.NgachLuongs.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)ESalary.Law)).ToList();
+                // group by Code
                 var groups = (from s in levels
                               group s by new
                               {
-                                  s.MaSo
+                                  s.Code
                               }
                                                     into l
                               select new
                               {
-                                  MaSoName = l.Key.MaSo,
+                                  CodeName = l.Key.Code,
                                   Salaries = l.ToList(),
                               }).ToList();
 
@@ -263,12 +263,12 @@ namespace erp.Controllers
                     var salaryDeclareTax = salaryMin;
                     foreach (var level in group.Salaries)
                     {
-                        salaryDeclareTax = Convert.ToDecimal(level.HeSo * (double)salaryDeclareTax);
+                        salaryDeclareTax = Convert.ToDecimal(level.Rate * (double)salaryDeclareTax);
                         list.Add(new IdMoney
                         {
                             Id = level.Id,
                             Money = salaryDeclareTax,
-                            Rate = level.HeSo
+                            Rate = level.Rate
                         });
                     }
                 }

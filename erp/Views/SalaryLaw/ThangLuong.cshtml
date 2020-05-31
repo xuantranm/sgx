@@ -113,14 +113,14 @@
                                             var groupBacLuong = (from s in typeLevel.Levels
                                                                  group s by new
                                                                  {
-                                                                     s.ChucDanhCongViec,
-                                                                     s.MaSo
+                                                                     s.Name,
+                                                                     s.Code
                                                                  }
                                             into l
                                                                  select new
                                                                  {
-                                                                     Name = l.Key.ChucDanhCongViec,
-                                                                     MaSo = l.Key.MaSo,
+                                                                     Name = l.Key.Name,
+                                                                     MaSo = l.Key.Code,
                                                                      CountSalaries = l.Count(),
                                                                      Salaries = l.ToList(),
                                                                  }).ToList();
@@ -166,12 +166,12 @@
                                                             var colorRed = "black";
                                                             foreach (var heso in bacLuong.Salaries)
                                                             {
-                                                                if (heso.Bac == 1)
+                                                                if (heso.Level == 1)
                                                                 {
                                                                     colorRed = "red";
                                                                 }
                                                                 <td style="text-align:right;background-color:rgb(0,211,240);color:@colorRed">
-                                                                    @heso.HeSo
+                                                                    @heso.Rate
                                                                 </td>
                                                             }
                                                             if (miss > 0)
@@ -192,7 +192,7 @@
                                                             foreach (var heso in bacLuong.Salaries)
                                                             {
                                                                 <td style="background-color:white">
-                                                                    @string.Format("{0:n0}", Math.Round((double)heso.MucLuongThang / 1000d, 0))
+                                                                    @string.Format("{0:n0}", Math.Round((double)heso.Money / 1000d, 0))
                                                                 </td>
                                                             }
                                                             if (miss > 0)

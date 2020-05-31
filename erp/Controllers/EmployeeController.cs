@@ -40,8 +40,8 @@ namespace Controllers
         private readonly IEmailSender _emailSender;
         private bool bhxh;
 
-        public EmployeeController(IConfiguration configuration, 
-            IHostingEnvironment env, 
+        public EmployeeController(IConfiguration configuration,
+            IHostingEnvironment env,
             IEmailSender emailSender)
         {
             Configuration = configuration;
@@ -326,7 +326,7 @@ namespace Controllers
 
             bool isEdit = false;
             var workplaces = new List<Workplace>();
-            foreach(var item in congtychinhanhs)
+            foreach (var item in congtychinhanhs)
             {
                 workplaces.Add(new Workplace()
                 {
@@ -1300,6 +1300,280 @@ namespace Controllers
                     row.CreateCell(35, CellType.String).SetCellValue(trinhdo);
                     row.CreateCell(36, CellType.String).SetCellValue(data.Leaveday.HasValue ? data.Leaveday.Value.ToString("dd/MM/yyyy") : string.Empty);
                     rowIndex++;
+                }
+
+                workbook.Write(fs);
+            }
+            using (var stream = new FileStream(Path.Combine(exportFolder, sFileName), FileMode.Open))
+            {
+                stream.CopyTo(memory);
+            }
+            memory.Position = 0;
+            return File(memory, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", sFileName);
+        }
+
+        [Route(Constants.LinkHr.Human + "/" + Constants.LinkHr.List + "/xuat-nghi")]
+        public async Task<IActionResult> ExportLeave(int? nam)
+        {
+            #region Authorization
+            LoginInit(Constants.Rights.HR, (int)ERights.View);
+            if (!(bool)ViewData[Constants.ActionViews.IsLogin])
+            {
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                return RedirectToAction(Constants.ActionViews.Login, Constants.Controllers.Account);
+            }
+            if (!(bool)ViewData[Constants.ActionViews.IsRight])
+            {
+                return RedirectToAction("Index", "Home");
+            }
+            #endregion
+
+            #region Get Setting Value
+            var settings = dbContext.Settings.Find(m => m.Enable.Equals(true)).ToList();
+            bhxh = false;
+            var bhxhSetting = settings.First(m => m.Key.Equals("NoBHXH"));
+            if (bhxhSetting != null)
+            {
+                bhxh = bhxhSetting.Value == "true" ? false : true;
+            }
+            #endregion
+
+            #region Dropdownlist
+            var congtychinhanhs = dbContext.Categories.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)ECategory.Company)).ToList();
+            var khoichucnangs = dbContext.Categories.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)ECategory.KhoiChucNang)).ToList();
+            var phongbans = dbContext.Categories.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)ECategory.PhongBan)).ToList();
+            var bophans = dbContext.Categories.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)ECategory.BoPhan)).ToList();
+            var chucvus = dbContext.Categories.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)ECategory.ChucVu)).ToList();
+            var employeeDdl = await dbContext.Employees.Find(m => m.Enable.Equals(true) && !m.UserName.Equals(Constants.System.account)).SortBy(m => m.FullName).ToListAsync();
+            #endregion
+
+            string sFileName = @"nhan-su-nghi";
+
+            #region Filter
+            var builder = Builders<Employee>.Filter;
+            var filter = !builder.Eq(i => i.UserName, Constants.System.account) & builder.Eq(m => m.Enable, true) & builder.Eq(m => m.Leave, true);
+            if (nam.HasValue)
+            {
+                sFileName += "-nam-" + nam.Value;
+                var starY = new DateTime(nam.Value, 1, 1);
+                var endY = starY.AddYears(1).AddDays(-1);
+                filter &= builder.Gte(m => m.Leaveday, starY) & builder.Lte(m => m.Leaveday, endY);
+            }
+            #endregion
+
+            #region Sort
+            var sortBuilder = Builders<Employee>.Sort.Ascending(m => m.Leaveday);
+            #endregion
+
+            var records = await dbContext.Employees.CountDocumentsAsync(filter);
+
+            var employees = dbContext.Employees.Find(filter).Sort(sortBuilder).ToList();
+
+            string exportFolder = Path.Combine(_env.WebRootPath, "exports");
+
+            sFileName += DateTime.Now.ToString("ddMMyyyyhhmm") + ".xlsx";
+
+            string URL = string.Format("{0}://{1}/{2}", Request.Scheme, Request.Host, sFileName);
+            FileInfo file = new FileInfo(Path.Combine(exportFolder, sFileName));
+            var memory = new MemoryStream();
+            using (var fs = new FileStream(Path.Combine(exportFolder, sFileName), FileMode.Create, FileAccess.Write))
+            {
+                IWorkbook workbook = new XSSFWorkbook();
+                #region Styling
+                var cellStyleBorder = workbook.CreateCellStyle();
+                cellStyleBorder.BorderBottom = BorderStyle.Thin;
+                cellStyleBorder.BorderLeft = BorderStyle.Thin;
+                cellStyleBorder.BorderRight = BorderStyle.Thin;
+                cellStyleBorder.BorderTop = BorderStyle.Thin;
+                cellStyleBorder.Alignment = HorizontalAlignment.Center;
+                cellStyleBorder.VerticalAlignment = VerticalAlignment.Center;
+
+                var cellStyleHeader = workbook.CreateCellStyle();
+                cellStyleHeader.FillForegroundColor = HSSFColor.Grey25Percent.Index;
+                cellStyleHeader.FillPattern = FillPattern.SolidForeground;
+                #endregion
+
+                ISheet sheet1 = workbook.CreateSheet("Danh-sach-nghi");
+
+                var rowIndex = 0;
+                IRow row = sheet1.CreateRow(rowIndex);
+                row.CreateCell(0, CellType.String).SetCellValue("STT");
+                row.CreateCell(1, CellType.String).SetCellValue("Mã");
+                row.CreateCell(2, CellType.String).SetCellValue("Họ tên");
+                row.CreateCell(3, CellType.String).SetCellValue("Email");
+                row.CreateCell(4, CellType.String).SetCellValue("Điện thoại bàn");
+                row.CreateCell(5, CellType.String).SetCellValue("Điện thoại");
+                //row.CreateCell(6, CellType.String).SetCellValue("Chấm công");
+                //row.CreateCell(7, CellType.String).SetCellValue("Mã chấm công");
+                //row.CreateCell(8, CellType.String).SetCellValue("Thời gian làm việc");
+                //row.CreateCell(9, CellType.String).SetCellValue("Mức phép năm");
+                //row.CreateCell(10, CellType.String).SetCellValue("Ngày sinh");
+                //row.CreateCell(11, CellType.String).SetCellValue("Giới tính");
+                row.CreateCell(6, CellType.String).SetCellValue("Ngày vào làm");
+                //row.CreateCell(13, CellType.String).SetCellValue("Nguyên quán");
+                //row.CreateCell(14, CellType.String).SetCellValue("Thường trú");
+                //row.CreateCell(15, CellType.String).SetCellValue("Tạm trú");
+                //row.CreateCell(16, CellType.String).SetCellValue("Công ty/Chi nhánh");
+                //row.CreateCell(17, CellType.String).SetCellValue("Khối chức năng");
+                //row.CreateCell(18, CellType.String).SetCellValue("Phòng ban");
+                //row.CreateCell(19, CellType.String).SetCellValue("Bộ phận");
+                //row.CreateCell(20, CellType.String).SetCellValue("Bộ phận con");
+                //row.CreateCell(21, CellType.String).SetCellValue("Chức vụ");
+                //row.CreateCell(22, CellType.String).SetCellValue("CMND");
+                //row.CreateCell(23, CellType.String).SetCellValue("Ngày cấp");
+                //row.CreateCell(24, CellType.String).SetCellValue("Nơi cấp");
+                //row.CreateCell(25, CellType.String).SetCellValue("Số Hộ khẩu");
+                //row.CreateCell(26, CellType.String).SetCellValue("Chủ hộ");
+                //row.CreateCell(27, CellType.String).SetCellValue("Dân tộc");
+                //row.CreateCell(28, CellType.String).SetCellValue("Tôn giáo");
+                //row.CreateCell(29, CellType.String).SetCellValue("Số xổ BHXH");
+                //row.CreateCell(30, CellType.String).SetCellValue("Mã số BHXH");
+                //row.CreateCell(31, CellType.String).SetCellValue("Nơi KCB ban đầu");
+                //row.CreateCell(32, CellType.String).SetCellValue("Cơ quan BHXH");
+                //row.CreateCell(33, CellType.String).SetCellValue("Mã số BHYT");
+                //row.CreateCell(34, CellType.String).SetCellValue("Người quản lý");
+                //row.CreateCell(35, CellType.String).SetCellValue("Trình độ");
+                row.CreateCell(7, CellType.String).SetCellValue("Ngày nghỉ việc");
+                row.CreateCell(8, CellType.String).SetCellValue("Thâm niên (tháng)");
+                //row.CreateCell(9, CellType.String).SetCellValue("Thâm niên");
+                row.CreateCell(9, CellType.String).SetCellValue("Lý do");
+                row.CreateCell(10, CellType.String).SetCellValue("Bàn giao");
+                // Set style
+
+                for (int i = 0; i <= 10; i++)
+                {
+                    row.Cells[i].CellStyle = cellStyleHeader;
+                }
+                rowIndex++;
+
+                foreach (var data in employees)
+                {
+                    if (data.Leaveday.HasValue)
+                    {
+                        var ngaythamnien = (data.Leaveday.Value - data.Joinday).TotalDays;
+                        double thangthamnien = Math.Round(ngaythamnien / 30, 0);
+                        //var thamniendt = new DateTime(0).AddMonths(Convert.ToInt32(thangthamnien));
+                        //string thamnienSt = thamniendt.Year + " năm, " + thamniendt.Month + " tháng";
+                        //double namthamnien = Math.Round(thangthamnien / 12, 0);
+
+                        row = sheet1.CreateRow(rowIndex);
+                        row.CreateCell(0, CellType.Numeric).SetCellValue(rowIndex);
+                        row.CreateCell(1, CellType.String).SetCellValue(data.CodeOld + " (" + data.Code + ")");
+                        row.CreateCell(2, CellType.String).SetCellValue(data.FullName);
+                        row.CreateCell(3, CellType.String).SetCellValue(data.Email);
+                        row.CreateCell(4, CellType.String).SetCellValue(data.Tel);
+                        var mobiles = string.Empty;
+                        if (data.Mobiles != null && data.Mobiles.Count > 0)
+                        {
+                            foreach (var mobile in data.Mobiles)
+                            {
+                                if (!string.IsNullOrEmpty(mobiles))
+                                {
+                                    mobiles += " - ";
+                                }
+                                mobiles += mobile.Number;
+                            }
+                        }
+                        row.CreateCell(5, CellType.String).SetCellValue(mobiles);
+
+                        var workplaces = string.Empty;
+                        var chamcongs = string.Empty;
+                        var thoigianlamviec = string.Empty;
+                        if (data.Workplaces != null && data.Workplaces.Count > 0)
+                        {
+                            foreach (var workplace in data.Workplaces)
+                            {
+                                if (!string.IsNullOrEmpty(workplace.Name))
+                                {
+                                    if (!string.IsNullOrEmpty(workplaces))
+                                    {
+                                        workplaces += " - ";
+                                    }
+                                    workplaces += workplace.Name;
+                                }
+                                if (!string.IsNullOrEmpty(workplace.Fingerprint))
+                                {
+                                    if (!string.IsNullOrEmpty(chamcongs))
+                                    {
+                                        chamcongs += " - ";
+                                    }
+                                    chamcongs += workplace.Fingerprint;
+                                }
+                                if (!string.IsNullOrEmpty(workplace.WorkingScheduleTime))
+                                {
+                                    if (!string.IsNullOrEmpty(thoigianlamviec))
+                                    {
+                                        thoigianlamviec += " - ";
+                                    }
+                                    thoigianlamviec += workplace.WorkingScheduleTime;
+                                }
+                            }
+                        }
+                        //row.CreateCell(6, CellType.String).SetCellValue(data.IsTimeKeeper ? "Không" : "Có");
+                        //row.CreateCell(7, CellType.String).SetCellValue(chamcongs);
+                        //row.CreateCell(8, CellType.String).SetCellValue(thoigianlamviec);
+                        //row.CreateCell(9, CellType.String).SetCellValue(data.LeaveLevelYear.ToString());
+                        //row.CreateCell(10, CellType.String).SetCellValue(data.Birthday.ToString("dd/MM/yyyy"));
+                        //row.CreateCell(11, CellType.String).SetCellValue(data.Gender);
+                        row.CreateCell(6, CellType.String).SetCellValue(data.Joinday.ToString("dd/MM/yyyy"));
+                        //row.CreateCell(13, CellType.String).SetCellValue(data.Bornplace);
+                        //row.CreateCell(14, CellType.String).SetCellValue(data.AddressResident);
+                        //row.CreateCell(15, CellType.String).SetCellValue(data.AddressTemporary);
+                        //row.CreateCell(16, CellType.String).SetCellValue(data.CongTyChiNhanhName);
+                        //row.CreateCell(17, CellType.String).SetCellValue(data.KhoiChucNangName);
+                        //row.CreateCell(18, CellType.String).SetCellValue(data.PhongBanName);
+                        //row.CreateCell(19, CellType.String).SetCellValue(data.BoPhanName);
+                        //row.CreateCell(20, CellType.String).SetCellValue(data.BoPhanConName);
+                        //row.CreateCell(21, CellType.String).SetCellValue(data.ChucVuName);
+                        //row.CreateCell(22, CellType.String).SetCellValue(data.IdentityCard);
+                        //row.CreateCell(23, CellType.String).SetCellValue(data.IdentityCardDate.HasValue ? data.IdentityCardDate.Value.ToString("dd/MM/yyyy") : string.Empty);
+                        //row.CreateCell(24, CellType.String).SetCellValue(data.IdentityCardPlace);
+                        //row.CreateCell(25, CellType.String).SetCellValue(data.HouseHold);
+                        //row.CreateCell(26, CellType.String).SetCellValue(data.HouseHoldOwner);
+                        //row.CreateCell(27, CellType.String).SetCellValue(data.Nation);
+                        //row.CreateCell(28, CellType.String).SetCellValue(data.Religion);
+                        //row.CreateCell(29, CellType.String).SetCellValue(data.BhxhBookNo);
+                        //row.CreateCell(30, CellType.String).SetCellValue(data.BhxhCode);
+                        //row.CreateCell(31, CellType.String).SetCellValue(data.BhxhHospital);
+                        //row.CreateCell(32, CellType.String).SetCellValue(data.BhxhLocation);
+                        //row.CreateCell(33, CellType.String).SetCellValue(data.BhytCode);
+                        //var manage = string.Empty;
+                        //if (!string.IsNullOrEmpty(data.ManagerId))
+                        //{
+                        //    var managerEntity = dbContext.Employees.Find(m => m.Id.Equals(data.ManagerId)).FirstOrDefault();
+                        //    if (managerEntity != null)
+                        //    {
+                        //        manage = managerEntity.FullName;
+                        //    }
+                        //}
+                        //row.CreateCell(34, CellType.String).SetCellValue(manage);
+                        //var trinhdo = string.Empty;
+                        //if (data.Certificates != null && data.Certificates.Count > 0)
+                        //{
+                        //    foreach (var item in data.Certificates)
+                        //    {
+                        //        if (!string.IsNullOrEmpty(item.Type))
+                        //        {
+                        //            trinhdo += "Học vấn: " + item.Type;
+                        //        }
+                        //        if (!string.IsNullOrEmpty(item.Location))
+                        //        {
+                        //            trinhdo += " - Nơi cấp: " + item.Location;
+                        //        }
+                        //        if (!string.IsNullOrEmpty(item.Type))
+                        //        {
+                        //            trinhdo += ";";
+                        //        }
+                        //    }
+                        //}
+                        //row.CreateCell(35, CellType.String).SetCellValue(trinhdo);
+                        row.CreateCell(7, CellType.String).SetCellValue(data.Leaveday.HasValue ? data.Leaveday.Value.ToString("dd/MM/yyyy") : string.Empty);
+                        row.CreateCell(8, CellType.String).SetCellValue(thangthamnien);
+                        //row.CreateCell(9, CellType.String).SetCellValue(thamnienSt);
+                        row.CreateCell(9, CellType.String).SetCellValue(data.LeaveReason);
+                        row.CreateCell(10, CellType.String).SetCellValue(data.LeaveHandover);
+                        rowIndex++;
+                    }
                 }
 
                 workbook.Write(fs);

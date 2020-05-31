@@ -1,0 +1,108 @@
+﻿@using System.Globalization;
+@using Common.Utilities;
+@using ViewModels
+@model LeaveViewModel
+
+@{
+    ViewData["title"] = "PHÉP | QUẢN LÝ";
+    var currentcrumb = "Quản Lý Phép";
+    var previousYear = DateTime.Now.AddYears(-1).Year;
+}
+
+<div class="main-container">
+    <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="/">Trang chủ</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="/@Constants.LinkLeave.Main/@Constants.LinkLeave.Index">Phép</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">
+                            @currentcrumb
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="space-sm">
+        <div class="container">
+            <!-- IMPORT - EXPORT -->
+            <div class="row">
+                <div class="col-xs-12">
+
+                </div>
+            </div>
+
+            <!-- FILTER -->
+            <div class="row">
+                <div class="col-xs-12">
+
+                </div>
+            </div>
+
+            <!-- LIST -->
+            @if (Model.Leaves.Count > 0)
+            {
+                <div class="row">
+                    <div class="col-xs-12">
+                        <table class="table table-borderless table-hover align-items-center">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Nhân viên</th>
+                                    <th>Ngày phép</th>
+                                    <th>Chức vụ</th>
+                                    <th>Phòng ban</th>
+                                    <th>Bộ phận</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    var i = 1;
+                                    foreach (var item in Model.LeaveEmployees)
+                                    {
+                                        <tr>
+                                            <td>@i</td>
+                                            <td>@item.EmployeeName</td>
+                                            <td>@item.Number</td>
+                                            <td>@item.Title</td>
+                                            <td>@item.Department</td>
+                                            <td>@item.Part</td>
+                                        </tr>
+                                        i++;
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="row">
+                    <div class="col-12">
+                        <i class="far fa-clock"></i>
+                        <span>
+                            Không tìm thấy thông tin hoặc đang cập nhật thông tin.
+                        </span>
+                    </div>
+                </div>
+            }
+        </div>
+    </section>
+</div>
+
+@section scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+        <script type="text/javascript" src="~/js/leave/leave.js?@Constants.VersionJs"></script>
+    }
+}
+
+

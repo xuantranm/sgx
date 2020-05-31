@@ -10,12 +10,9 @@ using System.IO;
 using System.Linq;
 using System.Configuration;
 using NPOI.SS.UserModel;
-using NPOI.HSSF.UserModel;
 using NPOI.XSSF.UserModel;
-using NPOI.HSSF.Util;
 using NPOI.SS.Util;
 using MimeKit;
-using MimeKit.Text;
 
 
 namespace xmailtimer
@@ -48,11 +45,34 @@ namespace xmailtimer
             var vanPhong = congtychinhanhs.Where(m => m.CodeInt.Equals(1)).FirstOrDefault();
             var nhaMay = congtychinhanhs.Where(m => m.CodeInt.Equals(2)).FirstOrDefault();
 
-            #region Times : 26 run
-            var today = DateTime.Now;
-            var ngaychot = new DateTime(today.Year, today.Month, 26);
-            var Tu = new DateTime(ngaychot.AddMonths(-1).Year, ngaychot.AddMonths(-1).Month, 26);
-            var Den = ngaychot.AddDays(-1);
+            #region Times : end of month
+            // Default end of month. Setting in db
+            var today = DateTime.Now.Date;
+            int daysInMonth = DateTime.DaysInMonth(today.Year, today.Month);
+            var crawlStart = 1; // start date of month
+            var crawlEnd = daysInMonth;
+            var timerMonthCalculator = 0; // current base End Day of Month.
+            var crawlStartE = dbContext.Settings.Find(m => m.Key.Equals("crawl-day-start")).FirstOrDefault();
+            var crawlEndE = dbContext.Settings.Find(m => m.Key.Equals("crawl-day-end")).FirstOrDefault();
+            var timerMonthCalculatorE = dbContext.Settings.Find(m => m.Key.Equals("timer-month-calculator")).FirstOrDefault(); // value:0,-1
+            if (crawlStartE != null && !string.IsNullOrEmpty(crawlStartE.Value))
+            {
+                crawlStart = Convert.ToInt32(crawlStartE.Value);
+            }
+            if (crawlEndE != null && !string.IsNullOrEmpty(crawlStartE.Value))
+            {
+                crawlEnd = Convert.ToInt32(crawlEndE.Value);
+            }
+            if (timerMonthCalculatorE != null)
+            {
+                timerMonthCalculator = Convert.ToInt32(timerMonthCalculatorE.Value);
+            }
+
+            int month = today.Month;
+            int year = today.Year;
+            var Tu = crawlStart > crawlEnd ? new DateTime(year, month, crawlStart).AddMonths(-1) : new DateTime(year, month, crawlStart);
+            var Den = crawlStart > crawlEnd ? new DateTime(Tu.AddMonths(1).Year, Tu.AddMonths(1).Month, crawlEnd) : new DateTime(Tu.Year, Tu.Month, crawlEnd);
+            var ngaychot = Den.AddDays(1);
             #endregion
 
             #region Filter
@@ -136,15 +156,12 @@ namespace xmailtimer
             hrsCongTy.Add(employeeHr);
             #endregion
 
-            int thang = ngaychot.Month;
-            int nam = ngaychot.Year;
-
             #region Step 1: Employee have email
             var listEmail = results.Where(m => !string.IsNullOrEmpty(m.Email)).ToList();
             foreach (var employee in listEmail)
             {
                 string sFileName = @"bang-cham-cong";
-                sFileName += "-" + thang + "-" + nam;
+                sFileName += "-" + month + "-" + year;
                 sFileName += "-" + employee.Alias + ".xlsx";
 
                 var timers = employee.EmployeeWorkTimeLogs;
@@ -155,7 +172,7 @@ namespace xmailtimer
 
                 #region SCHEDULE MAIL
                 Console.WriteLine("Send email to:" + employee.Email);
-                var subject = "CHẤM CÔNG THÁNG " + thang + "-" + nam;
+                var subject = "CHẤM CÔNG THÁNG " + month + "-" + year;
                 var note = string.Empty;
                 var owner = string.Empty;
                 var to2 = employee.FullName;
@@ -175,7 +192,7 @@ namespace xmailtimer
                 if (excelViewModel.NgayCongNT == 0)
                 {
                     ccs = new List<EmailAddress>();
-                    subject = "CHẤM CÔNG THÁNG " + thang + "-" + nam + " của " + employee.FullName.ToUpper();
+                    subject = "CHẤM CÔNG THÁNG " + month + "-" + year + " của " + employee.FullName.ToUpper();
                     to2 = string.Empty;
                     owner = string.Empty;
                     tos = new List<EmailAddress>();
@@ -201,8 +218,8 @@ namespace xmailtimer
                     subject,
                     note,
                     " anh/chị " + to2,
-                    thang + "-" + nam + owner,
-                    "28/" + thang.ToString("00") + "/" + nam,
+                    month + "-" + year + owner,
+                    "28/" + month.ToString("00") + "/" + year,
                     excelViewModel.NgayCongNT,
                     excelViewModel.NgayNghiP,
                     url + "/" + Constants.LinkTimeKeeper.Main + "/" + Constants.LinkTimeKeeper.Index,
@@ -248,13 +265,13 @@ namespace xmailtimer
                     if (managerE != null && !string.IsNullOrEmpty(managerE.Email))
                     {
                         string sFileName = @"bang-cham-cong";
-                        sFileName += "-" + thang + "-" + nam;
+                        sFileName += "-" + month + "-" + year;
                         sFileName += "-nhan-vien-cua-" + managerE.AliasFullName + ".xlsx";
 
                         var excelViewModel = RenderExcel(Tu, Den, ngaychot, sFileName, 2, listControl);
 
                         Console.WriteLine("Send email to:" + managerE.Email);
-                        var subject = "CHẤM CÔNG THÁNG " + thang + "-" + nam + " CỦA NHÂN VIÊN ĐANG QUẢN LÝ";
+                        var subject = "CHẤM CÔNG THÁNG " + month + "-" + year + " CỦA NHÂN VIÊN ĐANG QUẢN LÝ";
                         var note = "<b>Xin lỗi về bất tiện này. Anh/chị nhận được email này do đang quản lý danh sách nhân viên (chưa có thông tin email). Vui lòng xem công và liên hệ nhân viên liên quan.</b><br />";
                         var to2 = managerE.FullName;
                         var tos = new List<EmailAddress>
@@ -284,8 +301,8 @@ namespace xmailtimer
                             subject,
                             note,
                             " anh/chị " + to2,
-                            thang + "-" + nam,
-                            "28/" + thang.ToString("00") + "/" + nam,
+                            month + "-" + year,
+                            "28/" + month.ToString("00") + "/" + year,
                             url + "/" + Constants.LinkTimeKeeper.Main + "/" + Constants.LinkTimeKeeper.Index,
                             url + "/" + Constants.LinkLeave.Main + "/" + Constants.LinkLeave.Index,
                             url);
@@ -308,9 +325,9 @@ namespace xmailtimer
                 {
                     // Gui HR
                     var sFileName = @"bang-cham-cong";
-                    sFileName += "-" + thang + "-" + nam;
+                    sFileName += "-" + month + "-" + year;
                     sFileName += "-nhan-vien-khac.xlsx";
-                    var subject = "CHẤM CÔNG THÁNG " + thang + "-" + nam;
+                    var subject = "CHẤM CÔNG THÁNG " + month + "-" + year;
                     subject += " CỦA NHÂN VIÊN KHÁC";
                     var note = "<b>Xin lỗi về bất tiện này. Anh/chị nhận được email này do đang quản lý danh sách nhân viên (chưa có thông tin email và chưa có người quản lý trực tiếp). Vui lòng xem công và liên hệ nhân viên liên quan.</b><br />";
                     var to2 = string.Empty;
@@ -338,8 +355,8 @@ namespace xmailtimer
                         subject,
                         note,
                         " anh/chị " + to2,
-                        thang + "-" + nam,
-                        "28/" + thang.ToString("00") + "/" + nam,
+                        month + "-" + year,
+                        "28/" + month.ToString("00") + "/" + year,
                         url + "/" + Constants.LinkTimeKeeper.Main + "/" + Constants.LinkTimeKeeper.Index,
                         url + "/" + Constants.LinkLeave.Main + "/" + Constants.LinkLeave.Index,
                         url);
@@ -371,101 +388,9 @@ namespace xmailtimer
             using (var fs = new FileStream(Path.Combine(exportFolder, sFileName), FileMode.Create, FileAccess.Write))
             {
                 IWorkbook workbook = new XSSFWorkbook();
+
                 #region Styling
-                var font = workbook.CreateFont();
-                font.FontHeightInPoints = 8;
-                font.FontName = "Arial";
-
-                var fontSmall = workbook.CreateFont();
-                fontSmall.FontHeightInPoints = 5;
-                fontSmall.FontName = "Arial";
-
-                var fontbold = workbook.CreateFont();
-                fontbold.FontHeightInPoints = 8;
-                fontbold.FontName = "Arial";
-                fontbold.Boldweight = (short)FontBoldWeight.Bold;
-
-                var fontbold8 = workbook.CreateFont();
-                fontbold8.FontHeightInPoints = 8;
-                fontbold8.FontName = "Arial";
-                fontbold8.Boldweight = (short)FontBoldWeight.Bold;
-
-                var fontbold10 = workbook.CreateFont();
-                fontbold10.FontHeightInPoints = 10;
-                fontbold10.FontName = "Arial";
-                fontbold10.Boldweight = (short)FontBoldWeight.Bold;
-
-                var fontbold12 = workbook.CreateFont();
-                fontbold12.FontHeightInPoints = 12;
-                fontbold12.FontName = "Arial";
-                fontbold12.Boldweight = (short)FontBoldWeight.Bold;
-
-                var styleBorder = workbook.CreateCellStyle();
-                styleBorder.BorderBottom = BorderStyle.Thin;
-                styleBorder.BorderLeft = BorderStyle.Thin;
-                styleBorder.BorderRight = BorderStyle.Thin;
-                styleBorder.BorderTop = BorderStyle.Thin;
-
-                var styleBorderDot = workbook.CreateCellStyle();
-                styleBorderDot.BorderBottom = BorderStyle.Dotted;
-                styleBorderDot.BorderLeft = BorderStyle.Thin;
-                styleBorderDot.BorderRight = BorderStyle.Thin;
-                styleBorderDot.BorderTop = BorderStyle.Thin;
-
-                var styleCenter = workbook.CreateCellStyle();
-                styleCenter.Alignment = HorizontalAlignment.Center;
-                styleCenter.VerticalAlignment = VerticalAlignment.Center;
-
-                var styleCenterBorder = workbook.CreateCellStyle();
-                styleCenterBorder.CloneStyleFrom(styleBorder);
-                styleCenterBorder.Alignment = HorizontalAlignment.Center;
-                styleCenterBorder.VerticalAlignment = VerticalAlignment.Center;
-
-                var cellStyleBorderAndColorGreen = workbook.CreateCellStyle();
-                cellStyleBorderAndColorGreen.CloneStyleFrom(styleBorder);
-                cellStyleBorderAndColorGreen.CloneStyleFrom(styleCenter);
-                cellStyleBorderAndColorGreen.FillPattern = FillPattern.SolidForeground;
-                ((XSSFCellStyle)cellStyleBorderAndColorGreen).SetFillForegroundColor(new XSSFColor(new byte[] { 198, 239, 206 }));
-
-                var cellStyleBorderAndColorYellow = workbook.CreateCellStyle();
-                cellStyleBorderAndColorYellow.CloneStyleFrom(styleBorder);
-                cellStyleBorderAndColorYellow.FillPattern = FillPattern.SolidForeground;
-                ((XSSFCellStyle)cellStyleBorderAndColorYellow).SetFillForegroundColor(new XSSFColor(new byte[] { 255, 235, 156 }));
-
-                var styleDedault = workbook.CreateCellStyle();
-                styleDedault.CloneStyleFrom(styleBorder);
-                styleDedault.SetFont(font);
-
-                var styleDot = workbook.CreateCellStyle();
-                styleDot.CloneStyleFrom(styleBorderDot);
-                styleDot.SetFont(font);
-
-                var styleTitle = workbook.CreateCellStyle();
-                styleTitle.CloneStyleFrom(styleCenter);
-                styleTitle.SetFont(fontbold12);
-
-                var styleSubTitle = workbook.CreateCellStyle();
-                styleSubTitle.CloneStyleFrom(styleCenter);
-                styleSubTitle.SetFont(fontbold8);
-
-                var styleHeader = workbook.CreateCellStyle();
-                styleHeader.CloneStyleFrom(styleCenterBorder);
-                styleHeader.SetFont(fontbold8);
-
-                var styleDedaultMerge = workbook.CreateCellStyle();
-                styleDedaultMerge.CloneStyleFrom(styleCenter);
-                styleDedaultMerge.SetFont(font);
-
-                var styleFullText = workbook.CreateCellStyle();
-                styleDedaultMerge.SetFont(font);
-                styleFullText.WrapText = true;
-
-                var styleBold = workbook.CreateCellStyle();
-                styleBold.SetFont(fontbold8);
-
-                var styleSmall = workbook.CreateCellStyle();
-                styleSmall.CloneStyleFrom(styleBorder);
-                styleSmall.SetFont(fontSmall);
+                Utility.StyleExcel(workbook, out ICellStyle styleDedault, out ICellStyle styleDot, out ICellStyle styleTitle, out ICellStyle styleSubTitle, out ICellStyle styleHeader, out ICellStyle styleDedaultMerge, out ICellStyle styleBold);
                 #endregion
 
                 ISheet sheet1 = workbook.CreateSheet("Cong");
@@ -518,7 +443,7 @@ namespace xmailtimer
 
                 row = sheet1.CreateRow(rowIndex);
                 cell = row.CreateCell(columnIndex, CellType.String);
-                cell.SetCellValue("#");
+                cell.SetCellValue("STT");
                 cell.CellStyle = styleHeader;
                 columnIndex++;
 
@@ -639,15 +564,6 @@ namespace xmailtimer
                 cell.SetCellValue("");
                 columnIndex++;
 
-                //cell = row.CreateCell(columnIndex);
-                //cell.SetCellValue("NT");
-                //cell.CellStyle = styleHeader;
-                //columnIndex++;
-                //cell = row.CreateCell(columnIndex);
-                //cell.SetCellValue("CT");
-                //cell.CellStyle = styleHeader;
-                //columnIndex++;
-
                 cell = row.CreateCell(columnIndex);
                 cell.SetCellValue("Lần");
                 cell.CellStyle = styleHeader;
@@ -694,59 +610,59 @@ namespace xmailtimer
                 var order = 1;
                 foreach (var employee in list)
                 {
-                    var timers = employee.EmployeeWorkTimeLogs;
                     var timesSort = employee.EmployeeWorkTimeLogs.OrderBy(m => m.Date).ToList();
-                    ngayCongNT = 0;
                     var vaoTreLan = 0;
-                    double vaoTrePhut = 0;
+                    int vaoTrePhut = 0;
                     var raSomLan = 0;
-                    double raSomPhut = 0;
+                    int raSomPhut = 0;
+                    double otNormalReal = 0;
+                    double otSundayReal = 0;
+                    double otHolidayReal = 0;
                     double tangCaNgayThuong = 0;
                     double tangCaChuNhat = 0;
                     double tangCaLeTet = 0;
                     double vangKP = 0;
-                    ngayNghiP = 0;
                     double letet = 0;
 
                     var rowEF = rowIndex;
-                    var rowET = rowIndex + 4;
+                    var rowET = rowIndex + 6;
 
                     row = sheet1.CreateRow(rowIndex);
 
                     columnIndex = 0;
-                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
+                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 6, columnIndex, columnIndex);
                     sheet1.AddMergedRegion(cellRangeAddress);
                     cell = row.CreateCell(columnIndex, CellType.String);
                     cell.SetCellValue(order);
                     cell.CellStyle = styleDedaultMerge;
                     columnIndex++;
 
-                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
+                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 6, columnIndex, columnIndex);
                     sheet1.AddMergedRegion(cellRangeAddress);
                     cell = row.CreateCell(columnIndex, CellType.String);
                     cell.SetCellValue(employee.Code);
-                    cell.CellStyle = styleFullText;
+                    cell.CellStyle = styleDedaultMerge;
                     columnIndex++;
 
-                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
+                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 6, columnIndex, columnIndex);
                     sheet1.AddMergedRegion(cellRangeAddress);
                     cell = row.CreateCell(columnIndex, CellType.String);
                     cell.SetCellValue(employee.FullName);
-                    cell.CellStyle = styleFullText;
+                    cell.CellStyle = styleDedaultMerge;
                     columnIndex++;
 
-                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
+                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 6, columnIndex, columnIndex);
                     sheet1.AddMergedRegion(cellRangeAddress);
                     cell = row.CreateCell(columnIndex, CellType.String);
                     cell.SetCellValue(employee.ChucVu);
-                    cell.CellStyle = styleFullText;
+                    cell.CellStyle = styleDedaultMerge;
                     columnIndex++;
 
-                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
+                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 6, columnIndex, columnIndex);
                     sheet1.AddMergedRegion(cellRangeAddress);
                     cell = row.CreateCell(columnIndex, CellType.String);
                     cell.SetCellValue(employee.EnrollNumber);
-                    cell.CellStyle = styleFullText;
+                    cell.CellStyle = styleDedaultMerge;
                     columnIndex++;
 
                     cell = row.CreateCell(columnIndex, CellType.String);
@@ -756,7 +672,9 @@ namespace xmailtimer
                     var rowout1 = sheet1.CreateRow(rowIndex + 1);
                     var rowin2 = sheet1.CreateRow(rowIndex + 2);
                     var rowout2 = sheet1.CreateRow(rowIndex + 3);
-                    var rowreason = sheet1.CreateRow(rowIndex + 4);
+                    var rowlate = sheet1.CreateRow(rowIndex + 4);
+                    var rowearly = sheet1.CreateRow(rowIndex + 5);
+                    var rowreason = sheet1.CreateRow(rowIndex + 6);
 
                     cell = rowout1.CreateCell(columnIndex, CellType.String);
                     cell.SetCellValue("Ra 1");
@@ -770,8 +688,16 @@ namespace xmailtimer
                     cell.SetCellValue("Ra 2");
                     cell.CellStyle = styleDedault;
 
+                    cell = rowlate.CreateCell(columnIndex, CellType.String);
+                    cell.SetCellValue("Trễ (phút)");
+                    cell.CellStyle = styleDedault;
+
+                    cell = rowearly.CreateCell(columnIndex, CellType.String);
+                    cell.SetCellValue("Sớm (phút)");
+                    cell.CellStyle = styleDedault;
+
                     cell = rowreason.CreateCell(columnIndex, CellType.String);
-                    cell.SetCellValue("Xác nhận-Lý do");
+                    cell.SetCellValue("Công|Xác nhận-Lý do");
                     cell.CellStyle = styleDedault;
                     columnIndex++;
 
@@ -780,59 +706,40 @@ namespace xmailtimer
                         var item = timesSort.Where(m => m.Date.Equals(date)).FirstOrDefault();
                         if (item != null)
                         {
+                            var analytic = Utility.TimerAnalytics(item, true);
                             var dayString = string.Empty;
                             var displayInOut = string.Empty;
                             var noilamviec = !string.IsNullOrEmpty(item.WorkplaceCode) ? item.WorkplaceCode : string.Empty;
                             var reason = !string.IsNullOrEmpty(item.Reason) ? item.Reason : string.Empty;
                             var detail = !string.IsNullOrEmpty(item.ReasonDetail) ? item.ReasonDetail : string.Empty;
-                            var statusTangCa = item.StatusTangCa;
-                            var statusBag = statusTangCa == (int)ETangCa.TuChoi ? "badge-pill" : "badge-info";
-                            var giotangcathucte = Math.Round(item.TangCaThucTe.TotalHours, 2);
-                            var giotangcaxacnhan = Math.Round(item.TangCaDaXacNhan.TotalHours, 2);
+                            var statusBag = item.StatusTangCa == (int)ETangCa.TuChoi ? "badge-pill" : "badge-info";
+                            var giotangcathucte = Math.Round(item.OtThucTeD, 2);
+                            var phuttangcathucte = Math.Round(giotangcathucte * 60, 0);
+                            var giotangcaxacnhan = Math.Round(item.OtXacNhanD, 2);
+                            int late = 0;
+                            int early = 0;
 
-                            var isMiss = false;
-                            if (item.Mode == (int)ETimeWork.Normal)
-                            {
-                                switch (item.Status)
-                                {
-                                    case (int)EStatusWork.XacNhanCong:
-                                        {
-                                            isMiss = true;
-                                            break;
-                                        }
-                                    case (int)EStatusWork.DaGuiXacNhan:
-                                        {
-                                            //if (isMonth)
-                                            //{
-                                            //    isMiss = true;
-                                            //}
-                                            //else
-                                            //{
-                                            item.WorkDay = 1;
-                                            ngayCongNT++;
-                                            //}
-                                            break;
-                                        }
-                                    case (int)EStatusWork.DongY:
-                                        {
-                                            item.WorkDay = 1;
-                                            ngayCongNT++;
-                                            break;
-                                        }
-                                    case (int)EStatusWork.TuChoi:
-                                        {
-                                            isMiss = true;
-                                            break;
-                                        }
-                                    default:
-                                        {
-                                            ngayCongNT++;
-                                            break;
-                                        }
-                                }
-                            }
+                            var isMiss = analytic.Miss;
+                            item.WorkDay = analytic.Workday;
+                            late = analytic.Late;
+                            early = analytic.Early;
+                            displayInOut = analytic.DisplayInOut;
 
-                            // Calculator = hour
+                            ngayCongNT += analytic.Workday;
+                            ngayNghiP += analytic.NgayNghiP;
+                            letet += analytic.LeTet;
+                            vaoTreLan += analytic.VaoTreLan;
+                            vaoTrePhut += analytic.Late;
+                            raSomLan += analytic.RaSomLan;
+                            raSomPhut += analytic.Early;
+                            otNormalReal += analytic.OtNormalReal;
+                            otSundayReal += analytic.OtSundayReal;
+                            otHolidayReal += analytic.OtHolidayReal;
+                            tangCaNgayThuong += analytic.TangCaNgayThuong;
+                            tangCaChuNhat += analytic.TangCaChuNhat;
+                            tangCaLeTet += analytic.TangCaLeTet;
+
+                            dayString = item.WorkDay + " ngày";
                             if (item.Mode == (int)ETimeWork.Sunday || item.Mode == (int)ETimeWork.Holiday)
                             {
                                 if (item.WorkTime.TotalHours > 0)
@@ -841,88 +748,18 @@ namespace xmailtimer
                                 }
                             }
 
-                            if (item.Mode == (int)ETimeWork.LeavePhep)
-                            {
-                                ngayNghiP += item.SoNgayNghi;
-                                if (item.SoNgayNghi < 1)
-                                {
-                                    item.WorkDay = 0.5;
-                                    ngayCongNT += 0.5;
-                                }
-                            }
-                            if (item.Mode == (int)ETimeWork.Holiday)
-                            {
-                                letet += 1;
-                            }
-
-                            if (item.Logs != null)
-                            {
-                                if (isMiss)
-                                {
-                                    if (item.Late.TotalMinutes > 1)
-                                    {
-                                        vaoTreLan++;
-                                        vaoTrePhut += item.Late.TotalMinutes;
-                                    }
-                                    if (item.Early.TotalMinutes > 1)
-                                    {
-                                        raSomLan++;
-                                        raSomPhut += item.Early.TotalMinutes;
-                                    }
-                                    var timeoutin = item.Out - item.In;
-                                    if (timeoutin.HasValue && timeoutin.Value.TotalHours > 6)
-                                    {
-                                        // First, không tính 15p
-                                        item.WorkDay = 1;
-                                        ngayCongNT++;
-                                    }
-                                    else
-                                    {
-                                        if (item.Out.HasValue || item.In.HasValue)
-                                        {
-                                            item.WorkDay = 0.5;
-                                        }
-                                        ngayCongNT += item.WorkDay;
-                                    }
-                                }
-                                displayInOut = item.In.HasValue ? item.In.Value.ToString(@"hh\:mm") : string.Empty;
-                                if (item.Out.HasValue)
-                                {
-                                    displayInOut += !string.IsNullOrEmpty(displayInOut) ? " - " + item.Out.Value.ToString(@"hh\:mm") : item.Out.Value.ToString(@"hh\:mm");
-                                }
-
-                                // TANG CA
-                                if (statusTangCa == (int)ETangCa.DongY)
-                                {
-                                    if (item.Mode == (int)ETimeWork.Normal)
-                                    {
-                                        tangCaNgayThuong += item.TangCaDaXacNhan.TotalHours;
-                                    }
-                                    if (item.Mode == (int)ETimeWork.Sunday)
-                                    {
-                                        tangCaChuNhat += item.TangCaDaXacNhan.TotalHours;
-                                    }
-                                    if (item.Mode == (int)ETimeWork.Holiday)
-                                    {
-                                        tangCaLeTet += item.TangCaDaXacNhan.TotalHours;
-                                    }
-                                }
-                            }
-
-                            dayString = item.WorkDay + " ngày";
+                            var displayLate = string.Empty;
+                            var displayEarly = string.Empty;
 
                             if (item.Logs == null)
                             {
                                 var text = item.Reason;
                                 if (item.Mode == (int)ETimeWork.Normal)
                                 {
-                                    text += ";" + Constants.TimeKeeper(item.Status);
-                                    if (!string.IsNullOrEmpty(item.ReasonDetail))
-                                    {
-                                        text += ";" + item.ReasonDetail;
-                                    }
+                                    text += string.IsNullOrEmpty(text) ? Constants.TimeKeeper(item.Status) : ";" + Constants.TimeKeeper(item.Status);
+                                    text += string.IsNullOrEmpty(text) ? item.ReasonDetail : ";" + item.ReasonDetail;
                                 }
-                                cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
+                                cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 6, columnIndex, columnIndex);
                                 sheet1.AddMergedRegion(cellRangeAddress);
                                 cell = row.CreateCell(columnIndex, CellType.String);
                                 cell.SetCellValue(text);
@@ -940,6 +777,7 @@ namespace xmailtimer
                                 var displayIn2 = string.Empty;
                                 var displayOut1 = string.Empty;
                                 var displayOut2 = string.Empty;
+                                var displayReason = string.Empty;
                                 if (item.In.HasValue)
                                 {
                                     displayIn1 = item.In.ToString();
@@ -972,6 +810,22 @@ namespace xmailtimer
                                 cell.SetCellValue(displayOut2);
                                 cell.CellStyle = styleDedault;
 
+                                cell = rowlate.CreateCell(columnIndex, CellType.String);
+                                if (late > 0)
+                                {
+                                    displayLate = late.ToString();
+                                }
+                                cell.SetCellValue(displayLate);
+                                cell.CellStyle = styleDedault;
+
+                                cell = rowearly.CreateCell(columnIndex, CellType.String);
+                                if (early > 0)
+                                {
+                                    displayEarly = early.ToString();
+                                }
+                                cell.SetCellValue(displayEarly);
+                                cell.CellStyle = styleDedault;
+
                                 cell = rowreason.CreateCell(columnIndex, CellType.String);
                                 var detailText = dayString;
                                 if (item.Status > (int)EStatusWork.DuCong)
@@ -988,14 +842,14 @@ namespace xmailtimer
                                     detailText += ";" + detail;
                                 }
                                 cell.SetCellValue(detailText);
-                                cell.CellStyle = styleSmall;
+                                cell.CellStyle = styleDedault;
                             }
 
                             columnIndex++;
                         }
                         else
                         {
-                            cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
+                            cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 6, columnIndex, columnIndex);
                             sheet1.AddMergedRegion(cellRangeAddress);
                             cell = row.CreateCell(columnIndex, CellType.String);
                             cell.SetCellValue(Constants.NA);
@@ -1011,77 +865,77 @@ namespace xmailtimer
                     }
 
                     var columnIndexF = columnIndex;
-                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
+                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 6, columnIndex, columnIndex);
                     sheet1.AddMergedRegion(cellRangeAddress);
                     cell = row.CreateCell(columnIndex, CellType.Numeric);
                     cell.SetCellValue(Math.Round(ngayCongNT, 2));
                     cell.CellStyle = styleDedaultMerge;
                     columnIndex++;
 
-                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
+                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 6, columnIndex, columnIndex);
                     sheet1.AddMergedRegion(cellRangeAddress);
                     cell = row.CreateCell(columnIndex, CellType.Numeric);
                     cell.SetCellValue(letet);
                     cell.CellStyle = styleDedaultMerge;
                     columnIndex++;
 
-                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
+                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 6, columnIndex, columnIndex);
                     sheet1.AddMergedRegion(cellRangeAddress);
                     cell = row.CreateCell(columnIndex, CellType.Numeric);
                     cell.SetCellValue(vaoTreLan);
                     cell.CellStyle = styleDedaultMerge;
                     columnIndex++;
 
-                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
+                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 6, columnIndex, columnIndex);
                     sheet1.AddMergedRegion(cellRangeAddress);
                     cell = row.CreateCell(columnIndex, CellType.Numeric);
-                    cell.SetCellValue(Math.Round(vaoTrePhut, 2));
+                    cell.SetCellValue(vaoTrePhut);
                     cell.CellStyle = styleDedaultMerge;
                     columnIndex++;
 
-                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
+                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 6, columnIndex, columnIndex);
                     sheet1.AddMergedRegion(cellRangeAddress);
                     cell = row.CreateCell(columnIndex, CellType.Numeric);
                     cell.SetCellValue(raSomLan);
                     cell.CellStyle = styleDedaultMerge;
                     columnIndex++;
 
-                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
+                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 6, columnIndex, columnIndex);
                     sheet1.AddMergedRegion(cellRangeAddress);
                     cell = row.CreateCell(columnIndex, CellType.Numeric);
-                    cell.SetCellValue(Math.Round(raSomPhut, 2));
+                    cell.SetCellValue(raSomPhut);
                     cell.CellStyle = styleDedaultMerge;
                     columnIndex++;
 
-                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
+                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 6, columnIndex, columnIndex);
                     sheet1.AddMergedRegion(cellRangeAddress);
                     cell = row.CreateCell(columnIndex, CellType.Numeric);
                     cell.SetCellValue(Math.Round(tangCaNgayThuong, 2));
                     cell.CellStyle = styleDedaultMerge;
                     columnIndex++;
 
-                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
+                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 6, columnIndex, columnIndex);
                     sheet1.AddMergedRegion(cellRangeAddress);
                     cell = row.CreateCell(columnIndex, CellType.Numeric);
                     cell.SetCellValue(Math.Round(tangCaChuNhat, 2));
                     cell.CellStyle = styleDedaultMerge;
                     columnIndex++;
 
-                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
+                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 6, columnIndex, columnIndex);
                     sheet1.AddMergedRegion(cellRangeAddress);
                     cell = row.CreateCell(columnIndex, CellType.Numeric);
                     cell.SetCellValue(Math.Round(tangCaLeTet, 2));
                     cell.CellStyle = styleDedaultMerge;
                     columnIndex++;
 
-                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
+                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 6, columnIndex, columnIndex);
                     sheet1.AddMergedRegion(cellRangeAddress);
                     cell = row.CreateCell(columnIndex, CellType.Numeric);
                     cell.SetCellValue(ngayNghiP);
                     cell.CellStyle = styleDedaultMerge;
                     columnIndex++;
 
-                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 4, columnIndex, columnIndex);
+                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 6, columnIndex, columnIndex);
                     sheet1.AddMergedRegion(cellRangeAddress);
                     cell = row.CreateCell(columnIndex, CellType.Numeric);
                     cell.SetCellValue(vangKP);
@@ -1090,7 +944,7 @@ namespace xmailtimer
                     var columnIndexT = columnIndex;
                     columnIndex++;
 
-                    rowIndex = rowIndex + 4;
+                    rowIndex += 6;
                     rowIndex++;
                     order++;
                     #region fix border

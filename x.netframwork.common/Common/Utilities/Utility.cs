@@ -11,6 +11,9 @@ using System.Collections.Generic;
 using Data;
 using MongoDB.Driver;
 using Models;
+using NPOI.SS.UserModel;
+using NPOI.XSSF.UserModel;
+
 //using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 
 namespace Common.Utilities
@@ -21,6 +24,266 @@ namespace Common.Utilities
 
         static Utility()
         {
+        }
+
+        public static TimerAnalytic TimerAnalytics(EmployeeWorkTimeLog item, bool mode)
+        {
+            var isMiss = false;
+            double workDay = 0;
+            double ngayNghiP = 0;
+            double leTet = 0;
+            int late = 0;
+            int vaoTreLan = 0;
+            int early = 0;
+            int raSomLan = 0;
+            var displayInOut = string.Empty;
+            double otNormalReal = 0;
+            double otSundayReal = 0;
+            double otHolidayReal = 0;
+            double tangCaNgayThuong = 0;
+            double tangCaChuNhat = 0;
+            double tangCaLeTet = 0;
+            double vangKP = 0;
+
+            var statusTangCa = item.StatusTangCa;
+
+            if (item.Mode == (int)ETimeWork.Normal)
+            {
+                workDay = item.WorkDay;
+                switch (item.Status)
+                {
+                    case (int)EStatusWork.XacNhanCong:
+                        {
+                            isMiss = true;
+                            break;
+                        }
+                    case (int)EStatusWork.DaGuiXacNhan:
+                        {
+                            isMiss = true;
+                            break;
+                        }
+                    case (int)EStatusWork.DongY:
+                        {
+                            workDay = 1;
+                            break;
+                        }
+                    case (int)EStatusWork.TuChoi:
+                        {
+                            isMiss = true;
+                            break;
+                        }
+                }
+            }
+            else if (item.Mode == (int)ETimeWork.LeavePhep)
+            {
+                ngayNghiP = item.SoNgayNghi;
+                if (item.SoNgayNghi < 1)
+                {
+                    workDay = 0.5;
+                }
+            }
+            else if (item.Mode == (int)ETimeWork.Holiday)
+            {
+                leTet = 1;
+            }
+
+            // Holiday still work,...
+            if (item.Logs != null)
+            {
+                if (isMiss)
+                {
+                    if (item.Late.TotalMinutes > 1)
+                    {
+                        late = Convert.ToInt32(Math.Floor(item.Late.TotalMinutes));
+                        vaoTreLan = 1;
+                    }
+                    if (item.Early.TotalMinutes > 1)
+                    {
+                        early = Convert.ToInt32(Math.Floor(item.Early.TotalMinutes));
+                        raSomLan = 1;
+                    }
+                    if (mode)
+                    {
+                        if (late > 15)
+                        {
+                            workDay -= 0.5;
+                            late = 0;
+                            vaoTreLan = 0;
+                        }
+                        if (early > 15)
+                        {
+                            workDay -= 0.5;
+                            early = 0;
+                            raSomLan = 0;
+                        }
+                    }
+                    //var timeoutin = item.Out - item.In;
+                    //if (timeoutin.HasValue && timeoutin.Value.TotalHours > 6)
+                    //{
+                    //    // First, không tính 15p
+                    //    item.WorkDay = 1;
+                    //    ngayCongNT++;
+                    //}
+                    //else
+                    //{
+                    //    if (item.Out.HasValue || item.In.HasValue)
+                    //    {
+                    //        item.WorkDay = 0.5;
+                    //    }
+                    //    ngayCongNT += item.WorkDay;
+                    //}
+                }
+                displayInOut = item.In.HasValue ? item.In.Value.ToString(@"hh\:mm") : string.Empty;
+                if (item.Out.HasValue)
+                {
+                    displayInOut += !string.IsNullOrEmpty(displayInOut) ? " - " + item.Out.Value.ToString(@"hh\:mm") : item.Out.Value.ToString(@"hh\:mm");
+                }
+
+                // TANG CA
+                if (item.Mode == (int)ETimeWork.Normal)
+                {
+                    otNormalReal = Math.Round(item.OtThucTeD, 2);
+                    if (statusTangCa == (int)ETangCa.DongY)
+                    {
+                        tangCaNgayThuong = Math.Round(item.OtXacNhanD, 2);
+                    }
+                }
+                else if (item.Mode == (int)ETimeWork.Sunday)
+                {
+                    otSundayReal = Math.Round(item.OtThucTeD, 2);
+                    if (statusTangCa == (int)ETangCa.DongY)
+                    {
+                        tangCaChuNhat = Math.Round(item.OtXacNhanD, 2);
+                    }
+                }
+                else
+                {
+                    otHolidayReal = Math.Round(item.OtThucTeD, 2);
+                    if (statusTangCa == (int)ETangCa.DongY)
+                    {
+                        tangCaLeTet = Math.Round(item.OtXacNhanD, 2);
+                    }
+                }
+            }
+
+            return new TimerAnalytic()
+            {
+                Miss = isMiss,
+                Workday = workDay,
+                NgayNghiP = ngayNghiP,
+                LeTet = leTet,
+                Late = late,
+                VaoTreLan = vaoTreLan,
+                Early = early,
+                RaSomLan = raSomLan,
+                DisplayInOut = displayInOut,
+                OtNormalReal = otNormalReal,
+                OtSundayReal = otSundayReal,
+                OtHolidayReal = otHolidayReal,
+                TangCaNgayThuong = tangCaNgayThuong,
+                TangCaChuNhat = tangCaChuNhat,
+                TangCaLeTet = tangCaLeTet,
+                VangKP = 0
+            };
+        }
+
+        public static void StyleExcel(IWorkbook workbook, out ICellStyle styleDedault, out ICellStyle styleDot, out ICellStyle styleTitle, out ICellStyle styleSubTitle, out ICellStyle styleHeader, out ICellStyle styleDedaultMerge, out ICellStyle styleBold)
+        {
+            var font = workbook.CreateFont();
+            font.FontHeightInPoints = 8;
+            font.FontName = "Arial";
+
+            var fontSmall = workbook.CreateFont();
+            fontSmall.FontHeightInPoints = 5;
+            fontSmall.FontName = "Arial";
+
+            var fontbold = workbook.CreateFont();
+            fontbold.FontHeightInPoints = 8;
+            fontbold.FontName = "Arial";
+            fontbold.Boldweight = (short)FontBoldWeight.Bold;
+
+            var fontbold8 = workbook.CreateFont();
+            fontbold8.FontHeightInPoints = 8;
+            fontbold8.FontName = "Arial";
+            fontbold8.Boldweight = (short)FontBoldWeight.Bold;
+
+            var fontbold10 = workbook.CreateFont();
+            fontbold10.FontHeightInPoints = 10;
+            fontbold10.FontName = "Arial";
+            fontbold10.Boldweight = (short)FontBoldWeight.Bold;
+
+            var fontbold12 = workbook.CreateFont();
+            fontbold12.FontHeightInPoints = 12;
+            fontbold12.FontName = "Arial";
+            fontbold12.Boldweight = (short)FontBoldWeight.Bold;
+
+            var styleBorder = workbook.CreateCellStyle();
+            styleBorder.BorderBottom = BorderStyle.Thin;
+            styleBorder.BorderLeft = BorderStyle.Thin;
+            styleBorder.BorderRight = BorderStyle.Thin;
+            styleBorder.BorderTop = BorderStyle.Thin;
+
+            var styleBorderDot = workbook.CreateCellStyle();
+            styleBorderDot.BorderBottom = BorderStyle.Dotted;
+            styleBorderDot.BorderLeft = BorderStyle.Thin;
+            styleBorderDot.BorderRight = BorderStyle.Thin;
+            styleBorderDot.BorderTop = BorderStyle.Thin;
+
+            var styleCenter = workbook.CreateCellStyle();
+            styleCenter.Alignment = HorizontalAlignment.Center;
+            styleCenter.VerticalAlignment = VerticalAlignment.Center;
+
+            var styleCenterBorder = workbook.CreateCellStyle();
+            styleCenterBorder.CloneStyleFrom(styleBorder);
+            styleCenterBorder.Alignment = HorizontalAlignment.Center;
+            styleCenterBorder.VerticalAlignment = VerticalAlignment.Center;
+
+            var cellStyleBorderAndColorGreen = workbook.CreateCellStyle();
+            cellStyleBorderAndColorGreen.CloneStyleFrom(styleBorder);
+            cellStyleBorderAndColorGreen.CloneStyleFrom(styleCenter);
+            cellStyleBorderAndColorGreen.FillPattern = FillPattern.SolidForeground;
+            ((XSSFCellStyle)cellStyleBorderAndColorGreen).SetFillForegroundColor(new XSSFColor(new byte[] { 198, 239, 206 }));
+
+            var cellStyleBorderAndColorYellow = workbook.CreateCellStyle();
+            cellStyleBorderAndColorYellow.CloneStyleFrom(styleBorder);
+            cellStyleBorderAndColorYellow.FillPattern = FillPattern.SolidForeground;
+            ((XSSFCellStyle)cellStyleBorderAndColorYellow).SetFillForegroundColor(new XSSFColor(new byte[] { 255, 235, 156 }));
+
+            styleDedault = workbook.CreateCellStyle();
+            styleDedault.CloneStyleFrom(styleBorder);
+            styleDedault.SetFont(font);
+
+            styleDot = workbook.CreateCellStyle();
+            styleDot.CloneStyleFrom(styleBorderDot);
+            styleDot.SetFont(font);
+
+            styleTitle = workbook.CreateCellStyle();
+            styleTitle.CloneStyleFrom(styleCenter);
+            styleTitle.SetFont(fontbold12);
+
+            styleSubTitle = workbook.CreateCellStyle();
+            styleSubTitle.CloneStyleFrom(styleCenter);
+            styleSubTitle.SetFont(fontbold8);
+
+            styleHeader = workbook.CreateCellStyle();
+            styleHeader.CloneStyleFrom(styleCenterBorder);
+            styleHeader.SetFont(fontbold8);
+
+            styleDedaultMerge = workbook.CreateCellStyle();
+            styleDedaultMerge.CloneStyleFrom(styleCenter);
+            styleDedaultMerge.SetFont(font);
+            styleDedaultMerge.WrapText = true;
+
+            var styleFullText = workbook.CreateCellStyle();
+            styleDedaultMerge.SetFont(font);
+            styleFullText.WrapText = true;
+
+            styleBold = workbook.CreateCellStyle();
+            styleBold.SetFont(fontbold8);
+
+            var styleSmall = workbook.CreateCellStyle();
+            styleSmall.CloneStyleFrom(styleBorder);
+            styleSmall.SetFont(fontSmall);
         }
 
         public static List<Shift> GetShift()

@@ -41,37 +41,23 @@ namespace Controllers
             _httpContextAccessor = httpContextAccessor;
         }
 
+        [Route("noi-dung")]
         public async Task<IActionResult> Index(string category, string code, string name, int Trang, int Dong, string SapXep, string ThuTu)
         {
             #region Login Information
-            LoginInit(Constants.Rights.System, (int)ERights.View);
-            if (!(bool)ViewData[Constants.ActionViews.IsLogin])
-            {
-                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                return RedirectToAction(Constants.ActionViews.Login, Constants.Controllers.Account);
-            }
-            var loginId = User.Identity.Name;
-            var loginE = dbContext.Employees.Find(m => m.Id.Equals(loginId)).FirstOrDefault();
-            bool isRight = (bool)ViewData[Constants.ActionViews.IsRight];
-            if (!isRight)
-            {
-                return RedirectToAction("Index", "Home");
-            }
             #endregion
 
-            var domain = ViewData[Constants.ActionViews.Domain].ToString();
             var linkCurrent = string.Empty;
+
             #region DDL
             var builderC = Builders<Category>.Filter;
             var filterC = builderC.Eq(m => m.Enable, true);
-            filterC &= builderC.Eq(m => m.Domain, domain);
             var categories = dbContext.Categories.Find(filterC).ToList();
             #endregion
 
             #region Filter
             var builder = Builders<Content>.Filter;
             var filter = builder.Eq(m => m.Enable, true);
-            filter &= builder.Eq(m => m.Domain, domain);
 
             if (!string.IsNullOrEmpty(category))
             {
@@ -121,7 +107,6 @@ namespace Controllers
             {
                 Contents = list,
                 Categories = categories,
-                Domain = domain,
                 Category = category,
                 Code = code,
                 Name = name,
@@ -136,6 +121,7 @@ namespace Controllers
             return View(viewModel);
         }
 
+        [Route("noi-dung/cap-nhat")]
         public async Task<IActionResult> Data(string Id)
         {
             #region Login Information

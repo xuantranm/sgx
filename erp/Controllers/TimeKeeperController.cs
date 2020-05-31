@@ -94,23 +94,44 @@ namespace Controllers
             #region Dropdownlist
             var sortTimes = Utility.DllMonths();
             var approves = Utility.Approves(account, true, Constants.Rights.XacNhanCong, (int)ERights.Edit);
-            var employees = Utility.EmployeesBase(isHr, account.ManagerEmployeeId);
+            var employees = Utility.EmployeesTimeBase(isHr, loginId);
             #endregion
 
             #region Times
-            var toDate = Utility.WorkingMonthToDate(thang);
-            var fromDate = toDate.AddMonths(-1).AddDays(1);
+            var today = DateTime.Now.Date;
             if (string.IsNullOrEmpty(thang))
             {
-                toDate = DateTime.Now;
-                fromDate = toDate.Day > 25 ? new DateTime(toDate.Year, toDate.Month, 26) : new DateTime(toDate.AddMonths(-1).Year, toDate.AddMonths(-1).Month, 26);
+                thang = today.Month.ToString() + "-" + today.Year.ToString();
             }
-            var year = toDate.Day > 25 ? toDate.AddMonths(1).Year : toDate.Year;
-            var month = toDate.Day > 25 ? toDate.AddMonths(1).Month : toDate.Month;
-            var dayworking = Utility.BusinessDaysUntil(fromDate, toDate);
-            if (toDate > DateTime.Now.Date)
+            int month = Convert.ToInt32(thang.Split('-')[0]);
+            int year = Convert.ToInt32(thang.Split('-')[1]);
+            int daysInMonth = DateTime.DaysInMonth(year, month);
+            var crawlStart = 1; // start date of month
+            var crawlEnd = daysInMonth;
+            var timerMonthCalculator = 0; // current base End Day of Month.
+            var crawlStartE = dbContext.Settings.Find(m => m.Key.Equals("crawl-day-start")).FirstOrDefault();
+            var crawlEndE = dbContext.Settings.Find(m => m.Key.Equals("crawl-day-end")).FirstOrDefault();
+            var timerMonthCalculatorE = dbContext.Settings.Find(m => m.Key.Equals("timer-month-calculator")).FirstOrDefault(); // value:0,-1
+            if (crawlStartE != null && !string.IsNullOrEmpty(crawlStartE.Value))
             {
-                dayworking = Utility.BusinessDaysUntil(fromDate, DateTime.Now);
+                crawlStart = Convert.ToInt32(crawlStartE.Value);
+            }
+            if (crawlEndE != null && !string.IsNullOrEmpty(crawlStartE.Value))
+            {
+                crawlEnd = Convert.ToInt32(crawlEndE.Value);
+            }
+            if (timerMonthCalculatorE != null)
+            {
+                timerMonthCalculator = Convert.ToInt32(timerMonthCalculatorE.Value);
+            }
+
+            var startDate = crawlStart > crawlEnd ? new DateTime(year, month, crawlStart).AddMonths(-1) : new DateTime(year, month, crawlStart);
+            var endDate = crawlStart > crawlEnd ? new DateTime(startDate.AddMonths(1).Year, startDate.AddMonths(1).Month, crawlEnd) : new DateTime(startDate.Year, startDate.Month, crawlEnd);
+
+            var dayworking = Utility.BusinessDaysUntil(startDate, endDate);
+            if (endDate > DateTime.Now.Date)
+            {
+                dayworking = Utility.BusinessDaysUntil(startDate, DateTime.Now);
             }
             ViewData["DayWorking"] = dayworking;
             #endregion
@@ -118,7 +139,7 @@ namespace Controllers
             #region Filter
             var builder = Builders<EmployeeWorkTimeLog>.Filter;
             var filter = builder.Eq(m => m.EmployeeId, id);
-            filter = filter & builder.Gt(m => m.Date, fromDate.AddDays(-1)) & builder.Lt(m => m.Date, toDate.AddDays(1));
+            filter = filter & builder.Gte(m => m.Date, startDate) & builder.Lte(m => m.Date, endDate);
 
             var builderSum = Builders<EmployeeWorkTimeMonthLog>.Filter;
             var filterSum = builderSum.Eq(m => m.EmployeeId, id);
@@ -135,8 +156,8 @@ namespace Controllers
                 EmployeeWorkTimeLogs = timekeeperlogs,
                 EmployeeWorkTimeMonthLogs = monthsTimes,
                 MonthYears = sortTimes,
-                StartWorkingDate = fromDate,
-                EndWorkingDate = toDate,
+                StartWorkingDate = startDate,
+                EndWorkingDate = endDate,
                 Approves = approves,
                 Thang = thang,
                 RightRequest = isXNDum,
@@ -508,29 +529,44 @@ namespace Controllers
             var loginId = User.Identity.Name;
             var loginE = dbContext.Employees.Find(m => m.Id.Equals(loginId)).FirstOrDefault();
 
-            bool quyenXacNhan = Utility.IsRight(loginId, Constants.Rights.XacNhanCongDum, (int)ERights.Add);
-            if (!quyenXacNhan)
+            bool isHr = Utility.IsRight(loginId, Constants.Rights.NhanSu, (int)ERights.View);
+
+            bool isXNDum = Utility.IsRight(loginId, Constants.Rights.XacNhanCongDum, (int)ERights.Add);
+            if (!isXNDum)
             {
-                return RedirectToAction("AccessDenied", "Account");
+                var countManager = dbContext.Employees.CountDocuments(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.ManagerEmployeeId.Equals(loginId));
+                if (countManager > 0)
+                {
+                    isXNDum = true;
+                }
             }
+            if (!isXNDum)
+            {
+                isXNDum = isHr;
+            }
+
+            bool rightBangCong = Utility.IsRight(loginId, Constants.Rights.BangChamCong, (int)ERights.View);
+            var rightApprove = false;
+            if (dbContext.EmployeeWorkTimeLogs.CountDocuments(m => m.Enable.Equals(true) && m.ConfirmId.Equals(loginId)) > 0)
+            {
+                rightApprove = true;
+            }
+            // TẠO TĂNG CA NHÂN VIÊN KHÁC??
+            var isManager = Utility.IsManager(loginE);
+
+            var anninh = Utility.AnNinh();
+            var securityPosition = dbContext.Categories.Find(m => m.Type.Equals((int)ECategory.ChucVu) && m.Name.Equals(anninh)).FirstOrDefault();
+            var isSecurity = loginE.ChucVu == securityPosition.Id;
             #endregion
 
             id = string.IsNullOrEmpty(id) ? loginId : id;
+            var isMe = id == loginId ? true : false;
             var account = id == loginId ? loginE : dbContext.Employees.Find(m => m.Id.Equals(id)).FirstOrDefault();
 
-            var myDepartment = account.PhongBan;
-
             #region Dropdownlist
-            // Danh sách nhân viên để tạo phép dùm
-            var builderEmp = Builders<Employee>.Filter;
-            var filterEmp = builderEmp.Eq(m => m.Enable, true) & builderEmp.Eq(m => m.Leave, false);
-            filterEmp &= !builderEmp.Eq(m => m.UserName, Constants.System.account);
-            // Remove cấp cao ra (theo mã số lương)
-            filterEmp &= !builderEmp.In(m => m.NgachLuongCode, new string[] { "C.01", "C.02", "C.03" });
-            var employees = await dbContext.Employees.Find(filterEmp).SortBy(m => m.FullName).ToListAsync();
-
             var sortTimes = Utility.DllMonths();
             var approves = Utility.Approves(account, true, Constants.Rights.XacNhanCong, (int)ERights.Edit);
+            var employees = Utility.EmployeesBase(isHr, loginId);
             #endregion
 
             #region Times
@@ -543,21 +579,29 @@ namespace Controllers
             }
             var year = toDate.Day > 25 ? toDate.AddMonths(1).Year : toDate.Year;
             var month = toDate.Day > 25 ? toDate.AddMonths(1).Month : toDate.Month;
+            var dayworking = Utility.BusinessDaysUntil(fromDate, toDate);
+            if (toDate > DateTime.Now.Date)
+            {
+                dayworking = Utility.BusinessDaysUntil(fromDate, DateTime.Now);
+            }
+            ViewData["DayWorking"] = dayworking;
             #endregion
 
             #region Filter
             var builder = Builders<EmployeeWorkTimeLog>.Filter;
-            var filter = builder.Eq(m => m.ConfirmId, loginId) & builder.Eq(m => m.Month, month) & builder.Eq(m => m.Year, year);
+            var filter = builder.Eq(m => m.EmployeeId, id);
+            filter = filter & builder.Gt(m => m.Date, fromDate.AddDays(-1)) & builder.Lt(m => m.Date, toDate.AddDays(1));
 
             var builderSum = Builders<EmployeeWorkTimeMonthLog>.Filter;
             var filterSum = builderSum.Eq(m => m.EmployeeId, id);
             filterSum = filterSum & builderSum.Eq(m => m.Month, month) & builderSum.Eq(m => m.Year, year);
             #endregion
 
-            var timekeepings = await dbContext.EmployeeWorkTimeLogs.Find(filter).SortByDescending(m => m.Date).ToListAsync();
+            var timekeeperlogs = await dbContext.EmployeeWorkTimeLogs.Find(filter).SortByDescending(m => m.Date).ToListAsync();
+            var monthsTimes = await dbContext.EmployeeWorkTimeMonthLogs.Find(filterSum).SortByDescending(m => m.LastUpdated).ToListAsync();
 
             var timers = new List<TimeKeeperDisplay>();
-            foreach (var time in timekeepings)
+            foreach (var time in timekeeperlogs)
             {
                 var enrollNumber = string.Empty;
                 var chucvuName = string.Empty;
@@ -585,16 +629,221 @@ namespace Controllers
 
             var viewModel = new TimeKeeperViewModel
             {
-                TimeKeeperDisplays = timers,
                 Employee = account,
+                Employees = employees,
+                TimeKeeperDisplays = timers,
+                EmployeeWorkTimeLogs = timekeeperlogs,
+                EmployeeWorkTimeMonthLogs = monthsTimes,
                 MonthYears = sortTimes,
                 StartWorkingDate = fromDate,
                 EndWorkingDate = toDate,
                 Approves = approves,
                 Thang = thang,
-                RightRequest = quyenXacNhan
+                RightRequest = isXNDum,
+                RightManager = rightBangCong,
+                Approver = rightApprove,
+                IsManager = isManager,
+                IsSecurity = isSecurity,
+                IsMe = isMe,
+                Id = id
             };
             return View(viewModel);
+        }
+
+        [Route(Constants.LinkTimeKeeper.AprrovePost)]
+        [AllowAnonymous]
+        [HttpPost]
+        public IActionResult ApprovePost(string id, int approve, string secure)
+        {
+            var viewModel = new TimeKeeperViewModel
+            {
+                Approve = approve
+            };
+
+            var timelog = dbContext.EmployeeWorkTimeLogs.Find(m => m.Id.Equals(id)).FirstOrDefault();
+            if (timelog == null || (timelog.SecureCode != secure && timelog.Status != 2))
+            {
+                return Json(new { result = true, message = Constants.ErrorParameter });
+            }
+
+            viewModel.EmployeeWorkTimeLog = timelog;
+
+            #region Update status
+            var filter = Builders<EmployeeWorkTimeLog>.Filter.Eq(m => m.Id, id);
+            var update = Builders<EmployeeWorkTimeLog>.Update
+                .Set(m => m.SecureCode, Helper.HashedPassword(Guid.NewGuid().ToString("N").Substring(0, 12)))
+                .Set(m => m.WorkDay, 1)
+                .Set(m => m.Status, approve)
+                .Set(m => m.ConfirmDate, DateTime.Now.Date);
+            dbContext.EmployeeWorkTimeLogs.UpdateOne(filter, update);
+            #endregion
+
+            #region update Summary
+            if (approve == (int)EStatusWork.DongY)
+            {
+                var monthDate = Utility.EndWorkingMonthByDate(timelog.Date);
+                var builderUpdateSum = Builders<EmployeeWorkTimeMonthLog>.Filter;
+                var filterUpdateSum = builderUpdateSum.Eq(m => m.EmployeeId, timelog.EmployeeId);
+                filterUpdateSum &= builderUpdateSum.Eq(m => m.Year, monthDate.Year);
+                filterUpdateSum &= builderUpdateSum.Eq(m => m.Month, monthDate.Month);
+
+                double dateInc = 0;
+                double worktimeInc = 0;
+                double lateInc = 0;
+                double earlyInc = 0;
+                if (!timelog.In.HasValue && !timelog.Out.HasValue)
+                {
+                    dateInc += 1;
+                    worktimeInc += new TimeSpan(8, 0, 0).TotalMilliseconds;
+                }
+                else if (!timelog.In.HasValue || !timelog.Out.HasValue)
+                {
+                    dateInc += 0.5;
+                    worktimeInc += new TimeSpan(4, 0, 0).TotalMilliseconds;
+                }
+                if (timelog.Late.TotalMilliseconds > 0)
+                {
+                    worktimeInc += timelog.Late.TotalMilliseconds;
+                    lateInc += timelog.Late.TotalMilliseconds;
+                }
+                if (timelog.Early.TotalMilliseconds > 0)
+                {
+                    worktimeInc += timelog.Early.TotalMilliseconds;
+                    earlyInc += timelog.Early.TotalMilliseconds;
+                }
+                var updateSum = Builders<EmployeeWorkTimeMonthLog>.Update
+                    .Inc(m => m.Workday, dateInc)
+                    .Inc(m => m.WorkTime, worktimeInc)
+                    .Inc(m => m.Late, -(lateInc))
+                    .Inc(m => m.Early, -(earlyInc))
+                    .Set(m => m.LastUpdated, DateTime.Now);
+                dbContext.EmployeeWorkTimeMonthLogs.UpdateOne(filterUpdateSum, updateSum);
+            }
+            #endregion
+
+            #region Send email to user
+            var approvement = dbContext.Employees.Find(m => m.Id.Equals(timelog.ConfirmId)).FirstOrDefault();
+            var employee = dbContext.Employees.Find(m => m.Id.Equals(timelog.EmployeeId)).FirstOrDefault();
+            var requester = employee.FullName;
+            var tos = new List<EmailAddress>
+            {
+                new EmailAddress { Name = employee.FullName, Address = employee.Email }
+            };
+            if (approve == (int)EStatusWork.DongY)
+            {
+                var hrs = Utility.EmailGet(Constants.Rights.NhanSu, (int)ERights.Edit);
+                if (hrs != null && hrs.Count > 0)
+                {
+                    requester += " , HR";
+                    foreach (var item in hrs)
+                    {
+                        if (tos.Count(m => m.Address.Equals(item.Address)) == 0)
+                        {
+                            tos.Add(item);
+                        }
+                    }
+                }
+            }
+
+            var ccs = new List<EmailAddress>();
+
+            var webRoot = Environment.CurrentDirectory;
+            var pathToFile = _env.WebRootPath
+                    + Path.DirectorySeparatorChar.ToString()
+                    + "Templates"
+                    + Path.DirectorySeparatorChar.ToString()
+                    + "EmailTemplate"
+                    + Path.DirectorySeparatorChar.ToString()
+                    + "TimeKeeperConfirm.html";
+
+            var subject = "Xác nhận công.";
+            var status = approve == 3 ? "Đồng ý" : "Không duyệt";
+            var inTime = timelog.In.HasValue ? timelog.In.Value.ToString(@"hh\:mm") : string.Empty;
+            var outTime = timelog.Out.HasValue ? timelog.Out.Value.ToString(@"hh\:mm") : string.Empty;
+            var lateTime = timelog.Late.TotalMilliseconds > 0 ? Math.Round(timelog.Late.TotalMinutes, 0).ToString() : "0";
+            var earlyTime = timelog.Early.TotalMilliseconds > 0 ? Math.Round(timelog.Early.TotalMinutes, 0).ToString() : "0";
+            var sumTime = string.Empty;
+            if (string.IsNullOrEmpty(inTime) && string.IsNullOrEmpty(outTime))
+            {
+                sumTime = "1 ngày";
+            }
+            else if (string.IsNullOrEmpty(inTime) || string.IsNullOrEmpty(outTime))
+            {
+                sumTime = "0.5 ngày";
+            }
+            var minutesMissing = TimeSpan.FromMilliseconds(timelog.Late.TotalMilliseconds + timelog.Early.TotalMilliseconds).TotalMinutes;
+            if (minutesMissing > 0)
+            {
+                if (!string.IsNullOrEmpty(sumTime))
+                {
+                    sumTime += ", ";
+                }
+                sumTime += Math.Round(minutesMissing, 0) + " phút";
+            }
+
+            var detailTimeKeeping = "Ngày: " + timelog.Date.ToString("dd/MM/yyyy") + "; thiếu: " + sumTime;
+            if (!string.IsNullOrEmpty(inTime))
+            {
+                detailTimeKeeping += " | giờ vào: " + inTime + "; trễ: " + lateTime;
+            }
+            else
+            {
+                detailTimeKeeping += " | giờ vào: --; trễ: --";
+            }
+            if (!string.IsNullOrEmpty(outTime))
+            {
+                detailTimeKeeping += "; giờ ra: " + outTime + "; sớm: " + earlyTime;
+            }
+            else
+            {
+                detailTimeKeeping += "; giờ ra: --; sớm: --";
+            }
+            // Api update, generate code.
+            var linkDetail = Constants.System.domain;
+            var bodyBuilder = new BodyBuilder();
+            using (StreamReader SourceReader = System.IO.File.OpenText(pathToFile))
+            {
+                bodyBuilder.HtmlBody = SourceReader.ReadToEnd();
+            }
+            string messageBody = string.Format(bodyBuilder.HtmlBody,
+                subject,
+                requester,
+                status,
+                approvement.FullName,
+                approvement.Email,
+                approvement.ChucVuName,
+                detailTimeKeeping,
+                timelog.Reason,
+                timelog.ReasonDetail,
+                linkDetail,
+                Constants.System.domain
+                );
+
+            var emailMessage = new EmailMessage()
+            {
+                ToAddresses = tos,
+                CCAddresses = ccs,
+                Subject = subject,
+                BodyContent = messageBody,
+                Type = "xac-nhan-cong",
+                EmployeeId = timelog.EmployeeId
+            };
+
+            var scheduleEmail = new ScheduleEmail
+            {
+                Status = (int)EEmailStatus.Schedule,
+                To = emailMessage.ToAddresses,
+                CC = emailMessage.CCAddresses,
+                BCC = emailMessage.BCCAddresses,
+                Type = emailMessage.Type,
+                Title = emailMessage.Subject,
+                Content = emailMessage.BodyContent,
+                EmployeeId = emailMessage.EmployeeId
+            };
+            dbContext.ScheduleEmails.InsertOne(scheduleEmail);
+            #endregion
+
+            return Json(new { result = true, message = "Cám ơn đã xác nhận, kết quả đang gửi cho người liên quan." });
         }
 
         #region CHAM CONG
@@ -641,27 +890,42 @@ namespace Controllers
 
             #region Times
             var today = DateTime.Now.Date;
-            if (!string.IsNullOrEmpty(Thang))
+            if (string.IsNullOrEmpty(Thang))
             {
-                Den = Utility.GetToDate(Thang);
-                Tu = Den.AddMonths(-1).AddDays(1);
-                var year = Den.Year;
-                var month = Den.Month;
-                linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "?";
-                linkCurrent += "Thang=" + Thang;
+                Thang = today.Month.ToString() + "-" + today.Year.ToString();
             }
-            else
+            int month = Convert.ToInt32(Thang.Split('-')[0]);
+            int year = Convert.ToInt32(Thang.Split('-')[1]);
+            int daysInMonth = DateTime.DaysInMonth(year, month);
+            var crawlStart = 1; // start date of month
+            var crawlEnd = daysInMonth;
+            var timerMonthCalculator = 0; // current base End Day of Month.
+            var crawlStartE = dbContext.Settings.Find(m => m.Key.Equals("crawl-day-start")).FirstOrDefault();
+            var crawlEndE = dbContext.Settings.Find(m => m.Key.Equals("crawl-day-end")).FirstOrDefault();
+            var timerMonthCalculatorE = dbContext.Settings.Find(m => m.Key.Equals("timer-month-calculator")).FirstOrDefault(); // value:0,-1
+            if (crawlStartE != null && !string.IsNullOrEmpty(crawlStartE.Value))
             {
-                if (Den < Constants.MinDate)
-                {
-                    Den = today;
-                }
-                if (Tu < Constants.MinDate)
-                {
-                    var previous = Den.Day > 25 ? Den : Den.AddMonths(-1);
-                    Tu = new DateTime(previous.Year, previous.Month, 26);
-                }
+                crawlStart = Convert.ToInt32(crawlStartE.Value);
             }
+            if (crawlEndE != null && !string.IsNullOrEmpty(crawlStartE.Value))
+            {
+                crawlEnd = Convert.ToInt32(crawlEndE.Value);
+            }
+            if (timerMonthCalculatorE != null)
+            {
+                timerMonthCalculator = Convert.ToInt32(timerMonthCalculatorE.Value);
+            }
+            
+            Tu = crawlStart > crawlEnd ? new DateTime(year, month, crawlStart).AddMonths(-1) : new DateTime(year, month, crawlStart);
+            Den = crawlStart > crawlEnd ? new DateTime(Tu.AddMonths(1).Year, Tu.AddMonths(1).Month, crawlEnd) : new DateTime(Tu.Year, Tu.Month, crawlEnd);
+
+            var dayworking = Utility.BusinessDaysUntil(Tu, Den);
+            if (Den > DateTime.Now.Date)
+            {
+                dayworking = Utility.BusinessDaysUntil(Tu, DateTime.Now);
+            }
+            linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "?";
+            linkCurrent += "Thang=" + Thang;
             #endregion
 
             #region Filter
@@ -816,25 +1080,42 @@ namespace Controllers
 
             #region Times
             var today = DateTime.Now.Date;
-            if (!string.IsNullOrEmpty(Thang))
+            if (string.IsNullOrEmpty(Thang))
             {
-                Den = Utility.GetToDate(Thang);
-                Tu = Den.AddMonths(-1).AddDays(1);
-                var year = Den.Year;
-                var month = Den.Month;
+                Thang = today.Month.ToString() + "-" + today.Year.ToString();
             }
-            else
+            int month = Convert.ToInt32(Thang.Split('-')[0]);
+            int year = Convert.ToInt32(Thang.Split('-')[1]);
+            int daysInMonth = DateTime.DaysInMonth(year, month);
+            var crawlStart = 1; // start date of month
+            var crawlEnd = daysInMonth;
+            var timerMonthCalculator = 0; // current base End Day of Month.
+            var crawlStartE = dbContext.Settings.Find(m => m.Key.Equals("crawl-day-start")).FirstOrDefault();
+            var crawlEndE = dbContext.Settings.Find(m => m.Key.Equals("crawl-day-end")).FirstOrDefault();
+            var timerMonthCalculatorE = dbContext.Settings.Find(m => m.Key.Equals("timer-month-calculator")).FirstOrDefault(); // value:0,-1
+            if (crawlStartE != null && !string.IsNullOrEmpty(crawlStartE.Value))
             {
-                if (Den < Constants.MinDate)
-                {
-                    Den = today;
-                }
-                if (Tu < Constants.MinDate)
-                {
-                    var previous = Den.Day > 25 ? Den : Den.AddMonths(-1);
-                    Tu = new DateTime(previous.Year, previous.Month, 26);
-                }
+                crawlStart = Convert.ToInt32(crawlStartE.Value);
             }
+            if (crawlEndE != null && !string.IsNullOrEmpty(crawlStartE.Value))
+            {
+                crawlEnd = Convert.ToInt32(crawlEndE.Value);
+            }
+            if (timerMonthCalculatorE != null)
+            {
+                timerMonthCalculator = Convert.ToInt32(timerMonthCalculatorE.Value);
+            }
+
+            Tu = crawlStart > crawlEnd ? new DateTime(year, month, crawlStart).AddMonths(-1) : new DateTime(year, month, crawlStart);
+            Den = crawlStart > crawlEnd ? new DateTime(Tu.AddMonths(1).Year, Tu.AddMonths(1).Month, crawlEnd) : new DateTime(Tu.Year, Tu.Month, crawlEnd);
+
+            var dayworking = Utility.BusinessDaysUntil(Tu, Den);
+            if (Den > DateTime.Now.Date)
+            {
+                dayworking = Utility.BusinessDaysUntil(Tu, DateTime.Now);
+            }
+            linkCurrent += !string.IsNullOrEmpty(linkCurrent) ? "&" : "?";
+            linkCurrent += "Thang=" + Thang;
             #endregion
 
             string sFileName = @"bang-cham-cong";
@@ -1176,6 +1457,9 @@ namespace Controllers
                     int vaoTrePhut = 0;
                     var raSomLan = 0;
                     int raSomPhut = 0;
+                    double otNormalReal = 0;
+                    double otSundayReal = 0;
+                    double otHolidayReal = 0;
                     double tangCaNgayThuong = 0;
                     double tangCaChuNhat = 0;
                     double tangCaLeTet = 0;
@@ -1256,7 +1540,7 @@ namespace Controllers
                     cell.CellStyle = styleDedault;
 
                     cell = rowreason.CreateCell(columnIndex, CellType.String);
-                    cell.SetCellValue("Xác nhận-Lý do");
+                    cell.SetCellValue("Công|Xác nhận-Lý do");
                     cell.CellStyle = styleDedault;
                     columnIndex++;
 
@@ -1265,56 +1549,40 @@ namespace Controllers
                         var item = timesSort.Where(m => m.Date.Equals(date)).FirstOrDefault();
                         if (item != null)
                         {
+                            var analytic = Utility.TimerAnalytics(item, true);
                             var dayString = string.Empty;
                             var displayInOut = string.Empty;
                             var noilamviec = !string.IsNullOrEmpty(item.WorkplaceCode) ? item.WorkplaceCode : string.Empty;
                             var reason = !string.IsNullOrEmpty(item.Reason) ? item.Reason : string.Empty;
                             var detail = !string.IsNullOrEmpty(item.ReasonDetail) ? item.ReasonDetail : string.Empty;
-                            var statusTangCa = item.StatusTangCa;
-                            var statusBag = statusTangCa == (int)ETangCa.TuChoi ? "badge-pill" : "badge-info";
-                            var giotangcathucte = Math.Round(item.TangCaThucTe.TotalHours, 2);
-                            var giotangcaxacnhan = Math.Round(item.TangCaDaXacNhan.TotalHours, 2);
+                            var statusBag = item.StatusTangCa == (int)ETangCa.TuChoi ? "badge-pill" : "badge-info";
+                            var giotangcathucte = Math.Round(item.OtThucTeD, 2);
+                            var phuttangcathucte = Math.Round(giotangcathucte * 60, 0);
+                            var giotangcaxacnhan = Math.Round(item.OtXacNhanD, 2);
                             int late = 0;
                             int early = 0;
-                            var displayLate = string.Empty;
-                            var displayEarly = string.Empty;
 
-                            var isMiss = false;
-                            if (item.Mode == (int)ETimeWork.Normal)
-                            {
-                                switch (item.Status)
-                                {
-                                    case (int)EStatusWork.XacNhanCong:
-                                        {
-                                            isMiss = true;
-                                            break;
-                                        }
-                                    case (int)EStatusWork.DaGuiXacNhan:
-                                        {
-                                            item.WorkDay = 1;
-                                            ngayCongNT++;
-                                            break;
-                                        }
-                                    case (int)EStatusWork.DongY:
-                                        {
-                                            item.WorkDay = 1;
-                                            ngayCongNT++;
-                                            break;
-                                        }
-                                    case (int)EStatusWork.TuChoi:
-                                        {
-                                            isMiss = true;
-                                            break;
-                                        }
-                                    default:
-                                        {
-                                            ngayCongNT++;
-                                            break;
-                                        }
-                                }
-                            }
+                            var isMiss = analytic.Miss;
+                            item.WorkDay = analytic.Workday;
+                            late = analytic.Late;
+                            early = analytic.Early;
+                            displayInOut = analytic.DisplayInOut;
 
-                            // Calculator = hour
+                            ngayCongNT += analytic.Workday;
+                            ngayNghiP += analytic.NgayNghiP;
+                            letet += analytic.LeTet;
+                            vaoTreLan += analytic.VaoTreLan;
+                            vaoTrePhut += analytic.Late;
+                            raSomLan += analytic.RaSomLan;
+                            raSomPhut += analytic.Early;
+                            otNormalReal += analytic.OtNormalReal;
+                            otSundayReal += analytic.OtSundayReal;
+                            otHolidayReal += analytic.OtHolidayReal;
+                            tangCaNgayThuong += analytic.TangCaNgayThuong;
+                            tangCaChuNhat += analytic.TangCaChuNhat;
+                            tangCaLeTet += analytic.TangCaLeTet;
+
+                            dayString = item.WorkDay + " ngày";
                             if (item.Mode == (int)ETimeWork.Sunday || item.Mode == (int)ETimeWork.Holiday)
                             {
                                 if (item.WorkTime.TotalHours > 0)
@@ -1323,77 +1591,8 @@ namespace Controllers
                                 }
                             }
 
-                            if (item.Mode == (int)ETimeWork.LeavePhep)
-                            {
-                                ngayNghiP += item.SoNgayNghi;
-                                if (item.SoNgayNghi < 1)
-                                {
-                                    item.WorkDay = 0.5;
-                                    ngayCongNT += 0.5;
-                                }
-                            }
-                            if (item.Mode == (int)ETimeWork.Holiday)
-                            {
-                                letet += 1;
-                            }
-
-                            if (item.Logs != null)
-                            {
-                                if (isMiss)
-                                {
-                                    if (item.Late.TotalMinutes > 1)
-                                    {
-                                        late = Convert.ToInt32(Math.Floor(item.Late.TotalMinutes));
-                                        vaoTreLan++;
-                                        vaoTrePhut += late;
-                                    }
-                                    if (item.Early.TotalMinutes > 1)
-                                    {
-                                        early = Convert.ToInt32(Math.Floor(item.Early.TotalMinutes));
-                                        raSomLan++;
-                                        raSomPhut += early;
-                                    }
-                                    var timeoutin = item.Out - item.In;
-                                    if (timeoutin.HasValue && timeoutin.Value.TotalHours > 6)
-                                    {
-                                        // First, không tính 15p
-                                        item.WorkDay = 1;
-                                        ngayCongNT++;
-                                    }
-                                    else
-                                    {
-                                        if (item.Out.HasValue || item.In.HasValue)
-                                        {
-                                            item.WorkDay = 0.5;
-                                        }
-                                        ngayCongNT += item.WorkDay;
-                                    }
-                                }
-                                displayInOut = item.In.HasValue ? item.In.Value.ToString(@"hh\:mm") : string.Empty;
-                                if (item.Out.HasValue)
-                                {
-                                    displayInOut += !string.IsNullOrEmpty(displayInOut) ? " - " + item.Out.Value.ToString(@"hh\:mm") : item.Out.Value.ToString(@"hh\:mm");
-                                }
-
-                                // TANG CA
-                                if (statusTangCa == (int)ETangCa.DongY)
-                                {
-                                    if (item.Mode == (int)ETimeWork.Normal)
-                                    {
-                                        tangCaNgayThuong += item.TangCaDaXacNhan.TotalHours;
-                                    }
-                                    if (item.Mode == (int)ETimeWork.Sunday)
-                                    {
-                                        tangCaChuNhat += item.TangCaDaXacNhan.TotalHours;
-                                    }
-                                    if (item.Mode == (int)ETimeWork.Holiday)
-                                    {
-                                        tangCaLeTet += item.TangCaDaXacNhan.TotalHours;
-                                    }
-                                }
-                            }
-
-                            dayString = item.WorkDay + " ngày";
+                            var displayLate = string.Empty;
+                            var displayEarly = string.Empty;
 
                             if (item.Logs == null)
                             {
@@ -1676,7 +1875,7 @@ namespace Controllers
             }
             #endregion
 
-            string sFileName = @"bang-cong-time";
+            string sFileName = @"bang-cong-miss-time";
 
             #region Filter
             var builder = Builders<Employee>.Filter;
@@ -2031,6 +2230,9 @@ namespace Controllers
                     int vaoTrePhut = 0;
                     var raSomLan = 0;
                     int raSomPhut = 0;
+                    double otNormalReal = 0;
+                    double otSundayReal = 0;
+                    double otHolidayReal = 0;
                     double tangCaNgayThuong = 0;
                     double tangCaChuNhat = 0;
                     double tangCaLeTet = 0;
@@ -2159,7 +2361,7 @@ namespace Controllers
                     cell.CellStyle = styleDedault;
 
                     cell = rowreason.CreateCell(columnIndex, CellType.String);
-                    cell.SetCellValue("Xác nhận-Lý do");
+                    cell.SetCellValue("Công|Xác nhận-Lý do");
                     cell.CellStyle = styleDedault;
                     columnIndex++;
 
@@ -2168,56 +2370,38 @@ namespace Controllers
                         var item = timesSort.Where(m => m.Date.Equals(date)).FirstOrDefault();
                         if (item != null)
                         {
+                            var analytic = Utility.TimerAnalytics(item, false);
                             var dayString = string.Empty;
                             var displayInOut = string.Empty;
                             var noilamviec = !string.IsNullOrEmpty(item.WorkplaceCode) ? item.WorkplaceCode : string.Empty;
                             var reason = !string.IsNullOrEmpty(item.Reason) ? item.Reason : string.Empty;
                             var detail = !string.IsNullOrEmpty(item.ReasonDetail) ? item.ReasonDetail : string.Empty;
-                            var statusTangCa = item.StatusTangCa;
-                            var statusBag = statusTangCa == (int)ETangCa.TuChoi ? "badge-pill" : "badge-info";
-                            var giotangcathucte = Math.Round(item.TangCaThucTe.TotalHours, 2);
-                            var giotangcaxacnhan = Math.Round(item.TangCaDaXacNhan.TotalHours, 2);
+                            var statusBag = item.StatusTangCa == (int)ETangCa.TuChoi ? "badge-pill" : "badge-info";
+                            var giotangcathucte = Math.Round(item.OtThucTeD, 2);
+                            var phuttangcathucte = Math.Round(giotangcathucte * 60, 0);
+                            var giotangcaxacnhan = Math.Round(item.OtXacNhanD, 2);
                             int late = 0;
                             int early = 0;
-                            var displayLate = string.Empty;
-                            var displayEarly = string.Empty;
 
-                            var isMiss = false;
-                            if (item.Mode == (int)ETimeWork.Normal)
-                            {
-                                switch (item.Status)
-                                {
-                                    case (int)EStatusWork.XacNhanCong:
-                                        {
-                                            isMiss = true;
-                                            break;
-                                        }
-                                    case (int)EStatusWork.DaGuiXacNhan:
-                                        {
-                                            item.WorkDay = 1;
-                                            ngayCongNT++;
-                                            break;
-                                        }
-                                    case (int)EStatusWork.DongY:
-                                        {
-                                            item.WorkDay = 1;
-                                            ngayCongNT++;
-                                            break;
-                                        }
-                                    case (int)EStatusWork.TuChoi:
-                                        {
-                                            isMiss = true;
-                                            break;
-                                        }
-                                    default:
-                                        {
-                                            ngayCongNT++;
-                                            break;
-                                        }
-                                }
-                            }
+                            var isMiss = analytic.Miss;
+                            item.WorkDay = analytic.Workday;
+                            late = analytic.Late;
+                            early = analytic.Early;
+                            displayInOut = analytic.DisplayInOut;
 
-                            // Calculator = hour
+                            ngayCongNT += analytic.Workday;
+                            ngayNghiP += analytic.NgayNghiP;
+                            letet += analytic.LeTet;
+                            vaoTreLan += analytic.VaoTreLan;
+                            raSomLan += analytic.RaSomLan;
+                            otNormalReal += analytic.OtNormalReal;
+                            otSundayReal += analytic.OtSundayReal;
+                            otHolidayReal += analytic.OtHolidayReal;
+                            tangCaNgayThuong += analytic.TangCaNgayThuong;
+                            tangCaChuNhat += analytic.TangCaChuNhat;
+                            tangCaLeTet += analytic.TangCaLeTet;
+
+                            dayString = item.WorkDay + " ngày";
                             if (item.Mode == (int)ETimeWork.Sunday || item.Mode == (int)ETimeWork.Holiday)
                             {
                                 if (item.WorkTime.TotalHours > 0)
@@ -2226,77 +2410,8 @@ namespace Controllers
                                 }
                             }
 
-                            if (item.Mode == (int)ETimeWork.LeavePhep)
-                            {
-                                ngayNghiP += item.SoNgayNghi;
-                                if (item.SoNgayNghi < 1)
-                                {
-                                    item.WorkDay = 0.5;
-                                    ngayCongNT += 0.5;
-                                }
-                            }
-                            if (item.Mode == (int)ETimeWork.Holiday)
-                            {
-                                letet += 1;
-                            }
-
-                            if (item.Logs != null)
-                            {
-                                if (isMiss)
-                                {
-                                    if (item.Late.TotalMinutes > 1)
-                                    {
-                                        late = Convert.ToInt32(Math.Floor(item.Late.TotalMinutes));
-                                        //vaoTreLan++;
-                                        //vaoTrePhut += late;
-                                    }
-                                    if (item.Early.TotalMinutes > 1)
-                                    {
-                                        early = Convert.ToInt32(Math.Floor(item.Early.TotalMinutes));
-                                        //raSomLan++;
-                                        //raSomPhut += early;
-                                    }
-                                    var timeoutin = item.Out - item.In;
-                                    if (timeoutin.HasValue && timeoutin.Value.TotalHours > 6)
-                                    {
-                                        // First, không tính 15p
-                                        item.WorkDay = 1;
-                                        ngayCongNT++;
-                                    }
-                                    else
-                                    {
-                                        if (item.Out.HasValue || item.In.HasValue)
-                                        {
-                                            item.WorkDay = 0.5;
-                                        }
-                                        ngayCongNT += item.WorkDay;
-                                    }
-                                }
-                                displayInOut = item.In.HasValue ? item.In.Value.ToString(@"hh\:mm") : string.Empty;
-                                if (item.Out.HasValue)
-                                {
-                                    displayInOut += !string.IsNullOrEmpty(displayInOut) ? " - " + item.Out.Value.ToString(@"hh\:mm") : item.Out.Value.ToString(@"hh\:mm");
-                                }
-
-                                // TANG CA
-                                if (statusTangCa == (int)ETangCa.DongY)
-                                {
-                                    if (item.Mode == (int)ETimeWork.Normal)
-                                    {
-                                        tangCaNgayThuong += item.TangCaDaXacNhan.TotalHours;
-                                    }
-                                    if (item.Mode == (int)ETimeWork.Sunday)
-                                    {
-                                        tangCaChuNhat += item.TangCaDaXacNhan.TotalHours;
-                                    }
-                                    if (item.Mode == (int)ETimeWork.Holiday)
-                                    {
-                                        tangCaLeTet += item.TangCaDaXacNhan.TotalHours;
-                                    }
-                                }
-                            }
-
-                            dayString = item.WorkDay + " ngày";
+                            var displayLate = string.Empty;
+                            var displayEarly = string.Empty;
 
                             if (item.Logs == null)
                             {
@@ -2428,34 +2543,6 @@ namespace Controllers
 
                     cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 6, columnIndex, columnIndex);
                     sheet1.AddMergedRegion(cellRangeAddress);
-                    cell = row.CreateCell(columnIndex, CellType.String);
-                    cell.SetCellValue(vaoTreLan);
-                    cell.CellStyle = styleDedaultMerge;
-                    columnIndex++;
-
-                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 6, columnIndex, columnIndex);
-                    sheet1.AddMergedRegion(cellRangeAddress);
-                    cell = row.CreateCell(columnIndex, CellType.String);
-                    cell.SetCellValue(vaoTrePhut);
-                    cell.CellStyle = styleDedaultMerge;
-                    columnIndex++;
-
-                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 6, columnIndex, columnIndex);
-                    sheet1.AddMergedRegion(cellRangeAddress);
-                    cell = row.CreateCell(columnIndex, CellType.String);
-                    cell.SetCellValue(raSomLan);
-                    cell.CellStyle = styleDedaultMerge;
-                    columnIndex++;
-
-                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 6, columnIndex, columnIndex);
-                    sheet1.AddMergedRegion(cellRangeAddress);
-                    cell = row.CreateCell(columnIndex, CellType.String);
-                    cell.SetCellValue(raSomPhut);
-                    cell.CellStyle = styleDedaultMerge;
-                    columnIndex++;
-
-                    cellRangeAddress = new CellRangeAddress(rowIndex, rowIndex + 6, columnIndex, columnIndex);
-                    sheet1.AddMergedRegion(cellRangeAddress);
                     cell = row.CreateCell(columnIndex, CellType.Numeric);
                     cell.SetCellValue(Math.Round(tangCaNgayThuong, 2));
                     cell.CellStyle = styleDedaultMerge;
@@ -2491,11 +2578,11 @@ namespace Controllers
                     var columnIndexT = columnIndex;
                     columnIndex++;
 
-                    rowIndex = rowIndex + 6;
+                    rowIndex += 6;
                     rowIndex++;
                     order++;
                     #region fix border
-                    for (var i = 0; i < 5; i++)
+                    for (var i = 0; i < 9; i++)
                     {
                         var rowCellRangeAddress = new CellRangeAddress(rowEF, rowET, i, i);
                         sheet1.AddMergedRegion(rowCellRangeAddress);
@@ -2519,7 +2606,8 @@ namespace Controllers
                 #region fix border
                 var rowF = 7;
                 var rowT = 8;
-                for (var i = 0; i < 6; i++)
+                // STT -> MA CC
+                for (var i = 0; i < 9; i++)
                 {
                     var rowCellRangeAddress = new CellRangeAddress(rowF, rowT, i, i);
                     sheet1.AddMergedRegion(rowCellRangeAddress);

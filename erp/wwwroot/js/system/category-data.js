@@ -4,6 +4,10 @@
             theme: "bootstrap"
         });
 
+    $('.ddl-type').on('change', function () {
+        // Do later
+    });
+
     $(".check-property").change(function () {
         var parent = $(this).closest('.form-check');
         if (this.checked) {

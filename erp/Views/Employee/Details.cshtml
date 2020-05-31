@@ -12,7 +12,7 @@
     var sizeValueCover = (int)EImageSize.Cover;
     var isImg = false;
     var images = new List<Img>
-    {
+{
         new Img() { Type = sizeValueAvatar },
         new Img() { Type = sizeValueCover }
     };
@@ -21,19 +21,19 @@
         isImg = true;
         images = employee.Images.ToList();
     }
-    var avatarDisplay = "/images/placeholder/120x120.png";
-    var coverDisplay = "background-image: url('/images/placeholder/354x167.png')";
+    var avatarDisplay = "https://via.placeholder.com/120x120";
+    var coverDisplay = "background-image: url('https://via.placeholder.com/354x167')";
     if (isImg)
     {
         var avatar = images.Where(m => m.Type.Equals(sizeValueAvatar)).FirstOrDefault();
         var cover = images.Where(m => m.Type.Equals(sizeValueCover)).FirstOrDefault();
         if (avatar != null && !string.IsNullOrEmpty(avatar.Path) && !string.IsNullOrEmpty(avatar.FileName))
         {
-            avatarDisplay = "/" + System.IO.Path.Combine(avatar.Path, avatar.FileName).Replace("\\", "/");
+            avatarDisplay = System.IO.Path.Combine("/", avatar.Path, avatar.FileName).Replace("\\", "/");
         }
         if (cover != null && !string.IsNullOrEmpty(cover.Path) && !string.IsNullOrEmpty(cover.FileName))
         {
-            coverDisplay = "background-image: url('/" + System.IO.Path.Combine(avatar.Path, avatar.FileName).Replace("\\", "/") + "'); height:167px";
+            coverDisplay = "background-image: url('" + System.IO.Path.Combine("/", cover.Path, cover.FileName).Replace("\\", "/") + "'); height:167px";
         }
     }
 }
@@ -576,7 +576,7 @@
                             </div>
                         }
                     }
- 
+
                     <!-- DAO TAO -->
                     @{
                         var educations = employee.EmployeeEducations;
@@ -688,10 +688,10 @@
     </section>
 </div>
 
-        @section scripts {
-            @{
-                await Html.RenderPartialAsync("_ValidationScriptsPartial");
-                <script src="~/js/hr/employee-data.js?@Constants.VersionJs"></script>
-            }
-        }
+@section scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+        <script src="~/js/hr/employee-data.js?@Constants.VersionJs"></script>
+    }
+}
 

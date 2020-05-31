@@ -29,7 +29,12 @@
         Contract = 17,
         TimeWork = 18,
         Bank = 19,
-        Hospital = 20
+        Hospital = 20,
+        Gender = 21,
+        Probation = 22,
+        SalaryBase = 23,
+        Holiday = 24,
+        LeaveType = 25
     }
 
     public enum EPropertyValue

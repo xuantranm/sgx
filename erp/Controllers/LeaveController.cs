@@ -87,7 +87,7 @@ namespace Controllers
             var sortTimes = Utility.DllMonths();
             var types = dbContext.LeaveTypes.Find(m => m.Enable.Equals(true) && m.Display.Equals(true)).ToList();
             var approves = Utility.Approves(account, true, Constants.Rights.XacNhanNghiPhep, (int)ERights.Edit);
-            var employees = Utility.EmployeesBase(isHr, account.ManagerEmployeeId);
+            var employees = Utility.EmployeesBase(isHr, loginId);
             #endregion
 
             #region Create Leave
@@ -669,6 +669,69 @@ namespace Controllers
             #endregion
 
             return Json(new { result = true, message = "Cám ơn đã xác nhận, kết quả đang gửi cho người liên quan." });
+        }
+
+        [Route(Constants.ActionLink.Data)]
+        public async Task<IActionResult> Data(string id)
+        {
+            #region Authorization
+            LoginInit(string.Empty, (int)ERights.View);
+            if (!(bool)ViewData[Constants.ActionViews.IsLogin])
+            {
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                return RedirectToAction(Constants.ActionViews.Login, Constants.Controllers.Account);
+            }
+            var loginId = User.Identity.Name;
+            var loginE = dbContext.Employees.Find(m => m.Id.Equals(loginId)).FirstOrDefault();
+            bool isHr = Utility.IsRight(loginId, Constants.Rights.NhanSu, (int)ERights.Add);
+            bool isNghiPhepDum = Utility.IsRight(loginId, Constants.Rights.XinNghiPhepDum, (int)ERights.Add);
+            if (!isNghiPhepDum)
+            {
+                var countManager = dbContext.Employees.CountDocuments(m => m.Enable.Equals(true) && m.Leave.Equals(false) && m.ManagerEmployeeId.Equals(loginId));
+                if (countManager > 0)
+                {
+                    isNghiPhepDum = true;
+                }
+            }
+            if (!isNghiPhepDum)
+            {
+                isNghiPhepDum = isHr;
+            }
+            #endregion
+
+            id = string.IsNullOrEmpty(id) ? loginId : id;
+            var account = id == loginId ? loginE : dbContext.Employees.Find(m => m.Id.Equals(id)).FirstOrDefault();
+
+            #region Dropdownlist
+            var sortTimes = Utility.DllMonths();
+            var types = dbContext.LeaveTypes.Find(m => m.Enable.Equals(true) && m.Display.Equals(true)).ToList();
+            var approves = Utility.Approves(account, true, Constants.Rights.XacNhanNghiPhep, (int)ERights.Edit);
+            var employees = Utility.EmployeesBase(isHr, account.ManagerEmployeeId);
+            #endregion
+
+            var myDepartment = account.PhongBanName;
+
+            // View list approved or no.
+            var leaves = await dbContext.Leaves.Find(m => m.ApproverId.Equals(account.Id)).SortByDescending(m => m.ApprovedOn).ToListAsync();
+            // View số ngày phép của nhân viên
+            var leaveEmployees = new List<LeaveEmployee>();
+
+            // Quản lý số ngày nghỉ phép còn lại (nghỉ phép, các loại nghỉ bù,...)
+            if (!string.IsNullOrEmpty(myDepartment))
+            {
+                leaveEmployees = await dbContext.LeaveEmployees.Find(m => m.Enable.Equals(true) && m.Department.Equals(myDepartment) && !m.EmployeeId.Equals(account.Id)).SortBy(m => m.EmployeeName).ToListAsync();
+            }
+
+            var viewModel = new LeaveViewModel
+            {
+                RightRequest = isNghiPhepDum,
+                Leaves = leaves,
+                Employee = account,
+                Types = types,
+                Employees = employees,
+                LeaveEmployees = leaveEmployees
+            };
+            return View(viewModel);
         }
 
         #region Sub Data

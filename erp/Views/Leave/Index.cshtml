@@ -18,6 +18,8 @@
             totalLeaveAvailable += leaveEmployee.Number;
         }
     }
+
+    bool isHr = true;
 }
 
 <div class="main-container">
@@ -104,6 +106,16 @@
                             <div class="col-12">
                                 <a href="/@Constants.LinkLeave.Main/@Constants.LinkLeave.Approvement" class="btn btn-block btn-lg btn-outline-info" data-toggle="tooltip" title="Quản lý phép của nhân viên và lịch sử duyệt phép.">
                                     <i class="fas fa-chalkboard-teacher"></i> DUYỆT PHÉP
+                                </a>
+                            </div>
+                        </div>
+                    }
+                    @if (isHr)
+                    {
+                        <div class="row mb-2">
+                            <div class="col-12">
+                                <a href="/@Constants.LinkLeave.Main/@Constants.ActionLink.Data" class="btn btn-block btn-lg btn-outline-info" data-toggle="tooltip" title="Quản lý phép của nhân viên và lịch sử duyệt phép.">
+                                    <i class="fas fa-chalkboard-teacher"></i> CHỈNH SỬA PHÉP
                                 </a>
                             </div>
                         </div>

@@ -20,7 +20,9 @@ namespace Models
 
         public string Alias { get; set; }
 
-        public string Value { get; set; } // Probation...
+        public string Value { get; set; } // Main value, such as: Probation...
+
+        public int ValueType { get; set; } = (int)EValueType.String;
 
         public string Description { get; set; }
 

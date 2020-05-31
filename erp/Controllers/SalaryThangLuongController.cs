@@ -116,7 +116,7 @@ namespace erp.Controllers
             #endregion
 
             var mucluongvung = await dbContext.SalaryMucLuongVungs.Find(m => m.Enable.Equals(true)).FirstOrDefaultAsync();
-            var ngachluongs = await dbContext.NgachLuongs.Find(m => m.Enable.Equals(true) && m.Law.Equals(false)).ToListAsync();
+            var ngachluongs = await dbContext.NgachLuongs.Find(m => m.Enable.Equals(true) && m.Type.Equals((int)ESalary.Law)).ToListAsync();
             var viewModel = new ThangBangLuongViewModel
             {
                 SalaryMucLuongVung = mucluongvung,

@@ -9,9 +9,9 @@
     if (person.Images != null && person.Images.Count > 0)
     {
         var avatar = person.Images.Where(m => m.Type.Equals((int)EImageSize.Avatar)).FirstOrDefault();
-        if (avatar != null)
+        if (avatar != null && !string.IsNullOrEmpty(avatar.FileName))
         {
-            srcAvatar = avatar.Path + "/" + avatar.FileName;
+            srcAvatar = System.IO.Path.Combine("/", avatar.Path, avatar.FileName).Replace("\\", "/");
         }
     }
 }

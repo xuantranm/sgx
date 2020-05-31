@@ -8,49 +8,18 @@
     var expand = "d-none";
     var employees = Model.Employees.Where(m => m.Leave.Equals(false)).ToList();
     var countNs = employees.Count;
-    var activeflag = string.Empty;
+    var activePBflag = string.Empty;
+    var activeBPflag = string.Empty;
+    var activeNVflag = string.Empty;
     if (countNs < 10)
     {
-        activeflag = "active";
+        activePBflag = "active";
+        activeBPflag = "active";
+        activeNVflag = "active";
     }
     var leaves = Model.Employees.Where(m => m.Leave.Equals(true)).ToList();
     var countLeaves = leaves.Count;
 }
-
-<style>
-    ul, #myUL {
-        list-style-type: none;
-    }
-
-    /* Style the caret/arrow */
-    .caret {
-        cursor: pointer;
-        user-select: none; /* Prevent text selection */
-    }
-
-        /* Create the caret/arrow with a unicode, and style it */
-        .caret::before {
-            content: "\25B6";
-            color: black;
-            display: inline-block;
-            margin-right: 6px;
-        }
-
-    /* Rotate the caret/arrow icon when clicked on (using JavaScript) */
-    .caret-down::before {
-        transform: rotate(90deg);
-    }
-
-    /* Hide the nested list */
-    .nested {
-        display: none;
-    }
-
-    /* Show the nested list when the user clicks on the caret/arrow (with JavaScript) */
-    .active {
-        display: block;
-    }
-</style>
 
 <div class="main-container">
     <nav aria-label="breadcrumb" role="navigation" class="bg-primary text-white">
@@ -270,6 +239,9 @@
                         <a class="ce ko" href="/@Constants.LinkHr.Human/@Constants.LinkHr.List/@Constants.LinkHr.Export@Model.LinkCurrent">
                             <i class="fas fa-book-reader"></i> Danh sách nhân sự
                         </a>
+                        <a class="ce ko" style="margin-left:10px" href="/@Constants.LinkHr.Human/@Constants.LinkHr.List/xuat-nghi?nam=2019">
+                            <i class="fas fa-book-reader"></i> Danh sách nghỉ 2019
+                        </a>
                         <a class="ce ko" style="margin-left:10px" href="/@Constants.LinkHr.ChildrenReport/@Constants.LinkHr.Export">
                             <i class="fab fa-fort-awesome-alt"></i> Danh sách con
                         </a>
@@ -284,18 +256,19 @@
                             </li>
                             @{
                                 var lanhdaos = employees.Where(m => m.PhongBanName == "Ban lãnh đạo").ToList();
+                                var lanhdaoIds = lanhdaos.Select(m => m.Id);
                                 int countLd = lanhdaos.Count;
                                 <li>
                                     <span class="caret caret-down text-uppercase">Ban lãnh đạo <small class="badge badge-secondary">@countLd</small></span>
                                     <ul class="nested active">
                                         @foreach (var person in lanhdaos)
                                         {
-                                            <li>@Html.Partial("Common/_PersonPartial.cshtml", person)</li>
+                                            <li>@await Html.PartialAsync("Common/_PersonPartial.cshtml", person)</li>
                                         }
                                     </ul>
                                 </li>
 
-                                var kcns = (from s in employees
+                                var kcns = (from s in employees.Where(m => !lanhdaoIds.Contains(m.Id))
                                             group s by new
                                             {
                                                 s.KhoiChucNang,
@@ -318,88 +291,87 @@
                                                 var kcnP = kcn.items.Where(m => m.KhoiChucNang == kcn.KhoiChucNangId
                                                             && string.IsNullOrEmpty(m.PhongBan)
                                                             && string.IsNullOrEmpty(m.BoPhan)).ToList();
+                                                var kcnIds = kcnP.Select(m => m.Id);
                                                 <ul class="nested active">
                                                     @{
                                                         foreach (var person in kcnP)
                                                         {
                                                             <li>
-                                                                @Html.Partial("Common/_PersonPartial.cshtml", person)
+                                                                @await Html.PartialAsync("Common/_PersonPartial.cshtml", person)
                                                             </li>
                                                         }
-                                                        var phongbans = (from s in kcn.items
+                                                        var phongbans = (from s in kcn.items.Where(m => !kcnIds.Contains(m.Id))
                                                                          group s by new
                                                                          {
                                                                              s.PhongBan,
                                                                              s.PhongBanName
-                                                                         }
-into b
+                                                                         } into b
                                                                          select new
                                                                          {
                                                                              PhongBanId = b.Key.PhongBan,
                                                                              PhongBanName = b.Key.PhongBanName,
                                                                              items = b.ToList()
-                                                                         }).ToList();
+                                                                         }).OrderBy(m => m.PhongBanName).ToList();
 
                                                         foreach (var phongban in phongbans)
                                                         {
-                                                            if (!string.IsNullOrEmpty(phongban.PhongBanName) && phongban.items != null && phongban.items.Count > 0)
-                                                            {
-                                                                var countPb = phongban.items.Count;
-                                                                <li>
-                                                                    <span class="caret text-uppercase">
-                                                                        @phongban.PhongBanName <small class="badge badge-secondary">@countPb</small>
-                                                                    </span>
-                                                                    @{
-                                                                        var phongBanP = phongban.items.Where(m => m.PhongBan == phongban.PhongBanId
-                                                                                    && string.IsNullOrEmpty(m.BoPhan)).ToList();
-                                                                        <ul class="nested @activeflag">
-                                                                            @{
-                                                                                foreach (var person in phongBanP)
+                                                            var phongBanDisplay = string.IsNullOrEmpty(phongban.PhongBanName) ? Constants.NA : phongban.PhongBanName;
+                                                            var countPb = phongban.items.Count;
+                                                            <li>
+                                                                <span class="caret text-uppercase">
+                                                                    @phongBanDisplay <small class="badge badge-secondary">@countPb</small>
+                                                                </span>
+                                                                @{
+                                                                    var phongBanP = phongban.items.Where(m => m.PhongBan == phongban.PhongBanId
+                                                                                && string.IsNullOrEmpty(m.BoPhan)).ToList();
+                                                                    var phongBanIds = phongBanP.Select(m => m.Id);
+                                                                    <ul class="nested @activeBPflag">
+                                                                        @{
+                                                                            foreach (var person in phongBanP)
+                                                                            {
+                                                                                <li>
+                                                                                    @await Html.PartialAsync("Common/_PersonPartial.cshtml", person)
+                                                                                </li>
+                                                                            }
+
+                                                                            var bophans = (from s in phongban.items.Where(m => !phongBanIds.Contains(m.Id))
+                                                                                            group s by new
+                                                                                            {
+                                                                                                s.BoPhan,
+                                                                                                s.BoPhanName
+                                                                                            }
+                                                                            into c
+                                                                                            select new
+                                                                                            {
+                                                                                                BoPhanId = c.Key.BoPhan,
+                                                                                                BoPhanName = c.Key.BoPhanName,
+                                                                                                items = c.ToList()
+                                                                                            }).ToList();
+                                                                            @foreach (var bophan in bophans)
+                                                                            {
+                                                                                if (!string.IsNullOrEmpty(bophan.BoPhanName) && bophan.items != null && bophan.items.Count > 0)
                                                                                 {
+                                                                                    var countBp = bophan.items.Count;
                                                                                     <li>
-                                                                                        @Html.Partial("Common/_PersonPartial.cshtml", person)
+                                                                                        <span class="caret text-uppercase">@bophan.BoPhanName <small class="badge badge-secondary">@countBp</small></span>
+                                                                                        <ul class="nested @activeNVflag">
+                                                                                            @{
+                                                                                                var bophanP = bophan.items.Where(m => m.BoPhan == bophan.BoPhanId).ToList();
+                                                                                                foreach (var person in bophanP)
+                                                                                                {
+                                                                                                    <li>
+                                                                                                        @await Html.PartialAsync("Common/_PersonPartial.cshtml", person)
+                                                                                                    </li>
+                                                                                                }
+                                                                                            }
+                                                                                        </ul>
                                                                                     </li>
                                                                                 }
-
-                                                                                var bophans = (from s in phongban.items
-                                                                                               group s by new
-                                                                                               {
-                                                                                                   s.BoPhan,
-                                                                                                   s.BoPhanName
-                                                                                               }
-                                                                                into c
-                                                                                               select new
-                                                                                               {
-                                                                                                   BoPhanId = c.Key.BoPhan,
-                                                                                                   BoPhanName = c.Key.BoPhanName,
-                                                                                                   items = c.ToList()
-                                                                                               }).ToList();
-                                                                                @foreach (var bophan in bophans)
-                                                                                {
-                                                                                    if (!string.IsNullOrEmpty(bophan.BoPhanName) && bophan.items != null && bophan.items.Count > 0)
-                                                                                    {
-                                                                                        var countBp = bophan.items.Count;
-                                                                                        <li>
-                                                                                            <span class="caret text-uppercase">@bophan.BoPhanName <small class="badge badge-secondary">@countBp</small></span>
-                                                                                            <ul class="nested @activeflag">
-                                                                                                @{
-                                                                                                    var bophanP = bophan.items.Where(m => m.BoPhan == bophan.BoPhanId).ToList();
-                                                                                                    foreach (var person in bophanP)
-                                                                                                    {
-                                                                                                        <li>
-                                                                                                            @Html.Partial("Common/_PersonPartial.cshtml", person)
-                                                                                                        </li>
-                                                                                                    }
-                                                                                                }
-                                                                                            </ul>
-                                                                                        </li>
-                                                                                    }
-                                                                                }
                                                                             }
-                                                                        </ul>
-                                                                    }
-                                                                </li>
-                                                            }
+                                                                        }
+                                                                    </ul>
+                                                                }
+                                                            </li>
                                                         }
                                                     }
                                                 </ul>
@@ -407,37 +379,30 @@ into b
                                         </li>
                                     }
                                 }
-                        <li>
-                            @{ 
-                                var unfineP = employees.Where(m => m.PhongBanName != "Ban lãnh đạo" && string.IsNullOrEmpty(m.KhoiChucNang)).ToList();
-                                var countUnDefine = unfineP.Count;
-
-                            }
-                            <span class="caret caret-down text-uppercase">TƯ VẤN & HỖ TRỢ <small class="badge badge-secondary">@countUnDefine</small></span>
-                            <ul class="nested active">
-                                @foreach (var person in unfineP)
-                                {
-                                    <li>@Html.Partial("Common/_PersonPartial.cshtml", person)</li>
-                                }
-                            </ul>
-                        </li>
-                            }
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="row mb-3">
-                    <div class="col-12">
-                        <ul id="myUL">
-                            <li>
-                                <span class="caret text-uppercase">Nhân sự nghỉ <small class="badge badge-secondary">@countLeaves</small></span>
-                                <ul class="nested">
-                                    @foreach (var person in leaves)
-                                    {
-                                        <li>@Html.Partial("Common/_PersonPartial.cshtml", person)</li>
+                                <li>
+                                    @{
+                                        var unfineP = employees.Where(m => m.PhongBanName != "Ban lãnh đạo" && string.IsNullOrEmpty(m.KhoiChucNang)).ToList();
+                                        var countUnDefine = unfineP.Count;
                                     }
-                                </ul>
-                            </li>
+                                    <span class="caret text-uppercase">TƯ VẤN & HỖ TRỢ <small class="badge badge-secondary">@countUnDefine</small></span>
+                                    <ul class="nested">
+                                        @foreach (var person in unfineP)
+                                        {
+                                            <li>@await Html.PartialAsync("Common/_PersonPartial.cshtml", person)</li>
+                                        }
+                                    </ul>
+                                </li>
+
+                                <li>
+                                    <span class="caret text-uppercase">Nhân sự nghỉ <small class="badge badge-secondary">@countLeaves</small></span>
+                                    <ul class="nested">
+                                        @foreach (var person in leaves)
+                                        {
+                                            <li>@await Html.PartialAsync("Common/_PersonPartial.cshtml", person)</li>
+                                        }
+                                    </ul>
+                                </li>
+                            }
                         </ul>
                     </div>
                 </div>
@@ -448,7 +413,6 @@ into b
 
 
 @section scripts {
-    @*https://www.cssscript.com/folder-tree-treejs/*@
     <script type="text/javascript" src="~/js/hr/employee.js?@Constants.VersionJs"></script>
     <script>
         var toggler = document.getElementsByClassName("caret");
