@@ -8161,16 +8161,17 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\Xuan\\Projects\\SGX\\xcore\\xcore.csproj",
+      "projectUniqueName": "D:\\Xuan\\Projects\\sgx\\xcore\\xcore.csproj",
       "projectName": "xcore",
-      "projectPath": "D:\\Xuan\\Projects\\SGX\\xcore\\xcore.csproj",
+      "projectPath": "D:\\Xuan\\Projects\\sgx\\xcore\\xcore.csproj",
       "packagesPath": "C:\\Users\\MINHXUAN-DEV\\.nuget\\packages\\",
-      "outputPath": "D:\\Xuan\\Projects\\SGX\\xcore\\obj\\",
+      "outputPath": "D:\\Xuan\\Projects\\sgx\\xcore\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\MINHXUAN-DEV\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\DevExpress 19.1.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\DevExpress 19.2.config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\DevExpress 20.1.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -8179,6 +8180,7 @@
       "sources": {
         "C:\\Program Files (x86)\\DevExpress 19.1\\Components\\System\\Components\\Packages": {},
         "C:\\Program Files (x86)\\DevExpress 19.2\\Components\\System\\Components\\Packages": {},
+        "C:\\Program Files (x86)\\DevExpress 20.1\\Components\\System\\Components\\Packages": {},
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "https://api.nuget.org/v3/index.json": {},
         "https://clas.pkgs.visualstudio.com/Healthcare_EMR/_packaging/Emr.Document.Base/nuget/v3/index.json": {},
@@ -8236,7 +8238,7 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.202\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.301\\RuntimeIdentifierGraph.json"
       }
     }
   }

@@ -20,10 +20,21 @@ namespace Services
     public class AuthMessageSender : IEmailSender, ISmsSender
     {
         readonly IHostingEnvironment _env;
+        private readonly string _connectString = "mongodb://xbatads:xcore910602@localhost/tribat";
+        private readonly string _databaseName = "tribat";
+        private readonly string _emailServer = "mail.tribat.vn";
+        private readonly string _emailApp = "app.hcns@tribat.vn";
+        private readonly string _emailAppShow = "APP.HCNS";
+        private readonly string _emailAppPwd = "tr1b@T";
+        MongoDBContext _dbContext;
 
         public AuthMessageSender(IHostingEnvironment env)
         {
             _env = env;
+            MongoDBContext.ConnectionString = _connectString;
+            MongoDBContext.DatabaseName = _databaseName;
+            MongoDBContext.IsSSL = true;
+            _dbContext = new MongoDBContext();
         }
 
         public System.Threading.Tasks.Task SendEmailAsync(string email, string subject, string message)
@@ -119,30 +130,9 @@ namespace Services
 
         public void SendEmail(EmailMessage emailMessage)
         {
-            #region Connection & config
-            var connectString = "mongodb://localhost:27017";
-            MongoDBContext.ConnectionString = connectString;
-            MongoDBContext.DatabaseName = "tribat";
-            MongoDBContext.IsSSL = true;
-            MongoDBContext dbContext = new MongoDBContext();
-
-            //"EmailConfiguration": {
-            //              "SmtpTitle":  "[Test environment] ERP",
-            //  "SmtpServer": "mail.tribat.vn",
-            //  "SmtpPort": 465,
-            //  "SmtpUsername": "test-erp@tribat.vn",
-            //  "SmtpPassword": "Kh0ngbiet@123",
-
-            //  "PopServer": "mail.tribat.vn",
-            //  "PopPort": 995,
-            //  "PopUsername": "test-erp@tribat.vn",
-            //  "PopPassword": "Kh0ngbiet@123"
-            //},
-            #endregion
-
             MailMessage mail = new MailMessage
             {
-                From = new MailAddress("app.hcns@tribat.vn", "APP.HCNS")
+                From = new MailAddress(_emailApp, _emailAppShow)
             };
 
             var newToList = new List<EmailAddress>();
@@ -174,7 +164,7 @@ namespace Services
                             ErrorCount = 0,
                             EmployeeId = emailMessage.EmployeeId
                         };
-                        dbContext.ScheduleEmails.InsertOne(errorEmail);
+                        _dbContext.ScheduleEmails.InsertOne(errorEmail);
                         SendMailSupport(errorEmail.Id);
                     }
                 }
@@ -185,8 +175,6 @@ namespace Services
                 foreach (var to in emailMessage.ToAddresses)
                 {
                     mail.To.Add(new MailAddress(to.Address, to.Name));
-                    // Debug
-                    // mail.To.Add(new MailAddress("xuan.tm@tribat.vn", "Xuân Trần"));
                 }
 
                 if (emailMessage.CCAddresses != null && emailMessage.CCAddresses.Count > 0)
@@ -217,18 +205,18 @@ namespace Services
                     Content = emailMessage.BodyContent,
                     EmployeeId = emailMessage.EmployeeId
                 };
-                dbContext.ScheduleEmails.InsertOne(scheduleEmail);
+                _dbContext.ScheduleEmails.InsertOne(scheduleEmail);
                 #endregion
 
                 var isEmailSent = (int)EEmailStatus.Send;
                 var error = string.Empty;
                 try
                 {
-                    var client = new System.Net.Mail.SmtpClient("mail.tribat.vn")
+                    var client = new System.Net.Mail.SmtpClient(_emailServer)
                     {
                         Port = 587, //465 timeout
                         UseDefaultCredentials = true,
-                        Credentials = new NetworkCredential("app.hcns@tribat.vn", "Tr1b@t")
+                        Credentials = new NetworkCredential(_emailApp, _emailAppPwd)
                     };
 
                     mail.Subject = emailMessage.Subject;
@@ -242,7 +230,7 @@ namespace Services
                     var update = Builders<ScheduleEmail>.Update
                         .Set(m => m.Status, isEmailSent)
                         .Set(m => m.UpdatedOn, DateTime.Now);
-                    dbContext.ScheduleEmails.UpdateOne(filter, update);
+                    _dbContext.ScheduleEmails.UpdateOne(filter, update);
                     #endregion
                 }
                 catch (Exception ex)
@@ -256,7 +244,7 @@ namespace Services
                         .Set(m => m.Error, error)
                         .Inc(m => m.ErrorCount, 1)
                         .Set(m => m.UpdatedOn, DateTime.Now);
-                    dbContext.ScheduleEmails.UpdateOne(filter, update);
+                    _dbContext.ScheduleEmails.UpdateOne(filter, update);
                     #endregion
                     SendMailSupport(scheduleEmail.Id);
                 }
@@ -269,14 +257,6 @@ namespace Services
         /// <param name="emailMessage"></param>
         public void SendEmailWithMailKit(EmailMessage emailMessage)
         {
-            #region Connection
-            var connectString = "mongodb://localhost:27017";
-            MongoDBContext.ConnectionString = connectString;
-            MongoDBContext.DatabaseName = "tribat";
-            MongoDBContext.IsSSL = true;
-            MongoDBContext dbContext = new MongoDBContext();
-            #endregion
-
             var message = new MimeMessage
             {
                 Subject = emailMessage.Subject,
@@ -326,7 +306,7 @@ namespace Services
                             Error = "Sai định dạng mail",
                             ErrorCount = 0
                         };
-                        dbContext.ScheduleEmails.InsertOne(errorEmail);
+                        _dbContext.ScheduleEmails.InsertOne(errorEmail);
                         SendMailSupport(errorEmail.Id);
                     }
                 }
@@ -356,7 +336,7 @@ namespace Services
                     Content = emailMessage.BodyContent,
                     EmployeeId = emailMessage.EmployeeId
                 };
-                dbContext.ScheduleEmails.InsertOne(scheduleEmail);
+                _dbContext.ScheduleEmails.InsertOne(scheduleEmail);
                 #endregion
                 var isEmailSent = (int)EEmailStatus.Send;
                 var error = string.Empty;
@@ -381,7 +361,7 @@ namespace Services
                         var update = Builders<ScheduleEmail>.Update
                             .Set(m => m.Status, isEmailSent)
                             .Set(m => m.UpdatedOn, DateTime.Now);
-                        dbContext.ScheduleEmails.UpdateOne(filter, update);
+                        _dbContext.ScheduleEmails.UpdateOne(filter, update);
                         #endregion
                     }
                 }
@@ -396,7 +376,7 @@ namespace Services
                         .Set(m => m.Error, error)
                         .Inc(m => m.ErrorCount, 1)
                         .Set(m => m.UpdatedOn, DateTime.Now);
-                    dbContext.ScheduleEmails.UpdateOne(filter, update);
+                    _dbContext.ScheduleEmails.UpdateOne(filter, update);
                     #endregion
                     SendMailSupport(scheduleEmail.Id);
                 }
@@ -405,22 +385,14 @@ namespace Services
 
         private void SendMailSupport(string id)
         {
-            #region Connection
-            var connectString = "mongodb://localhost:27017";
-            MongoDBContext.ConnectionString = connectString;
-            MongoDBContext.DatabaseName = "tribat";
-            MongoDBContext.IsSSL = true;
-            MongoDBContext dbContext = new MongoDBContext();
-            #endregion
-
             MailMessage mail = new MailMessage
             {
-                From = new MailAddress("app.hcns@tribat.vn", "APP.HCNS")
+                From = new MailAddress(_emailApp, _emailAppShow)
             };
 
-            mail.To.Add(new MailAddress("xuan.tm@tribat.vn", "Trần Minh Xuân"));
+            mail.To.Add(new MailAddress("thy.nc@tribat.vn", "Nguyễn Chu Thy"));
 
-            var errorItem = dbContext.ScheduleEmails.Find(m => m.Id.Equals(id)).FirstOrDefault();
+            var errorItem = _dbContext.ScheduleEmails.Find(m => m.Id.Equals(id)).FirstOrDefault();
             var subject = "Gửi email lỗi " + errorItem.Title;
             var pathToFile = @"C:\Projects\App.Schedule\Templates\Error.html";
             var bodyBuilder = new BodyBuilder();
@@ -444,11 +416,11 @@ namespace Services
 
             try
             {
-                var client = new System.Net.Mail.SmtpClient("mail.tribat.vn")
+                var client = new SmtpClient(_emailServer)
                 {
                     Port = 587, //465 timeout
                     UseDefaultCredentials = true,
-                    Credentials = new NetworkCredential("app.hcns@tribat.vn", "Tr1b@t")
+                    Credentials = new NetworkCredential(_emailApp, _emailAppPwd)
                 };
 
                 mail.Subject = emailMessage.Subject;
