@@ -23,15 +23,16 @@ namespace xmailtimer
         {
             #region setting
             var location = ConfigurationSettings.AppSettings.Get("location").ToString();
+            var monthConfig = Convert.ToInt32(ConfigurationSettings.AppSettings.Get("month"));
             var debug = ConfigurationSettings.AppSettings.Get("debugString").ToString();
             var connection = ConfigurationSettings.AppSettings.Get("connection").ToString();
             var database = ConfigurationSettings.AppSettings.Get("database").ToString();
             #endregion
 
-            SendTimeKeeper(location, connection, database, debug);
+            SendTimeKeeper(location, connection, database, monthConfig, debug);
         }
 
-        static void SendTimeKeeper(string location, string connection, string database, string debug)
+        static void SendTimeKeeper(string location, string connection, string database, int monthConfig, string debug)
         {
             #region Connection, Setting & Filter
             MongoDBContext.ConnectionString = connection;
@@ -47,7 +48,7 @@ namespace xmailtimer
 
             #region Times : end of month
             // Default end of month. Setting in db
-            var today = DateTime.Now.Date;
+            var today = DateTime.Now.Date.AddMonths(monthConfig);
             int daysInMonth = DateTime.DaysInMonth(today.Year, today.Month);
             var crawlStart = 1; // start date of month
             var crawlEnd = daysInMonth;

@@ -26,6 +26,10 @@ namespace Services
 
         public AuthMessageSender()
         {
+            MongoDBContext.ConnectionString = _connectString;
+            MongoDBContext.DatabaseName = _databaseName;
+            MongoDBContext.IsSSL = true;
+            _dbContext = new MongoDBContext();
         }
 
         public void SendEmail(EmailMessage emailMessage)
